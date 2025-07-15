@@ -1,0 +1,39 @@
+--- a/src/infrastructure/lifespan.py
++++ b/src/infrastructure/lifespan.py
+@@ -10,8 +10,9 @@
+ from fastapi import FastAPI
+ from prometheus_client import Gauge, start_http_server
+ 
+-from src.infrastructure.app_initializer import AppInitializer
+-
+-app_initializer = AppInitializer()
+-logger = app_initializer.get_logger(__name__, component="infrastructure")
++from src.infrastructure.config.settings import get_settings
++from src.infrastructure.di.container import container
++from src.infrastructure.logging_config import get_logger
++
++logger = get_logger(__name__, component="infrastructure")
+ 
+ # Prometheus metrics
+ APP_UPTIME = Gauge("app_uptime_seconds", "Uptime of the application in seconds")
+@@ -37,8 +38,7 @@
+ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+     """Application lifespan manager with Hexagonal Architecture and production configuration."""
+ 
+-    settings = app_initializer.get_settings()
+-
++    settings = get_settings()
+     # Initialize Sentry
+     if settings.SENTRY_DSN:
+         sentry_sdk.init(
+@@ -59,10 +59,8 @@
+             )
+ 
+     # Initialize dependency injection container
+-    container = app_initializer.get_container()
+     app.state.container = container
+     container.init_resources()
+-    app_initializer.wire_container(container)
+ 
+     # Initialize event subscriptions
+     container.init_event_subscriptions()

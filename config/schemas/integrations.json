@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Integrations Schema",
+  "description": "Third-party integrations schema",
+  "type": "object",
+  "properties": {
+    "INTEGRATIONS": {
+      "type": "object",
+      "description": "Third-party integrations",
+      "properties": {
+        "ENABLE_SCHOOL_INTEGRATION": {
+          "type": "boolean"
+        },
+        "ENABLE_SMART_HOME": {
+          "type": "boolean"
+        },
+        "ENABLE_WEARABLES": {
+          "type": "boolean"
+        },
+        "SUPPORTED_PLATFORMS": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ios", "android", "web", "desktop", "alexa", "google_home"]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "WEBHOOK_ENDPOINTS": {
+          "type": "object",
+          "properties": {
+            "CONVERSATION_START": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "CONVERSATION_END": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "SAFETY_ALERT": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "PARENT_NOTIFICATION": {
+              "type": ["string", "null"],
+              "format": "uri"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["INTEGRATIONS"],
+  "additionalProperties": false
+}

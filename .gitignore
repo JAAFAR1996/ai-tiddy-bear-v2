@@ -1,0 +1,82 @@
+
+# 🔒 CRITICAL SECURITY - Never commit these files!
+# Environment files containing secrets
+.env  
+.env.*  
+.env.local
+.env.production
+.env.staging
+.secrets.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cert
+private_key*  
+secret*  
+
+# API Keys and sensitive configuration
+config/api_keys.json
+**/api_keys.json
+**/*secrets*
+**/*credentials*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+ai_teddy.db
+
+# Logs that might contain sensitive data
+logs/
+*.log
+*.log.*
+
+# Virtual environments  
+.venv/
+venv/
+env/
+ENV/
+.env/
+*/.venv/
+*/venv/
+
+# Temporary and cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.tox/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Ignore vscode AI rules
+.github/copilot-instructions.md
+
+# Ignore cursor AI rules
+.cursor/rules/codacy.mdc

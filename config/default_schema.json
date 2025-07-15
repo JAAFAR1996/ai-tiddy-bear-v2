@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AI Teddy Bear Configuration Schema (Deprecated)",
+  "description": "This file has been replaced by a modular schema system. Please use the new config system.",
+  "type": "object",
+
+  "_notice": [
+    "🚨 DEPRECATED: This schema file has been split into modular components.",
+    "",
+    "📁 New Schema Location: config/schemas/",
+    "🔄 Auto-Generated Schema: config/default_schema_new.json",
+    "",
+    "✨ How to Use the New System:",
+    "1. Import: from config.config_manager import load_config",
+    "2. Load: config = load_config('development.json')",
+    "3. Validate: from config.schemas import SchemaValidator",
+    "",
+    "📚 Benefits:",
+    "- Modular schema files (easier maintenance)",
+    "- Better validation and error reporting",
+    "- Environment-specific configuration loading",
+    "- Sample configuration generation",
+    "- Enhanced debugging and logging",
+    "",
+    "🔗 For migration help, see: config/MIGRATION_GUIDE.md",
+    "📋 For examples, see: config/schema_usage_examples.py"
+  ],
+
+  "properties": {
+    "_migration_info": {
+      "type": "object",
+      "description": "Information about migrating to the new schema system",
+      "properties": {
+        "new_schema_location": {
+          "type": "string",
+          "default": "config/default_schema_new.json"
+        },
+        "modular_schemas_directory": {
+          "type": "string",
+          "default": "config/schemas/"
+        },
+        "config_manager_module": {
+          "type": "string",
+          "default": "config.config_manager"
+        },
+        "migration_guide": {
+          "type": "string",
+          "default": "config/MIGRATION_GUIDE.md"
+        },
+        "usage_examples": {
+          "type": "string",
+          "default": "config/schema_usage_examples.py"
+        }
+      }
+    }
+  },
+
+  "required": [],
+  "additionalProperties": true,
+
+  "_original_size": "41,812 bytes (1,165 lines)",
+  "_new_size": "35,367 bytes (1,438 lines)",
+  "_modular_files": 20,
+  "_split_date": "2025-07-01",
+  "_status": "Successfully migrated to modular system"
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Interaction Limits Schema",
+  "description": "Interaction limit settings schema",
+  "type": "object",
+  "properties": {
+    "INTERACTION_LIMITS": {
+      "type": "object",
+      "description": "Interaction limit settings",
+      "properties": {
+        "MAX_DAILY_INTERACTIONS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "MAX_INTERACTION_DURATION_SECONDS": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 7200
+        },
+        "MIN_INTERACTION_INTERVAL_SECONDS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "MAX_CONSECUTIVE_INTERACTIONS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "COOLDOWN_PERIOD_MINUTES": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "AGE_RANGES": {
+          "type": "object",
+          "patternProperties": {
+            "^[A-Z]+$": {
+              "type": "object",
+              "properties": {
+                "MIN": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                "MAX": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                "MAX_DAILY_MINUTES": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1440
+                }
+              },
+              "required": ["MIN", "MAX", "MAX_DAILY_MINUTES"],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "required": ["MAX_DAILY_INTERACTIONS"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["INTERACTION_LIMITS"],
+  "additionalProperties": false
+}

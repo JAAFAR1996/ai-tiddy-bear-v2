@@ -1,0 +1,36 @@
+--- a/src/application/services/ai_orchestration_service.py
++++ b/src/application/services/ai_orchestration_service.py
+@@ -87,6 +87,29 @@
+                 safe=is_safe,
+             )
+ 
+-        except Exception as e:
+-            logger.error(f"AI orchestration failed: {e}")
+-            raise
++        except ValueError as e:
++            logger.error(f"Content safety violation or invalid input: {e}")
++            return AIResponse(
++                response_text="I'm sorry, I cannot process that request due to content policy violations.",
++                audio_response=b"",
++                emotion="neutral",
++                sentiment="negative",
++                safe=False,
++            )
++        except RuntimeError as e:
++            logger.error(f"External service error (AI/TTS): {e}")
++            return AIResponse(
++                response_text="I'm sorry, I'm having trouble responding right now. Please try again later.",
++                audio_response=b"",
++                emotion="neutral",
++                sentiment="negative",
++                safe=False,
++            )
++        except Exception as e:
++            logger.critical(f"An unexpected critical error occurred during AI orchestration: {e}", exc_info=True)
++            return AIResponse(
++                response_text="I'm sorry, an unexpected error occurred. Please contact support.",
++                audio_response=b"",
++                emotion="neutral",
++                sentiment="negative",
++                safe=False,
++            )

@@ -1,0 +1,15 @@
+--- a/src/infrastructure/logging_config.py
++++ b/src/infrastructure/logging_config.py
+@@ -4,7 +4,9 @@
+ from typing import Optional, Dict, Any
+ import logging
+ import logging.handlers
+-import os
+-import sys
++import os
++import sys
++import re
++import hashlib
+ 
+ """
+ Centralized Logging Configuration

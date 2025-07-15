@@ -1,0 +1,338 @@
+# AI Teddy Bear - Production Docker Configuration
+# Enterprise-grade deployment with PostgreSQL, Redis, and security
+
+version: '3.8'
+
+services:
+  # ================================
+  # Main Application Service
+  # ================================
+  ai-teddy-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      args:
+        - BUILD_ENV=production
+    image: ai-teddy-backend:production
+    container_name: ai-teddy-backend-prod
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Application Environment
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      
+      # Database Configuration
+      - DATABASE_URL=postgresql+asyncpg://ai_teddy_user:${DB_PASSWORD}@postgres-db:5432/ai_teddy_prod
+      - DB_POOL_SIZE=20
+      - DB_MAX_OVERFLOW=0
+      - DB_POOL_RECYCLE=300
+      
+      # Redis Configuration
+      - REDIS_URL=redis://redis-cache:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      
+      # Security Keys (Must be set via environment variables)
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      
+      # API Keys (Must be set via environment variables)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      
+      # Child Safety Configuration
+      - COPPA_ENCRYPTION_KEY=${COPPA_ENCRYPTION_KEY}
+      - MAX_CHILD_AGE=13 # Consider externalizing this business rule to a configuration service for dynamic updates.
+      - REQUIRE_PARENTAL_CONSENT=true
+      - DATA_RETENTION_DAYS=90 # Consider externalizing this business rule to a configuration service for dynamic updates.
+      
+      # Security Configuration
+      - ENABLE_HTTPS=true
+      - REQUIRE_SSL=true
+      - SECURITY_HEADERS=true
+      - RATE_LIMITING=true
+      - SQL_INJECTION_PROTECTION=true
+      
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - PROMETHEUS_ENABLED=true
+      
+      # Email Configuration
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - FROM_EMAIL=noreply@aiteddy.com
+      
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+    volumes:
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    security_opt:
+      - no-new-privileges:true
+    user: "1000:1000"  # Non-root user
+
+  # ================================
+  # PostgreSQL Database Service
+  # ================================
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: ai-teddy-postgres-prod
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=ai_teddy_prod
+      - POSTGRES_USER=ai_teddy_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
+      
+      # Performance tuning for production
+      - POSTGRES_SHARED_PRELOAD_LIBRARIES=pg_stat_statements
+      - POSTGRES_MAX_CONNECTIONS=200
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=4GB
+      - POSTGRES_MAINTENANCE_WORK_MEM=256MB
+      - POSTGRES_CHECKPOINT_COMPLETION_TARGET=0.9
+      - POSTGRES_WAL_BUFFERS=16MB
+      - POSTGRES_DEFAULT_STATISTICS_TARGET=100
+      - POSTGRES_RANDOM_PAGE_COST=1.1
+      - POSTGRES_EFFECTIVE_IO_CONCURRENCY=200
+      
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - postgres-backups:/backups
+      - ./sql/init-production.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # Removed direct port exposure: 5432 is now internal-only for enhanced security.
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_teddy_user -d ai_teddy_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    security_opt:
+      - no-new-privileges:true
+
+  # ================================
+  # Redis Cache Service
+  # ================================
+  redis-cache:
+    image: redis:7-alpine
+    container_name: ai-teddy-redis-prod
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - redis-data:/data
+      - redis-config:/usr/local/etc/redis
+    # Removed direct port exposure: 6379 is now internal-only for enhanced security.
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.2'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+
+  # ================================
+  # Nginx Reverse Proxy
+  # ================================
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: ai-teddy-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/production.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - ai-teddy-backend
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+
+  # ================================
+  # Monitoring & Observability
+  # ================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-teddy-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-200h}' # Externalized for dynamic adjustment via environment variable.
+      - '--web.enable-lifecycle'
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-teddy-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD} # Ensure a strong admin password is set for Grafana.
+      - GF_USERS_ALLOW_SIGN_UP=false # Good practice: Disable user signup for production security.
+      - GF_SECURITY_DISABLE_GRAVATAR=true # Good practice: Disable Gravatar to enhance privacy.
+      - GF_ANALYTICS_REPORTING_ENABLED=false # Good practice: Disable analytics reporting for privacy.
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ================================
+  # Log Management
+  # ================================
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    container_name: ai-teddy-filebeat
+    restart: unless-stopped
+    user: filebeat # Running Filebeat as a non-root user for enhanced security and reduced privilege.
+    volumes:
+      - ./monitoring/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - app-logs:/app/logs:ro
+      - nginx-logs:/nginx/logs:ro
+      # Removed direct Docker socket mount; consider alternative, more secure methods for Docker module metrics if needed (e.g., host-level monitoring agents).
+    networks:
+      - ai-teddy-network
+    depends_on:
+      - ai-teddy-backend
+
+# ================================
+# Networks
+# ================================
+networks:
+  ai-teddy-network:
+    driver: bridge
+    # Removed hardcoded ipam configuration to allow Docker to assign subnets automatically, enhancing flexibility in complex deployments.
+
+# ================================
+# Volumes
+# ================================
+volumes:
+  postgres-data:
+    driver: local
+    name: ai-teddy-postgres-data # Explicitly named for clarity and easier management.
+  postgres-backups:
+    driver: local
+    name: ai-teddy-postgres-backups # Explicitly named for clarity and easier management.
+  redis-data:
+    driver: local
+    name: ai-teddy-redis-data # Explicitly named for clarity and easier management.
+  redis-config:
+    driver: local
+    name: ai-teddy-redis-config # Explicitly named for clarity and easier management.
+  app-logs:
+    driver: local
+    name: ai-teddy-app-logs # Explicitly named for clarity and easier management.
+  app-uploads:
+    driver: local
+    name: ai-teddy-app-uploads # Explicitly named for clarity and easier management.
+  nginx-logs:
+    driver: local
+    name: ai-teddy-nginx-logs # Explicitly named for clarity and easier management.
+  prometheus-data:
+    driver: local
+    name: ai-teddy-prometheus-data # Explicitly named for clarity and easier management.
+  grafana-data:
+    driver: local
+    name: ai-teddy-grafana-data # Explicitly named for clarity and easier management.
+
+# ================================
+# Production Deployment Notes
+# ================================
+# 1. Set all environment variables in a secure .env file
+# 2. Configure SSL certificates in ./ssl/ directory
+# 3. Set up external backup strategy for postgres-data volume
+# 4. Configure monitoring alerts in Prometheus/Grafana
+# 5. Set up log rotation and retention policies
+# 6. Configure firewall rules for production deployment
+# 7. Use secrets management service in cloud deployments
+# 8. Set up automated security scanning and updates

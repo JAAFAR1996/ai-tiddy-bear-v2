@@ -1,0 +1,86 @@
+{
+  "ENVIRONMENT": "staging",
+  "DEBUG": true,
+  "LOG_LEVEL": "DEBUG",
+  "DATABASE_URL": "sqlite:///staging_teddy_bear.db",
+
+  "EMAIL_CONFIG": {
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "from_email": "staging-noreply@aiteddybear.com",
+    "password": "",
+    "use_tls": true,
+    "timeout": 30,
+    "max_daily_emails": 100,
+    "max_emails_per_parent": 1
+  },
+
+  "PUSH_CONFIG": {
+    "fcm_server_key": "",
+    "fcm_sender_id": "",
+    "apns_key_id": "",
+    "apns_team_id": "",
+    "apns_bundle_id": "com.aiteddybear.staging",
+    "timeout": 30,
+    "max_retries": 3,
+    "max_daily_push": 500,
+    "max_push_per_parent": 2
+  },
+
+  "SMS_CONFIG": {
+    "twilio_account_sid": "",
+    "twilio_auth_token": "",
+    "from_number": "+1234567890",
+    "max_daily_sms": 50,
+    "max_sms_per_parent": 1
+  },
+
+  "NOTIFICATION_CONFIG": {
+    "default_language": "ar",
+    "timezone": "Asia/Riyadh",
+    "retry_attempts": 3,
+    "retry_delay_seconds": 30,
+    "batch_size": 50,
+    "rate_limit_per_minute": 30,
+    "rate_limit_per_hour": 100,
+    "rate_limit_per_day": 1000,
+    "enable_email": true,
+    "enable_push": true,
+    "enable_sms": false,
+    "enable_in_app": true,
+    "max_notifications_per_parent_per_week": 3,
+    "cooldown_period_hours": 24
+  },
+
+  "SCHEDULER_CONFIG": {
+    "timezone": "Asia/Riyadh",
+    "notification_time": "21:00",
+    "cleanup_time": "02:00",
+    "monitoring_interval": "0 */2 * * *",
+    "optimization_day": "friday",
+    "optimization_time": "03:00",
+    "report_time": "08:00"
+  },
+
+  "MONITORING_CONFIG": {
+    "enable_metrics": true,
+    "metrics_port": 9090,
+    "health_check_interval": 60,
+    "alert_on_error_rate": 0.05,
+    "alert_email": "admin@aiteddybear.com",
+    "log_retention_days": 30,
+    "enable_issue_tracking": true
+  },
+
+  "STAGING_CONFIG": {
+    "simulate_external_services": true,
+    "test_parent_emails": [
+      "test1@example.com",
+      "test2@example.com",
+      "admin@aiteddybear.com"
+    ],
+    "max_test_notifications": 10,
+    "enable_dry_run": true,
+    "staging_prefix": "[STAGING]"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Application Configuration Schema",
+  "description": "Basic application settings schema",
+  "type": "object",
+  "properties": {
+    "APPLICATION": {
+      "type": "object",
+      "description": "Basic application settings",
+      "properties": {
+        "NAME": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "VERSION": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
+        },
+        "ENVIRONMENT": {
+          "type": "string",
+          "enum": ["development", "staging", "production", "test"]
+        },
+        "DEBUG": {
+          "type": "boolean"
+        },
+        "SECRET_KEY": {
+          "type": "string",
+          "minLength": 32
+        },
+        "TIMEZONE": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z_]+/[A-Z][a-zA-Z_]+$|^UTC$"
+        }
+      },
+      "required": ["NAME", "VERSION", "ENVIRONMENT", "SECRET_KEY"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["APPLICATION"],
+  "additionalProperties": false
+}

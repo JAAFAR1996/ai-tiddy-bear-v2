@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Voice Settings Schema",
+  "description": "Voice synthesis configuration schema",
+  "type": "object",
+  "properties": {
+    "VOICE_SETTINGS": {
+      "type": "object",
+      "description": "Voice synthesis configuration",
+      "properties": {
+        "DEFAULT_ENGINE": {
+          "type": "string",
+          "enum": ["elevenlabs", "azure", "google", "gtts", "edge-tts"]
+        },
+        "DEFAULT_VOICE_ID": {
+          "type": "string"
+        },
+        "DEFAULT_LANGUAGE": {
+          "type": "string",
+          "pattern": "^[a-z]{2}-[A-Z]{2}$"
+        },
+        "VOICE_SPEED": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0
+        },
+        "VOICE_PITCH": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0
+        },
+        "VOICE_VOLUME": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ENABLE_VOICE_CLONING": {
+          "type": "boolean"
+        },
+        "VOICE_SAMPLE_RATE": {
+          "type": "integer",
+          "enum": [8000, 16000, 22050, 24000, 44100, 48000]
+        },
+        "VOICE_CHANNELS": {
+          "type": "integer",
+          "enum": [1, 2]
+        },
+        "ENABLE_EMOTION_SYNTHESIS": {
+          "type": "boolean"
+        },
+        "EMOTION_INTENSITY": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "SUPPORTED_LANGUAGES": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}-[A-Z]{2}$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "VOICE_CACHE_ENABLED": {
+          "type": "boolean"
+        },
+        "VOICE_CACHE_MAX_SIZE_MB": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000
+        },
+        "VOICE_CACHE_TTL_HOURS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168
+        }
+      },
+      "required": ["DEFAULT_ENGINE", "DEFAULT_LANGUAGE", "SUPPORTED_LANGUAGES"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["VOICE_SETTINGS"],
+  "additionalProperties": false
+}

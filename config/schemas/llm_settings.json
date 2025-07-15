@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LLM Settings Schema",
+  "description": "Language Model configuration schema",
+  "type": "object",
+  "properties": {
+    "LLM_SETTINGS": {
+      "type": "object",
+      "description": "Language Model configuration",
+      "properties": {
+        "DEFAULT_PROVIDER": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "google", "cohere", "huggingface"]
+        },
+        "DEFAULT_MODEL": {
+          "type": "string",
+          "minLength": 1
+        },
+        "FALLBACK_PROVIDER": {
+          "type": ["string", "null"],
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "cohere",
+            "huggingface",
+            null
+          ]
+        },
+        "FALLBACK_MODEL": {
+          "type": ["string", "null"]
+        },
+        "MAX_TOKENS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32000
+        },
+        "TEMPERATURE": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "TOP_P": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "FREQUENCY_PENALTY": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "PRESENCE_PENALTY": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "SYSTEM_PROMPT": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "ENABLE_FUNCTION_CALLING": {
+          "type": "boolean"
+        },
+        "STREAM_RESPONSES": {
+          "type": "boolean"
+        },
+        "CONTEXT_WINDOW_SIZE": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 128000
+        },
+        "MEMORY_TYPE": {
+          "type": "string",
+          "enum": [
+            "conversation_buffer",
+            "conversation_buffer_window",
+            "conversation_summary",
+            "conversation_knowledge_graph"
+          ]
+        },
+        "MEMORY_SIZE": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": ["DEFAULT_PROVIDER", "DEFAULT_MODEL", "SYSTEM_PROMPT"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["LLM_SETTINGS"],
+  "additionalProperties": false
+}

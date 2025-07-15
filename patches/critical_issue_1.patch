@@ -1,0 +1,180 @@
+--- a/src/main.py
++++ b/src/main.py
+@@ -20,7 +20,19 @@
+ from src.infrastructure.logging_config import configure_logging, get_logger
+ 
+ # Load environment variables
+-load_dotenv()
++load_dotenv()
++
++# Define project root and custom exceptions
++project_root = Path(__file__).parent.parent.resolve()
++
++class SecurityException(Exception):
++    """Custom exception for security-related issues."""
++    pass
++
++# Enforce production safety checks
++enforce_production_safety()
++
++# Configure logging based on environment
++environment = os.getenv("ENVIRONMENT", "production")
++configure_logging(environment=environment)
++
++logger = get_logger(__name__, component="infrastructure")
++
++# Create FastAPI application with production configuration
++app = FastAPI(
++    title="AI Teddy Bear System",
++    description="Enterprise-grade child-safe AI interaction platform with Hexagonal Architecture",
++    version="2.0.0",
++    docs_url="/docs",
++    redoc_url="/redoc",
++    generate_unique_id_function=lambda route: (
++        f"{route.tags[0]}_{route.name}" if route.tags else route.name
++    ),
++)
++
++# Mount static files with security best practices
++static_files_path = os.getenv("STATIC_FILES_DIR", str(project_root / "src" / "static"))
++static_dir = Path(static_files_path).resolve()
++
++if not static_dir.is_dir():
++    logger.warning(f"Static files directory not found at '{static_dir}'. Static file serving will be disabled.")
++else:
++    # Path Traversal Check: Ensure the resolved static directory is within the project root
++    try:
++        static_dir.relative_to(project_root)
++    except ValueError:
++        logger.critical(
++            f"SECURITY ALERT: Invalid STATIC_FILES_DIR. Path traversal attempt detected."
++            f"Directory '{static_dir}' is outside of project root '{project_root}'."
++        )
++        raise SecurityException("Invalid static files directory configuration.")
++
++    app.mount("/static", StaticFiles(directory=static_dir), name="static")
++    logger.info(f"Static files mounted from: {static_dir}")
++
++    # Serve index.html from the root
++    @app.get("/", include_in_schema=False)
++    async def root() -> Response:
++        index_path = static_dir / "index.html"
++        if index_path.is_file():
++            return FileResponse(index_path)
++        return Response(content="Welcome to the AI Teddy Bear API", media_type="text/plain")
++
++
++# Test endpoints should be in separate development files, not in main production app
++
++if __name__ == "__main__":
++    # Validate system configuration after successful imports
++    try:
++        validate_startup()
++    except Exception as e:
++        logger.critical("System validation failed during startup", exc_info=True)
++        raise RuntimeError("Application startup validation failed") from e
++
++    # Setup middleware and routing
++    setup_middleware(app)
++    setup_routing(app)
++
++    # Wire the container to the FastAPI application
++    container.wire(modules=FullWiringConfig.modules)
++
++    # Configure OpenAPI with comprehensive documentation
++    configure_openapi(app)
++
++    # Apply lifespan to the app
++    app.router.lifespan_context = lifespan
++
++    is_development = os.getenv("ENVIRONMENT", "production") == "development"
++
++    
++
++    # Secure host binding with production support
++    allowed_host = os.getenv("ALLOWED_HOST")
++    if is_development:
++        host = "127.0.0.1"
++        logger.info("Development mode: binding to localhost")
++    elif allowed_host:
++        # In production, allow explicit host override for deployment
++        host = allowed_host
++        logger.info(f"Production host binding: {host}")
++    else:
++        # Production default: bind to all interfaces for container/cloud deployment
++        host = "0.0.0.0"
++        logger.info("Production mode: binding to all interfaces for deployment")
++
++    # Define port constants for Uvicorn's internal validation
++    DEFAULT_PORT = 8000
++    DEV_PORT_MIN = 3000
++    DEV_PORT_MAX = 9999
++    PROD_PORT_MIN = 8000
++    PROD_PORT_MAX = 65535
++
++    # Validate port range with stricter limits
++    try:
++        port = int(os.getenv("PORT", str(DEFAULT_PORT)))
+        if is_development and (port < DEV_PORT_MIN or port > DEV_PORT_MAX):
+            logger.error(
+                f"Development port {port} outside safe range ({DEV_PORT_MIN}-{DEV_PORT_MAX}). Using default {DEFAULT_PORT}."
+            )
+            port = DEFAULT_PORT
+        elif not is_development and (port < PROD_PORT_MIN or port > PROD_PORT_MAX):
+            logger.error(
+                f"Production port {port} outside safe range ({PROD_PORT_MIN}-{PROD_PORT_MAX}). Using default {DEFAULT_PORT}."
+            )
+            port = DEFAULT_PORT
+    except ValueError:
+        logger.error(
+            f"Invalid PORT environment variable, using default {DEFAULT_PORT}."
+        )
+        port = DEFAULT_PORT
+    # Error handling strategy: Log and use default for non-critical configuration issues.
+
+    # Production security configuration - SSL mandatory unless offloaded
+    ssl_keyfile = os.getenv("SSL_KEYFILE")
+    ssl_certfile = os.getenv("SSL_CERTFILE")
+    ssl_offloaded = os.getenv("SSL_OFFLOADED", "false").lower() in ("true", "1", "yes")
+
+    # In production, ensure SSL is either handled by Uvicorn or an upstream proxy.
+    # If SSL_OFFLOADED is true, it implies an external load balancer handles SSL.
+    # Otherwise, SSL_KEYFILE and SSL_CERTFILE must be provided for Uvicorn.
+    if not is_development and not (ssl_keyfile and ssl_certfile) and not ssl_offloaded:
+        logger.critical(
+            "SECURITY ERROR: Production deployment requires SSL certificates or SSL offloading. "
+            "Set SSL_KEYFILE and SSL_CERTFILE environment variables for Uvicorn SSL, "
+            "or set SSL_OFFLOADED=true if an external proxy handles SSL."
+        )
+        raise RuntimeError("SSL configuration required for production deployment")
+
+    # Only pass SSL parameters to uvicorn if they are set and not offloaded
+    uvicorn_ssl_args = {}
+    if ssl_keyfile and ssl_certfile and not ssl_offloaded:
+        uvicorn_ssl_args["ssl_keyfile"] = ssl_keyfile
+        uvicorn_ssl_args["ssl_certfile"] = ssl_certfile
+        logger.info("SSL configured for uvicorn.")
+    elif ssl_offloaded:
+        logger.info("SSL is handled by an upstream proxy (SSL_OFFLOADED=true).")
+    else:
+        logger.info("SSL not configured for uvicorn (development mode).")
+
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        reload=is_development,
+        access_log=is_development,  # Reduce logging in production
+        log_level="info" if is_development else "warning",
+        # Security headers
+        server_header=False,  # Don't expose server info
+        date_header=False,  # Don't expose server time
+        # SSL configuration for production
+        **uvicorn_ssl_args,
+        # Additional security
+        workers=1 if is_development else int(os.getenv("WORKERS", "4")),
+        backlog=2048,  # Connection backlog
+        keepalive_timeout=60,  # Keep-alive timeout
+        max_requests=1000 if not is_development else None,  # Worker recycling
+        max_requests_jitter=50 if not is_development else None,
+    )

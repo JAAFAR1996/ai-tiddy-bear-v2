@@ -1,0 +1,1 @@
+class ESP32AudioRequestSchema(BaseModel):from typing import Optionalfrom uuid import UUIDfrom pydantic import BaseModelclass ESP32AudioRequestSchema(BaseModel):    child_id: UUID    audio_data: str  # Base64 encoded audio data    format: str = "wav"class ESP32TextResponseSchema(BaseModel):    child_id: UUID    response_text: str    audio_response_url: Optional[str] = None

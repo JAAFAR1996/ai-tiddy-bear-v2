@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Content Moderation Schema",
+  "description": "Content moderation settings schema",
+  "type": "object",
+  "properties": {
+    "CONTENT_MODERATION": {
+      "type": "object",
+      "description": "Content moderation settings",
+      "properties": {
+        "ENABLE_MODERATION": {
+          "type": "boolean"
+        },
+        "MODERATION_PROVIDER": {
+          "type": "string",
+          "enum": ["perspective", "azure", "aws", "custom"]
+        },
+        "SAFETY_LEVEL": {
+          "type": "string",
+          "enum": ["LENIENT", "MODERATE", "STRICT", "CUSTOM"]
+        },
+        "BLOCK_THRESHOLD": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "WARNING_THRESHOLD": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "CATEGORIES": {
+          "type": "object",
+          "properties": {
+            "TOXICITY": { "type": "boolean" },
+            "SEVERE_TOXICITY": { "type": "boolean" },
+            "IDENTITY_ATTACK": { "type": "boolean" },
+            "INSULT": { "type": "boolean" },
+            "PROFANITY": { "type": "boolean" },
+            "THREAT": { "type": "boolean" },
+            "SEXUAL_CONTENT": { "type": "boolean" },
+            "VIOLENCE": { "type": "boolean" },
+            "SELF_HARM": { "type": "boolean" },
+            "HATE_SPEECH": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "CUSTOM_BLOCK_LIST": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "CUSTOM_ALLOW_LIST": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "LOG_VIOLATIONS": {
+          "type": "boolean"
+        },
+        "NOTIFY_PARENTS": {
+          "type": "boolean"
+        },
+        "AUTO_REPORT_THRESHOLD": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["ENABLE_MODERATION", "SAFETY_LEVEL"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["CONTENT_MODERATION"],
+  "additionalProperties": false
+}

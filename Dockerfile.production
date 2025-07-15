@@ -1,0 +1,206 @@
+# AI Teddy Bear Backend - Production Dockerfile
+# Multi-stage build for optimized, secure production deployment
+
+# ================================
+# Build Stage
+# ================================
+FROM python:3.11-slim as builder
+
+# Build arguments
+ARG BUILD_ENV=production
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies for building
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    libpq-dev \
+    libasound2-dev \
+    portaudio19-dev \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install build tools
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy requirements and install Python dependencies
+COPY requirements-production.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements-production.txt
+
+# ================================
+# Production Stage
+# ================================
+FROM python:3.11-slim as production
+
+# Production build argument
+ARG BUILD_ENV=production
+
+# Metadata
+LABEL maintainer="AI Teddy Bear Team"
+LABEL version="1.0.0"
+LABEL description="AI Teddy Bear Backend - Production"
+LABEL environment="production"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV ENVIRONMENT=production
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install only runtime system dependencies
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    libasound2 \
+    portaudio19-dev \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# Create application user for security
+RUN groupadd -r -g 1000 appuser && \
+    useradd -r -g appuser -u 1000 -m -s /bin/bash appuser
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Create application directories
+RUN mkdir -p /app/logs /app/uploads /app/temp && \
+    chown -R appuser:appuser /app
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=appuser:appuser src/ ./src/
+COPY --chown=appuser:appuser alembic.ini ./
+COPY --chown=appuser:appuser migrations/ ./migrations/
+
+# Copy production configuration files
+COPY --chown=appuser:appuser docker/production/ ./config/
+
+# Create startup script
+COPY --chown=appuser:appuser <<EOF ./start-production.sh
+#!/bin/bash
+set -e
+
+echo "🚀 Starting AI Teddy Bear Backend (Production)"
+echo "Environment: \${ENVIRONMENT}"
+echo "Build Date: $(date)"
+
+# Validate critical environment variables
+if [ -z "\${DATABASE_URL}" ]; then
+    echo "❌ ERROR: DATABASE_URL is required"
+    exit 1
+fi
+
+if [ -z "\${SECRET_KEY}" ]; then
+    echo "❌ ERROR: SECRET_KEY is required"
+    exit 1
+fi
+
+if [ -z "\${OPENAI_API_KEY}" ]; then
+    echo "❌ ERROR: OPENAI_API_KEY is required"
+    exit 1
+fi
+
+# Wait for database to be ready
+echo "⏳ Waiting for database..."
+python -c "
+import asyncio
+import sys
+from src.infrastructure.persistence.database.initializer import initialize_production_database
+
+async def check_db():
+    try:
+        await initialize_production_database()
+        print('✅ Database connection successful')
+    except Exception as e:
+        print(f'❌ Database connection failed: {e}')
+        sys.exit(1)
+
+asyncio.run(check_db())
+"
+
+# Run database migrations
+echo "📊 Running database migrations..."
+alembic upgrade head
+
+# Initialize production database schema
+echo "🔧 Initializing production database..."
+python -c "
+import asyncio
+from src.infrastructure.persistence.database import Database
+
+async def init_db():
+    db = Database()
+    await db.init_db()
+    print('✅ Database initialized')
+
+asyncio.run(init_db())
+"
+
+# Validate SQL injection prevention
+echo "🔒 Validating security systems..."
+python -c "
+from src.infrastructure.security.sql_injection_config import validate_production_environment
+validate_production_environment()
+print('✅ Security validation passed')
+"
+
+# Start the application
+echo "🎯 Starting application server..."
+exec uvicorn src.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 4 \
+    --loop uvloop \
+    --http httptools \
+    --access-log \
+    --log-level info \
+    --no-use-colors \
+    --proxy-headers \
+    --forwarded-allow-ips "*"
+EOF
+
+# Make startup script executable
+RUN chmod +x ./start-production.sh
+
+# Switch to non-root user
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Security: Drop capabilities and set read-only root filesystem
+# (These would be set in docker-compose or orchestrator)
+
+# Expose port
+EXPOSE 8000
+
+# Default command
+CMD ["./start-production.sh"]
+
+# ================================
+# Production Security Notes
+# ================================
+# 1. Runs as non-root user (appuser:1000)
+# 2. Minimal system dependencies
+# 3. No development tools in final image
+# 4. Health checks included
+# 5. Proper signal handling for graceful shutdown
+# 6. Environment variable validation
+# 7. Database connection verification
+# 8. Security system validation
+# 9. Multi-worker production server
+# 10. Optimized Python runtime

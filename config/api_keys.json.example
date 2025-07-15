@@ -1,0 +1,25 @@
+{
+    "openai": {
+        "api_key": "sk-your_openai_api_key_here",
+        "model": "gpt-4",
+        "temperature": 0.7
+    },
+    "anthropic": {
+        "api_key": "sk-ant-your_anthropic_api_key_here",
+        "model": "claude-3-sonnet-20240229",
+        "temperature": 0.7
+    },
+    "azure_speech": {
+        "api_key": "your_azure_speech_key_here",
+        "region": "eastus",
+        "voice_name": "ar-SA-ZariyahNeural"
+    },
+    "elevenlabs": {
+        "api_key": "your_elevenlabs_key_here",
+        "voice_id": "21m00Tcm4TlvDq8ikWAM"
+    },
+    "security": {
+        "encryption_key": "your_32_character_encryption_key_here",
+        "jwt_secret": "your_jwt_secret_key_here"
+    }
+} 

@@ -1,0 +1,1096 @@
+openapi: 3.1.0 # Updated to OpenAPI 3.1.0 for access to newer features and improved JSON Schema support.
+info:
+  title: AI Teddy Bear API
+  description: |
+    Production-ready API for AI Teddy Bear - A child-safe, COPPA-compliant AI companion.
+    
+    ## Features
+    - Child-safe AI interactions with content filtering
+    - Full COPPA compliance with parental controls
+    - Real-time voice interactions
+    - Comprehensive safety monitoring
+    - Educational content generation
+    
+    ## Security
+    - JWT authentication with refresh tokens
+    - Rate limiting on all endpoints
+    - Data encryption for PII
+    - Audit logging for compliance
+  version: 1.0.0
+  contact:
+    name: AI Teddy Bear Support
+    email: support@aiteddy.com # Consider externalizing contact information for dynamic updates in an enterprise setting.
+  license:
+    name: Proprietary
+    url: https://aiteddybear.com/license
+
+servers:
+  - url: https://api.aiteddybear.com/v1
+    description: Production server
+  - url: https://staging-api.aiteddybear.com/v1
+    description: Staging server
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Children
+    description: Child profile management
+  - name: Conversations
+    description: AI interactions and chat
+  - name: COPPA
+    description: COPPA compliance and parental controls
+  - name: Safety
+    description: Safety monitoring and alerts
+  - name: Admin
+    description: Administrative endpoints
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new parent account
+      operationId: registerParent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParentRegistration'
+      responses:
+        '201':
+          description: Successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login with credentials
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  description: Valid refresh token
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout and invalidate tokens
+      operationId: logout
+      responses:
+        '200':
+          description: Successfully logged out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /children:
+    get:
+      tags:
+        - Children
+      summary: List all children for parent
+      operationId: listChildren
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of children
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  children:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Child'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Children
+      summary: Create child profile
+      operationId: createChild
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChildRequest'
+      responses:
+        '201':
+          description: Child profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: COPPA violation or missing consent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /children/{childId}:
+    get:
+      tags:
+        - Children
+      summary: Get child profile
+      operationId: getChild
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      responses:
+        '200':
+          description: Child profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Children
+      summary: Update child profile
+      operationId: updateChild
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChildRequest'
+      responses:
+        '200':
+          description: Child profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Children
+      summary: Delete child profile
+      operationId: deleteChild
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      responses:
+        '204':
+          description: Child profile deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /conversations/chat:
+    post:
+      tags:
+        - Conversations
+      summary: Send message to AI
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Content blocked by safety filter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafetyViolation'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /conversations/{conversationId}:
+    get:
+      tags:
+        - Conversations
+      summary: Get conversation history
+      operationId: getConversation
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Conversation history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /coppa/consent:
+    post:
+      tags:
+        - COPPA
+      summary: Submit parental consent
+      operationId: submitConsent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentRequest'
+      responses:
+        '201':
+          description: Consent recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /coppa/export/{childId}:
+    get:
+      tags:
+        - COPPA
+      summary: Export child data (COPPA requirement)
+      operationId: exportChildData
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      responses:
+        '200':
+          description: Exported data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /coppa/delete-request:
+    post:
+      tags:
+        - COPPA
+      summary: Request data deletion
+      operationId: requestDataDeletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletionRequest'
+      responses:
+        '200':
+          description: Deletion scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /children/{childId}/safety-events:
+    get:
+      tags:
+        - Safety
+      summary: Get safety events for child
+      operationId: getSafetyEvents
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Safety events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SafetyEvent'
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /children/{childId}/usage:
+    get:
+      tags:
+        - Children
+      summary: Get usage statistics
+      operationId: getUsageStats
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 90
+            default: 7
+      responses:
+        '200':
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageStatistics'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /health:
+    get:
+      tags:
+        - Admin
+      summary: Health check endpoint
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  environment:
+                    type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login endpoint
+
+  parameters:
+    ChildIdParam:
+      name: childId
+      in: path
+      required: true
+      description: Child profile ID
+      schema:
+        type: string
+        format: uuid
+
+    PageParam:
+      name: page
+      in: query
+      description: Page number (1-based)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    ParentRegistration:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - agree_to_terms
+        - agree_to_coppa
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,128}$' # Strengthened password policy: min 12 chars, requires uppercase, lowercase, number, and special character. Externalize this regex to a configurable setting for flexibility.
+          description: Must be at least 12 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        phone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+        agree_to_terms:
+          type: boolean
+          description: Must be true
+        agree_to_coppa:
+          type: boolean
+          description: Must be true
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: Bearer
+        expires_in:
+          type: integer
+          description: Token expiration in seconds
+        user_info:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+            name:
+              type: string
+            role:
+              type: string
+              enum: [parent, admin]
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          default: Bearer
+        expires_in:
+          type: integer
+
+    RegistrationResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        message:
+          type: string
+
+    Child:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        age:
+          type: integer
+          minimum: 3 # Age range aligned with COPPA compliance and target user group.
+          maximum: 13 # Age range aligned with COPPA compliance and target user group.
+        interests:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        language:
+          type: string
+          enum: [en, es, fr, de, it, pt, zh, ja, ko]
+          default: en
+        personality_traits:
+          type: array
+          items:
+            type: string
+          maxItems: 5
+        voice_enabled:
+          type: boolean
+          default: true
+        safety_level:
+          type: string
+          enum: [strict, moderate, relaxed]
+          default: strict
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_interaction:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateChildRequest:
+      type: object
+      required:
+        - name
+        - age
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        age:
+          type: integer
+          minimum: 3
+          maximum: 13
+        interests:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        language:
+          type: string
+          enum: [en, es, fr, de, it, pt, zh, ja, ko]
+          default: en
+        personality_traits:
+          type: array
+          items:
+            type: string
+          maxItems: 5 # Enforces consistency with Child schema's maxItems for personality traits.
+        consent_id:
+          type: string
+          format: uuid
+          description: COPPA consent record ID
+
+    UpdateChildRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        interests:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        language:
+          type: string
+          enum: [en, es, fr, de, it, pt, zh, ja, ko]
+        personality_traits:
+          type: array
+          items:
+            type: string
+          maxItems: 5 # Enforces consistency with Child schema's maxItems for personality traits.
+        voice_enabled:
+          type: boolean
+        safety_level:
+          type: string
+          enum: [strict, moderate, relaxed]
+
+    ChatRequest:
+      type: object
+      required:
+        - child_id
+        - message
+      properties:
+        child_id:
+          type: string
+          format: uuid
+        conversation_id:
+          type: string
+          format: uuid
+          description: Optional, for continuing conversation
+        message:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        voice_enabled:
+          type: boolean # Boolean field indicating if voice is enabled for the chat.
+          # default: false # Omitted explicit default as it's often implied false for optional booleans; clarify if explicitly needed for client generation.
+        include_emotion_analysis:
+          type: boolean # Boolean field indicating if emotion analysis should be included in the response.
+          # default: true # Omitted explicit default for optional booleans; clarify if explicitly needed for client generation.
+
+    ChatResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+        response:
+          type: string
+        voice_url:
+          type: [string, "null"] # Changed from nullable: true to [string, "null"] for OpenAPI 3.1.0 consistency.
+          format: uri
+        emotion:
+          type: object
+          properties:
+            primary:
+              type: string
+              enum: [joy, sadness, anger, fear, surprise, neutral]
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+        safety_check:
+          type: object
+          properties:
+            passed:
+              type: boolean
+            score:
+              type: number
+              minimum: 0
+              maximum: 1
+            flags:
+              type: array
+              items:
+                type: string
+        metadata:
+          type: object
+          properties:
+            processing_time_ms:
+              type: integer
+            model_used:
+              type: string
+            cached:
+              type: boolean
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        child_id:
+          type: string
+          format: uuid
+        started_at:
+          type: string
+          format: date-time
+        last_message_at:
+          type: string
+          format: date-time
+        message_count:
+          type: integer
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              role:
+                type: string
+                enum: [user, assistant]
+              content:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              emotion:
+                type: string
+                nullable: true
+
+    ConsentRequest:
+      type: object
+      required:
+        - parent_id
+        - parent_name
+        - parent_email
+        - child_name
+        - child_age
+        - data_collection_consent
+        - safety_monitoring_consent
+      properties:
+        parent_id:
+          type: string
+          format: uuid
+        parent_name:
+          type: string
+        parent_email:
+          type: string
+          format: email
+        child_name:
+          type: string
+        child_age:
+          type: integer
+          minimum: 3
+          maximum: 13
+        data_collection_consent:
+          type: boolean
+        safety_monitoring_consent:
+          type: boolean
+        voice_recording_consent:
+          type: boolean
+          default: false
+        marketing_consent:
+          type: boolean
+          default: false
+
+    ConsentRecord:
+      type: object
+      properties:
+        consent_id:
+          type: string
+          format: uuid
+        parent_id:
+          type: string
+          format: uuid
+        child_name:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        ip_address:
+          type: string
+        data_types_consented:
+          type: array
+          items:
+            type: string
+        verified:
+          type: boolean
+
+    DeletionRequest:
+      type: object
+      required:
+        - child_id
+        - reason
+      properties:
+        child_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 10
+          maxLength: 500
+        delete_immediately:
+          type: boolean
+          default: false
+
+    DeletionResponse:
+      type: object
+      properties:
+        deletion_scheduled:
+          type: boolean
+        deletion_date:
+          type: string
+          format: date-time
+        retention_period_days:
+          type: integer
+        confirmation_code:
+          type: string
+
+    DataExport:
+      type: object
+      properties:
+        export_id:
+          type: string
+          format: uuid
+        child_profile:
+          $ref: '#/components/schemas/Child'
+        conversations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+        safety_events:
+          type: array
+          items:
+            $ref: '#/components/schemas/SafetyEvent'
+        usage_statistics:
+          $ref: '#/components/schemas/UsageStatistics'
+        consent_records:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentRecord'
+        export_timestamp:
+          type: string
+          format: date-time
+
+    SafetyEvent:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        child_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+          enum: [inappropriate_content, safety_word_detected, unusual_pattern, parent_alert]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        description:
+          type: string
+          enum: [ "Inappropriate content detected", "PII detected", "Hate speech detected", "Threat detected", "Violation of terms", "Other safety concern" ] # Defined enum values for clear and consistent safety event descriptions.
+        action_taken:
+          type: string
+          enum: [ "Content blocked", "User warned", "Parent notified", "Session terminated", "Review required", "No action taken" ] # Defined enum values for clear and consistent safety action types.
+        timestamp:
+          type: string
+          format: date-time
+        reported_to_parent:
+          type: boolean
+
+    SafetyViolation:
+      type: object
+      properties:
+        error_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        safety_message:
+          type: string
+          description: Child-friendly explanation
+        violation_type:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        reported:
+          type: boolean
+        parent_notified:
+          type: boolean
+
+    UsageStatistics:
+      type: object
+      properties:
+        child_id:
+          type: string
+          format: uuid
+        period_days:
+          type: integer
+        total_minutes:
+          type: integer
+        daily_average_minutes:
+          type: integer
+        peak_usage_day:
+          type: string
+        activities:
+          type: array
+          items:
+            type: object
+            properties:
+              activity_type:
+                type: string
+                enum: [conversation, story, game, learning]
+              total_minutes:
+                type: integer
+              count:
+                type: integer
+        usage_by_day:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              minutes:
+                type: integer
+
+    Error:
+      type: object
+      required:
+        - error_id
+        - message
+      properties:
+        error_id:
+          type: string
+          format: uuid
+          description: Unique error ID for tracking
+        message:
+          type: string
+          description: Human-readable error message
+        detail:
+          type: string
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          description: Request path that caused the error
+
+  responses:
+    BadRequest:
+      description: Bad request. The request was malformed or invalid. Review the request body and parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized. Authentication credentials were missing, invalid, or expired. Provide a valid JWT token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden. The authenticated user does not have the necessary permissions to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found. The requested resource could not be found. Verify the resource ID or URL path.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too Many Requests. Rate limit exceeded. Try again after the time specified in 'X-RateLimit-Reset'.
+      headers:
+        X-RateLimit-Limit:
+          description: The maximum number of requests you can make in a given time period.
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: The number of requests remaining in the current rate limit window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Time when the current rate limit window resets in Unix epoch seconds.
+          schema:
+            type: integer
+    InternalServerError:
+      description: Internal Server Error. An unexpected error occurred on the server. Contact support with the correlation ID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

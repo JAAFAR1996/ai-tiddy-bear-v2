@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Streaming Settings Schema",
+  "description": "WebSocket streaming configuration schema",
+  "type": "object",
+  "properties": {
+    "STREAMING_SETTINGS": {
+      "type": "object",
+      "description": "WebSocket streaming configuration",
+      "properties": {
+        "ENABLE_WEBSOCKET": {
+          "type": "boolean"
+        },
+        "WEBSOCKET_PING_INTERVAL": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "WEBSOCKET_PING_TIMEOUT": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300
+        },
+        "MAX_BUFFER_SIZE": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 10000000
+        },
+        "STREAM_TIMEOUT_SECONDS": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 3600
+        },
+        "RECONNECT_ATTEMPTS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "RECONNECT_DELAY_MS": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 30000
+        },
+        "ENABLE_COMPRESSION": {
+          "type": "boolean"
+        },
+        "COMPRESSION_LEVEL": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        }
+      },
+      "required": ["ENABLE_WEBSOCKET"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["STREAMING_SETTINGS"],
+  "additionalProperties": false
+}

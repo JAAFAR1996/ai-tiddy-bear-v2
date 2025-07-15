@@ -1,0 +1,278 @@
+# AI Teddy Bear - Child Safety Alerts
+# Critical monitoring for child protection and COPPA compliance
+
+groups:
+  # ================================
+  # Critical Child Safety Alerts
+  # ================================
+  - name: child-safety-critical
+    rules:
+      # Content moderation failure
+      - alert: ContentModerationDown
+        expr: up{job="ai-teddy-backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: ai-teddy
+          category: child-safety
+        annotations:
+          summary: "AI Teddy Bear backend is down - Child safety at risk"
+          description: "The AI Teddy Bear backend service has been down for more than 30 seconds. Child safety features are unavailable."
+          runbook_url: "https://docs.aiteddy.com/runbooks/backend-down"
+          action: "Immediately investigate and restore service"
+
+      # High inappropriate content detection
+      - alert: HighInappropriateContentRate
+        expr: rate(ai_teddy_inappropriate_content_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: ai-teddy
+          category: child-safety
+        annotations:
+          summary: "High rate of inappropriate content detected"
+          description: "Inappropriate content detection rate is {{ $value }} per second over the last 5 minutes"
+          action: "Review content moderation systems and potentially increase safety thresholds"
+
+      # Safety score threshold violations
+      - alert: LowSafetyScoreConversations
+        expr: histogram_quantile(0.95, rate(ai_teddy_safety_score_bucket[5m])) < 0.8
+        for: 1m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: child-safety
+        annotations:
+          summary: "Low safety scores in AI conversations"
+          description: "95th percentile safety score is {{ $value }}, below the 0.8 threshold"
+          action: "Review AI model responses and adjust safety parameters"
+
+      # COPPA compliance violations
+      - alert: COPPADataRetentionViolation
+        expr: ai_teddy_data_retention_expired_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: ai-teddy
+          category: coppa-compliance
+        annotations:
+          summary: "COPPA data retention violation detected"
+          description: "{{ $value }} child records have exceeded the 90-day retention period"
+          action: "Immediately execute data deletion procedures for COPPA compliance"
+
+      # Unauthorized child data access
+      - alert: UnauthorizedChildDataAccess
+        expr: rate(ai_teddy_unauthorized_access_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: ai-teddy
+          category: security
+        annotations:
+          summary: "Unauthorized access to child data detected"
+          description: "{{ $value }} unauthorized access attempts to child data in the last minute"
+          action: "Immediately investigate potential security breach and block suspicious IPs"
+
+  # ================================
+  # Application Performance Alerts
+  # ================================
+  - name: application-performance
+    rules:
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: performance
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s"
+          action: "Check application performance and database connections"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: reliability
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+          action: "Check application logs for errors and investigate root cause"
+
+      # Database connection issues
+      - alert: DatabaseConnectionErrors
+        expr: rate(ai_teddy_database_errors_total[1m]) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: database
+        annotations:
+          summary: "Database connection errors detected"
+          description: "{{ $value }} database errors per second"
+          action: "Check database connectivity and pool configuration"
+
+  # ================================
+  # Infrastructure Alerts
+  # ================================
+  - name: infrastructure
+    rules:
+      # PostgreSQL down
+      - alert: PostgreSQLDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: postgresql
+          category: infrastructure
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL database has been down for more than 30 seconds"
+          action: "Immediately investigate and restore PostgreSQL service"
+
+      # Redis down
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 30s
+        labels:
+          severity: warning
+          service: redis
+          category: infrastructure
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis cache has been down for more than 30 seconds"
+          action: "Check Redis service and restart if necessary"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          category: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+          action: "Check for high CPU consuming processes"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          category: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+          action: "Check memory consuming processes and consider scaling"
+
+      # Disk space usage
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          category: infrastructure
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+          action: "Clean up disk space or expand storage"
+
+  # ================================
+  # Security Alerts
+  # ================================
+  - name: security
+    rules:
+      # Failed authentication attempts
+      - alert: HighFailedAuthRate
+        expr: rate(ai_teddy_auth_failures_total[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: security
+        annotations:
+          summary: "High rate of failed authentication attempts"
+          description: "{{ $value }} failed authentication attempts per second"
+          action: "Check for potential brute force attacks and consider IP blocking"
+
+      # SQL injection attempts
+      - alert: SQLInjectionAttempts
+        expr: rate(ai_teddy_sql_injection_attempts_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: ai-teddy
+          category: security
+        annotations:
+          summary: "SQL injection attempts detected"
+          description: "{{ $value }} SQL injection attempts detected in the last minute"
+          action: "Immediately investigate and block suspicious sources"
+
+      # Rate limiting triggered
+      - alert: RateLimitingTriggered
+        expr: rate(ai_teddy_rate_limit_exceeded_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: info
+          service: ai-teddy
+          category: security
+        annotations:
+          summary: "Rate limiting frequently triggered"
+          description: "Rate limiting triggered {{ $value }} times per second"
+          action: "Monitor for potential abuse or adjust rate limits"
+
+  # ================================
+  # Child-Specific Alerts
+  # ================================
+  - name: child-monitoring
+    rules:
+      # Child age validation failures
+      - alert: InvalidChildAgeDetected
+        expr: rate(ai_teddy_invalid_child_age_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: coppa-compliance
+        annotations:
+          summary: "Invalid child age detected"
+          description: "{{ $value }} children with invalid ages per second"
+          action: "Review age validation logic and COPPA compliance"
+
+      # Excessive conversation length
+      - alert: ExcessiveConversationLength
+        expr: histogram_quantile(0.95, rate(ai_teddy_conversation_length_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: info
+          service: ai-teddy
+          category: child-safety
+        annotations:
+          summary: "Conversations are getting very long"
+          description: "95th percentile conversation length is {{ $value }} minutes"
+          action: "Consider implementing conversation time limits for child safety"
+
+      # AI response time too slow
+      - alert: SlowAIResponse
+        expr: histogram_quantile(0.95, rate(ai_teddy_ai_response_duration_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-teddy
+          category: performance
+        annotations:
+          summary: "AI responses are too slow"
+          description: "95th percentile AI response time is {{ $value }} seconds"
+          action: "Check AI service performance and consider optimization"
+
+ 

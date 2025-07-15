@@ -1,0 +1,159 @@
+[flake8]
+# 🛡️ Flake8 Configuration - AI Teddy Bear Project 2025
+# Security-focused linting rules
+
+# ================== BASIC SETTINGS ==================
+max-line-length = 88
+max-complexity = 10
+max-doc-length = 72
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .env,
+    build,
+    dist,
+    migrations,
+    node_modules,
+    .tox,
+    .coverage,
+    htmlcov,
+    *.egg-info
+
+# ================== IGNORED ERRORS ==================
+ignore = 
+    # Line too long (handled by black)
+    E501,
+    # Line break before binary operator (black compatibility)
+    W503,
+    # Line break after binary operator (black compatibility)
+    W504
+
+# ================== ENFORCED RULES ==================
+select = 
+    # Pyflakes errors
+    F,
+    # Pycodestyle errors
+    E,
+    # Pycodestyle warnings
+    W,
+    # McCabe complexity
+    C,
+    # Security checks (if bandit plugin is available)
+    S,
+    # Import order checks (if isort plugin is available)
+    I
+
+# ================== SECURITY & IMPORT RULES ==================
+
+# F403: 'from module import *' used; unable to detect undefined names
+# F401: module imported but unused
+# F405: name may be undefined, or defined from star imports
+per-file-ignores = 
+    # Test files can have some relaxed rules
+    test_*.py:F401,F811
+    tests/*.py:F401,F811
+    # __init__.py files can have star imports for re-exports (but we prefer explicit)
+    # __init__.py:F401,F403
+    # Configuration files
+    config/*.py:E402
+    # Legacy core files (to be gradually fixed)
+    core/legacy_*.py:F403,F401
+
+# ================== WILDCARD IMPORT PREVENTION ==================
+
+# Error codes for star imports:
+# F403: 'from module import *' used; unable to detect undefined names
+# F405: 'name' may be undefined, or defined from star imports
+
+# These should NEVER be ignored in production code:
+# F403 - wildcard imports
+# F405 - undefined names from wildcard imports
+
+# ================== NAMING CONVENTIONS ==================
+
+# Variable naming patterns
+inline-quotes = double
+multiline-quotes = double
+
+# ================== COMPLEXITY LIMITS ==================
+
+# Function complexity (Cyclomatic complexity)
+max-complexity = 8
+
+# ================== DOCSTRING REQUIREMENTS ==================
+
+# Require docstrings for:
+# D100: Missing docstring in public module
+# D101: Missing docstring in public class
+# D102: Missing docstring in public method
+# D103: Missing docstring in public function
+
+docstring-convention = google
+
+# ================== IMPORT ORDER ==================
+
+# If using flake8-isort plugin
+import-order-style = google
+application-import-names = 
+    api,
+    domain,
+    infrastructure,
+    services,
+    core,
+    config
+
+# ================== ADDITIONAL PLUGINS ==================
+
+# Enable security checks if bandit is installed
+# bandit-config = .bandit
+
+# Enable import sorting checks if flake8-isort is installed
+# max-line-length-ignore = E501
+
+# ================== FILE-SPECIFIC OVERRIDES ==================
+
+# Allow long lines in specific cases
+max-line-length-ignore = 
+    # URL lines can be longer
+    E501:*urls.py,
+    # Long string literals
+    E501:*messages.py,
+    # SQL queries
+    E501:*queries.py
+
+# ================== COMMENTS AND TODOS ==================
+
+# Check for TODO/FIXME comments
+# T000: Todo found
+# T001: TODO found  
+# T002: FIXME found
+# T003: XXX found
+
+# Enable TODO checking
+enable-extensions = T
+
+# ================== FINAL VALIDATION ==================
+
+# Ensure no star imports in production code
+# This is our ZERO-TOLERANCE rule
+strictness = high
+show-source = True
+show-pep8 = True
+statistics = True
+count = True
+
+# ================== CUSTOM ERROR MESSAGES ==================
+
+# Custom messages for common violations
+format = %(path)s:%(row)d:%(col)d: %(code)s %(text)s
+
+# ================== CI/CD INTEGRATION ==================
+
+# Exit with non-zero code on any violations
+exit-zero = False
+
+# Output format for CI systems
+format = github 
