@@ -1,5 +1,4 @@
-"""
-Defines infrastructure-related configuration settings for the application.
+"""Defines infrastructure-related configuration settings for the application.
 
 This module provides structured access to various infrastructure components
 and their configurations, including database, cache (Redis), message queues
@@ -7,8 +6,6 @@ and their configurations, including database, cache (Redis), message queues
 Grafana, Sentry, New Relic, Datadog). It ensures consistent and validated
 settings for deploying and operating the application.
 """
-
-from typing import Optional
 
 from pydantic import Field, validator
 from pydantic_settings import BaseSettings
@@ -31,23 +28,23 @@ class InfrastructureSettings(BaseSettings):
     # Cache Configuration (Redis)
     # ================================
     redis_url: str = Field(..., regex="^redis://")
-    redis_password: Optional[str] = None
+    redis_password: str | None = None
     redis_max_connections: int = Field(50, ge=10, le=200)
     cache_ttl: int = Field(3600, ge=60, le=86400)  # 1 hour to 1 day
 
     # ================================
     # Message Queue Configuration
     # ================================
-    rabbitmq_url: Optional[str] = None
-    kafka_bootstrap_servers: Optional[str] = None
+    rabbitmq_url: str | None = None
+    kafka_bootstrap_servers: str | None = None
     message_queue_type: str = Field("redis", regex="^(redis|rabbitmq|kafka)$")
 
     # ================================
     # Storage Configuration
     # ================================
     storage_type: str = Field("s3", regex="^(local|s3|azure|gcs)$")
-    storage_bucket: Optional[str] = None
-    storage_region: Optional[str] = None
+    storage_bucket: str | None = None
+    storage_region: str | None = None
     max_upload_size_mb: int = Field(10, ge=1, le=100)
 
     # ================================
@@ -55,9 +52,9 @@ class InfrastructureSettings(BaseSettings):
     # ================================
     prometheus_enabled: bool = True
     grafana_enabled: bool = True
-    sentry_dsn: Optional[str] = None
-    newrelic_license_key: Optional[str] = None
-    datadog_api_key: Optional[str] = None
+    sentry_dsn: str | None = None
+    newrelic_license_key: str | None = None
+    datadog_api_key: str | None = None
 
     # Logging
     log_to_file: bool = True
@@ -85,9 +82,8 @@ class InfrastructureSettings(BaseSettings):
     external_api_timeout_seconds: int = 10
 
     @validator("database_url", pre=True, always=True)
-    def validate_database_url(cls, v: str) -> str:
-        """
-        Validates that the database URL starts with 'postgresql'.
+    def validate_database_url(self, v: str) -> str:
+        """Validates that the database URL starts with 'postgresql'.
 
         Args:
             v: The database URL.
@@ -97,6 +93,7 @@ class InfrastructureSettings(BaseSettings):
 
         Raises:
             ValueError: If the URL does not start with 'postgresql'.
+
         """
         if not v.startswith("postgresql"):
             raise ValueError("Database URL must start with 'postgresql'")

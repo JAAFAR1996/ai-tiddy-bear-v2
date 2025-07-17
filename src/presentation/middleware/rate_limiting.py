@@ -18,6 +18,7 @@ from src.infrastructure.security.rate_limiter import (
     child_safety_limiter)
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="middleware")
 
 class RateLimitingMiddleware(BaseHTTPMiddleware):

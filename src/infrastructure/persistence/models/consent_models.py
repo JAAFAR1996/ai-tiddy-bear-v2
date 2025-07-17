@@ -1,42 +1,48 @@
-"""COPPA Consent and Safety Event Models
+"""COPPA Consent and Safety Event Models.
 
 Enterprise-grade models for child safety and compliance tracking
 """
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any
-import uuid
-from sqlalchemy import (
-    Column, String, DateTime, Boolean, Integer,
-    ForeignKey, Text, Index, Enum as SQLEnum
-)
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+
 import enum
+import uuid
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.infrastructure.persistence.models.base import Base
+
 
 class ConsentType(enum.Enum):
     """Types of parental consent."""
+
     DATA_COLLECTION = "data_collection"
     VOICE_RECORDING = "voice_recording"
     USAGE_ANALYTICS = "usage_analytics"
     MARKETING = "marketing"
 
+
 class SafetyEventType(enum.Enum):
     """Types of safety events."""
+
     CONTENT_FILTERED = "content_filtered"
     INAPPROPRIATE_REQUEST = "inappropriate_request"
     EXCESSIVE_USAGE = "excessive_usage"
     PARENTAL_ALERT = "parental_alert"
 
+
 class ConsentModel(Base):
     """Parental consent tracking model with COPPA compliance."""
+
     __tablename__ = "consents"
 
     # Primary key
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False),
         primary_key=True,
-        default=lambda: str(uuid.uuid4())
+        default=lambda: str(uuid.uuid4()),
     )
 
     # Relationships
@@ -44,45 +50,45 @@ class ConsentModel(Base):
         UUID(as_uuid=False),
         ForeignKey("parents.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     # Consent details
     consent_type: Mapped[ConsentType] = mapped_column(
         SQLEnum(ConsentType),
-        nullable=False
+        nullable=False,
     )
     granted: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     # Tracking
     granted_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False
+        default=lambda: datetime.now(UTC),
+        nullable=False,
     )
-    revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Verification
     verification_method: Mapped[str] = mapped_column(String(100), nullable=False)
     verification_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
 
-    __table_args__ = (
-        Index("idx_consent_parent_type", "parent_id", "consent_type"),
-    )
+    __table_args__ = (Index("idx_consent_parent_type", "parent_id", "consent_type"),)
 
     def __repr__(self) -> str:
         return f"<ConsentModel(id={self.id}, parent_id={self.parent_id}, type='{self.consent_type.value}', granted={self.granted})>"
 
+
 class SafetyEventModel(Base):
     """Safety event logging model for monitoring and alerts."""
+
     __tablename__ = "safety_events"
 
     # Primary key
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False),
         primary_key=True,
-        default=lambda: str(uuid.uuid4())
+        default=lambda: str(uuid.uuid4()),
     )
 
     # Relationships
@@ -90,18 +96,18 @@ class SafetyEventModel(Base):
         UUID(as_uuid=False),
         ForeignKey("children.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
-    conversation_id: Mapped[Optional[str]] = mapped_column(
+    conversation_id: Mapped[str | None] = mapped_column(
         UUID(as_uuid=False),
         ForeignKey("conversations.id", ondelete="SET NULL"),
-        index=True
+        index=True,
     )
 
     # Event details
     event_type: Mapped[SafetyEventType] = mapped_column(
         SQLEnum(SafetyEventType),
-        nullable=False
+        nullable=False,
     )
     details: Mapped[str] = mapped_column(Text, nullable=False)
     metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
@@ -109,8 +115,8 @@ class SafetyEventModel(Base):
     # Tracking
     event_time: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False
+        default=lambda: datetime.now(UTC),
+        nullable=False,
     )
 
     __table_args__ = (

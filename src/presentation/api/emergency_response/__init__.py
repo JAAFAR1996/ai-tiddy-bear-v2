@@ -1,4 +1,6 @@
 """
+Emergency Response Module - Modular emergency system components
+"""
 from .endpoints import EmergencyEndpoints
 from .models import (
     AlertPayload,
@@ -13,9 +15,6 @@ from .services import (
     NotificationService,
     SystemMonitorService
 )
-
-"""Emergency Response Module - Modular emergency system components"""
-
 __all__ = [
     "EmergencyEndpoints",
     "AlertPayload",

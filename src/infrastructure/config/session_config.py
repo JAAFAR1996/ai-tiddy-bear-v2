@@ -7,6 +7,7 @@ class SessionConfig:
 
     Attributes:
         session_timeout_minutes (int): The number of minutes after which a session expires due to inactivity.
+
     """
 
     session_timeout_minutes: int = 30

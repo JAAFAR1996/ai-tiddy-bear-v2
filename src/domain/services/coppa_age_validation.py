@@ -1,18 +1,15 @@
 """Centralized COPPA Age Validation Service
-Provides consistent age validation across the entire application for COPPA compliance."""
+Provides consistent age validation across the entire application for COPPA compliance.
+"""
 
-from datetime import datetime, date
+from datetime import date
 from enum import Enum
-from typing import Optional, Dict, Any
-from src.domain.interfaces.logging_interface import (
-    DomainLoggerInterface, 
-    NullDomainLogger, 
-    LogLevel,
-)
+from typing import Any
 
 
 class AgeValidationResult(Enum):
     """Age validation results with specific meanings."""
+
     VALID_CHILD = "valid_child"  # Age 3-13, requires parental consent
     VALID_TEEN = "valid_teen"  # Age 13-17, may require parental consent
     VALID_ADULT = "valid_adult"  # Age 18+, no parental consent needed
@@ -23,18 +20,20 @@ class AgeValidationResult(Enum):
 
 class COPPAAgeValidator:
     """Centralized age validation for COPPA compliance."""
+
     MINIMUM_AGE = 3  # Minimum safe interaction age
     COPPA_AGE_LIMIT = 13  # COPPA applies to children under 13
     ADULT_AGE = 18  # Adult age (no parental consent needed)
 
     @classmethod
-    def validate_age(cls, age: Optional[int]) -> AgeValidationResult:
-        """
-        Validate age for COPPA compliance.
+    def validate_age(cls, age: int | None) -> AgeValidationResult:
+        """Validate age for COPPA compliance.
+
         Args:
             age: The child's age in years
         Returns:
             AgeValidationResult indicating the validation outcome
+
         """
         if age is None:
             return AgeValidationResult.INVALID_AGE
@@ -49,13 +48,14 @@ class COPPAAgeValidator:
         return AgeValidationResult.VALID_ADULT
 
     @classmethod
-    def validate_birthdate(cls, birthdate: Optional[date]) -> AgeValidationResult:
-        """
-        Validate birthdate and calculate age for COPPA compliance.
+    def validate_birthdate(cls, birthdate: date | None) -> AgeValidationResult:
+        """Validate birthdate and calculate age for COPPA compliance.
+
         Args:
             birthdate: The child's date of birth
         Returns:
             AgeValidationResult indicating the validation outcome
+
         """
         if birthdate is None:
             return AgeValidationResult.MISSING_BIRTHDATE
@@ -74,12 +74,13 @@ class COPPAAgeValidator:
 
     @classmethod
     def get_age_from_birthdate(cls, birthdate: date) -> int:
-        """
-        Calculate precise age from birthdate.
+        """Calculate precise age from birthdate.
+
         Args:
             birthdate: The child's date of birth
         Returns:
             Age in years
+
         """
         today = date.today()
         age = today.year - birthdate.year
@@ -90,12 +91,13 @@ class COPPAAgeValidator:
 
     @classmethod
     def requires_parental_consent(cls, age: int) -> bool:
-        """
-        Determine if parental consent is required based on age.
+        """Determine if parental consent is required based on age.
+
         Args:
             age: The child's age in years
         Returns:
             True if parental consent is required
+
         """
         validation_result = cls.validate_age(age)
         return validation_result in [
@@ -105,24 +107,26 @@ class COPPAAgeValidator:
 
     @classmethod
     def is_coppa_applicable(cls, age: int) -> bool:
-        """
-        Determine if COPPA regulations apply based on age.
+        """Determine if COPPA regulations apply based on age.
+
         Args:
             age: The child's age in years
         Returns:
             True if COPPA applies (under 13)
+
         """
         validation_result = cls.validate_age(age)
         return validation_result == AgeValidationResult.VALID_CHILD
 
     @classmethod
-    def get_validation_details(cls, age: Optional[int]) -> Dict[str, Any]:
-        """
-        Get detailed validation information for an age.
+    def get_validation_details(cls, age: int | None) -> dict[str, Any]:
+        """Get detailed validation information for an age.
+
         Args:
             age: The child's age in years
         Returns:
             Dictionary with validation details
+
         """
         validation_result = cls.validate_age(age)
         return {
@@ -171,23 +175,25 @@ class COPPAAgeValidator:
         return notes.get(result, "Unknown validation result.")
 
 
-def validate_child_age(age: Optional[int]) -> Dict[str, Any]:
-    """
-    Convenience function for age validation.
+def validate_child_age(age: int | None) -> dict[str, Any]:
+    """Convenience function for age validation.
+
     Args:
         age: The child's age in years
     Returns:
         Validation details dictionary
+
     """
     return COPPAAgeValidator.get_validation_details(age)
 
 
 def is_age_coppa_compliant(age: int) -> bool:
-    """
-    Quick check if age requires COPPA compliance.
+    """Quick check if age requires COPPA compliance.
+
     Args:
         age: The child's age in years
     Returns:
         True if COPPA compliance is required
+
     """
     return COPPAAgeValidator.is_coppa_applicable(age)

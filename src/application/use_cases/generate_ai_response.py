@@ -2,30 +2,29 @@ from src.application.exceptions import ConsentError
 
 
 class GenerateAIResponseUseCase:
-    """
-    Use case for generating AI responses to child interactions.
+    """Use case for generating AI responses to child interactions.
     This use case orchestrates the generation of safe, age-appropriate AI responses
     for children, ensuring COPPA compliance and child safety throughout the process.
     FIXED: Removed Service Locator anti-pattern by using proper dependency injection.
     """
-    
+
     def __init__(
-        self, 
-        ai_orchestration_service: AIOrchestrationService, 
-        audio_processing_service: AudioProcessingService, 
-        consent_manager: Optional[IConsentManager]=None,
+        self,
+        ai_orchestration_service: AIOrchestrationService,
+        audio_processing_service: AudioProcessingService,
+        consent_manager: Optional[IConsentManager] = None,
     ):
         self.ai_orchestration_service = ai_orchestration_service
         self.audio_processing_service = audio_processing_service
         self._consent_manager = consent_manager
-        
+
     async def execute(
-        self, 
-        child_id: UUID, 
-        conversation_history: List[str], 
-        current_input: str, 
-        voice_id: str, 
-        parent_id: str=None,  # ✅ Added parent_id for consent verification
+        self,
+        child_id: UUID,
+        conversation_history: List[str],
+        current_input: str,
+        voice_id: str,
+        parent_id: str | None = None,  # ✅ Added parent_id for consent verification
     ) -> AIResponse:
         # ✅ Verify parental consent before processing child data (FIXED: No Service Locator)
         if parent_id and self._consent_manager:
@@ -35,33 +34,38 @@ class GenerateAIResponseUseCase:
                 "voice_recording",
                 "usage_analytics",
             ]
-            
+
             for consent_type in required_consents:
                 try:
                     has_consent = await self._consent_manager.verify_consent(
-                        child_id=str(child_id), operation=consent_type
+                        child_id=str(child_id),
+                        operation=consent_type,
                     )
                     if not has_consent:
                         raise ConsentError(
-                            f"Parental consent required for {consent_type}"
+                            f"Parental consent required for {consent_type}",
                         )
                 except Exception as e:
                     # Catch any underlying exceptions from consent manager and re-raise as ConsentError
                     raise ConsentError(
-                        f"Error during consent verification for {consent_type}: {e}"
+                        f"Error during consent verification for {consent_type}: {e}",
                     ) from e
         elif parent_id and not self._consent_manager:
             raise ConsentError(
-                "Consent manager required for parental consent verification"
+                "Consent manager required for parental consent verification",
             )
-            
+
         ai_response_dto = await self.ai_orchestration_service.get_ai_response(
-            child_id, conversation_history, current_input, voice_id
+            child_id,
+            conversation_history,
+            current_input,
+            voice_id,
         )
-        
+
         audio_output = await self.audio_processing_service.generate_audio_response(
-            ai_response_dto.response_text, voice_id
+            ai_response_dto.response_text,
+            voice_id,
         )
-        
+
         ai_response_dto.audio_response = audio_output
         return ai_response_dto

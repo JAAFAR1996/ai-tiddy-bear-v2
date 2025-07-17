@@ -1,9 +1,8 @@
-"""
-from pathlib import Path
+"""from pathlib import Path
 from typing import List, Dict, Set, Tuple
 import logging
 import re
-import ast
+import ast.
 """
 
 """Import Organization Utility
@@ -36,88 +35,144 @@ class ImportSection:
 
 
 class ImportOrganizer:
-    """
-    Organizes Python imports according to PEP 8 standards.
+    """Organizes Python imports according to PEP 8 standards.
     Standard order:
     1. Standard library imports
     2. Related third party imports
-    3. Local application / library imports
+    3. Local application / library imports.
     """
 
     def __init__(self) -> None:
         """Initialize import organizer with standard sections."""
         self.sections = {
-            'standard': ImportSection('Standard Library', 1),
-            'third_party': ImportSection('Third Party', 2),
-            'local': ImportSection('Local', 3)
+            "standard": ImportSection("Standard Library", 1),
+            "third_party": ImportSection("Third Party", 2),
+            "local": ImportSection("Local", 3),
         }
 
         # Standard library modules (partial list)
         self.standard_library = {
-            'os', 'sys', 'json', 'datetime', 'time', 'logging', 'typing',
-            'asyncio', 'threading', 'multiprocessing', 'collections',
-            'dataclasses', 'enum', 'abc', 'pathlib', 'uuid', 'hashlib',
-            'base64', 'urllib', 'http', 'email', 'html', 'xml', 'csv',
-            'sqlite3', 'secrets', 'functools', 'itertools', 'operator',
-            'inspect', 'tempfile', 'shutil', 'glob', 'fnmatch', 'linecache',
-            'pickle', 'copy', 'math', 'random', 'statistics', 'decimal',
-            'fractions', 'cmath', 'struct', 'codecs', 'locale', 'calendar'
+            "os",
+            "sys",
+            "json",
+            "datetime",
+            "time",
+            "logging",
+            "typing",
+            "asyncio",
+            "threading",
+            "multiprocessing",
+            "collections",
+            "dataclasses",
+            "enum",
+            "abc",
+            "pathlib",
+            "uuid",
+            "hashlib",
+            "base64",
+            "urllib",
+            "http",
+            "email",
+            "html",
+            "xml",
+            "csv",
+            "sqlite3",
+            "secrets",
+            "functools",
+            "itertools",
+            "operator",
+            "inspect",
+            "tempfile",
+            "shutil",
+            "glob",
+            "fnmatch",
+            "linecache",
+            "pickle",
+            "copy",
+            "math",
+            "random",
+            "statistics",
+            "decimal",
+            "fractions",
+            "cmath",
+            "struct",
+            "codecs",
+            "locale",
+            "calendar",
         }
 
         # Known third-party packages
         self.third_party_packages = {
-            'fastapi', 'pydantic', 'sqlalchemy', 'redis', 'openai',
-            'uvicorn', 'numpy', 'pandas', 'requests', 'httpx',
-            'pytest', 'flask', 'django', 'click', 'rich',
-            'cryptography', 'bcrypt', 'jose', 'passlib',
-            'dependency_injector', 'prometheus_client', 'sentry_sdk'
+            "fastapi",
+            "pydantic",
+            "sqlalchemy",
+            "redis",
+            "openai",
+            "uvicorn",
+            "numpy",
+            "pandas",
+            "requests",
+            "httpx",
+            "pytest",
+            "flask",
+            "django",
+            "click",
+            "rich",
+            "cryptography",
+            "bcrypt",
+            "jose",
+            "passlib",
+            "dependency_injector",
+            "prometheus_client",
+            "sentry_sdk",
         }
 
     def categorize_import(self, import_line: str) -> str:
         """Categorize an import line into standard / third_party / local."""
         # Extract the main module name
-        if import_line.startswith('from '):
+        if import_line.startswith("from "):
             # from module import something
-            match = re.match(r'from\\s+([^\\s]+)', import_line)
+            match = re.match(r"from\\s+([^\\s]+)", import_line)
             if match:
                 module = match.group(1)
             else:
-                return 'local'
-        elif import_line.startswith('import '):
+                return "local"
+        elif import_line.startswith("import "):
             # import module
-            match = re.match(r'import\\s+([^\\s,]+)', import_line)
+            match = re.match(r"import\\s+([^\\s,]+)", import_line)
             if match:
                 module = match.group(1)
             else:
-                return 'local'
+                return "local"
         else:
-            return 'local'
+            return "local"
 
         # Get the top-level module
-        top_module = module.split('.')[0]
+        top_module = module.split(".")[0]
 
         # Check if it's a standard library module
         if top_module in self.standard_library:
-            return 'standard'
+            return "standard"
 
         # Check if it's a known third-party package
         if top_module in self.third_party_packages:
-            return 'third_party'
+            return "third_party"
 
         # Check if it's a local import (starts with src. or relative)
-        if module.startswith('src.') or module.startswith('.'):
-            return 'local'
+        if module.startswith("src.") or module.startswith("."):
+            return "local"
 
         # Default to third-party for unknown packages
-        return 'third_party'
+        return "third_party"
 
     def organize_imports(self, import_lines: List[str]) -> str:
-        """
-        Organize a list of import lines according to PEP 8.
+        """Organize a list of import lines according to PEP 8.
+
         Args:
             import_lines: List of import statements
         Returns:
             Organized import string with proper sections and spacing
+
         """
         # Clear existing imports
         for section in self.sections.values():
@@ -126,14 +181,14 @@ class ImportOrganizer:
         # Categorize each import
         for import_line in import_lines:
             import_line = import_line.strip()
-            if not import_line or import_line.startswith('#'):
+            if not import_line or import_line.startswith("#"):
                 continue
             category = self.categorize_import(import_line)
             self.sections[category].add_import(import_line)
 
         # Build organized import string
         organized_sections = []
-        for section_name in ['standard', 'third_party', 'local']:
+        for section_name in ["standard", "third_party", "local"]:
             section = self.sections[section_name]
             if section.imports:
                 sorted_imports = section.get_sorted_imports()
@@ -146,17 +201,18 @@ class ImportOrganizer:
         if organized_sections and organized_sections[-1] == "":
             organized_sections.pop()
 
-        return '\n'.join(organized_sections)
+        return "\n".join(organized_sections)
 
     def extract_imports_from_file(self, file_path: Path) -> Tuple[List[str], str]:
-        """
-        Extract imports from a Python file.
+        """Extract imports from a Python file.
+
         Args:
             file_path: Path to Python file
         Returns:
             Tuple of(import_lines, remaining_content)
+
         """
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         lines = content.splitlines()
@@ -168,19 +224,23 @@ class ImportOrganizer:
         for i, line in enumerate(lines):
             stripped = line.strip()
             # Skip docstrings and comments at the top
-            if (stripped.startswith('"""') or stripped.startswith("'''") or
-                stripped.startswith('#') or not stripped):
+            if (
+                stripped.startswith('"""')
+                or stripped.startswith("'''")
+                or stripped.startswith("#")
+                or not stripped
+            ):
                 if in_import_section:
                     continue
 
             # Check if line is an import
-            elif (stripped.startswith('import ') or stripped.startswith('from ')):
+            elif stripped.startswith("import ") or stripped.startswith("from "):
                 import_lines.append(line)
                 if in_import_section:
                     non_import_start = i + 1
 
             # Line continuation for imports
-            elif in_import_section and line.endswith('\\'):
+            elif in_import_section and line.endswith("\\"):
                 if import_lines:
                     import_lines[-1] += line
 
@@ -192,37 +252,43 @@ class ImportOrganizer:
                 break
 
         # Get remaining content after imports
-        remaining_content = '\n'.join(lines[non_import_start:])
+        remaining_content = "\n".join(lines[non_import_start:])
         return import_lines, remaining_content
 
     def organize_file_imports(self, file_path: Path) -> str:
-        """
-        Organize imports in a Python file.
+        """Organize imports in a Python file.
+
         Args:
             file_path: Path to Python file
         Returns:
             File content with organized imports
+
         """
         import_lines, remaining_content = self.extract_imports_from_file(file_path)
         if not import_lines:
             # No imports found, return original content
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 return f.read()
 
         # Organize the imports
         organized_imports = self.organize_imports(import_lines)
 
         # Preserve docstring at the top if present
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
         lines = content.splitlines()
         docstring_lines = []
 
         # Extract module docstring
-        if lines and (lines[0].strip().startswith('"""') or lines[0].strip().startswith("'''")):
+        if lines and (
+            lines[0].strip().startswith('"""') or lines[0].strip().startswith("'''")
+        ):
             quote_char = '"""' if '"""' in lines[0] else "'''"
             docstring_lines.append(lines[0])
-            if not lines[0].strip().endswith(quote_char) or lines[0].strip() == quote_char:
+            if (
+                not lines[0].strip().endswith(quote_char)
+                or lines[0].strip() == quote_char
+            ):
                 # Multi-line docstring
                 for i in range(1, len(lines)):
                     docstring_lines.append(lines[i])
@@ -240,26 +306,32 @@ class ImportOrganizer:
         if remaining_content.strip():
             result_parts.append(remaining_content)
 
-        return '\n'.join(result_parts)
+        return "\n".join(result_parts)
 
 
-def organize_imports_in_directory(directory: Path, extensions: Set[str] = {'.py'}) -> Dict[str, bool]:
-    """
-    Organize imports in all Python files in a directory.
+def organize_imports_in_directory(
+    directory: Path,
+    extensions: Set[str] = None,
+) -> Dict[str, bool]:
+    """Organize imports in all Python files in a directory.
+
     Args:
         directory: Directory to process
         extensions: File extensions to process
     Returns:
         Dictionary mapping file paths to success status
+
     """
+    if extensions is None:
+        extensions = {".py"}
     organizer = ImportOrganizer()
     results = {}
-    for file_path in directory.rglob('*'):
+    for file_path in directory.rglob("*"):
         if file_path.suffix in extensions and file_path.is_file():
             try:
                 organized_content = organizer.organize_file_imports(file_path)
                 # Write back organized content
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(organized_content)
                 results[str(file_path)] = True
             except Exception as e:
@@ -279,7 +351,7 @@ if __name__ == "__main__":
         "from src.domain.entities import Child",
         "import asyncio",
         "from pydantic import BaseModel",
-        "from src.application.services import ConsentService"
+        "from src.application.services import ConsentService",
     ]
     organized = organizer.organize_imports(sample_imports)
     logger.info("Organized imports:")

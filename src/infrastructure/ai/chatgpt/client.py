@@ -1,13 +1,12 @@
 """
+ChatGPT Client for AI Teddy Bear - Main Client Class
+"""
+
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 import json
 import logging
 import os
-"""
-
-ChatGPT Client for AI Teddy Bear - Main Client Class
-"""
 
 try:
     import openai

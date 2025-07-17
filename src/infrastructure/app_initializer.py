@@ -1,5 +1,3 @@
-import logging
-
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.di.container import Container
 from src.infrastructure.di.di_components.wiring_config import FullWiringConfig

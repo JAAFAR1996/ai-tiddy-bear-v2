@@ -1,4 +1,4 @@
-"""
+
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
@@ -7,11 +7,7 @@ import threading
 import time
 from .child_safety_monitor import ChildSafetyMonitor
 from .types import Alert, AlertSeverity, MetricValue, MetricType, AlertStatus
-"""
 
-Comprehensive Monitoring Service.
-Enterprise monitoring service with child safety focus.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="monitoring")

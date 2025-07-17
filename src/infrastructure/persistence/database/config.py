@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import urlparse
 
 """Database Configuration
@@ -10,7 +10,8 @@ Translated Arabic comments to English"""
 
 @dataclass
 class DatabaseConfig:
-    """Database configuration settings"""
+    """Database configuration settings."""
+
     database_url: str
     engine_type: str  # postgresql, sqlite
     environment: str  # production, development, testing
@@ -33,7 +34,7 @@ class DatabaseConfig:
 
     @classmethod
     def from_environment(cls) -> "DatabaseConfig":
-        """Create database configuration from environment variables"""
+        """Create database configuration from environment variables."""
         environment = os.getenv("ENVIRONMENT", "development").lower()
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
@@ -41,9 +42,9 @@ class DatabaseConfig:
             if environment == "production":
                 raise RuntimeError(
                     "CRITICAL: DATABASE_URL must be set in production environment. "
-                    "SQLite is not allowed for child safety applications."
+                    "SQLite is not allowed for child safety applications.",
                 )
-            elif environment == "testing":
+            if environment == "testing":
                 database_url = "sqlite+aiosqlite:///test_ai_teddy.db"
             else:
                 database_url = "sqlite+aiosqlite:///ai_teddy_dev.db"
@@ -54,32 +55,34 @@ class DatabaseConfig:
         elif parsed_url.scheme.startswith("sqlite"):
             engine_type = "sqlite"
         else:
-            raise ValueError(
-                f"Unsupported database scheme: {parsed_url.scheme}")
-        return cls._create_for_environment(
-            database_url, engine_type, environment)
+            raise ValueError(f"Unsupported database scheme: {parsed_url.scheme}")
+        return cls._create_for_environment(database_url, engine_type, environment)
 
     @classmethod
     def _create_for_environment(
-        cls, database_url: str, engine_type: str, environment: str
+        cls,
+        database_url: str,
+        engine_type: str,
+        environment: str,
     ) -> "DatabaseConfig":
-        """Create environment-specific configuration"""
+        """Create environment-specific configuration."""
         if environment == "production":
             return cls._production_config(database_url, engine_type)
-        elif environment == "testing":
+        if environment == "testing":
             return cls._testing_config(database_url, engine_type)
-        else:
-            return cls._development_config(database_url, engine_type)
+        return cls._development_config(database_url, engine_type)
 
     @classmethod
     def _production_config(
-        cls, database_url: str, engine_type: str
+        cls,
+        database_url: str,
+        engine_type: str,
     ) -> "DatabaseConfig":
-        """Production safe configuration"""
+        """Production safe configuration."""
         if engine_type == "sqlite":
             raise RuntimeError(
                 "CRITICAL: SQLite is not allowed in production for child safety applications. "
-                "Use PostgreSQL with proper encryption and backup strategies."
+                "Use PostgreSQL with proper encryption and backup strategies.",
             )
         return cls(
             database_url=database_url,
@@ -97,12 +100,14 @@ class DatabaseConfig:
             require_encryption_at_rest=True,
             audit_all_operations=True,
         )
-    
+
     @classmethod
     def _development_config(
-        cls, database_url: str, engine_type: str
+        cls,
+        database_url: str,
+        engine_type: str,
     ) -> "DatabaseConfig":
-        """Development configuration"""
+        """Development configuration."""
         return cls(
             database_url=database_url,
             engine_type=engine_type,
@@ -122,7 +127,7 @@ class DatabaseConfig:
 
     @classmethod
     def _testing_config(cls, database_url: str, engine_type: str) -> "DatabaseConfig":
-        """Testing configuration"""
+        """Testing configuration."""
         return cls(
             database_url=database_url,
             engine_type=engine_type,
@@ -140,8 +145,8 @@ class DatabaseConfig:
             audit_all_operations=False,
         )
 
-    def get_engine_kwargs(self) -> Dict[str, Any]:
-        """Get database engine parameters"""
+    def get_engine_kwargs(self) -> dict[str, Any]:
+        """Get database engine parameters."""
         base_kwargs = {
             "echo": self.echo,
             "pool_pre_ping": self.pool_pre_ping,
@@ -153,14 +158,14 @@ class DatabaseConfig:
                     "max_overflow": self.max_overflow,
                     "pool_recycle": self.pool_recycle,
                     "isolation_level": self.isolation_level,
-                }
+                },
             )
             # PostgreSQL specific connection arguments
             connect_args = {
                 "server_settings": {
                     "application_name": "ai_teddy_backend",
                     "jit": "off",  # Security optimization
-                }
+                },
             }
             if self.environment == "production":
                 # Production optimizations
@@ -175,7 +180,7 @@ class DatabaseConfig:
                         "default_statistics_target": "100",
                         "random_page_cost": "1.1",  # SSD optimization
                         "effective_io_concurrency": "200",
-                    }
+                    },
                 )
             if self.require_ssl:
                 connect_args["sslmode"] = "require"
@@ -188,14 +193,14 @@ class DatabaseConfig:
         return base_kwargs
 
     def validate_production_requirements(self) -> bool:
-        """Validate production requirements"""
+        """Validate production requirements."""
         if self.environment != "production":
             return True
         validation_errors = []
         # Database engine validation
         if self.engine_type != "postgresql":
             validation_errors.append(
-                f"Production requires PostgreSQL, got {self.engine_type}"
+                f"Production requires PostgreSQL, got {self.engine_type}",
             )
         # SSL requirement
         if not self.require_ssl:
@@ -213,7 +218,7 @@ class DatabaseConfig:
         # Performance requirements
         if self.pool_size < 10:
             validation_errors.append(
-                "Production requires at least 10 connection pool size"
+                "Production requires at least 10 connection pool size",
             )
         if validation_errors:
             error_message = "Production database validation failed:\n" + "\n".join(

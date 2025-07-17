@@ -1,14 +1,13 @@
-"""
-Convenience functions for common rate limiting scenarios.
-"""
-from typing import Optional
+"""Convenience functions for common rate limiting scenarios."""
 
 from .core import RateLimitResult
 from .service import get_rate_limiter
 
 
 async def check_child_interaction_limit(
-    child_id: str, user_id: Optional[str] = None, ip_address: Optional[str] = None
+    child_id: str,
+    user_id: str | None = None,
+    ip_address: str | None = None,
 ) -> RateLimitResult:
     """Check child interaction rate limits."""
     limiter = get_rate_limiter()
@@ -22,17 +21,22 @@ async def check_child_interaction_limit(
 
 
 async def check_auth_rate_limit(
-    identifier: str, ip_address: Optional[str] = None
+    identifier: str,
+    ip_address: str | None = None,
 ) -> RateLimitResult:
     """Check authentication rate limits."""
     limiter = get_rate_limiter()
     return await limiter.check_rate_limit(
-        key=identifier, config_name="auth_login", ip_address=ip_address
+        key=identifier,
+        config_name="auth_login",
+        ip_address=ip_address,
     )
 
 
 async def check_api_rate_limit(
-    key: str, user_id: Optional[str] = None, ip_address: Optional[str] = None
+    key: str,
+    user_id: str | None = None,
+    ip_address: str | None = None,
 ) -> RateLimitResult:
     """Check general API rate limits."""
     limiter = get_rate_limiter()

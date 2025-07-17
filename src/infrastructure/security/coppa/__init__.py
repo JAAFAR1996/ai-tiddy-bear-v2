@@ -1,26 +1,28 @@
 """COPPA Compliance Package
-Enterprise-grade COPPA compliance with modular architecture"""
+Enterprise-grade COPPA compliance with modular architecture.
+"""
 
-from .data_models import (
-    ChildData,
-    ParentConsent,
-    DataRetentionPolicy,
-    AuditLogEntry,
-    DataDeletionRequest)
-from .data_retention import DataRetentionManager, get_retention_manager
 from .consent_manager import ConsentManager, get_consent_manager
+from .data_models import (
+    AuditLogEntry,
+    ChildData,
+    DataDeletionRequest,
+    DataRetentionPolicy,
+    ParentConsent,
+)
+from .data_retention import DataRetentionManager, get_retention_manager
 
 __all__ = [
+    "AuditLogEntry",
     # Data models
     "ChildData",
-    "ParentConsent",
-    "DataRetentionPolicy",
-    "AuditLogEntry",
+    "ConsentManager",
     "DataDeletionRequest",
     # Managers
     "DataRetentionManager",
-    "ConsentManager",
+    "DataRetentionPolicy",
+    "ParentConsent",
+    "get_consent_manager",
     # Factory functions
     "get_retention_manager",
-    "get_consent_manager"
 ]

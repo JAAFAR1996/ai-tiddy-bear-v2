@@ -1,16 +1,15 @@
 """
+Parental Verification Service
+Handles all verification methods for parental identity confirmation
+required for COPPA compliance.
+"""
+
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 import logging
 import re
 import secrets
 from .consent_models import VerificationMethod, VerificationStatus, VerificationAttempt
-"""
-
-Parental Verification Service
-Handles all verification methods for parental identity confirmation
-required for COPPA compliance.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="services")
@@ -37,7 +36,7 @@ class VerificationService:
             return {"status": "error", "message": "Invalid email format"}
         verification_code = self._generate_verification_code()
         attempt_id = f"verify_{consent_id}_{secrets.token_urlsafe(8)}"
-        masked_email = email[:2] + "***@" + email.split(' @ ')[1] if ' @ ' in email else "***"
+        masked_email = email[:2] + "***@" + email.split('@')[1] if '@' in email else "***"
         logger.info(f"Email verification code sent to {masked_email}: [REDACTED]")
         # Store verification attempt
         self.verification_attempts[attempt_id] = VerificationAttempt(
@@ -107,13 +106,13 @@ class VerificationService:
 
     def _validate_email(self, email: str) -> bool:
         """Validate email format."""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(pattern, email) is not None
 
     def _validate_phone(self, phone: str) -> bool:
         """Validate phone number format."""
         # Remove all non-digits
-        digits_only = re.sub(r'\\D', '', phone)
+        digits_only = re.sub(r'\D', '', phone)
         # Check if it's a valid length (between 10-15 digits)
         return 10 <= len(digits_only) <= 15
 

@@ -1,15 +1,14 @@
-"""
-User Repository
+"""User Repository.
 
 Handles all user-related database operations.
 """
+
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from src.infrastructure.logging_config import get_logger
@@ -33,14 +32,13 @@ class UserRepository:
 
         Args:
             database: Database instance
+
         """
         self.database = database
         logger.info("UserRepository initialized")
 
     @database_input_validation("users")
-    async def create_user(
-        self, email: str, hashed_password: str, role: str
-    ) -> str:
+    async def create_user(self, email: str, hashed_password: str, role: str) -> str:
         """Create a new user with comprehensive input validation.
 
         Args:
@@ -53,6 +51,7 @@ class UserRepository:
 
         Raises:
             ValueError: If user already exists or data is invalid
+
         """
         try:
             # Validate and sanitize input parameters
@@ -63,7 +62,9 @@ class UserRepository:
             }
             # Validate operation
             validated_operation = validate_database_operation(
-                "INSERT", "users", user_data
+                "INSERT",
+                "users",
+                user_data,
             )
             validated_data = validated_operation["data"]
 
@@ -73,9 +74,7 @@ class UserRepository:
 
                 # Check if user already exists
                 existing_user = await safe_session.execute(
-                    select(UserModel).where(
-                        UserModel.email == validated_data["email"]
-                    )
+                    select(UserModel).where(UserModel.email == validated_data["email"]),
                 )
                 if existing_user.scalar_one_or_none():
                     raise ValueError("User with this email already exists")
@@ -104,7 +103,7 @@ class UserRepository:
             raise
 
     @database_input_validation("users")
-    async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+    async def get_user_by_email(self, email: str) -> dict[str, Any] | None:
         """Get user by email.
 
         Args:
@@ -112,11 +111,12 @@ class UserRepository:
 
         Returns:
             User data or None if not found
+
         """
         try:
             async with self.database.get_session() as session:
                 result = await session.execute(
-                    select(UserModel).where(UserModel.email == email)
+                    select(UserModel).where(UserModel.email == email),
                 )
                 user = result.scalar_one_or_none()
                 if user:
@@ -141,10 +141,13 @@ class UserRepository:
 
         Returns:
             True if successful, False otherwise
+
         """
         try:
             validated_operation = validate_database_operation(
-                "UPDATE", "users", {"role": new_role}
+                "UPDATE",
+                "users",
+                {"role": new_role},
             )
             validated_role = validated_operation["data"]["role"]
 

@@ -1,5 +1,4 @@
-"""
-Defines the ChildProfile entity, representing a child's profile information.
+"""Defines the ChildProfile entity, representing a child's profile information.
 
 This entity encapsulates a child's unique identifier, name, age, and preferences.
 It provides methods for creating new profiles, updating existing ones, and
@@ -10,7 +9,7 @@ data integrity through the use of value objects for name and age.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from src.domain.events.child_profile_updated import ChildProfileUpdated
@@ -25,13 +24,14 @@ class ChildProfile:
     _child_id: UUID
     _child_name: ChildName
     _child_age: ChildAge
-    _preferences: Dict[str, Any]
-    _uncommitted_events: List[DomainEvent] = field(
-        default_factory=list, repr=False)
+    _preferences: dict[str, Any]
+    _uncommitted_events: list[DomainEvent] = field(default_factory=list, repr=False)
 
     @staticmethod
     def create(
-        name: str, age: int, preferences: Dict[str, Any] | None = None
+        name: str,
+        age: int,
+        preferences: dict[str, Any] | None = None,
     ) -> ChildProfile:
         """Factory method to create a new ChildProfile with validated value objects.
 
@@ -42,6 +42,7 @@ class ChildProfile:
 
         Returns:
             A new ChildProfile instance.
+
         """
         child_name = ChildName(name)
         child_age = ChildAge(age)
@@ -72,11 +73,11 @@ class ChildProfile:
         return self._child_age.value
 
     @property
-    def preferences(self) -> Dict[str, Any]:
+    def preferences(self) -> dict[str, Any]:
         """Gets a copy of the child's preferences."""
         return self._preferences.copy()
 
-    def get_uncommitted_events(self) -> List[DomainEvent]:
+    def get_uncommitted_events(self) -> list[DomainEvent]:
         """Returns the list of uncommitted domain events."""
         return self._uncommitted_events
 
@@ -85,19 +86,19 @@ class ChildProfile:
         self._uncommitted_events.clear()
 
     def _record_event(self, event: DomainEvent) -> None:
-        """
-        Adds a domain event to the list of uncommitted events.
+        """Adds a domain event to the list of uncommitted events.
 
         Args:
             event: The domain event to record.
+
         """
         self._uncommitted_events.append(event)
 
     def update_profile(
         self,
-        name: Optional[str] = None,
-        age: Optional[int] = None,
-        preferences: Optional[Dict[str, Any]] = None,
+        name: str | None = None,
+        age: int | None = None,
+        preferences: dict[str, Any] | None = None,
     ) -> None:
         """Update child profile details, validating inputs against domain rules."""
         if name is not None:
@@ -108,7 +109,7 @@ class ChildProfile:
         if age is not None:
             if not (2 <= age <= 12):  # Assuming age range 2-12 for COPPA compliance
                 raise ValueError(
-                    "Child age must be between 2 and 12 for COPPA compliance."
+                    "Child age must be between 2 and 12 for COPPA compliance.",
                 )
             # Validate and update age using ChildAge value object
             self._child_age = ChildAge(age)
@@ -124,5 +125,5 @@ class ChildProfile:
                 new_name=self.name,
                 new_age=self.age,
                 new_preferences=self.preferences,
-            )
+            ),
         )

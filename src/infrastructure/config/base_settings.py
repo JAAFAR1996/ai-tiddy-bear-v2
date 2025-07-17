@@ -1,5 +1,4 @@
-"""
-Defines the base configuration settings for the application.
+"""Defines the base configuration settings for the application.
 
 This module provides the `BaseApplicationSettings` class, which serves as
 the foundation for all environment-specific and feature-specific settings.
@@ -19,11 +18,11 @@ class BaseApplicationSettings(BaseSettings):
     # Environment Configuration
     # ================================
     environment: str = Field(
-        "production", pattern="^(development|staging|production|testing)$"
+        "production",
+        pattern="^(development|staging|production|testing)$",
     )
     debug: bool = Field(default=False)
-    log_level: str = Field(
-        "INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+    log_level: str = Field("INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
 
     # ================================
     # Application Information

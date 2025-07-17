@@ -1,10 +1,10 @@
 """
-from typing import Optional, Dict, Any
-
-"""Standardized exception hierarchy for AI Teddy Bear backend.
+Standardized exception hierarchy for AI Teddy Bear backend.
 
 Provides consistent error types and messaging across the application.
 """
+
+from typing import Optional, Dict, Any
 
 class AITeddyError(Exception):
     """Base exception for all AI Teddy Bear specific errors."""
@@ -199,4 +199,3 @@ class RateLimitError(AITeddyError):
             http_status=429,
             **kwargs
         )
-"""

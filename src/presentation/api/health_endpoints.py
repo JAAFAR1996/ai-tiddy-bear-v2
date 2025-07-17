@@ -1,4 +1,4 @@
-"""
+
 from datetime import datetime
 from typing import Dict, Any
 import logging
@@ -6,11 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from src.infrastructure.health.health_checks import (
-"""
 
-Health Check API Endpoints for AI Teddy Bear
-Production - ready health monitoring endpoints with detailed diagnostics
-"""
     get_health_manager,
     HealthCheckManager,
     SystemHealth,

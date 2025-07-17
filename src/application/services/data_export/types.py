@@ -1,7 +1,8 @@
 """from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any"""
+from typing import Dict, List, Optional, Any.
+"""
 
 """Data Export Types and Models
 Defines data structures and enums for the data export system."""
@@ -9,6 +10,7 @@ Defines data structures and enums for the data export system."""
 
 class ExportFormat(Enum):
     """Supported export formats."""
+
     JSON = "json"
     CSV = "csv"
     XML = "xml"
@@ -18,6 +20,7 @@ class ExportFormat(Enum):
 
 class DataCategory(Enum):
     """Categories of data that can be exported."""
+
     PROFILE = "profile"
     CONVERSATIONS = "conversations"
     SAFETY_EVENTS = "safety_events"
@@ -30,6 +33,7 @@ class DataCategory(Enum):
 
 class ExportStatus(Enum):
     """Export request status."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -40,6 +44,7 @@ class ExportStatus(Enum):
 @dataclass
 class ExportRequest:
     """Data export request with configuration."""
+
     child_id: str
     parent_id: str
     formats: List[ExportFormat]
@@ -55,6 +60,7 @@ class ExportRequest:
 @dataclass
 class ExportResult:
     """Result of a data export operation."""
+
     request_id: str
     status: ExportStatus
     created_at: datetime
@@ -70,6 +76,7 @@ class ExportResult:
 @dataclass
 class ExportMetadata:
     """Metadata about exported data."""
+
     export_timestamp: datetime
     child_id: str
     parent_id: str

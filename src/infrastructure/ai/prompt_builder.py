@@ -1,19 +1,25 @@
-from typing import Any, Dict
+from typing import Any
 
 
 class PromptBuilder:
     """Builds child-safe and age-appropriate prompts for the AI model."""
 
     def build_child_safe_prompt(
-        self, message: str, age: int, context: Dict[str, Any] = None
+        self,
+        message: str,
+        age: int,
+        context: dict[str, Any] | None = None,
     ) -> str:
         """Constructs a system prompt for the AI, ensuring child safety and age appropriateness.
+
         Args:
             message: The child's input message.
             age: The age of the child.
             context: Additional context like child preferences or conversation history.
+
         Returns:
             A string representing the system prompt.
+
         """
         context = context or {}
         interests = context.get("interests", "fun activities and learning")

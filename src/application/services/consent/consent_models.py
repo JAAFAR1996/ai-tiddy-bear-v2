@@ -1,13 +1,12 @@
 """
+Consent Management Data Models
+Defines the core data structures for COPPA - compliant consent management.
+"""
+
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Dict, Any, Optional
-"""
-
-Consent Management Data Models
-Defines the core data structures for COPPA - compliant consent management.
-"""
 
 class VerificationMethod(Enum):
     """Supported parental verification methods for COPPA compliance."""

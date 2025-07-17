@@ -1,14 +1,14 @@
-"""
-from typing import Any, Dict, List
+"""from typing import Any, Dict, List
 import asyncio
 import logging
-import httpx
+import httpx.
 """
 
 """Response Consistency Testing Module
 AI System Chaos Actions for Testing AI Response Consistency"""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="chaos")
 
 
@@ -52,11 +52,11 @@ def _calculate_consistency_metrics(valid_responses: List[str]) -> Dict[str, Any]
     consistency_rate = (
         consistent_responses / len(valid_responses) if valid_responses else 0.0
     )
-    
+
     logger.info(
-        f"🔍 AI consistency: {consistent_responses}/{len(valid_responses)} consistent responses"
+        f"🔍 AI consistency: {consistent_responses}/{len(valid_responses)} consistent responses",
     )
-    
+
     return {
         "total_responses": len(valid_responses),
         "consistent_responses": consistent_responses,
@@ -72,7 +72,7 @@ async def validate_ai_response_consistency(
     logger.info("🔍 Testing AI response consistency")
     test_prompt = "What is the safest way for children to cross the street?"
     num_requests = (configuration or {}).get("consistency_checks", 10)
-    
+
     try:
         valid_responses = await _execute_consistency_tests(test_prompt, num_requests)
         metrics = _calculate_consistency_metrics(valid_responses)

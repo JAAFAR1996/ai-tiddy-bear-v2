@@ -1,12 +1,9 @@
-"""
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 import asyncio
 import logging
 from src.infrastructure.security.audit_logger import (
-    """Comprehensive Audit Integration Service
-Fixes audit trail gaps by providing centralized audit logging for all critical operations."""
     get_audit_logger,
     AuditEventType,
     AuditSeverity,
@@ -49,19 +46,9 @@ class ComprehensiveAuditIntegration:
     ) -> str:
         """
         Log authentication events with comprehensive details.
-        Args:
-            event_type: Type of auth event(login, logout, password_change)
-            user_email: User's email (will be sanitized)
-            success: Whether the operation succeeded
-            ip_address: Source IP address
-            details: Additional event details
-        Returns:
-            Unique audit event ID
         """
-        # Sanitize email for COPPA compliance
         sanitized_email = self._sanitize_email(user_email)
         
-        # Map event types to audit event types
         event_mapping = {
             "login": AuditEventType.LOGIN_SUCCESS if success else AuditEventType.LOGIN_FAILURE,
             "logout": AuditEventType.LOGOUT,
@@ -108,16 +95,6 @@ class ComprehensiveAuditIntegration:
     ) -> str:
         """
         Log authorization events (access control decisions).
-        Args:
-            user_id: User attempting access
-            resource: Resource being accessed
-            action: Action being attempted
-            granted: Whether access was granted
-            child_id: Child ID if accessing child data
-            ip_address: Source IP address
-            details: Additional event details
-        Returns:
-            Unique audit event ID
         """
         event_type = AuditEventType.ACCESS_GRANTED if granted else AuditEventType.ACCESS_DENIED
         severity = AuditSeverity.INFO if granted else AuditSeverity.WARNING
@@ -152,53 +129,53 @@ class ComprehensiveAuditIntegration:
         user_id: str,
         data_type: str,
         ip_address: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None
+        details: Optional[Dict[str, Any]] = None,
+        operation_id: Optional[str] = None,
+        success: Optional[bool] = None
     ) -> str:
         """
         Log child data operations for COPPA compliance.
-        Args:
-            operation: Operation type (create, read, update, delete)
-            child_id: Child's ID(will be sanitized)
-            user_id: User performing operation
-            data_type: Type of data being accessed
-            ip_address: Source IP address
-            details: Additional operation details
-        Returns:
-            Unique audit event ID
         """
-        # Sanitize child ID for logging
         sanitized_child_id = self._sanitize_child_id(child_id)
         
-        # Map operations to audit event types
         operation_mapping = {
             "create": AuditEventType.DATA_MODIFICATION,
             "read": AuditEventType.DATA_ACCESS,
             "update": AuditEventType.DATA_MODIFICATION,
             "delete": AuditEventType.DATA_DELETION
         }
+        if operation not in operation_mapping:
+            raise ValueError(f"Unknown operation: {operation}")
+        event_type = operation_mapping[operation]
         
-        event_type = operation_mapping.get(operation, AuditEventType.DATA_ACCESS)
-        
-        # Determine severity based on operation and data type
+        sensitive_types = {"medical", "voice", "personal"}
         severity = AuditSeverity.INFO
-        if operation == "delete":
+        if operation == "delete" and data_type in sensitive_types:
+            severity = AuditSeverity.CRITICAL
+        elif operation == "delete":
             severity = AuditSeverity.WARNING
-        if data_type in ["medical", "voice", "personal"]:
+        elif data_type in sensitive_types:
             severity = AuditSeverity.WARNING
-            
+        
         context = AuditContext(
             user_id=user_id,
             child_id=sanitized_child_id,
             ip_address=ip_address
         )
         
-        audit_details = {
+        core_audit_fields = {
             "operation": operation,
             "data_type": data_type,
             "child_id": sanitized_child_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            **(details or {})
+            "timestamp": datetime.utcnow().isoformat()
         }
+        if operation_id:
+            core_audit_fields["operation_id"] = operation_id
+        if success is not None:
+            core_audit_fields["success"] = success
+        
+        safe_details = {k: v for k, v in (details or {}).items() if k not in core_audit_fields}
+        audit_details = {**core_audit_fields, **safe_details}
         
         return await self.audit_logger.log_event(
             event_type=event_type,
@@ -217,26 +194,12 @@ class ComprehensiveAuditIntegration:
         description: str,
         details: Optional[Dict[str, Any]] = None
     ) -> str:
-        """
-        Log COPPA compliance events.
-        COPPA CONDITIONAL: Only logs when COPPA compliance is enabled
-        Args:
-            event_type: Type of COPPA event
-            child_id: Child ID involved
-            parent_id: Parent / guardian ID
-            description: Event description
-            details: Additional event details
-        Returns:
-            Unique audit event ID or mock ID when COPPA disabled
-        """
-        # COPPA CONDITIONAL: Skip COPPA audit logging when disabled
         from ..config.coppa_config import requires_coppa_audit_logging
         if not requires_coppa_audit_logging():
             return f"coppa_disabled_{event_type}_{int(datetime.utcnow().timestamp())}"
             
         sanitized_child_id = self._sanitize_child_id(child_id)
         
-        # Map COPPA event types
         coppa_event_mapping = {
             "consent_requested": AuditEventType.PARENTAL_CONSENT_REQUEST,
             "consent_granted": AuditEventType.PARENTAL_CONSENT_GRANTED,
@@ -278,19 +241,6 @@ class ComprehensiveAuditIntegration:
         ip_address: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None
     ) -> str:
-        """
-        Log security events and alerts.
-        Args:
-            event_type: Type of security event
-            severity: Event severity level
-            description: Event description
-            user_id: User involved(if any)
-            ip_address: Source IP address
-            details: Additional event details
-        Returns:
-            Unique audit event ID
-        """
-        # Map severity levels
         severity_mapping = {
             "debug": AuditSeverity.DEBUG,
             "info": AuditSeverity.INFO,
@@ -328,16 +278,6 @@ class ComprehensiveAuditIntegration:
         description: str,
         details: Optional[Dict[str, Any]] = None
     ) -> str:
-        """
-        Log system events(startup, shutdown, configuration changes).
-        Args:
-            event_type: Type of system event
-            description: Event description
-            details: Additional event details
-        Returns:
-            Unique audit event ID
-        """
-        # Map system event types
         system_event_mapping = {
             "startup": AuditEventType.SYSTEM_STARTUP,
             "shutdown": AuditEventType.SYSTEM_SHUTDOWN,
@@ -361,7 +301,6 @@ class ComprehensiveAuditIntegration:
         )
 
     def _sanitize_email(self, email: str) -> str:
-        """Sanitize email for COPPA compliance."""
         try:
             parts = email.split('@')
             if len(parts) == 2:
@@ -371,7 +310,6 @@ class ComprehensiveAuditIntegration:
             return "***@***"
 
     def _sanitize_child_id(self, child_id: str) -> str:
-        """Sanitize child ID for COPPA compliance."""
         try:
             if len(child_id) > 8:
                 return f"{child_id[:4]}***{child_id[-4:]}"
@@ -383,19 +321,16 @@ class ComprehensiveAuditIntegration:
 _audit_integration: Optional[ComprehensiveAuditIntegration] = None
 
 def get_audit_integration() -> ComprehensiveAuditIntegration:
-    """Get or create global audit integration instance."""
     global _audit_integration
     if _audit_integration is None:
         _audit_integration = ComprehensiveAuditIntegration()
     return _audit_integration
 
-# Convenience functions for common audit operations
 async def audit_authentication(
     event_type: str,
     user_email: str,
     success: bool,
     **kwargs) -> str:
-    """Convenience function for authentication audit logging."""
     integration = get_audit_integration()
     return await integration.log_authentication_event(event_type, user_email, success, **kwargs)
 
@@ -405,7 +340,6 @@ async def audit_authorization(
     action: str,
     granted: bool,
     **kwargs) -> str:
-    """Convenience function for authorization audit logging."""
     integration = get_audit_integration()
     return await integration.log_authorization_event(user_id, resource, action, granted, **kwargs)
 
@@ -415,7 +349,6 @@ async def audit_child_data_operation(
     user_id: str,
     data_type: str,
     **kwargs) -> str:
-    """Convenience function for child data operation audit logging."""
     integration = get_audit_integration()
     return await integration.log_child_data_operation(operation, child_id, user_id, data_type, **kwargs)
 
@@ -425,7 +358,6 @@ async def audit_coppa_event(
     parent_id: Optional[str],
     description: str,
     **kwargs) -> str:
-    """Convenience function for COPPA compliance audit logging."""
     integration = get_audit_integration()
     return await integration.log_coppa_compliance_event(event_type, child_id, parent_id, description, **kwargs)
 
@@ -434,6 +366,5 @@ async def audit_security_event(
     severity: str,
     description: str,
     **kwargs) -> str:
-    """Convenience function for security event audit logging."""
     integration = get_audit_integration()
     return await integration.log_security_event(event_type, severity, description, **kwargs)

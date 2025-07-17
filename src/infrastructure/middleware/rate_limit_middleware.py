@@ -1,15 +1,14 @@
 """
+Production Rate Limiting Middleware
+"""
+
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
 import hashlib
 import json
 import logging
 import time
-"""
-
-Production Rate Limiting Middleware
-Enterprise - grade request rate limiting with Redis backend
-"""
+# Enterprise - grade request rate limiting with Redis backend
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")

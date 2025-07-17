@@ -15,9 +15,7 @@ This package provides comprehensive input validation with:
     get_input_validator,
     validate_user_input,
     validate_child_message)
-from .middleware import (
-    InputValidationMiddleware,
-    create_input_validation_middleware)
+from .middleware import InputValidationMiddleware, create_input_validation_middleware
 
 __all__ = [
     "SecurityThreat",

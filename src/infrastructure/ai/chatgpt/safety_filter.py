@@ -1,4 +1,7 @@
 """
+Safety Filter for ChatGPT - Child Safety Content Filtering
+"""
+
 from typing import Dict, List, Any
 import logging
 import re
@@ -8,10 +11,6 @@ from src.domain.constants import (
     EARLY_CHILD_MAX_AGE as MIN_AGE_COMPLEX_CONTENT,
     TODDLER_MAX_AGE as MAX_AGE_SIMPLE_CONTENT,
 )
-"""
-
-Safety Filter for ChatGPT - Child Safety Content Filtering
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")

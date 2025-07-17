@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List
 from uuid import UUID
 
 
@@ -28,10 +27,11 @@ class AccessibilityProfile:
         volume_level (float): Preferred volume level.
         subtitles_enabled (bool): Whether subtitles are preferred/enabled.
         additional_settings (dict): Any other custom accessibility settings.
+
     """
 
     child_id: UUID
-    special_needs: List[SpecialNeedType] = field(default_factory=list)
+    special_needs: list[SpecialNeedType] = field(default_factory=list)
     preferred_interaction_mode: str = "voice"
     voice_speed_adjustment: float = 1.0
     volume_level: float = 0.8

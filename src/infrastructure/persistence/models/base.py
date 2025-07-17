@@ -1,4 +1,4 @@
-"""Base SQLAlchemy configuration for all models"""
+"""Base SQLAlchemy configuration for all models."""
 
 from sqlalchemy.ext.declarative import declarative_base
 

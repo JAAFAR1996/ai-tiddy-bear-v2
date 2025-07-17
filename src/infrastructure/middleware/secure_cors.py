@@ -1,4 +1,7 @@
 """
+CORS Middleware with Security Controls
+"""
+
 from typing import List, Union
 import logging
 import os
@@ -6,10 +9,6 @@ import re
 from fastapi import Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-"""
-
-CORS Middleware with Security Controls
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")
@@ -170,7 +169,7 @@ class SecureCORSMiddleware:
         return False
 
 def setup_cors_middleware(app) -> None:
-    """
+    """Setup CORS middleware for the application"""
     # Add the secure CORS middleware
     app.add_middleware(SecureCORSMiddleware)
     

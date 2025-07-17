@@ -1,45 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
 from uuid import UUID
-from datetime import datetime
 
-from src.domain.entities.child_profile import (
+from src.domain.entities.child_profile import (  # Assuming these exist
     ChildProfile,
-    ChildPreferences,
-    ChildHealthInfo,
-)  # Assuming these exist
+)
 
 
 class IChildProfileRepository(ABC):
-    """
-    Abstract interface for child profile persistence operations.
-    """
+    """Abstract interface for child profile persistence operations."""
 
     @abstractmethod
-    async def get_profile_by_id(
-            self, child_id: UUID) -> Optional[ChildProfile]:
-        """
-        Retrieves a child profile by its ID.
-        """
-        pass
+    async def get_profile_by_id(self, child_id: UUID) -> ChildProfile | None:
+        """Retrieves a child profile by its ID."""
 
     @abstractmethod
     async def save_profile(self, profile: ChildProfile) -> None:
-        """
-        Saves or updates a child profile.
-        """
-        pass
+        """Saves or updates a child profile."""
 
     @abstractmethod
     async def delete_profile(self, child_id: UUID) -> bool:
-        """
-        Deletes a child profile by its ID.
-        """
-        pass
+        """Deletes a child profile by its ID."""
 
     @abstractmethod
-    async def get_child_age(self, child_id: UUID) -> Optional[int]:
-        """
-        Retrieves the age of a child by their ID.
-        """
-        pass
+    async def get_child_age(self, child_id: UUID) -> int | None:
+        """Retrieves the age of a child by their ID."""

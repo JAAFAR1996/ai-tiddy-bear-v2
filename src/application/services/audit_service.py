@@ -1,5 +1,4 @@
-"""
-Provides auditing services for tracking system events and ensuring COPPA compliance.
+"""Provides auditing services for tracking system events and ensuring COPPA compliance.
 
 This service creates detailed audit logs for various interactions, including
 requests and responses, to maintain a comprehensive record of system activity.
@@ -9,8 +8,7 @@ to ensure adherence to COPPA regulations.
 
 import json
 import logging
-from datetime import datetime
-from typing import Dict, Any, List
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -19,10 +17,11 @@ class AuditService:
     """Service for creating and managing audit logs for COPPA compliance."""
 
     def __init__(
-        self, logger: logging.Logger = get_logger(__name__, component="audit_service")
+        self,
+        logger: logging.Logger = get_logger(__name__, component="audit_service"),
     ) -> None:
         """Initializes the audit service."""
-        self.audit_logs: List[Dict[str, Any]] = []
+        self.audit_logs: list[dict[str, Any]] = []
         self.logger = logger
 
     def _sanitize_log_input(self, data: Any) -> Any:
@@ -34,17 +33,17 @@ class AuditService:
 
     def create_audit_log(
         self,
-        request_info: Dict[str, Any],
-        response_info: Dict[str, Any],
+        request_info: dict[str, Any],
+        response_info: dict[str, Any],
         timestamp: str,
     ) -> None:
-        """
-        Creates an audit log entry for COPPA compliance.
+        """Creates an audit log entry for COPPA compliance.
 
         Args:
             request_info: Information about the incoming request.
             response_info: Information about the outgoing response.
             timestamp: The timestamp of the request.
+
         """
         audit_data = {
             "type": "audit",
@@ -61,7 +60,8 @@ class AuditService:
         }
         # Add child-specific information if present
         if "child_id" in request_info.get("body", {}) or "child_id" in request_info.get(
-            "query_params", {}
+            "query_params",
+            {},
         ):
             audit_data["involves_child_data"] = True
             audit_data["requires_parental_consent"] = True
@@ -69,11 +69,11 @@ class AuditService:
         self.audit_logs.append(audit_data)
         self.logger.info(f"Audit: {json.dumps(audit_data, default=str)}")
 
-    def get_audit_logs(self) -> List[Dict[str, Any]]:
-        """
-        Retrieves all stored audit logs.
+    def get_audit_logs(self) -> list[dict[str, Any]]:
+        """Retrieves all stored audit logs.
 
         Returns:
             A list of audit log entries.
+
         """
         return self.audit_logs

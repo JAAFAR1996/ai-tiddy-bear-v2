@@ -1,11 +1,8 @@
-"""from dataclasses import asdictfrom datetime import datetime, timedeltafrom typing import Any, Dict, List, Optional, Unionimport asyncioimport jsonimport loggingimport redis.asyncio as redis"""
+"""from dataclasses import asdictfrom datetime import datetime, timedeltafrom typing import Any, Dict, List, Optional, Unionimport asyncioimport jsonimport loggingimport redis.asyncio as redis."""
+
 """Production Redis Caching ImplementationHigh - performance caching layer with comprehensive features"""
-import asyncio
 import json
-import logging
-from dataclasses import asdict
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import redis.asyncio as redis
 
@@ -15,18 +12,17 @@ logger = get_logger(__name__, component="infrastructure")
 
 
 class RedisCache:
-    """
-    Production - ready Redis caching implementation
-    Comprehensive caching strategy to solve performance issues
+    """Production - ready Redis caching implementation
+    Comprehensive caching strategy to solve performance issues.
     """
 
     def __init__(self, redis_url: str, default_ttl: int = 3600) -> None:
         self.redis_url = redis_url
         self.default_ttl = default_ttl
-        self.redis_client: Optional[redis.Redis] = None
+        self.redis_client: redis.Redis | None = None
 
     async def initialize(self) -> None:
-        """Initialize Redis connection"""
+        """Initialize Redis connection."""
         try:
             self.redis_client = redis.from_url(
                 self.redis_url,
@@ -43,8 +39,8 @@ class RedisCache:
             logger.error(f"Failed to initialize Redis cache: {e}")
             raise RuntimeError(f"Cache initialization failed: {e}") from e
 
-    async def get(self, key: str) -> Optional[Any]:
-        """Get value from cache"""
+    async def get(self, key: str) -> Any | None:
+        """Get value from cache."""
         try:
             if not self.redis_client:
                 await self.initialize()
@@ -56,8 +52,8 @@ class RedisCache:
             logger.warning(f"Cache get failed for key '{key}': {e}")
             return None
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
-        """Set value in cache with TTL"""
+    async def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
+        """Set value in cache with TTL."""
         try:
             if not self.redis_client:
                 await self.initialize()

@@ -1,5 +1,4 @@
-"""
-Manages data retention policies to ensure compliance with regulations.
+"""Manages data retention policies to ensure compliance with regulations.
 
 This service defines and enforces data retention policies based on age groups
 and data types, with a strong focus on COPPA compliance. It provides
@@ -7,8 +6,8 @@ functionalities to determine the retention period for various data categories
 and to check if specific data should be retained or deleted.
 """
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any
 
 from src.domain.interfaces.logging_interface import (
     DomainLoggerInterface,
@@ -31,22 +30,38 @@ class DataRetentionService:
 
     def _initialize_retention_policies(
         self,
-    ) -> Dict[str, Dict[DataType, RetentionPolicy]]:
+    ) -> dict[str, dict[DataType, RetentionPolicy]]:
         """Initializes retention policies by age group and data type."""
         policies = {
             # Children under 13 (COPPA applies)
             "valid_child": {
                 DataType.CONVERSATION_DATA: RetentionPolicy(
-                    DataType.CONVERSATION_DATA, 30, "valid_child", True, True
+                    DataType.CONVERSATION_DATA,
+                    30,
+                    "valid_child",
+                    True,
+                    True,
                 ),
                 DataType.VOICE_RECORDINGS: RetentionPolicy(
-                    DataType.VOICE_RECORDINGS, 7, "valid_child", True, True
+                    DataType.VOICE_RECORDINGS,
+                    7,
+                    "valid_child",
+                    True,
+                    True,
                 ),
                 DataType.INTERACTION_LOGS: RetentionPolicy(
-                    DataType.INTERACTION_LOGS, 60, "valid_child", True, True
+                    DataType.INTERACTION_LOGS,
+                    60,
+                    "valid_child",
+                    True,
+                    True,
                 ),
                 DataType.ANALYTICS_DATA: RetentionPolicy(
-                    DataType.ANALYTICS_DATA, 90, "valid_child", True, True
+                    DataType.ANALYTICS_DATA,
+                    90,
+                    "valid_child",
+                    True,
+                    True,
                 ),
                 DataType.SAFETY_LOGS: RetentionPolicy(
                     DataType.SAFETY_LOGS,
@@ -66,53 +81,102 @@ class DataRetentionService:
             # Teens 13-17
             "valid_teen": {
                 DataType.CONVERSATION_DATA: RetentionPolicy(
-                    DataType.CONVERSATION_DATA, 90, "valid_teen", False, True
+                    DataType.CONVERSATION_DATA,
+                    90,
+                    "valid_teen",
+                    False,
+                    True,
                 ),
                 DataType.VOICE_RECORDINGS: RetentionPolicy(
-                    DataType.VOICE_RECORDINGS, 30, "valid_teen", False, True
+                    DataType.VOICE_RECORDINGS,
+                    30,
+                    "valid_teen",
+                    False,
+                    True,
                 ),
                 DataType.INTERACTION_LOGS: RetentionPolicy(
-                    DataType.INTERACTION_LOGS, 180, "valid_teen", False, True
+                    DataType.INTERACTION_LOGS,
+                    180,
+                    "valid_teen",
+                    False,
+                    True,
                 ),
                 DataType.ANALYTICS_DATA: RetentionPolicy(
-                    DataType.ANALYTICS_DATA, 365, "valid_teen", False, True
+                    DataType.ANALYTICS_DATA,
+                    365,
+                    "valid_teen",
+                    False,
+                    True,
                 ),
                 DataType.SAFETY_LOGS: RetentionPolicy(
-                    DataType.SAFETY_LOGS, 365, "valid_teen", False, True
+                    DataType.SAFETY_LOGS,
+                    365,
+                    "valid_teen",
+                    False,
+                    True,
                 ),
                 DataType.CONSENT_RECORDS: RetentionPolicy(
-                    DataType.CONSENT_RECORDS, 2555, "valid_teen", False, False
+                    DataType.CONSENT_RECORDS,
+                    2555,
+                    "valid_teen",
+                    False,
+                    False,
                 ),
             },
             # Adults 18+
             "valid_adult": {
                 DataType.CONVERSATION_DATA: RetentionPolicy(
-                    DataType.CONVERSATION_DATA, 365, "valid_adult", False, False
+                    DataType.CONVERSATION_DATA,
+                    365,
+                    "valid_adult",
+                    False,
+                    False,
                 ),
                 DataType.VOICE_RECORDINGS: RetentionPolicy(
-                    DataType.VOICE_RECORDINGS, 90, "valid_adult", False, False
+                    DataType.VOICE_RECORDINGS,
+                    90,
+                    "valid_adult",
+                    False,
+                    False,
                 ),
                 DataType.INTERACTION_LOGS: RetentionPolicy(
-                    DataType.INTERACTION_LOGS, 730, "valid_adult", False, False
+                    DataType.INTERACTION_LOGS,
+                    730,
+                    "valid_adult",
+                    False,
+                    False,
                 ),
                 DataType.ANALYTICS_DATA: RetentionPolicy(
-                    DataType.ANALYTICS_DATA, 730, "valid_adult", False, False
+                    DataType.ANALYTICS_DATA,
+                    730,
+                    "valid_adult",
+                    False,
+                    False,
                 ),
                 DataType.SAFETY_LOGS: RetentionPolicy(
-                    DataType.SAFETY_LOGS, 365, "valid_adult", False, True
+                    DataType.SAFETY_LOGS,
+                    365,
+                    "valid_adult",
+                    False,
+                    True,
                 ),
                 DataType.CONSENT_RECORDS: RetentionPolicy(
-                    DataType.CONSENT_RECORDS, 2555, "valid_adult", False, False
+                    DataType.CONSENT_RECORDS,
+                    2555,
+                    "valid_adult",
+                    False,
+                    False,
                 ),
             },
         }
         return policies
 
     def get_retention_policy(
-        self, child_age: int, data_type: DataType
-    ) -> Optional[RetentionPolicy]:
-        """
-        Retrieves the retention policy for a specific data type and child age.
+        self,
+        child_age: int,
+        data_type: DataType,
+    ) -> RetentionPolicy | None:
+        """Retrieves the retention policy for a specific data type and child age.
 
         Args:
             child_age: The age of the child.
@@ -120,6 +184,7 @@ class DataRetentionService:
 
         Returns:
             The matching RetentionPolicy, or None if not found.
+
         """
         age_validation = COPPAAgeValidator.validate_age(child_age)
         if age_validation == AgeValidationResult.CHILD:
@@ -135,10 +200,12 @@ class DataRetentionService:
         return self.policies.get(age_group, {}).get(data_type)
 
     def check_data_retention(
-        self, child_age: int, data_type: DataType, data_timestamp: datetime
+        self,
+        child_age: int,
+        data_type: DataType,
+        data_timestamp: datetime,
     ) -> bool:
-        """
-        Checks if a piece of data should be retained based on its age and type.
+        """Checks if a piece of data should be retained based on its age and type.
 
         Args:
             child_age: The age of the child associated with the data.
@@ -147,6 +214,7 @@ class DataRetentionService:
 
         Returns:
             True if the data should be retained, False otherwise.
+
         """
         policy = self.get_retention_policy(child_age, data_type)
         if not policy:
@@ -159,10 +227,12 @@ class DataRetentionService:
         return age_of_data.days <= policy.retention_days
 
     def get_data_for_deletion(
-        self, child_age: int, data_type: DataType, all_data: List[Any]
-    ) -> List[Any]:
-        """
-        Identifies data items that are past their retention period and should be deleted.
+        self,
+        child_age: int,
+        data_type: DataType,
+        all_data: list[Any],
+    ) -> list[Any]:
+        """Identifies data items that are past their retention period and should be deleted.
 
         Args:
             child_age: The age of the child associated with the data.
@@ -171,6 +241,7 @@ class DataRetentionService:
 
         Returns:
             A list of data items that should be deleted.
+
         """
         policy = self.get_retention_policy(child_age, data_type)
         if not policy or policy.indefinite_retention:
@@ -179,12 +250,11 @@ class DataRetentionService:
         data_to_delete = []
         for item in all_data:
             # Assuming each item has a 'timestamp' attribute
-            if hasattr(item, "timestamp") and isinstance(
-                    item.timestamp, datetime):
+            if hasattr(item, "timestamp") and isinstance(item.timestamp, datetime):
                 if (datetime.now() - item.timestamp).days > policy.retention_days:
                     data_to_delete.append(item)
             else:
                 self._logger.warning(
-                    f"Data item of type {data_type} missing 'timestamp' attribute or it's not a datetime object."
+                    f"Data item of type {data_type} missing 'timestamp' attribute or it's not a datetime object.",
                 )
         return data_to_delete

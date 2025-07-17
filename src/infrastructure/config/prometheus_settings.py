@@ -1,5 +1,4 @@
-"""
-Defines Prometheus-related configuration settings for the application.
+"""Defines Prometheus-related configuration settings for the application.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to Prometheus integration settings, primarily whether

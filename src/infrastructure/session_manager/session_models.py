@@ -1,14 +1,17 @@
 from enum import Enum
+
 from sqlalchemy import Column, DateTime, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
 Base = declarative_base()
 
+
 class SessionStatus(Enum):
     ACTIVE = "active"
     ENDED = "ended"
     TIMEOUT = "timeout"
+
 
 class Session(Base):
     __tablename__ = "sessions"

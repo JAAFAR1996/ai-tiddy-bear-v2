@@ -1,15 +1,15 @@
 """
+Production ChatGPT API Client with Child Safety Filtering
+
+Enterprise-grade OpenAI integration for AI Teddy Bear
+"""
+
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 import asyncio
 import json
 import logging
 import os
-
-"""Production ChatGPT API Client with Child Safety Filtering
-
-Enterprise-grade OpenAI integration for AI Teddy Bear
-"""
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
@@ -91,16 +91,12 @@ class ProductionChatGPTClient:
         system_prompt = (
             "You are a friendly, safe, and supportive AI Teddy Bear for a young child. "
             "Your primary goal is to provide a positive and educational experience. "
-            "Follow these rules strictly:
-" +
-            "
-".join(f"- {rule}" for rule in self.child_safety_rules)
+            "Follow these rules strictly:\n" +
+            "\n".join(f"- {rule}" for rule in self.child_safety_rules)
         )
         
         # Add a specific instruction to guide the model's tone and persona
-        system_prompt += "
-
-Remember to be gentle, patient, and encouraging in all your responses."
+        system_prompt += "\n\nRemember to be gentle, patient, and encouraging in all your responses."
 
         # Construct the full list of messages for the API call
         api_messages = [{"role": "system", "content": system_prompt}] + messages
@@ -184,4 +180,3 @@ if __name__ == "__main__":
     # Note: Running this directly might require additional setup for the settings loader.
     # Consider running this as part of a larger application context.
     pass
-"""

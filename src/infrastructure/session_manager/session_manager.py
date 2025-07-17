@@ -1,14 +1,17 @@
-from datetime import datetime, timedelta
-from typing import List
-from uuid import UUID, uuid4
 import asyncio
-from sqlalchemy import select, text, func
+from datetime import datetime, timedelta
+from uuid import UUID, uuid4
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from .session_models import Session, SessionStatus
+
 
 class SessionConstants:
     DEFAULT_TIMEOUT_MINUTES = 30
     MAX_INACTIVE_TIME_MINUTES = 60
+
 
 class SessionManager:
     def __init__(self, db_session: AsyncSession) -> None:
@@ -16,9 +19,13 @@ class SessionManager:
         self._active_sessions = {}
         self._session_lock = asyncio.Lock()
 
-    async def create_session(self, child_id: str, initial_data: dict=None) -> UUID:
+    async def create_session(self, child_id: str, initial_data: dict | None = None) -> UUID:
         session_id = uuid4()
-        new_session = Session(id=str(session_id), child_id=child_id, session_data=str(initial_data) if initial_data else None)
+        new_session = Session(
+            id=str(session_id),
+            child_id=child_id,
+            session_data=str(initial_data) if initial_data else None,
+        )
         self.db.add(new_session)
         await self.db.commit()
         await self.db.refresh(new_session)
@@ -46,7 +53,7 @@ class SessionManager:
             return True
         return False
 
-    async def end_session(self, session_id: UUID, reason: str="") -> bool:
+    async def end_session(self, session_id: UUID, reason: str = "") -> bool:
         session = await self.get_session(session_id)
         if session:
             session.status = SessionStatus.ENDED.value
@@ -59,13 +66,23 @@ class SessionManager:
             return True
         return False
 
-    async def get_active_sessions(self) -> List[Session]:
-        result = await self.db.execute(select(Session).filter_by(status=SessionStatus.ACTIVE.value))
+    async def get_active_sessions(self) -> list[Session]:
+        result = await self.db.execute(
+            select(Session).filter_by(status=SessionStatus.ACTIVE.value),
+        )
         return result.scalars().all()
 
-    async def cleanup_inactive_sessions(self, timeout_minutes: int=SessionConstants.DEFAULT_TIMEOUT_MINUTES) -> int:
+    async def cleanup_inactive_sessions(
+        self,
+        timeout_minutes: int = SessionConstants.DEFAULT_TIMEOUT_MINUTES,
+    ) -> int:
         timeout_threshold = datetime.utcnow() - timedelta(minutes=timeout_minutes)
-        inactive_sessions = await self.db.execute(select(Session).filter(Session.status == SessionStatus.ACTIVE.value, Session.last_activity < timeout_threshold))
+        inactive_sessions = await self.db.execute(
+            select(Session).filter(
+                Session.status == SessionStatus.ACTIVE.value,
+                Session.last_activity < timeout_threshold,
+            ),
+        )
         count = 0
         for session in inactive_sessions.scalars().all():
             session.status = SessionStatus.TIMEOUT.value
@@ -76,8 +93,12 @@ class SessionManager:
         return count
 
     async def get_session_stats(self) -> dict:
-        active_count = await self.db.scalar(select(func.count()).filter_by(status=SessionStatus.ACTIVE.value))
-        total_today = await self.db.scalar(select(func.count()).filter(Session.created_at >= datetime.utcnow().date()))
+        active_count = await self.db.scalar(
+            select(func.count()).filter_by(status=SessionStatus.ACTIVE.value),
+        )
+        total_today = await self.db.scalar(
+            select(func.count()).filter(Session.created_at >= datetime.utcnow().date()),
+        )
         return {
             "active_sessions": active_count,
             "sessions_today": total_today,

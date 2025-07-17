@@ -1,9 +1,8 @@
-from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 from src.common.constants import (
-    MAX_CHILD_ID_LENGTH,
     MAX_CHILD_AGE,
+    MAX_CHILD_ID_LENGTH,
     MIN_CHILD_AGE,
 )
 

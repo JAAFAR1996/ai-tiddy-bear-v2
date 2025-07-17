@@ -1,9 +1,11 @@
 """Injection Security Tests"""
-from typing import Dict, List, Any
 import logging
 import re
-from .base_tester import BaseSecurityTester
+from typing import Any, Dict, List
+
 from src.infrastructure.logging_config import get_logger
+
+from .base_tester import BaseSecurityTester
 
 logger = get_logger(__name__, component="security")
 

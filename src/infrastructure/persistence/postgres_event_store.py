@@ -1,15 +1,17 @@
 """PostgreSQL Event Store Implementation for Event Sourcing."""
+
 from datetime import datetime
-from typing import List, Any, Dict, Optional
+from typing import Any
 from uuid import UUID, uuid4
-import json
-import logging
-from sqlalchemy import Column, String, Integer, DateTime, Text, Index, select
-from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from sqlalchemy import Column, DateTime, Index, Integer, String, select
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import declarative_base
+
 from src.domain.repositories.event_store import EventStore
 from src.infrastructure.persistence.database import Database
+
 """PostgreSQL Event Store Implementation for Event Sourcing."""
 from src.infrastructure.logging_config import get_logger
 
@@ -35,8 +37,8 @@ class EventModel(Base):
     sequence_number: int = Column(Integer, nullable=False)
 
     # Event data
-    event_data: Dict[str, Any] = Column(JSONB, nullable=False)
-    event_metadata: Optional[Dict[str, Any]] = Column(JSONB, nullable=True)
+    event_data: dict[str, Any] = Column(JSONB, nullable=False)
+    event_metadata: dict[str, Any] | None = Column(JSONB, nullable=True)
 
     # Timestamps
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -60,7 +62,7 @@ class PostgresEventStore(EventStore):
         aggregate_id: UUID,
         aggregate_type: str,
         event_type: str,
-        events: List[Dict[str, Any]],
+        events: list[dict[str, Any]],
     ) -> None:
         """Append a list of events to the event store."""
         async with self.db.get_session() as session:
@@ -71,7 +73,7 @@ class PostgresEventStore(EventStore):
                     select(EventModel)
                     .filter_by(aggregate_id=aggregate_id)
                     .order_by(EventModel.sequence_number.desc())
-                    .limit(1)
+                    .limit(1),
                 )
                 last_event = result.scalar_one_or_none()
                 sequence = last_event.sequence_number + 1 if last_event else 1
@@ -87,8 +89,10 @@ class PostgresEventStore(EventStore):
             await session.commit()
 
     async def get_events(
-        self, aggregate_id: UUID, after_version: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        self,
+        aggregate_id: UUID,
+        after_version: int | None = None,
+    ) -> list[dict[str, Any]]:
         """Retrieve events for a given aggregate."""
         async with self.db.get_session() as session:
             query = (

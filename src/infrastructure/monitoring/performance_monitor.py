@@ -1,20 +1,22 @@
-import asyncio
 import time
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from prometheus_client import Counter, Histogram
 
 # Prometheus metrics
-REQUEST_LATENCY = Histogram(
-    "request_latency_seconds", "Request latency", ["endpoint"]
-)
+REQUEST_LATENCY = Histogram("request_latency_seconds", "Request latency", ["endpoint"])
 REQUEST_COUNT = Counter(
-    "request_count", "Request count", ["endpoint", "method", "status"]
+    "request_count",
+    "Request count",
+    ["endpoint", "method", "status"],
 )
 
 
-def monitor_performance(func: Callable[..., Coroutine[Any, Any, Any]]) -> Callable[..., Coroutine[Any, Any, Any]]:
+def monitor_performance(
+    func: Callable[..., Coroutine[Any, Any, Any]],
+) -> Callable[..., Coroutine[Any, Any, Any]]:
     """Decorator to monitor the performance of an async function."""
 
     @wraps(func)
@@ -31,6 +33,10 @@ def monitor_performance(func: Callable[..., Coroutine[Any, Any, Any]]) -> Callab
             latency = time.time() - start_time
             endpoint_name = func.__name__
             REQUEST_LATENCY.labels(endpoint=endpoint_name).observe(latency)
-            REQUEST_COUNT.labels(endpoint=endpoint_name, method="unknown", status=status).inc()
+            REQUEST_COUNT.labels(
+                endpoint=endpoint_name,
+                method="unknown",
+                status=status,
+            ).inc()
 
     return wrapper

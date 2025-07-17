@@ -1,5 +1,4 @@
-"""
-Defines the EmotionType enumeration for representing various emotional states.
+"""Defines the EmotionType enumeration for representing various emotional states.
 
 This module provides a standardized way to categorize and refer to different
 emotions, which can be used throughout the system for emotion analysis,

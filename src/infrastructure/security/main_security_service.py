@@ -1,11 +1,8 @@
 # Standard library imports
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
-import hashlib
-import logging
+import os
 import re
 import secrets
-import os
+from typing import Any
 
 # Local imports
 from ..config.settings import get_settings
@@ -20,11 +17,9 @@ logger = get_logger(__name__, component="security")
 
 
 class MainSecurityService:
-    """
-    Unified security service consolidating all security features.
-    """
+    """Unified security service consolidating all security features."""
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         self.config = config or {}
         self.settings = get_settings()
         # Initialize sub-services
@@ -33,56 +28,60 @@ class MainSecurityService:
             redis_cache=self.config.get("redis"),
         )
         self.encryption_service = ChildDataEncryption(
-            encryption_key=self.settings.SECRET_KEY
+            encryption_key=self.settings.SECRET_KEY,
         )
         self.rate_limiter = RateLimiter(redis_client=self.config.get("redis"))
         logger.info("Main security service initialized")
 
     # Authentication methods (delegate to auth service)
     async def authenticate_user(
-        self, email: str, password: str, ip_address: str = None
+        self,
+        email: str,
+        password: str,
+        ip_address: str | None = None,
     ):
-        """Authenticate user with rate limiting"""
+        """Authenticate user with rate limiting."""
         return await self.auth_service.authenticate_user(email, password, ip_address)
 
-    async def create_token(self, user_data: Dict[str, Any]) -> str:
-        """Create JWT token"""
+    async def create_token(self, user_data: dict[str, Any]) -> str:
+        """Create JWT token."""
         return self.auth_service.create_access_token(user_data)
 
-    async def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
-        """Verify JWT token"""
+    async def verify_token(self, token: str) -> dict[str, Any] | None:
+        """Verify JWT token."""
         return await self.auth_service.verify_token(token)
 
     # Encryption methods (delegate to encryption service)
-    def encrypt_child_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Encrypt sensitive child data"""
+    def encrypt_child_data(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Encrypt sensitive child data."""
         return self.encryption_service.encrypt_child_data(data)
 
-    def decrypt_child_data(
-            self, encrypted_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Decrypt child data"""
+    def decrypt_child_data(self, encrypted_data: dict[str, Any]) -> dict[str, Any]:
+        """Decrypt child data."""
         return self.encryption_service.decrypt_child_data(encrypted_data)
 
     # Security utility methods
     def generate_secure_password(self, length: int = 12) -> str:
-        """Generate cryptographically secure password"""
+        """Generate cryptographically secure password."""
         alphabet = (
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
         )
         return "".join(secrets.choice(alphabet) for _ in range(length))
 
     def hash_password(self, password: str) -> str:
-        """Hash password using bcrypt"""
+        """Hash password using bcrypt."""
         return self.auth_service.hash_password(password)
 
     def verify_password(self, password: str, hashed: str) -> bool:
-        """Verify password against hash"""
+        """Verify password against hash."""
         return self.auth_service.verify_password(password, hashed)
 
     def validate_input(
-        self, input_data: str, input_type: str = "text"
-    ) -> Dict[str, Any]:
-        """Validate and sanitize user input"""
+        self,
+        input_data: str,
+        input_type: str = "text",
+    ) -> dict[str, Any]:
+        """Validate and sanitize user input."""
         # Basic input validation
         if not input_data:
             return {"valid": False, "error": "Input cannot be empty"}
@@ -95,28 +94,27 @@ class MainSecurityService:
             if len(input_data) > 50:
                 return {"valid": False, "error": "Name too long"}
             if not re.match(r"^[a-zA-Z\s\'-]+$", input_data):
-                return {"valid": False,
-                        "error": "Name contains invalid characters"}
+                return {"valid": False, "error": "Name contains invalid characters"}
         return {"valid": True, "sanitized": input_data.strip()}
 
     # Rate limiting methods
-    async def check_rate_limit(self, identifier: str,
-                               limit: int = None) -> bool:
-        """Check if request is within rate limit"""
+    async def check_rate_limit(self, identifier: str, limit: int | None = None) -> bool:
+        """Check if request is within rate limit."""
         return await self.rate_limiter.check_rate_limit(
-            identifier, max_requests=limit or self.settings.RATE_LIMIT_PER_MINUTE
+            identifier,
+            max_requests=limit or self.settings.RATE_LIMIT_PER_MINUTE,
         )
 
     # Session management
     def generate_session_id(self) -> str:
-        """Generate secure session ID"""
+        """Generate secure session ID."""
         return secrets.token_urlsafe(32)
 
     def generate_csrf_token(self) -> str:
-        """Generate CSRF protection token"""
+        """Generate CSRF protection token."""
         return secrets.token_urlsafe(32)
 
-    def validate_production_environment_security(self) -> List[str]:
+    def validate_production_environment_security(self) -> list[str]:
         """Validates production environment security settings within the security service."""
         errors = []
         # Access environment variables directly to validate against secure
@@ -150,15 +148,14 @@ class MainSecurityService:
             if dangerous.lower() in secret_key.lower():
                 errors.append(f"SECRET_KEY contains unsafe value: {dangerous}")
             if dangerous.lower() in jwt_secret.lower():
-                errors.append(
-                    f"JWT_SECRET_KEY contains unsafe value: {dangerous}")
+                errors.append(f"JWT_SECRET_KEY contains unsafe value: {dangerous}")
 
         return errors
 
 
 # Factory function
 def get_security_service(
-    config: Optional[Dict[str, Any]] = None,
+    config: dict[str, Any] | None = None,
 ) -> MainSecurityService:
-    """Get or create main security service instance"""
+    """Get or create main security service instance."""
     return MainSecurityService(config)

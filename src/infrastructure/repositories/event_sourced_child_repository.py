@@ -1,6 +1,3 @@
-import logging
-from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
 from src.domain.entities.child_profile import ChildProfile
@@ -17,10 +14,11 @@ class EventSourcedChildRepository:
 
     async def save(self, child_profile: ChildProfile) -> None:
         await self.event_store.save_events(
-            child_profile.id, child_profile.get_uncommitted_events()
+            child_profile.id,
+            child_profile.get_uncommitted_events(),
         )
 
-    async def get_by_id(self, aggregate_id: UUID) -> Optional[ChildProfile]:
+    async def get_by_id(self, aggregate_id: UUID) -> ChildProfile | None:
         events = await self.event_store.load_events(aggregate_id)
         if not events:
             return None
@@ -30,7 +28,7 @@ class EventSourcedChildRepository:
             child_profile.apply(event)
         return child_profile
 
-    async def get_all(self) -> List[ChildProfile]:
+    async def get_all(self) -> list[ChildProfile]:
         """Get all child profiles from event store by loading all events at once."""
         try:
             # Assuming event_store has a method to load all events efficiently

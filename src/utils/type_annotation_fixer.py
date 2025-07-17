@@ -1,10 +1,9 @@
-"""
-from pathlib import Path
+"""from pathlib import Path
 from typing import List, Tuple, Dict, Set
 import logging
 import os
 import re
-import ast
+import ast.
 """
 
 """Type Annotation Fixer
@@ -24,18 +23,22 @@ class TypeAnnotationFixer:
         """Initialize the type annotation fixer."""
         self.missing_annotations: List[Tuple[str, int, str, str]] = []
 
-    def find_missing_annotations(self, directory: str) -> List[Tuple[str, int, str, str]]:
-        """
-        Find functions with missing type annotations.
+    def find_missing_annotations(
+        self,
+        directory: str,
+    ) -> List[Tuple[str, int, str, str]]:
+        """Find functions with missing type annotations.
+
         Args:
             directory: Directory to scan for Python files
         Returns:
             List of tuples: (file_path, line_number, function_name, suggested_fix)
+
         """
         self.missing_annotations = []
-        for root, dirs, files in os.walk(directory):
+        for root, _dirs, files in os.walk(directory):
             for file in files:
-                if file.endswith('.py'):
+                if file.endswith(".py"):
                     file_path = os.path.join(root, file)
                     self._analyze_file(file_path)
         return self.missing_annotations
@@ -43,7 +46,7 @@ class TypeAnnotationFixer:
     def _analyze_file(self, file_path: str) -> None:
         """Analyze a single Python file for missing annotations."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
             lines = content.splitlines()
             # Find function definitions with missing return type annotations
@@ -52,88 +55,91 @@ class TypeAnnotationFixer:
                 stripped = line.strip()
                 # Check for __init__ methods without -> None
                 if self._is_init_without_annotation(stripped):
-                    self.missing_annotations.append((
-                        file_path, line_num, "__init__",
-                        "Add '-> None' return type annotation"
-                    ))
+                    self.missing_annotations.append(
+                        (
+                            file_path,
+                            line_num,
+                            "__init__",
+                            "Add '-> None' return type annotation",
+                        ),
+                    )
                 # Check for main functions without -> None
                 elif self._is_main_without_annotation(stripped):
-                    self.missing_annotations.append((
-                        file_path, line_num, "main",
-                        "Add '-> None' return type annotation"
-                    ))
+                    self.missing_annotations.append(
+                        (
+                            file_path,
+                            line_num,
+                            "main",
+                            "Add '-> None' return type annotation",
+                        ),
+                    )
                 # Check for other functions without return type
                 elif self._is_function_without_return_type(stripped):
                     func_name = self._extract_function_name(stripped)
                     if func_name:
-                        self.missing_annotations.append((
-                            file_path, line_num, func_name,
-                            "Add return type annotation"
-                        ))
+                        self.missing_annotations.append(
+                            (
+                                file_path,
+                                line_num,
+                                func_name,
+                                "Add return type annotation",
+                            ),
+                        )
         except Exception as e:
             logger.error(f"Error analyzing {file_path}: {e}")
 
     def _is_init_without_annotation(self, line: str) -> bool:
         """Check if line is __init__ method without -> None annotation."""
         return (
-            line.startswith('def __init__(') and
-            ' -> ' not in line and
-            line.endswith(':')
+            line.startswith("def __init__(")
+            and " -> " not in line
+            and line.endswith(":")
         )
 
     def _is_main_without_annotation(self, line: str) -> bool:
         """Check if line is main function without -> None annotation."""
         return (
-            line.startswith('def main(') and
-            ' -> ' not in line and
-            line.endswith(':')
+            line.startswith("def main(") and " -> " not in line and line.endswith(":")
         )
 
     def _is_function_without_return_type(self, line: str) -> bool:
         """Check if line is a function definition without return type."""
         return (
-            line.startswith('def ') and
-            ' -> ' not in line and
-            line.endswith(':') and
-            not line.startswith('def __') and  # Skip magic methods for now
-            not line.startswith('def _')  # Skip private methods for now
+            line.startswith("def ")
+            and " -> " not in line
+            and line.endswith(":")
+            and not line.startswith("def __")  # Skip magic methods for now
+            and not line.startswith("def _")  # Skip private methods for now
         )
 
     def _extract_function_name(self, line: str) -> str:
         """Extract function name from function definition line."""
-        match = re.match(r'def\s+(\w+)\s*\(', line)
+        match = re.match(r"def\s+(\w+)\s*\(", line)
         return match.group(1) if match else ""
 
     def fix_common_annotations(self, file_path: str) -> bool:
-        """
-        Fix common missing type annotations in a file.
+        """Fix common missing type annotations in a file.
+
         Args:
             file_path: Path to the Python file
         Returns:
             True if any fixes were applied
+
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
             original_content = content
 
             # Fix __init__ methods
-            content = re.sub(
-                r'(\s+def __init__\([^)]*\))\s*:',
-                r'\1 -> None:',
-                content
-            )
+            content = re.sub(r"(\s+def __init__\([^)]*\))\s*:", r"\1 -> None:", content)
 
             # Fix main functions
-            content = re.sub(
-                r'(\s+def main\([^)]*\))\s*:',
-                r'\1 -> None:',
-                content
-            )
+            content = re.sub(r"(\s+def main\([^)]*\))\s*:", r"\1 -> None:", content)
 
             # Write back if changes were made
             if content != original_content:
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
                 return True
             return False
@@ -141,7 +147,7 @@ class TypeAnnotationFixer:
             logger.error(f"Error fixing annotations in {file_path}: {e}")
             return False
 
-    def generate_report(self, output_file: str = None) -> str:
+    def generate_report(self, output_file: str | None = None) -> str:
         """Generate a report of missing type annotations."""
         if not self.missing_annotations:
             report = "✅ No missing type annotations found!\n"
@@ -162,17 +168,18 @@ class TypeAnnotationFixer:
                 report += "\n"
 
         if output_file:
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 f.write(report)
         return report
 
 
 def scan_and_fix_type_annotations(directory: str, fix_common: bool = True) -> None:
-    """
-    Scan directory for missing type annotations and optionally fix common ones.
+    """Scan directory for missing type annotations and optionally fix common ones.
+
     Args:
         directory: Directory to scan
         fix_common: Whether to automatically fix common patterns
+
     """
     fixer = TypeAnnotationFixer()
     logger.info("🔍 Scanning for missing type annotations...")
@@ -198,7 +205,9 @@ def scan_and_fix_type_annotations(directory: str, fix_common: bool = True) -> No
             fixer = TypeAnnotationFixer()
             remaining = fixer.find_missing_annotations(directory)
             if remaining:
-                logger.warning(f"⚠️  {len(remaining)} annotations still need manual review")
+                logger.warning(
+                    f"⚠️  {len(remaining)} annotations still need manual review",
+                )
                 report = fixer.generate_report()
                 logger.info(report)
             else:

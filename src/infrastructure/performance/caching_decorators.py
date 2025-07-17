@@ -1,6 +1,6 @@
-import asyncio
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from cachetools import TTLCache
 
@@ -8,7 +8,9 @@ from cachetools import TTLCache
 _cache = TTLCache(maxsize=1024, ttl=300)
 
 
-def cached(func: Callable[..., Coroutine[Any, Any, Any]]) -> Callable[..., Coroutine[Any, Any, Any]]:
+def cached(
+    func: Callable[..., Coroutine[Any, Any, Any]],
+) -> Callable[..., Coroutine[Any, Any, Any]]:
     """Decorator to cache the result of an async function."""
 
     @wraps(func)

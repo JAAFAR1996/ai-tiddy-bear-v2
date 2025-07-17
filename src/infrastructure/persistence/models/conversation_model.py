@@ -1,13 +1,17 @@
 class ConversationModel(Base):
     from datetime import datetime
-    from uuid import uuid4, UUID
-    from sqlalchemy import Column, String, DateTime, ForeignKey, Float
+    from uuid import UUID, uuid4
+
+    from sqlalchemy import Column, DateTime, Float, ForeignKey, String
     from sqlalchemy.orm import relationship
+
     from src.domain.entities.conversation import Conversation
     from src.infrastructure.persistence.database import Base
 
+
 class ConversationModel(Base):
     """SQLAlchemy model for conversations."""
+
     __tablename__ = "conversations"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     child_id = Column(String(36), ForeignKey("children.id"), nullable=False)

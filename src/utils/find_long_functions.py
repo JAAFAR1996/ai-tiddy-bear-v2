@@ -1,9 +1,8 @@
-"""
-from pathlib import Path
+"""from pathlib import Path
 from typing import List, Tuple, Dict
 import logging
 import os
-import ast
+import ast.
 """
 
 """Find Long Functions Utility
@@ -36,21 +35,18 @@ class FunctionAnalyzer(ast.NodeVisitor):
 
     def _check_function_length(self, node):
         """Check if function exceeds line limit."""
-        if hasattr(node, 'lineno') and hasattr(node, 'end_lineno'):
+        if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
             func_length = node.end_lineno - node.lineno + 1
             if func_length > self.max_lines:
-                self.long_functions.append((
-                    self.current_file,
-                    node.lineno,
-                    func_length,
-                    node.name
-                ))
+                self.long_functions.append(
+                    (self.current_file, node.lineno, func_length, node.name),
+                )
 
     def analyze_file(self, file_path: str) -> None:
         """Analyze a single Python file."""
         self.current_file = file_path
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
             tree = ast.parse(content)
             self.visit(tree)
@@ -58,20 +54,24 @@ class FunctionAnalyzer(ast.NodeVisitor):
             logger.error(f"Error parsing {file_path}: {e}")
 
 
-def find_long_functions(directory: str, max_lines: int = 50) -> List[Tuple[str, int, int, str]]:
-    """
-    Find all functions exceeding the line limit in a directory.
+def find_long_functions(
+    directory: str,
+    max_lines: int = 50,
+) -> List[Tuple[str, int, int, str]]:
+    """Find all functions exceeding the line limit in a directory.
+
     Args:
         directory: Directory to search
         max_lines: Maximum allowed lines per function
     Returns:
         List of tuples: (file_path, line_number, function_length, function_name)
+
     """
     analyzer = FunctionAnalyzer(max_lines)
     # Find all Python files
-    for root, dirs, files in os.walk(directory):
+    for root, _dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith('.py'):
+            if file.endswith(".py"):
                 file_path = os.path.join(root, file)
                 analyzer.analyze_file(file_path)
     return analyzer.long_functions
@@ -84,7 +84,9 @@ def print_long_functions_report(directory: str, max_lines: int = 50) -> None:
         logger.info(f"✅ No functions found exceeding {max_lines} lines!")
         return
 
-    logger.info(f"🔍 Found {len(long_functions)} functions exceeding {max_lines} lines:\n")
+    logger.info(
+        f"🔍 Found {len(long_functions)} functions exceeding {max_lines} lines:\n",
+    )
     # Sort by length (longest first)
     long_functions.sort(key=lambda x: x[2], reverse=True)
     for file_path, line_num, length, func_name in long_functions:
@@ -95,7 +97,11 @@ def print_long_functions_report(directory: str, max_lines: int = 50) -> None:
         logger.info("")
 
 
-def suggest_refactoring(file_path: str, function_name: str, start_line: int) -> List[str]:
+def suggest_refactoring(
+    file_path: str,
+    function_name: str,
+    start_line: int,
+) -> List[str]:
     """Suggest refactoring strategies for a long function."""
     suggestions = [
         f"Consider breaking down {function_name}() into smaller functions:",
@@ -104,7 +110,7 @@ def suggest_refactoring(file_path: str, function_name: str, start_line: int) -> 
         "• Look for repeated code that can be extracted",
         "• Consider using strategy pattern for complex conditionals",
         "• Extract validation logic into separate validators",
-        "• Move error handling to separate functions"
+        "• Move error handling to separate functions",
     ]
     return suggestions
 

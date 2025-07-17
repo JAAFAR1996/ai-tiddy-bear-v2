@@ -1,13 +1,11 @@
-"""
-Provides services for handling and processing audio data.
+"""Provides services for handling and processing audio data.
 
 This service is responsible for processing audio chunks, managing audio history,
 and integrating with the logging infrastructure to provide detailed insights
 into audio processing.
 """
 
-import logging
-from typing import Optional, Dict, Any, List
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -19,25 +17,24 @@ class AudioService:
 
     def __init__(self) -> None:
         """Initializes the audio service."""
-        self.audio_history: List[Dict[str, Any]] = []
+        self.audio_history: list[dict[str, Any]] = []
 
-    async def process_chunk(
-            self, audio_data: bytes) -> Optional[Dict[str, Any]]:
-        """
-        Processes a chunk of audio data.
+    async def process_chunk(self, audio_data: bytes) -> dict[str, Any] | None:
+        """Processes a chunk of audio data.
 
         Args:
             audio_data: Raw audio bytes to process.
 
         Returns:
             Processed audio metadata or None if processing fails.
+
         """
         try:
             # Basic validation for WAV file header
             WAV_HEADER = b"RIFF"
             if not audio_data.startswith(WAV_HEADER):
                 self.logger.warning(
-                    "Received audio data does not appear to be a WAV file. Skipping processing."
+                    "Received audio data does not appear to be a WAV file. Skipping processing.",
                 )
                 return None
 
@@ -53,16 +50,14 @@ class AudioService:
             self.logger.info(f"Processed audio chunk: {processed_data}")
             return processed_data
         except Exception as e:
-            self.logger.error(
-                f"Error processing audio chunk: {e}",
-                exc_info=True)
+            self.logger.error(f"Error processing audio chunk: {e}", exc_info=True)
             return None
 
-    def get_audio_history(self) -> List[Dict[str, Any]]:
-        """
-        Retrieves the history of processed audio chunks.
+    def get_audio_history(self) -> list[dict[str, Any]]:
+        """Retrieves the history of processed audio chunks.
 
         Returns:
             A list of processed audio metadata.
+
         """
         return self.audio_history

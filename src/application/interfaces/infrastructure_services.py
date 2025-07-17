@@ -151,6 +151,6 @@ class IEventBus(ABC):
         pass
         
     @abstractmethod
-    async def subscribe_to_events(self, event_names: List[str], handler) -> None:
+    async def subscribe_to_events(self, event_names: List[str], handler: Any) -> None:
         """Subscribe to domain events"""
         pass

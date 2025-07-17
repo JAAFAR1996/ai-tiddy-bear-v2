@@ -1,27 +1,24 @@
 """AI Teddy Bear - Modern FastAPI Application (2025 Standards)
-Enterprise-grade child-safe AI interaction system with Hexagonal Architecture"""
+Enterprise-grade child-safe AI interaction system with Hexagonal Architecture.
+"""
 
 # Standard library imports
-import logging
 import os
 from pathlib import Path
-from typing import (
-    Any,
-)  # Consolidated imports; Any covers the flexibility of Optional and Dict if types are not strictly constrained elsewhere.
 
 # Third-party imports
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status, Depends
-from fastapi.exceptions import RequestValidationError
-from fastapi.requests import Request
-from fastapi.responses import JSONResponse, Response
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse
 
 # Third-party imports for rate limiting
 from fastapi_limiter import FastAPILimiter
 from redis.asyncio import Redis
+
+from src.domain.exceptions.base import (  # Moved to central exceptions module
+    StartupValidationException,
+)
 
 # Local imports
 from src.infrastructure.config.production_check import enforce_production_safety
@@ -32,14 +29,6 @@ from src.infrastructure.logging_config import configure_logging, get_logger
 from src.infrastructure.middleware import setup_middleware
 from src.presentation.api.openapi_config import configure_openapi
 from src.presentation.routing import setup_routing
-from src.infrastructure.health.health_manager import (
-    HealthCheckManager,
-    get_health_manager,
-    HealthStatus,
-)  # HealthCheckManager defines detailed health checks within src/infrastructure/health, ensuring transparency of monitoring.
-from src.domain.exceptions.base import (
-    StartupValidationException,
-)  # Moved to central exceptions module
 
 # Load environment variables (only once at the top-level)
 load_dotenv()
@@ -74,15 +63,14 @@ async def lifespan(app: FastAPI):
             exc_info=True,
         )
         raise RuntimeError(
-            "Failed to initialize FastAPILimiter due to Redis connection issue"
+            "Failed to initialize FastAPILimiter due to Redis connection issue",
         ) from e
 
     # Yield control to the application startup
     yield
 
     # Perform cleanup actions on shutdown
-    logger.info(
-        "Application shutdown event triggered. Closing Redis connection.")
+    logger.info("Application shutdown event triggered. Closing Redis connection.")
     if redis_client:
         await redis_client.close()
         logger.info("Redis client closed.")
@@ -108,11 +96,8 @@ def _validate_system_startup() -> None:
         startup_validator_instance = container.startup_validator()
         validate_startup(startup_validator_instance)
     except RuntimeError as e:
-        logger.critical(
-            "System validation failed during app creation",
-            exc_info=True)
-        raise StartupValidationException(
-            "Application startup validation failed") from e
+        logger.critical("System validation failed during app creation", exc_info=True)
+        raise StartupValidationException("Application startup validation failed") from e
 
 
 def _setup_app_middlewares_and_routes(fast_app: FastAPI) -> None:
@@ -127,7 +112,7 @@ def _mount_static_files(fast_app: FastAPI, project_root: Path) -> None:
     environment = container.settings().app.ENVIRONMENT
     if environment == "production":
         logger.info(
-            "Skipping static file serving in production environment. Use Nginx or a CDN."
+            "Skipping static file serving in production environment. Use Nginx or a CDN.",
         )
         return
 
@@ -136,7 +121,7 @@ def _mount_static_files(fast_app: FastAPI, project_root: Path) -> None:
 
     if not static_dir.is_dir():
         logger.warning(
-            f"Static files directory not found at '{static_dir}'. Static file serving will be disabled."
+            f"Static files directory not found at '{static_dir}'. Static file serving will be disabled.",
         )
     else:
         try:
@@ -144,16 +129,12 @@ def _mount_static_files(fast_app: FastAPI, project_root: Path) -> None:
         except ValueError:
             logger.critical(
                 f"SECURITY ALERT: Invalid STATIC_FILES_DIR. Path traversal attempt detected."
-                f"Directory '{static_dir}' is outside of project root '{project_root}'."
+                f"Directory '{static_dir}' is outside of project root '{project_root}'.",
             )
             raise ValueError(
-                "Invalid static files directory configuration: Path traversal detected."
+                "Invalid static files directory configuration: Path traversal detected.",
             )
-        fast_app.mount(
-            "/static",
-            StaticFiles(
-                directory=static_dir),
-            name="static")
+        fast_app.mount("/static", StaticFiles(directory=static_dir), name="static")
         logger.info(f"Static files mounted from: {static_dir}")
 
 
@@ -202,23 +183,16 @@ if __name__ == "__main__":
     # Ensure SSL is configured for production or offloaded
     ssl_keyfile = os.getenv("SSL_KEYFILE")
     ssl_certfile = os.getenv("SSL_CERTFILE")
-    ssl_offloaded = os.getenv(
-        "SSL_OFFLOADED",
-        "false").lower() in (
-        "true",
-        "1",
-        "yes")
+    ssl_offloaded = os.getenv("SSL_OFFLOADED", "false").lower() in ("true", "1", "yes")
 
     uvicorn_ssl_args = {}
-    if not is_development and not (
-            ssl_keyfile and ssl_certfile) and not ssl_offloaded:
+    if not is_development and not (ssl_keyfile and ssl_certfile) and not ssl_offloaded:
         logger.critical(
             "SECURITY ERROR: Production deployment requires SSL certificates or SSL offloading. "
             "Set SSL_KEYFILE and SSL_CERTFILE environment variables for Uvicorn SSL, "
-            "or set SSL_OFFLOADED=true if an external proxy handles SSL."
+            "or set SSL_OFFLOADED=true if an external proxy handles SSL.",
         )
-        raise RuntimeError(
-            "SSL configuration required for production deployment")
+        raise RuntimeError("SSL configuration required for production deployment")
     elif ssl_keyfile and ssl_certfile and not ssl_offloaded:
         uvicorn_ssl_args["ssl_keyfile"] = ssl_keyfile
         uvicorn_ssl_args["ssl_certfile"] = ssl_certfile
@@ -242,9 +216,7 @@ if __name__ == "__main__":
             server_settings.UVICORN_DEV_WORKERS
             if is_development
             else int(
-                os.getenv(
-                    "WORKERS", str(
-                        server_settings.UVICORN_PROD_WORKERS_DEFAULT))
+                os.getenv("WORKERS", str(server_settings.UVICORN_PROD_WORKERS_DEFAULT)),
             )
         ),
         backlog=server_settings.UVICORN_BACKLOG,

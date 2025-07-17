@@ -1,27 +1,36 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
-import logging
-from jose import jwt, JWTError
+from typing import Any
+
+from jose import JWTError, jwt
+
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="security")
 
-from src.infrastructure.config.settings import Settings, get_settings
 from fastapi import Depends
+
+from src.infrastructure.config.settings import Settings
+
 
 class TokenService:
     """Service for creating, verifying, and managing JWT tokens."""
-    def __init__(self, settings: Settings=Depends(get_settings)) -> None:
+
+    def __init__(self, settings: Settings = Depends(get_settings)) -> None:
         self.settings = settings
         self.secret_key = self.settings.security.SECRET_KEY
         self.algorithm = self.settings.security.JWT_ALGORITHM
-        self.access_token_expire_minutes = (self.settings.security.ACCESS_TOKEN_EXPIRE_MINUTES)
-        self.refresh_token_expire_days = (self.settings.security.REFRESH_TOKEN_EXPIRE_DAYS)
-        
+        self.access_token_expire_minutes = (
+            self.settings.security.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+        self.refresh_token_expire_days = (
+            self.settings.security.REFRESH_TOKEN_EXPIRE_DAYS
+        )
+
         if not self.secret_key or len(self.secret_key) < 32:
             raise ValueError("SECRET_KEY must be at least 32 characters long")
-    
-    def create_access_token(self, user_data: Dict[str, Any]) -> str:
+
+    def create_access_token(self, user_data: dict[str, Any]) -> str:
         """Create JWT access token with user data."""
         try:
             to_encode = {
@@ -30,7 +39,8 @@ class TokenService:
                 "role": user_data["role"],
                 "type": "access",
                 "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes),
+                "exp": datetime.utcnow()
+                + timedelta(minutes=self.access_token_expire_minutes),
             }
             return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         except (KeyError, TypeError) as e:
@@ -39,8 +49,8 @@ class TokenService:
         except JWTError as e:
             logger.error(f"JWT encoding error: {e}")
             raise ValueError("Failed to create access token")
-    
-    def create_refresh_token(self, user_data: Dict[str, Any]) -> str:
+
+    def create_refresh_token(self, user_data: dict[str, Any]) -> str:
         """Create JWT refresh token."""
         try:
             to_encode = {
@@ -48,7 +58,8 @@ class TokenService:
                 "email": user_data["email"],
                 "type": "refresh",
                 "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + timedelta(days=self.refresh_token_expire_days),
+                "exp": datetime.utcnow()
+                + timedelta(days=self.refresh_token_expire_days),
             }
             return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         except (KeyError, TypeError) as e:
@@ -57,8 +68,8 @@ class TokenService:
         except JWTError as e:
             logger.error(f"JWT encoding error for refresh token: {e}")
             raise ValueError("Failed to create refresh token")
-    
-    async def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
+
+    async def verify_token(self, token: str) -> dict[str, Any] | None:
         """Verify JWT token and check blacklist (if Redis cache is provided)."""
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])

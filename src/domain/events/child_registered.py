@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
+
 from .domain_events import DomainEvent
 
 
@@ -10,12 +11,18 @@ class ChildRegistered(DomainEvent):
     name: str
     age: int
     preferences: dict
-    
+
     @classmethod
-    def create(cls, child_id: UUID, name: str, age: int, preferences: dict) -> "ChildRegistered":
+    def create(
+        cls,
+        child_id: UUID,
+        name: str,
+        age: int,
+        preferences: dict,
+    ) -> "ChildRegistered":
         return cls(
             event_id=uuid4(),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             child_id=child_id,
             name=name,
             age=age,

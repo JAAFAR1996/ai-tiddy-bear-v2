@@ -4,8 +4,6 @@ This module defines the wiring configurations for various application components
 centralizing the mapping of abstract interfaces to concrete implementations.
 """
 
-from typing import List
-
 
 class WiringConfig:
     """Base wiring configuration.
@@ -13,7 +11,7 @@ class WiringConfig:
     Provides a base for specific wiring configurations.
     """
 
-    modules: List[str] = []
+    modules: list[str] = []
 
 
 # APIWiringConfig, DashboardWiringConfig, and CoreWiringConfig were unused and have been removed.

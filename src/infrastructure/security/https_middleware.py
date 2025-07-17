@@ -1,7 +1,6 @@
-"""
-from datetime import datetime
+"""from datetime import datetime
 from typing import Callable
-import logging
+import logging.
 """
 
 """HTTPS Middleware for secure communication"""
@@ -15,24 +14,33 @@ try:
     from fastapi.responses import RedirectResponse
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
+
     class Request:
         pass
+
     class Response:
         pass
+
     class BaseHTTPMiddleware:
         pass
+
     class HTTPSRedirectMiddleware:
         pass
 
 
 class HTTPSEnforcementMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware to enforce HTTPS in production environment
-    """
-    def __init__(self, app, enforce_https: bool = False, hsts_max_age: int = 31536000) -> None:
+    """Middleware to enforce HTTPS in production environment."""
+
+    def __init__(
+        self,
+        app,
+        enforce_https: bool = False,
+        hsts_max_age: int = 31536000,
+    ) -> None:
         super().__init__(app)
         self.enforce_https = enforce_https
         self.hsts_max_age = hsts_max_age
@@ -54,37 +62,40 @@ class HTTPSEnforcementMiddleware(BaseHTTPMiddleware):
 
         # Add security headers
         if self.enforce_https:
-            response.headers["Strict-Transport-Security"] = f"max-age={self.hsts_max_age}; includeSubDomains; preload"
+            response.headers["Strict-Transport-Security"] = (
+                f"max-age={self.hsts_max_age}; includeSubDomains; preload"
+            )
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["X-XSS-Protection"] = "1; mode=block"
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-            response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            )
 
         return response
 
 
-def create_https_middleware(environment: str = "development") -> HTTPSEnforcementMiddleware:
-    """
-    Create HTTPS middleware based on environment
-    """
+def create_https_middleware(
+    environment: str = "development",
+) -> HTTPSEnforcementMiddleware:
+    """Create HTTPS middleware based on environment."""
     enforce_https = environment == "production"
     if enforce_https:
         logger.info("HTTPS enforcement enabled for production environment")
     else:
         logger.info("HTTPS enforcement disabled for development environment")
-    
+
     return HTTPSEnforcementMiddleware(
         app=None,
         enforce_https=enforce_https,
-        hsts_max_age=31536000  # 1 year
+        hsts_max_age=31536000,  # 1 year
     )
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware to add security headers to all responses
-    """
+    """Middleware to add security headers to all responses."""
+
     def __init__(self, app) -> None:
         super().__init__(app)
 
@@ -111,38 +122,35 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def setup_https_middleware(app, settings) -> None:
-    """
-    Setup HTTPS and security middleware
-    """
+    """Setup HTTPS and security middleware."""
     if not FASTAPI_AVAILABLE:
         logger.warning("FastAPI not available, skipping HTTPS middleware setup")
         return
 
     # Add HTTPS enforcement middleware
-    https_middleware = create_https_middleware(settings.ENVIRONMENT)
-    app.add_middleware(HTTPSEnforcementMiddleware, enforce_https=settings.ENVIRONMENT == "production")
-    
+    create_https_middleware(settings.ENVIRONMENT)
+    app.add_middleware(
+        HTTPSEnforcementMiddleware,
+        enforce_https=settings.ENVIRONMENT == "production",
+    )
+
     # Add security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
-    
+
     logger.info("HTTPS and security middleware configured")
 
 
 # Configuration for different environments
 HTTPS_CONFIG = {
-    "development": {
-        "enforce_https": False,
-        "hsts_max_age": 0,
-        "require_ssl": False
-    },
+    "development": {"enforce_https": False, "hsts_max_age": 0, "require_ssl": False},
     "staging": {
         "enforce_https": True,
         "hsts_max_age": 86400,  # 1 day
-        "require_ssl": True
+        "require_ssl": True,
     },
     "production": {
         "enforce_https": True,
         "hsts_max_age": 31536000,  # 1 year
-        "require_ssl": True
-    }
+        "require_ssl": True,
+    },
 }

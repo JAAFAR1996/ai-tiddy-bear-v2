@@ -1,5 +1,4 @@
-"""
-Manages feature availability and parental controls for the AI Teddy Bear.
+"""Manages feature availability and parental controls for the AI Teddy Bear.
 
 This service allows for the dynamic enabling and disabling of features based
 on child age, parental consent, and safety considerations. It ensures that
@@ -8,9 +7,8 @@ and providing a customizable experience for each child.
 """
 
 import logging
-from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -54,11 +52,10 @@ class FeatureService:
         self,
         feature_name: str,
         child_id: str,
-        child_age: int = None,
+        child_age: int | None = None,
         parent_consent: bool = False,
-    ) -> Dict[str, Any]:
-        """
-        Enables a feature for a specific child with safety checks.
+    ) -> dict[str, Any]:
+        """Enables a feature for a specific child with safety checks.
 
         Args:
             feature_name: Name of the feature to enable.
@@ -68,18 +65,18 @@ class FeatureService:
 
         Returns:
             A dictionary indicating the success status and any messages.
+
         """
         try:
             feature_type = FeatureType(feature_name)
         except ValueError:
             self.logger.warning(
-                f"Invalid feature type provided for enable_feature: {feature_name}"
+                f"Invalid feature type provided for enable_feature: {feature_name}",
             )
             return {"success": False, "message": "Invalid feature type."}
 
         if feature_type not in self.default_features:
-            return {"success": False,
-                    "message": f"Unknown feature: {feature_name}"}
+            return {"success": False, "message": f"Unknown feature: {feature_name}"}
 
         # If feature is off by default
         if not self.default_features[feature_type]:
@@ -105,15 +102,11 @@ class FeatureService:
 
         # Feature can be enabled
         # In a real system, this would update a child's profile in a database
-        self.logger.info(
-            f"Feature '{feature_type.value}' enabled for child {child_id}")
-        return {"success": True,
-                "message": f"Feature '{feature_type.value}' enabled."}
+        self.logger.info(f"Feature '{feature_type.value}' enabled for child {child_id}")
+        return {"success": True, "message": f"Feature '{feature_type.value}' enabled."}
 
-    async def disable_feature(self, feature_name: str,
-                              child_id: str) -> Dict[str, Any]:
-        """
-        Disables a feature for a specific child.
+    async def disable_feature(self, feature_name: str, child_id: str) -> dict[str, Any]:
+        """Disables a feature for a specific child.
 
         Args:
             feature_name: Name of the feature to disable.
@@ -121,12 +114,13 @@ class FeatureService:
 
         Returns:
             A dictionary indicating the success status and any messages.
+
         """
         try:
             feature_type = FeatureType(feature_name)
         except ValueError:
             self.logger.warning(
-                f"Invalid feature type provided for disable_feature: {feature_name}"
+                f"Invalid feature type provided for disable_feature: {feature_name}",
             )
             return {"success": False, "message": "Invalid feature type."}
 
@@ -137,15 +131,12 @@ class FeatureService:
             }
 
         self.logger.info(
-            f"Feature '{feature_type.value}' disabled for child {child_id}"
+            f"Feature '{feature_type.value}' disabled for child {child_id}",
         )
-        return {"success": True,
-                "message": f"Feature '{feature_type.value}' disabled."}
+        return {"success": True, "message": f"Feature '{feature_type.value}' disabled."}
 
-    def get_feature_status(self, feature_name: str,
-                           child_id: str) -> Dict[str, Any]:
-        """
-        Gets the current status of a feature for a specific child.
+    def get_feature_status(self, feature_name: str, child_id: str) -> dict[str, Any]:
+        """Gets the current status of a feature for a specific child.
 
         Args:
             feature_name: Name of the feature.
@@ -153,17 +144,18 @@ class FeatureService:
 
         Returns:
             A dictionary indicating the feature's status.
+
         """
         try:
             feature_type = FeatureType(feature_name)
         except ValueError:
             self.logger.warning(
-                f"Invalid feature type provided for get_feature_status: {feature_name}"
+                f"Invalid feature type provided for get_feature_status: {feature_name}",
             )
             return {"success": False, "message": "Invalid feature type."}
 
         is_enabled = self.default_features.get(feature_type, False)
         self.logger.info(
-            f"Feature '{feature_type.value}' status for child {child_id}: {is_enabled}"
+            f"Feature '{feature_type.value}' status for child {child_id}: {is_enabled}",
         )
         return {"feature_name": feature_type.value, "is_enabled": is_enabled}

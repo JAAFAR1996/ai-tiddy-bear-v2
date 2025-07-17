@@ -1,5 +1,4 @@
-"""
-Generates contextual responses and determines appropriate activity types.
+"""Generates contextual responses and determines appropriate activity types.
 
 This service is responsible for analyzing input text, emotion, and session
 context to produce relevant AI responses and suggest suitable activities.
@@ -9,12 +8,13 @@ current conversational flow and emotional state.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
+
 from src.application.interfaces.ai_provider import AIProvider
-from src.application.services.session_manager import SessionData
-from src.infrastructure.logging_config import get_logger
 from src.application.interfaces.safety_monitor import SafetyMonitor
+from src.application.services.session_manager import SessionData
 from src.domain.safety.models import SafetyLevel
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="response_generator")
 
@@ -43,24 +43,28 @@ class ResponseGenerator:
     """Service for generating contextual responses and determining activity types."""
 
     def __init__(
-        self, ai_service: AIProvider | None = None, safety_monitor: SafetyMonitor = None
+        self,
+        ai_service: AIProvider | None = None,
+        safety_monitor: SafetyMonitor = None,
     ) -> None:
-        """
-        Initializes the response generator.
+        """Initializes the response generator.
 
         Args:
             ai_service: An optional AI service dependency.
             safety_monitor: Optional SafetyMonitor for content validation.
+
         """
         self.ai_service = ai_service
         self.logger = logger
         self.safety_monitor = safety_monitor
 
     async def determine_activity_type(
-        self, text: str, emotion: dict[str, Any], session: SessionData
+        self,
+        text: str,
+        emotion: dict[str, Any],
+        session: SessionData,
     ) -> ActivityType:
-        """
-        Determines the appropriate activity type based on input text, emotion, and session
+        """Determines the appropriate activity type based on input text, emotion, and session
         using the AI service, with fallback.
 
         Args:
@@ -70,6 +74,7 @@ class ResponseGenerator:
 
         Returns:
             The determined ActivityType.
+
         """
         if self.ai_service:
             try:
@@ -77,7 +82,9 @@ class ResponseGenerator:
                     session.__dict__
                 )  # Convert dataclass to dict for generic AI API
                 predicted_activity_str = await self.ai_service.determine_activity_type(
-                    text, emotion, session_context_dict
+                    text,
+                    emotion,
+                    session_context_dict,
                 )
                 return ActivityType[predicted_activity_str.upper()]
             except Exception as e:
@@ -90,10 +97,12 @@ class ResponseGenerator:
         return ActivityType.CONVERSATION
 
     async def generate_contextual_response(
-        self, text: str, emotion: dict[str, Any], session: SessionData
+        self,
+        text: str,
+        emotion: dict[str, Any],
+        session: SessionData,
     ) -> ResponseContext:
-        """
-        Generates a contextual response based on input text, emotion, and session
+        """Generates a contextual response based on input text, emotion, and session
         using the AI service, with fallback.
 
         Args:
@@ -103,17 +112,17 @@ class ResponseGenerator:
 
         Returns:
             A ResponseContext object containing the generated response.
+
         """
         if self.ai_service:
             try:
                 # Assuming conversation_history is extracted or managed by a higher-level service
                 # For this specific method, we might just pass the current
                 # input and relevant context
-                conversation_history_dummy = (
-                    []
-                )  # Replace with actual conversation history if available from session
+                conversation_history_dummy = []  # Replace with actual conversation history if available from session
                 child_preferences_dummy = session.data.get(
-                    "child_preferences", None
+                    "child_preferences",
+                    None,
                 )  # Assuming preferences are stored in session data
 
                 ai_response_text = await self.ai_service.generate_response(
@@ -123,21 +132,22 @@ class ResponseGenerator:
                     child_preferences=child_preferences_dummy,
                 )
                 self.logger.info(
-                    f"AI generated contextual response: {ai_response_text[:50]}..."
+                    f"AI generated contextual response: {ai_response_text[:50]}...",
                 )
 
                 # Validate AI-generated response for safety
                 if self.safety_monitor:
                     child_age_for_safety = session.data.get("child_age", 0)
                     safety_result = await self.safety_monitor.check_content_safety(
-                        ai_response_text, child_age=child_age_for_safety
+                        ai_response_text,
+                        child_age=child_age_for_safety,
                     )
                     if safety_result.risk_level in [
                         SafetyLevel.UNSAFE,
                         SafetyLevel.POTENTIALLY_UNSAFE,
                     ]:
                         self.logger.warning(
-                            f"AI response blocked: Unsafe content detected for child {session.child_id}. Response: '{ai_response_text[:50]}...' Reason: {safety_result.analysis_details}"
+                            f"AI response blocked: Unsafe content detected for child {session.child_id}. Response: '{ai_response_text[:50]}...' Reason: {safety_result.analysis_details}",
                         )
                         return ResponseContext(
                             "I'm sorry, that's not something I can talk about. Can we find another topic?",
@@ -148,14 +158,19 @@ class ResponseGenerator:
                 # For now, assume a simple mapping or default from
                 # context/emotion input
                 activity_type = await self.determine_activity_type(
-                    text, emotion, session
+                    text,
+                    emotion,
+                    session,
                 )
                 response_emotion = emotion.get(
-                    "sentiment", "neutral"
+                    "sentiment",
+                    "neutral",
                 )  # Assuming sentiment key exists
 
                 return ResponseContext(
-                    ai_response_text, activity_type, response_emotion
+                    ai_response_text,
+                    activity_type,
+                    response_emotion,
                 )
             except Exception as e:
                 self.logger.error(
@@ -164,7 +179,7 @@ class ResponseGenerator:
                 )
         # Fallback logic if AI service is not available or fails
         self.logger.warning(
-            "Falling back to generic response due to AI service failure or unavailability."
+            "Falling back to generic response due to AI service failure or unavailability.",
         )
         return ResponseContext(
             "I'm sorry, I couldn't generate a personalized response right now. Can we talk about something else?",

@@ -1,5 +1,4 @@
-"""
-from dataclasses import dataclass, field
+"""from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
@@ -10,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from .chaos_injector import ChaosInjector
 from .chaos_monitor import ChaosMonitor
-from .chaos_reporter import ChaosReporter
+from .chaos_reporter import ChaosReporter.
 """
 
 """Chaos Engineering Orchestrator
@@ -19,11 +18,13 @@ Advanced chaos orchestration and experiment management for AI Teddy Bear System"
 
 logging.basicConfig(level=logging.INFO)
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="chaos")
 
 
 class ExperimentStatus(Enum):
-    """Chaos experiment execution status"""
+    """Chaos experiment execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -33,7 +34,8 @@ class ExperimentStatus(Enum):
 
 
 class FailureType(Enum):
-    """Types of failures to simulate"""
+    """Types of failures to simulate."""
+
     NETWORK_LATENCY = "network_latency"
     NETWORK_PARTITION = "network_partition"
     SERVICE_CRASH = "service_crash"
@@ -48,7 +50,8 @@ class FailureType(Enum):
 
 @dataclass
 class ChaosTarget:
-    """Target for chaos experiments"""
+    """Target for chaos experiments."""
+
     service_name: str
     instance_count: int = 1
     health_endpoint: str = "/health"
@@ -59,7 +62,8 @@ class ChaosTarget:
 
 @dataclass
 class ExperimentMetrics:
-    """Metrics collected during chaos experiments"""
+    """Metrics collected during chaos experiments."""
+
     experiment_id: str
     start_time: datetime
     end_time: Optional[datetime] = None
@@ -72,11 +76,10 @@ class ExperimentMetrics:
 
 
 class ChaosOrchestrator:
+    """Advanced chaos engineering orchestrator
+    Manages complex chaos experiments across AI Teddy Bear system.
     """
-    Advanced chaos engineering orchestrator
-    Manages complex chaos experiments across AI Teddy Bear system
-    """
-    
+
     def _initialize_core_components(self, config: Dict[str, Any]) -> None:
         """Initialize core orchestrator components."""
         self.config = config
@@ -87,7 +90,7 @@ class ChaosOrchestrator:
         self.injector = ChaosInjector(self)
         self.monitor = ChaosMonitor(self)
         self.reporter = ChaosReporter(self)
-    
+
     def _setup_chaos_targets(self) -> Dict[str, ChaosTarget]:
         """Setup chaos targets configuration."""
         return {
@@ -96,7 +99,7 @@ class ChaosOrchestrator:
             "safety-service": self._create_safety_service_target(),
             "graphql-federation": self._create_graphql_federation_target(),
         }
-    
+
     def _create_child_service_target(self) -> ChaosTarget:
         """Create chaos target for child service."""
         return ChaosTarget(
@@ -111,7 +114,7 @@ class ChaosOrchestrator:
             ],
             safety_critical=True,
         )
-    
+
     def _create_ai_service_target(self) -> ChaosTarget:
         """Create chaos target for AI service."""
         return ChaosTarget(
@@ -127,7 +130,7 @@ class ChaosOrchestrator:
             ],
             safety_critical=True,
         )
-    
+
     def _create_safety_service_target(self) -> ChaosTarget:
         """Create chaos target for safety service."""
         return ChaosTarget(
@@ -142,7 +145,7 @@ class ChaosOrchestrator:
             ],
             safety_critical=True,
         )
-    
+
     def _create_graphql_federation_target(self) -> ChaosTarget:
         """Create chaos target for GraphQL federation."""
         return ChaosTarget(
@@ -157,17 +160,20 @@ class ChaosOrchestrator:
             ],
             safety_critical=False,
         )
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
         """Initialize ChaosOrchestrator with configuration."""
         config = config or {}
         self._initialize_core_components(config)
         self.chaos_targets = self._setup_chaos_targets()
-    
-    def add_safety_monitor(self, monitor_func: Callable[[Dict[str, Any]], bool]) -> None:
-        """Add safety monitor function"""
+
+    def add_safety_monitor(
+        self,
+        monitor_func: Callable[[Dict[str, Any]], bool],
+    ) -> None:
+        """Add safety monitor function."""
         self.safety_monitors.append(monitor_func)
-    
+
     async def execute_chaos_experiment(
         self,
         experiment_name: str,
@@ -176,14 +182,15 @@ class ChaosOrchestrator:
         duration_minutes: int = 10,
         intensity: float = 0.5,
     ) -> ExperimentMetrics:
-        """Execute comprehensive chaos experiment"""
+        """Execute comprehensive chaos experiment."""
         experiment_id = f"{experiment_name}_{int(time.time())}"
         logger.info(f"🧪 Starting chaos experiment: {experiment_id}")
-        
+
         metrics = ExperimentMetrics(
-            experiment_id=experiment_id, start_time=datetime.now()
+            experiment_id=experiment_id,
+            start_time=datetime.now(),
         )
-        
+
         self.active_experiments[experiment_id] = {
             "status": ExperimentStatus.RUNNING,
             "targets": targets,
@@ -192,11 +199,11 @@ class ChaosOrchestrator:
             "duration_minutes": duration_minutes,
             "intensity": intensity,
         }
-        
+
         try:
             if not await self._pre_experiment_safety_check():
                 raise Exception("Pre-experiment safety check failed")
-            
+
             await self._execute_experiment_phases(
                 experiment_id,
                 targets,
@@ -205,9 +212,9 @@ class ChaosOrchestrator:
                 intensity,
                 metrics,
             )
-            
+
             await self._post_experiment_verification(metrics)
-            
+
             metrics.end_time = datetime.now()
             self.active_experiments[experiment_id]["status"] = (
                 ExperimentStatus.COMPLETED
@@ -222,9 +229,9 @@ class ChaosOrchestrator:
             self.experiment_history.append(metrics)
             if experiment_id in self.active_experiments:
                 del self.active_experiments[experiment_id]
-        
+
         return metrics
-    
+
     async def _execute_experiment_phases(
         self,
         experiment_id: str,
@@ -234,10 +241,10 @@ class ChaosOrchestrator:
         intensity: float,
         metrics: ExperimentMetrics,
     ):
-        """Execute chaos experiment in phases"""
+        """Execute chaos experiment in phases."""
         logger.info(f"📊 Phase 1: Baseline measurement for {experiment_id}")
         await self.monitor._collect_baseline_metrics(targets)
-        
+
         logger.info(f"💥 Phase 2: Failure injection for {experiment_id}")
         injection_tasks = []
         for target in targets:
@@ -246,34 +253,42 @@ class ChaosOrchestrator:
                     if failure_type in self.chaos_targets[target].failure_types:
                         task = asyncio.create_task(
                             self.injector.inject_failure(
-                                target, failure_type, intensity, metrics
-                            )
+                                target,
+                                failure_type,
+                                intensity,
+                                metrics,
+                            ),
                         )
                         injection_tasks.append(task)
-        
+
         await asyncio.gather(*injection_tasks, return_exceptions=True)
-        
+
         logger.info(f"📈 Phase 3: Monitoring phase for {experiment_id}")
         monitoring_duration = duration_minutes * 60
         await self.monitor.monitor_experiment(
-            experiment_id, monitoring_duration, metrics
+            experiment_id,
+            monitoring_duration,
+            metrics,
         )
-        
+
         logger.info(f"🔄 Phase 4: Recovery validation for {experiment_id}")
         await self.monitor.validate_recovery(targets, metrics)
-    
+
     async def _execute_chaos_command(
-        self, command: str, target: str, duration: Optional[int] = None
+        self,
+        command: str,
+        target: str,
+        duration: Optional[int] = None,
     ):
-        """Execute chaos command safely"""
+        """Execute chaos command safely."""
         logger.info(f"🔧 Chaos command for {target}: {command}")
         if duration:
             await asyncio.sleep(duration)
-    
+
     async def _pre_experiment_safety_check(self) -> bool:
-        """Perform safety checks before starting experiment"""
+        """Perform safety checks before starting experiment."""
         logger.info("🔍 Performing pre-experiment safety checks...")
-        
+
         critical_services = ["safety-service", "child-service"]
         for service in critical_services:
             try:
@@ -284,27 +299,27 @@ class ChaosOrchestrator:
             except Exception as e:
                 logger.error(f"❌ Cannot reach critical service {service}: {e}")
                 return False
-        
+
         if len(self.active_experiments) > 3:
             logger.error("❌ Too many active experiments")
             return False
-        
+
         logger.info("✅ Pre-experiment safety checks passed")
         return True
-    
+
     async def _safety_check_before_injection(self, target: str) -> bool:
-        """Safety check before injecting failure"""
+        """Safety check before injecting failure."""
         try:
             response = requests.get(f"http://{target}:8000/health", timeout=5)
             return response.status_code == 200
         except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
             logger.warning(f"Safety check failed for {target}: {e}")
             return False
-    
+
     async def _post_experiment_verification(self, metrics: ExperimentMetrics):
-        """Verify system state after experiment"""
+        """Verify system state after experiment."""
         logger.info("🔍 Performing post-experiment verification...")
-        
+
         safety_services = ["safety-service", "content-filter", "parental-controls"]
         for service in safety_services:
             try:
@@ -315,21 +330,21 @@ class ChaosOrchestrator:
             except Exception as e:
                 logger.error(f"❌ Cannot verify {service}: {e}")
                 metrics.safety_violations += 1
-        
+
         logger.info("✅ Post-experiment verification completed")
-    
+
     async def _emergency_rollback(self, experiment_id: str):
-        """Emergency rollback of all chaos actions"""
+        """Emergency rollback of all chaos actions."""
         logger.critical(f"🚨 EMERGENCY ROLLBACK for experiment {experiment_id}")
         try:
             logger.info("✅ Emergency rollback completed")
         except Exception as e:
             logger.critical(f"❌ Emergency rollback failed: {e}")
-    
+
     def get_experiment_report(self, experiment_id: str) -> Dict[str, Any]:
-        """Generate comprehensive experiment report"""
+        """Generate comprehensive experiment report."""
         return self.reporter.get_experiment_report(experiment_id)
-    
+
     def get_system_resilience_score(self) -> Dict[str, Any]:
-        """Calculate overall system resilience score"""
+        """Calculate overall system resilience score."""
         return self.reporter.get_system_resilience_score()

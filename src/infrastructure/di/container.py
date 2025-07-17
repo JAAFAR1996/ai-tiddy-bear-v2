@@ -16,30 +16,46 @@ Design Principles:
 - **Testability**: Dependencies can be easily mocked or replaced for testing purposes.
 """
 
-import logging
-import sys
-from typing import Any
-
 from dependency_injector import containers, providers
 
-# Settings
-from src.infrastructure.config.settings import get_settings
+# Application Services
+from src.application.event_handlers.child_profile_event_handlers import (
+    ChildProfileEventHandlers,
+)
+from src.application.services.ai_orchestration_service import AIOrchestrationService
+from src.application.services.audio_processing_service import AudioProcessingService
+from src.application.services.conversation_service import ConversationService
+from src.application.services.dynamic_content_service import DynamicContentService
+from src.application.services.dynamic_story_service import DynamicStoryService
+from src.application.services.esp32_device_service import ESP32DeviceService
+from src.application.services.federated_learning_service import FederatedLearningService
 
-# Container components
-from .di_components.service_factory import ServiceFactory
-from .di_components.wiring_config import FullWiringConfig
+# Use Cases
+from src.application.use_cases.generate_ai_response import GenerateAIResponseUseCase
+from src.application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
+from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
+from src.application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
+from src.common.constants import EventStoreType  # Import the new Enum
+
+# Domain Events
+from src.domain.events.child_profile_updated import ChildProfileUpdated
+from src.domain.events.child_registered import ChildRegistered
+from src.domain.interfaces.conversation_repository import (  # Import the interface
+    IConversationRepository,
+)
 
 # Infrastructure Services
 from src.infrastructure.caching.redis_cache import RedisCache
+
+# Settings
+from src.infrastructure.config.settings import get_settings
+from src.infrastructure.config.startup_validator import StartupValidator
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.messaging.kafka_event_bus import KafkaEventBus
 from src.infrastructure.pagination import PaginationService
 from src.infrastructure.persistence.conversation_repository import (
     AsyncSQLAlchemyConversationRepo,
 )
-from src.domain.interfaces.conversation_repository import (
-    IConversationRepository,
-)  # Import the interface
 from src.infrastructure.persistence.kafka_event_store import KafkaEventStore
 from src.infrastructure.persistence.postgres_event_store import PostgresEventStore
 from src.infrastructure.read_models.child_profile_read_model import (
@@ -55,38 +71,11 @@ from src.infrastructure.security.password_hasher import PasswordHasher
 from src.infrastructure.security.rate_limiter_service import RateLimiterService
 from src.infrastructure.security.safety_monitor_service import SafetyMonitorService
 from src.infrastructure.security.token_service import TokenService
-from src.infrastructure.config.startup_validator import StartupValidator
-from src.common.constants import EventStoreType  # Import the new Enum
-
-# Application Services
-from src.application.event_handlers.child_profile_event_handlers import (
-    ChildProfileEventHandlers,
-)
-from src.application.services.ai_orchestration_service import AIOrchestrationService
-from src.application.services.audio_processing_service import AudioProcessingService
-from src.application.services.conversation_service import ConversationService
-from src.application.services.dynamic_content_service import DynamicContentService
-from src.application.services.dynamic_story_service import DynamicStoryService
-from src.application.services.esp32_device_service import ESP32DeviceService
-from src.application.services.federated_learning_service import FederatedLearningService
-from src.application.interfaces.ai_provider import (
-    AIProvider,
-)  # Import the AIProvider interface
-
-# Use Cases
-from src.application.use_cases.generate_ai_response import GenerateAIResponseUseCase
-from src.application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
-from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
-from src.application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
-
-# Domain Events
-from src.domain.events.child_profile_updated import ChildProfileUpdated
-from src.domain.events.child_registered import ChildRegistered
 
 # Presentation Layer Components
 from src.presentation.api.endpoints.children.compliance import (
-    COPPAIntegration,
     ComplianceValidator,
+    COPPAIntegration,
     DataRetentionManager,
     ParentalConsentManager,
 )
@@ -96,6 +85,10 @@ from src.presentation.api.endpoints.children.operations import (
     ChildValidationService,
 )
 
+# Container components
+from .di_components.service_factory import ServiceFactory
+from .di_components.wiring_config import FullWiringConfig
+
 logger = get_logger(__name__, component="DI_Container")
 
 
@@ -104,11 +97,9 @@ class Container(containers.DeclarativeContainer):
 
     # Configuration
     settings = providers.Singleton(get_settings)
-    wiring_config = containers.WiringConfiguration(
-        modules=FullWiringConfig.modules)
+    wiring_config = containers.WiringConfiguration(modules=FullWiringConfig.modules)
     # Startup Validator
-    startup_validator = providers.Singleton(
-        StartupValidator, settings=settings)
+    startup_validator = providers.Singleton(StartupValidator, settings=settings)
     # Infrastructure: Core Services (Singletons)
     # These services are instantiated once and shared across the application,
     # suitable for stateless or globally shared resources.
@@ -118,13 +109,14 @@ class Container(containers.DeclarativeContainer):
     # We use providers.Factory to ensure a new session is created each time it's called,
     # ensuring thread safety and proper resource management per request.
     database_manager = providers.Singleton(
-        service_factory.provided.create_database, settings=settings
+        service_factory.provided.create_database,
+        settings=settings,
     )
-    db_session_factory = providers.Factory(
-        database_manager.provided.get_session)
+    db_session_factory = providers.Factory(database_manager.provided.get_session)
 
     redis_cache = providers.Singleton(
-        RedisCache, redis_url=settings.provided.redis.REDIS_URL
+        RedisCache,
+        redis_url=settings.provided.redis.REDIS_URL,
     )
     event_bus = providers.Singleton(
         KafkaEventBus,
@@ -140,7 +132,8 @@ class Container(containers.DeclarativeContainer):
         settings_instance=settings,
         kafka=providers.Singleton(KafkaEventStore, settings=settings),
         postgres=providers.Singleton(
-            PostgresEventStore, db_session_factory=db_session_factory
+            PostgresEventStore,
+            db_session_factory=db_session_factory,
         ),
     )
 
@@ -149,13 +142,16 @@ class Container(containers.DeclarativeContainer):
     # making Singleton suitable for efficiency and consistent policy
     # enforcement.
     password_hasher = providers.Singleton(
-        PasswordHasher, settings=settings.provided.security
+        PasswordHasher,
+        settings=settings.provided.security,
     )
     token_service = providers.Singleton(
-        TokenService, settings=settings.provided.security
+        TokenService,
+        settings=settings.provided.security,
     )
     rate_limiter = providers.Singleton(
-        RateLimiterService, settings=settings.provided.security
+        RateLimiterService,
+        settings=settings.provided.security,
     )
     safety_monitor = providers.Singleton(SafetyMonitorService)
 
@@ -177,8 +173,7 @@ class Container(containers.DeclarativeContainer):
     # Infrastructure: Read Models (Singletons)
     # Read models typically hold cached or aggregated data and can be shared
     # globally for performance.
-    child_profile_read_model_store = providers.Singleton(
-        ChildProfileReadModelStore)
+    child_profile_read_model_store = providers.Singleton(ChildProfileReadModelStore)
 
     # Application: Event Handlers (Factories)
     # Event handlers process specific events and might have internal state tied to the event context,
@@ -206,7 +201,7 @@ class Container(containers.DeclarativeContainer):
         providers.Factory(
             AIOrchestrationService,
             ai_provider=providers.Factory(
-                service_factory.provided.create_openai_client
+                service_factory.provided.create_openai_client,
             ),  # Concrete implementation via factory
             safety_monitor=safety_monitor,
             conversation_service=conversation_service,
@@ -217,14 +212,14 @@ class Container(containers.DeclarativeContainer):
         providers.Factory(
             DynamicContentService,
             openai_client=providers.Factory(
-                service_factory.provided.create_openai_client
+                service_factory.provided.create_openai_client,
             ),  # Concrete implementation via factory
         )
     )
     dynamic_story_service: providers.Factory[DynamicStoryService] = providers.Factory(
         DynamicStoryService,
         ai_provider=providers.Factory(
-            service_factory.provided.create_openai_client
+            service_factory.provided.create_openai_client,
         ),  # Concrete implementation via factory
     )
     esp32_device_service = providers.Factory(
@@ -271,7 +266,8 @@ class Container(containers.DeclarativeContainer):
     # making Singleton appropriate for shared utility and efficiency.
     pagination_service = providers.Singleton(PaginationService)
     coppa_compliance_service = providers.Singleton(
-        ProductionCOPPACompliance, settings=settings.provided.privacy
+        ProductionCOPPACompliance,
+        settings=settings.provided.privacy,
     )
     coppa_integration_service = providers.Singleton(
         COPPAIntegration,
@@ -310,10 +306,10 @@ class Container(containers.DeclarativeContainer):
 
 
 def _setup_event_subscriptions(
-    event_bus: KafkaEventBus, event_handlers: ChildProfileEventHandlers
+    event_bus: KafkaEventBus,
+    event_handlers: ChildProfileEventHandlers,
 ) -> None:
-    """
-    Subscribes event handlers to corresponding events on the event bus.
+    """Subscribes event handlers to corresponding events on the event bus.
     This function centralizes event subscription logic and provides robust error handling.
     """
     subscriptions = {
@@ -330,7 +326,7 @@ def _setup_event_subscriptions(
                 exc_info=True,
             )
             raise RuntimeError(
-                f"Event subscription setup failed for {event.__name__}"
+                f"Event subscription setup failed for {event.__name__}",
             ) from e
         except ConnectionError as e:
             logger.error(
@@ -338,7 +334,7 @@ def _setup_event_subscriptions(
                 exc_info=True,
             )
             raise RuntimeError(
-                "Event bus connection failed during subscription."
+                "Event bus connection failed during subscription.",
             ) from e
         except Exception as e:  # Catch any other unexpected errors
             logger.critical(
@@ -346,7 +342,7 @@ def _setup_event_subscriptions(
                 exc_info=True,
             )
             raise RuntimeError(
-                f"Unhandled exception during event subscription for {event.__name__}"
+                f"Unhandled exception during event subscription for {event.__name__}",
             ) from e
     logger.info("All event subscriptions initialized successfully.")
 

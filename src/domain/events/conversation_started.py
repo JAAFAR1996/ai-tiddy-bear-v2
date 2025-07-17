@@ -1,25 +1,28 @@
-"""Conversation Started Domain Event"""
+"""Conversation Started Domain Event."""
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 """Conversation Started Domain Event"""
+
 
 @dataclass
 class ConversationStarted:
-    """Domain event for conversation start"""
+    """Domain event for conversation start."""
+
     conversation_id: str
     child_id: str
     started_at: datetime
     initial_message: str
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
     def __init__(
         self,
         conversation_id: str,
         child_id: str,
         initial_message: str,
-        metadata: Dict[str, Any]=None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self.conversation_id = conversation_id
         self.child_id = child_id
@@ -27,8 +30,8 @@ class ConversationStarted:
         self.started_at = datetime.now()
         self.metadata = metadata or {}
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary"""
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary."""
         return {
             "conversation_id": self.conversation_id,
             "child_id": self.child_id,

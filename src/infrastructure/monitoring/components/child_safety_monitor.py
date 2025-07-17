@@ -1,14 +1,13 @@
-"""
+
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
 import logging
 import time
-"""
 
-Child Safety Monitoring Component.
-Specialized monitoring for child safety events and pattern detection.
-"""
+
+# Child Safety Monitoring Component.
+# Specialized monitoring for child safety events and pattern detection.
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="monitoring")

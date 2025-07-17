@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from typing import Optional, List
 from uuid import UUID
 
 from redis.asyncio import Redis
@@ -15,8 +14,7 @@ logger = get_logger(__name__, component="redis_personality_repository")
 
 
 class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
-    """
-    Redis implementation of the personality profile repository.
+    """Redis implementation of the personality profile repository.
     Serializes and deserializes ChildPersonality objects to/from Redis.
     """
 
@@ -26,9 +24,7 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
         self.redis_client = redis_client
         self.logger = logger
 
-    async def get_profile_by_child_id(
-        self, child_id: UUID
-    ) -> Optional[ChildPersonality]:
+    async def get_profile_by_child_id(self, child_id: UUID) -> ChildPersonality | None:
         key = self.PROFILE_KEY_PREFIX + str(child_id)
         try:
             profile_data_json = await self.redis_client.get(key)
@@ -39,8 +35,7 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
                 personality_type = PersonalityType[
                     profile_data_dict.get("personality_type", "OTHER").upper()
                 ]
-                last_updated = datetime.fromisoformat(
-                    profile_data_dict["last_updated"])
+                last_updated = datetime.fromisoformat(profile_data_dict["last_updated"])
 
                 profile = ChildPersonality(
                     child_id=UUID(profile_data_dict["child_id"]),
@@ -52,11 +47,11 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
                     metadata=profile_data_dict.get("metadata", {}),
                 )
                 self.logger.debug(
-                    f"Retrieved personality profile for child {child_id} from Redis."
+                    f"Retrieved personality profile for child {child_id} from Redis.",
                 )
                 return profile
             self.logger.debug(
-                f"Personality profile for child {child_id} not found in Redis."
+                f"Personality profile for child {child_id} not found in Redis.",
             )
             return None
         except Exception as e:
@@ -82,7 +77,7 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
             }
             await self.redis_client.set(key, json.dumps(profile_data_dict))
             self.logger.debug(
-                f"Saved personality profile for child {profile.child_id} to Redis."
+                f"Saved personality profile for child {profile.child_id} to Redis.",
             )
         except Exception as e:
             self.logger.error(
@@ -97,11 +92,11 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
             result = await self.redis_client.delete(key)
             if result > 0:
                 self.logger.debug(
-                    f"Deleted personality profile for child {child_id} from Redis."
+                    f"Deleted personality profile for child {child_id} from Redis.",
                 )
                 return True
             self.logger.debug(
-                f"Personality profile for child {child_id} not found for deletion in Redis."
+                f"Personality profile for child {child_id} not found for deletion in Redis.",
             )
             return False
         except Exception as e:
@@ -111,12 +106,12 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
             )
             return False
 
-    async def get_all_profiles(self) -> List[ChildPersonality]:
+    async def get_all_profiles(self) -> list[ChildPersonality]:
         # In a production system, this operation should be avoided or carefully paginated
         # as it can be very resource intensive on large datasets.
         # For now, a placeholder that logs a warning.
         self.logger.warning(
-            "Attempted to retrieve all personality profiles. This operation is not optimized for large datasets."
+            "Attempted to retrieve all personality profiles. This operation is not optimized for large datasets.",
         )
         # A real implementation would involve Redis SCAN or other techniques
         return []

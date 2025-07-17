@@ -1,29 +1,32 @@
 logger = logging.getLogger(__name__)
-from datetime import datetime
-from typing import Any, Dict
-from uuid import uuid4, UUID
 import json
 import logging
-from sqlalchemy import Column, String, Integer, DateTime, LargeBinary, Text
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import JSON
+from datetime import datetime
+from typing import Any
+from uuid import UUID, uuid4
+
+from sqlalchemy import Column, DateTime, Integer, String, Text
+
 from src.domain.entities.child_profile import ChildProfile
 from src.infrastructure.persistence.database import Base
 from src.infrastructure.security.encryption_service import (
-    get_encryption_service,
     EncryptionKeyError,
+    get_encryption_service,
 )
 
 logger = logging.getLogger(__name__)
 
+
 class ChildModel(Base):
-    """    All PII is encrypted at rest for COPPA compliance.    """
+    """All PII is encrypted at rest for COPPA compliance."""
+
     __tablename__ = "children"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     # Store encrypted data as Text for better compatibility
     encrypted_name = Column(Text, nullable=False)  # Base64 encoded encrypted name
     encrypted_preferences = Column(
-        Text, nullable=False
+        Text,
+        nullable=False,
     )  # Base64 encoded encrypted preferences
     age = Column(Integer, nullable=False)  # Age can be stored as range for COPPA
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -37,7 +40,7 @@ class ChildModel(Base):
 
     @property
     def name(self) -> str:
-        """Decrypt and return child name with proper error handling"""
+        """Decrypt and return child name with proper error handling."""
         if self.encrypted_name:
             try:
                 decrypted = self._encryption_service.decrypt(self.encrypted_name)
@@ -47,35 +50,33 @@ class ChildModel(Base):
                     else decrypted.decode("utf-8")
                 )
             except EncryptionKeyError as e:
-                logger.error(f"Failed to decrypt child name: {str(e)}")
+                logger.error(f"Failed to decrypt child name: {e!s}")
                 return "[Name Decryption Failed]"
         return ""
 
     @name.setter
     def name(self, value: str) -> None:
-        """Encrypt and set child name"""
+        """Encrypt and set child name."""
         self.encrypted_name = self._encryption_service.encrypt(value)
 
     @property
-    def preferences(self) -> Dict[str, Any]:
-        """Decrypt and return child preferences with proper error handling"""
+    def preferences(self) -> dict[str, Any]:
+        """Decrypt and return child preferences with proper error handling."""
         if self.encrypted_preferences:
             try:
                 decrypted_json = self._encryption_service.decrypt(
-                    self.encrypted_preferences
+                    self.encrypted_preferences,
                 )
                 return json.loads(decrypted_json)
             except (json.JSONDecodeError, EncryptionKeyError) as e:
-                logger.error(f"Failed to decrypt/decode preferences: {str(e)}")
+                logger.error(f"Failed to decrypt/decode preferences: {e!s}")
                 return {}
         return {}
 
     @preferences.setter
-    def preferences(self, value: Dict[str, Any]) -> None:
-        """Encrypt and set child preferences"""
-        self.encrypted_preferences = self._encryption_service.encrypt(
-            json.dumps(value)
-        )
+    def preferences(self, value: dict[str, Any]) -> None:
+        """Encrypt and set child preferences."""
+        self.encrypted_preferences = self._encryption_service.encrypt(json.dumps(value))
 
     @staticmethod
     def from_entity(entity: ChildProfile) -> "ChildModel":

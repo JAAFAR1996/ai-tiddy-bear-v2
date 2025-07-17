@@ -1,5 +1,4 @@
-"""
-from datetime import datetime
+"""from datetime import datetime
 import asyncio
 import logging
 import os
@@ -10,16 +9,18 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 import redis.asyncio as redis
 from .endpoints import EmergencyEndpoints
-from .services import EmergencyResponseService, NotificationService, SystemMonitorService
+from .services import EmergencyResponseService, NotificationService, SystemMonitorService.
 """
 
 """Emergency Response Main Module - Simplified main application"""
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="api")
 
 # متغيرات البيئة - محسّنة للإنتاج
@@ -28,15 +29,19 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 # إعداد قاعدة البيانات الآمنة - PostgreSQL فقط للإنتاج
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    logger.critical("DATABASE_URL environment variable is required for emergency response")
-    raise RuntimeError("CRITICAL: DATABASE_URL must be set for emergency response system")
+    logger.critical(
+        "DATABASE_URL environment variable is required for emergency response",
+    )
+    raise RuntimeError(
+        "CRITICAL: DATABASE_URL must be set for emergency response system",
+    )
 
 # منع استخدام SQLite في نظام الطوارئ الحرج
 if DATABASE_URL.startswith("sqlite"):
     logger.critical("SQLite detected in emergency response system - SECURITY VIOLATION")
     raise RuntimeError(
         "CRITICAL: SQLite is not allowed for emergency response systems. "
-        "Use PostgreSQL for data integrity and COPPA compliance."
+        "Use PostgreSQL for data integrity and COPPA compliance.",
     )
 
 # متغيرات عامة
@@ -47,10 +52,17 @@ monitor_service = None
 notification_service = None
 endpoints = None
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """إدارة دورة حياة التطبيق"""
-    global redis_client, db_session, emergency_service, monitor_service, notification_service, endpoints
+    """إدارة دورة حياة التطبيق."""
+    global \
+        redis_client, \
+        db_session, \
+        emergency_service, \
+        monitor_service, \
+        notification_service, \
+        endpoints
     logger.info("🚨 Starting Emergency Response System...")
     try:
         # إعداد Redis
@@ -70,7 +82,11 @@ async def lifespan(app: FastAPI):
         notification_service = NotificationService(redis_client)
 
         # إعداد النقاط النهائية
-        endpoints = EmergencyEndpoints(emergency_service, monitor_service, notification_service)
+        endpoints = EmergencyEndpoints(
+            emergency_service,
+            monitor_service,
+            notification_service,
+        )
         logger.info("🚨 Emergency Response System started successfully")
     except Exception as e:
         logger.error(f"Failed to start Emergency Response System: {e}")
@@ -84,20 +100,21 @@ async def lifespan(app: FastAPI):
         await db_session.close()
     logger.info("🚨 Emergency Response System shutdown complete")
 
+
 def create_app() -> FastAPI:
-    """إنشاء تطبيق FastAPI"""
+    """إنشاء تطبيق FastAPI."""
     app = FastAPI(
         title="🚨 AI Teddy Bear - Emergency Response",
         description="نظام الاستجابة الطارئة للتنبيهات الأمنية",
         version="1.0.0",
-        lifespan=lifespan
+        lifespan=lifespan,
     )
 
     # إعداد CORS آمن
     allowed_origins = [
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://yourdomain.com"  # إضافة نطاقات الإنتاج
+        "https://yourdomain.com",  # إضافة نطاقات الإنتاج
     ]
     app.add_middleware(
         CORSMiddleware,
@@ -130,9 +147,11 @@ def create_app() -> FastAPI:
 
     return app
 
+
 # نقطة الدخول
 if __name__ == "__main__":
     import uvicorn
+
     API_PORT = int(os.getenv("API_PORT", 8080))
     API_HOST = os.getenv("API_HOST", "0.0.0.0")
     app = create_app()

@@ -1,10 +1,8 @@
-"""
-Core rate limiting models and enums.
-"""
+"""Core rate limiting models and enums."""
+
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional
 
 
 class RateLimitType(Enum):
@@ -36,8 +34,8 @@ class RateLimitConfig:
     strategy: RateLimitStrategy
     max_requests: int
     window_seconds: int
-    burst_capacity: Optional[int] = None
-    refill_rate: Optional[float] = None
+    burst_capacity: int | None = None
+    refill_rate: float | None = None
     block_duration_seconds: int = 300  # 5 minutes default
     child_safe_mode: bool = True
 
@@ -47,12 +45,12 @@ class RateLimitState:
     """Current state of rate limiting for a key."""
 
     key: str
-    requests: List[float] = field(default_factory=list)
+    requests: list[float] = field(default_factory=list)
     tokens: float = 0.0
     last_refill: float = field(default_factory=time.time)
-    blocked_until: Optional[float] = None
+    blocked_until: float | None = None
     total_requests: int = 0
-    first_request: Optional[float] = None
+    first_request: float | None = None
 
 
 @dataclass
@@ -62,6 +60,6 @@ class RateLimitResult:
     allowed: bool
     remaining: int
     reset_time: float
-    retry_after: Optional[int] = None
-    blocked_reason: Optional[str] = None
+    retry_after: int | None = None
+    blocked_reason: str | None = None
     child_safety_triggered: bool = False

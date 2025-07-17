@@ -1,5 +1,4 @@
-"""
-Defines Redis-related configuration settings for the application.
+"""Defines Redis-related configuration settings for the application.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to Redis connection details, primarily the Redis URL.

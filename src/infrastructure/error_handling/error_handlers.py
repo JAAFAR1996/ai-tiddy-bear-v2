@@ -1,4 +1,7 @@
 """
+Error handlers for AI Teddy Bear backend
+"""
+
 from datetime import datetime
 from typing import Dict, Any, Optional, Callable
 import logging
@@ -124,4 +127,3 @@ def setup_error_handlers(app):
     app.add_exception_handler(HTTPException, http_exception_handler)
     app.add_exception_handler(AITeddyError, aiteddy_error_handler)
     app.add_exception_handler(Exception, generic_exception_handler)
-"""

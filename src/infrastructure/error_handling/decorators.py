@@ -1,9 +1,8 @@
-"""
-from typing import Callable, Type, Optional, Tuple, Union
+"""from typing import Callable, Type, Optional, Tuple, Union
 import functools
 import logging
 from .error_handlers import async_error_handler
-from .error_types import BaseApplicationError, ExternalServiceError
+from .error_types import BaseApplicationError, ExternalServiceError.
 """
 
 """Error Handling Decorators
@@ -11,16 +10,19 @@ Created decorators for consistent error handling
 """
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="infrastructure")
+
 
 def handle_errors(
     *error_mappings: Tuple[Type[Exception], Type[BaseApplicationError]],
     default_error: Type[BaseApplicationError] = None,
-    log_errors: bool = True):
+    log_errors: bool = True,
+):
+    """Decorator to handle and map exceptions to application errors
+    Usage: @ handle_errors((ValueError, ValidationError), (KeyError, BusinessLogicError), default_error=SystemError) async def my_function(): pass.
     """
-    Decorator to handle and map exceptions to application errors
-    Usage: @ handle_errors((ValueError, ValidationError), (KeyError, BusinessLogicError), default_error=SystemError) async def my_function(): pass 
-    """
+
     def decorator(func: Callable):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -35,19 +37,24 @@ def handle_errors(
                     if isinstance(e, source_type):
                         mapped_error = target_type(str(e))
                         if log_errors:
-                            logger.warning(f"Mapped {type(e).__name__} to {target_type.__name__}: {e}")
+                            logger.warning(
+                                f"Mapped {type(e).__name__} to {target_type.__name__}: {e}",
+                            )
                         raise mapped_error from e
-                
+
                 # Use default error if no mapping found
                 if default_error:
-                    mapped_error = default_error(f"Unexpected error: {str(e)}")
+                    mapped_error = default_error(f"Unexpected error: {e!s}")
                     if log_errors:
-                        logger.error(f"Unmapped error {type(e).__name__}, using default: {e}", exc_info=True)
+                        logger.error(
+                            f"Unmapped error {type(e).__name__}, using default: {e}",
+                            exc_info=True,
+                        )
                     raise mapped_error from e
-                
+
                 # Re-raise if no default
                 raise
-        
+
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
             try:
@@ -61,43 +68,50 @@ def handle_errors(
                     if isinstance(e, source_type):
                         mapped_error = target_type(str(e))
                         if log_errors:
-                            logger.warning(f"Mapped {type(e).__name__} to {target_type.__name__}: {e}")
+                            logger.warning(
+                                f"Mapped {type(e).__name__} to {target_type.__name__}: {e}",
+                            )
                         raise mapped_error from e
-                
+
                 # Use default error if no mapping found
                 if default_error:
-                    mapped_error = default_error(f"Unexpected error: {str(e)}")
+                    mapped_error = default_error(f"Unexpected error: {e!s}")
                     if log_errors:
-                        logger.error(f"Unmapped error {type(e).__name__}, using default: {e}", exc_info=True)
+                        logger.error(
+                            f"Unmapped error {type(e).__name__}, using default: {e}",
+                            exc_info=True,
+                        )
                     raise mapped_error from e
-                
+
                 # Re-raise if no default
                 raise
-        
+
         # Return appropriate wrapper based on function type
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
-        else:
-            return sync_wrapper
-    
+        return sync_wrapper
+
     return decorator
+
 
 def retry_on_error(
     max_retries: int = 3,
     retry_exceptions: Tuple[Type[Exception], ...] = (ExternalServiceError,),
     delay: float = 1.0,
-    backoff: float = 2.0):
+    backoff: float = 2.0,
+):
+    """Decorator to retry function on specific errors
+    Usage: @ retry_on_error(max_retries=3, retry_exceptions=(ExternalServiceError,)) async def call_external_service(): pass.
     """
-    Decorator to retry function on specific errors
-    Usage: @ retry_on_error(max_retries=3, retry_exceptions=(ExternalServiceError,)) async def call_external_service(): pass 
-    """
+
     def decorator(func: Callable):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
             import asyncio
+
             last_error = None
             current_delay = delay
-            
+
             for attempt in range(max_retries):
                 try:
                     return await func(*args, **kwargs)
@@ -106,7 +120,7 @@ def retry_on_error(
                     if attempt < max_retries - 1:
                         logger.info(
                             f"Retry {attempt + 1}/{max_retries} for {func.__name__} "
-                            f"after {type(e).__name__}: {e}"
+                            f"after {type(e).__name__}: {e}",
                         )
                         await asyncio.sleep(current_delay)
                         current_delay *= backoff
@@ -117,17 +131,18 @@ def retry_on_error(
                     # Don't retry unexpected errors
                     logger.error(f"Unexpected error in {func.__name__}: {other_error}")
                     raise
-            
+
             # All retries exhausted
             logger.error(f"All {max_retries} retries failed for {func.__name__}")
             raise last_error
-        
+
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
             import time
+
             last_error = None
             current_delay = delay
-            
+
             for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)
@@ -136,7 +151,7 @@ def retry_on_error(
                     if attempt < max_retries - 1:
                         logger.info(
                             f"Retry {attempt + 1}/{max_retries} for {func.__name__} "
-                            f"after {type(e).__name__}: {e}"
+                            f"after {type(e).__name__}: {e}",
                         )
                         time.sleep(current_delay)
                         current_delay *= backoff
@@ -147,28 +162,30 @@ def retry_on_error(
                     # Don't retry unexpected errors
                     logger.error(f"Unexpected error in {func.__name__}: {other_error}")
                     raise
-            
+
             # All retries exhausted
             logger.error(f"All {max_retries} retries failed for {func.__name__}")
             raise last_error
-        
+
         # Return appropriate wrapper based on function type
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
-        else:
-            return sync_wrapper
-    
+        return sync_wrapper
+
     return decorator
+
 
 def safe_execution(
     fallback_value: Any = None,
     log_errors: bool = True,
-    reraise: bool = False):
+    reraise: bool = False,
+):
+    """Decorator for safe execution with fallback value
+    Usage: @ safe_execution(fallback_value=[], log_errors=True) async def get_children(): pass.
     """
-    Decorator for safe execution with fallback value
-    Usage: @ safe_execution(fallback_value=[], log_errors=True) async def get_children(): pass 
-    """
+
     def decorator(func: Callable):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -180,7 +197,7 @@ def safe_execution(
                 if reraise:
                     raise
                 return fallback_value
-        
+
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
             try:
@@ -191,24 +208,26 @@ def safe_execution(
                 if reraise:
                     raise
                 return fallback_value
-        
+
         # Return appropriate wrapper based on function type
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
-        else:
-            return sync_wrapper
-    
+        return sync_wrapper
+
     return decorator
+
 
 def validate_result(
     validator: Callable[[Any], bool],
     error_class: Type[BaseApplicationError],
-    error_message: str = "Result validation failed"):
+    error_message: str = "Result validation failed",
+):
+    """Decorator to validate function result
+    Usage: @ validate_result(validator=lambda x: x is not None and len(x) > 0, error_class=BusinessLogicError, error_message="No children found") async def get_children(): pass.
     """
-    Decorator to validate function result
-    Usage: @ validate_result(validator=lambda x: x is not None and len(x) > 0, error_class=BusinessLogicError, error_message="No children found") async def get_children(): pass
-    """
+
     def decorator(func: Callable):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -216,26 +235,22 @@ def validate_result(
             if not validator(result):
                 raise error_class(error_message)
             return result
-        
+
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
             if not validator(result):
                 raise error_class(error_message)
             return result
-        
+
         # Return appropriate wrapper based on function type
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
-        else:
-            return sync_wrapper
-    
+        return sync_wrapper
+
     return decorator
 
-__all__ = [
-    "handle_errors",
-    "retry_on_error",
-    "safe_execution",
-    "validate_result"
-]
+
+__all__ = ["handle_errors", "retry_on_error", "safe_execution", "validate_result"]

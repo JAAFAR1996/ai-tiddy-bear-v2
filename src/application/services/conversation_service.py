@@ -1,5 +1,4 @@
-"""
-Manages conversation history and interactions for children.
+"""Manages conversation history and interactions for children.
 
 This service provides functionalities to start new conversations, retrieve
 conversation history, and update conversation details such as analysis and
@@ -8,7 +7,6 @@ retrieve conversation data.
 """
 
 import logging
-from typing import List
 from uuid import UUID
 
 from src.domain.entities.conversation import Conversation
@@ -22,22 +20,26 @@ class ConversationService:
     """Service for managing conversation history and interactions."""
 
     def __init__(
-        self, conversation_repo: ConversationRepository, logger: logging.Logger = logger
+        self,
+        conversation_repo: ConversationRepository,
+        logger: logging.Logger = logger,
     ) -> None:
         """Initializes the conversation service.
 
         Args:
             conversation_repo: The repository for conversation data.
             logger: Logger instance for logging service operations.
+
         """
         self.conversation_repo = conversation_repo
         self.logger = logger
 
     async def start_new_conversation(
-        self, child_id: UUID, initial_text: str
+        self,
+        child_id: UUID,
+        initial_text: str,
     ) -> Conversation:
-        """
-        Starts a new conversation for a child.
+        """Starts a new conversation for a child.
 
         Args:
             child_id: The ID of the child.
@@ -45,6 +47,7 @@ class ConversationService:
 
         Returns:
             The newly created conversation object.
+
         """
         conversation = Conversation.create_new(child_id)
         # Initial text can be part of summary
@@ -52,23 +55,20 @@ class ConversationService:
         await self.conversation_repo.save(conversation)
         return conversation
 
-    async def get_conversation_history(
-            self, child_id: UUID) -> List[Conversation]:
-        """
-        Retrieves the conversation history for a child.
+    async def get_conversation_history(self, child_id: UUID) -> list[Conversation]:
+        """Retrieves the conversation history for a child.
 
         Args:
             child_id: The ID of the child.
 
         Returns:
             A list of conversation objects for the child.
+
         """
         return await self.conversation_repo.find_by_child_id(child_id)
 
-    async def _get_conversation_by_id(
-            self, conversation_id: UUID) -> Conversation:
-        """
-        Retrieves a conversation by its ID with error handling.
+    async def _get_conversation_by_id(self, conversation_id: UUID) -> Conversation:
+        """Retrieves a conversation by its ID with error handling.
 
         Args:
             conversation_id: The ID of the conversation.
@@ -78,18 +78,20 @@ class ConversationService:
 
         Raises:
             ValueError: If the conversation with the given ID is not found.
+
         """
         conversation = await self.conversation_repo.get_by_id(conversation_id)
         if not conversation:
-            raise ValueError(
-                f"Conversation with ID {conversation_id} not found.")
+            raise ValueError(f"Conversation with ID {conversation_id} not found.")
         return conversation
 
     async def update_conversation_analysis(
-        self, conversation_id: UUID, emotion_analysis: str, sentiment_score: float
+        self,
+        conversation_id: UUID,
+        emotion_analysis: str,
+        sentiment_score: float,
     ) -> Conversation:
-        """
-        Updates the emotional analysis and sentiment score of a conversation.
+        """Updates the emotional analysis and sentiment score of a conversation.
 
         Args:
             conversation_id: The ID of the conversation.
@@ -98,6 +100,7 @@ class ConversationService:
 
         Returns:
             The updated conversation object.
+
         """
         conversation = await self._get_conversation_by_id(conversation_id)
         conversation.update_analysis(emotion_analysis, sentiment_score)
@@ -105,10 +108,11 @@ class ConversationService:
         return conversation
 
     async def update_conversation_summary(
-        self, conversation_id: UUID, summary: str
+        self,
+        conversation_id: UUID,
+        summary: str,
     ) -> Conversation:
-        """
-        Updates the summary of a conversation.
+        """Updates the summary of a conversation.
 
         Args:
             conversation_id: The ID of the conversation.
@@ -116,6 +120,7 @@ class ConversationService:
 
         Returns:
             The updated conversation object.
+
         """
         conversation = await self._get_conversation_by_id(conversation_id)
         conversation.update_summary(summary)
@@ -123,10 +128,12 @@ class ConversationService:
         return conversation
 
     async def add_interaction(
-        self, child_id: UUID, user_input: str, ai_response: str
+        self,
+        child_id: UUID,
+        user_input: str,
+        ai_response: str,
     ) -> Conversation:
-        """
-        Adds a new interaction (user input and AI response) to a conversation.
+        """Adds a new interaction (user input and AI response) to a conversation.
 
         If no active conversation exists for the child, a new one is started.
 
@@ -137,6 +144,7 @@ class ConversationService:
 
         Returns:
             The updated or new conversation object.
+
         """
         # In a real scenario, you might have a way to get the active conversation
         # For simplicity, let's assume we always start a new one or get the
@@ -144,16 +152,18 @@ class ConversationService:
         conversations = await self.conversation_repo.find_by_child_id(child_id)
         if not conversations:
             self.logger.info(
-                f"No active conversation found for child {child_id}. Starting a new one."
+                f"No active conversation found for child {child_id}. Starting a new one.",
             )
             conversation = await self.start_new_conversation(child_id, user_input)
         else:
             # Sort conversations to reliably get the latest one
             conversation = sorted(
-                conversations, key=lambda c: c.created_at, reverse=True
+                conversations,
+                key=lambda c: c.created_at,
+                reverse=True,
             )[0]
             self.logger.info(
-                f"Using latest conversation {conversation.id} for child {child_id}."
+                f"Using latest conversation {conversation.id} for child {child_id}.",
             )
 
         conversation.add_interaction(user_input, ai_response)

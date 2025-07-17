@@ -1,6 +1,8 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from src.infrastructure.logging_config import get_logger
 from src.presentation.api.validators import ChildValidationMixin
 
@@ -12,52 +14,62 @@ and responses with comprehensive validation and COPPA compliance."""
 
 DEFAULT_LANGUAGE = "en"
 
+
 class ChildPreferences(BaseModel):
     """Model for child-specific preferences, ensuring structured data."""
-    favorite_color: Optional[str] = Field(None, max_length=50)
-    favorite_animal: Optional[str] = Field(None, max_length=50)
-    story_preferences: Optional[List[str]] = Field(None, max_items=10)
+
+    favorite_color: str | None = Field(None, max_length=50)
+    favorite_animal: str | None = Field(None, max_length=50)
+    story_preferences: list[str] | None = Field(None, max_items=10)
     model_config = ConfigDict(from_attributes=True)
+
 
 class ChildCreateRequest(ChildValidationMixin, BaseModel):
     """Request model for creating a new child profile."""
+
     model_config = ConfigDict(from_attributes=True)
     name: str = Field(..., min_length=1, max_length=50)
     age: int = Field(..., ge=1, le=13)
     preferences: ChildPreferences = Field(default_factory=ChildPreferences)
-    interests: List[str] = Field(default_factory=list)
+    interests: list[str] = Field(default_factory=list)
     language: str = Field(default=DEFAULT_LANGUAGE)
+
 
 class ChildUpdateRequest(ChildValidationMixin, BaseModel):
     """Request model for updating child profile data."""
+
     model_config = ConfigDict(from_attributes=True)
-    name: Optional[str] = Field(None, min_length=1, max_length=50)
-    age: Optional[int] = Field(None, ge=1, le=13)
-    preferences: Optional[ChildPreferences] = None
-    interests: Optional[List[str]] = None
-    language: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=50)
+    age: int | None = Field(None, ge=1, le=13)
+    preferences: ChildPreferences | None = None
+    interests: list[str] | None = None
+    language: str | None = None
+
 
 class ChildResponse(BaseModel):
     """Response model for child profile data."""
+
     model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
     age: int
     preferences: ChildPreferences
-    interests: List[str]
+    interests: list[str]
     language: str
     created_at: datetime  # Use datetime object directly
     parent_id: str
 
+
 class ChildSafetySummary(BaseModel):
     """Model for child safety summary data."""
+
     child_id: str
     safety_events: int
     content_filtered: int
     last_interaction: str
     safety_score: int
-    recent_events: Optional[List[Dict[str, Any]]] = None
-    
+    recent_events: list[dict[str, Any]] | None = None
+
     @classmethod
     def create_mock(cls, child_id: str) -> "ChildSafetySummary":
         """Create mock safety summary for testing purposes."""
@@ -69,15 +81,17 @@ class ChildSafetySummary(BaseModel):
             safety_score=95,
             recent_events=[],
         )
-    
+
     @classmethod
     def from_safety_events(
-        cls, child_id: str, safety_events: List[Dict[str, Any]]
+        cls,
+        child_id: str,
+        safety_events: list[dict[str, Any]],
     ) -> "ChildSafetySummary":
         """Create safety summary from safety events data."""
         safety_score = max(0, 100 - len(safety_events) * 5)
         content_filtered = len(
-            [e for e in safety_events if e.get("event_type") == "content_filter"]
+            [e for e in safety_events if e.get("event_type") == "content_filter"],
         )
         return cls(
             child_id=child_id,
@@ -88,12 +102,14 @@ class ChildSafetySummary(BaseModel):
             recent_events=safety_events[:5],  # Latest 5 events
         )
 
+
 class ChildDeleteResponse(BaseModel):
     """Response model for child deletion operations."""
+
     message: str
     child_id: str
     deleted_at: str
-    
+
     @classmethod
     def create_success(cls, child_id: str) -> "ChildDeleteResponse":
         """Create successful deletion response."""

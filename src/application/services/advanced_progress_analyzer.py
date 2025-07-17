@@ -1,5 +1,4 @@
-"""
-Provides advanced analysis of a child's learning progress.
+"""Provides advanced analysis of a child's learning progress.
 
 This service tracks and analyzes a child's interactions to generate detailed
 progress reports. It assesses skill levels, improvement rates, strengths,
@@ -8,8 +7,8 @@ and areas for improvement, providing valuable insights for parents and educators
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, List
-import logging
+from typing import Any
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="advanced_progress_analyzer")
@@ -21,11 +20,8 @@ class ProgressMetrics:
 
     skill_level: str = "beginner"
     improvement_rate: float = 0.1
-    strengths: List[str] = field(
-        default_factory=lambda: [
-            "listening", "vocabulary"])
-    areas_for_improvement: List[str] = field(
-        default_factory=lambda: ["pronunciation"])
+    strengths: list[str] = field(default_factory=lambda: ["listening", "vocabulary"])
+    areas_for_improvement: list[str] = field(default_factory=lambda: ["pronunciation"])
 
 
 class AdvancedProgressAnalyzer:
@@ -33,14 +29,15 @@ class AdvancedProgressAnalyzer:
 
     def __init__(self) -> None:
         """Initializes the advanced progress analyzer."""
-        self.progress_records: Dict[str, List[ProgressMetrics]] = {}
+        self.progress_records: dict[str, list[ProgressMetrics]] = {}
         self.logger = logger
 
     def analyze_progress(
-        self, child_id: str, interactions: List[Dict]
+        self,
+        child_id: str,
+        interactions: list[dict],
     ) -> ProgressMetrics:
-        """
-        Analyzes a child's learning progress from interactions.
+        """Analyzes a child's learning progress from interactions.
 
         Args:
             child_id: The ID of the child.
@@ -48,6 +45,7 @@ class AdvancedProgressAnalyzer:
 
         Returns:
             The calculated progress metrics.
+
         """
         # This is a simplified progress analysis.
         try:
@@ -65,15 +63,15 @@ class AdvancedProgressAnalyzer:
         self.progress_records[child_id].append(metrics)
         return metrics
 
-    def get_progress_report(self, child_id: str) -> Dict[str, Any] | None:
-        """
-        Generates a detailed progress report for a child.
+    def get_progress_report(self, child_id: str) -> dict[str, Any] | None:
+        """Generates a detailed progress report for a child.
 
         Args:
             child_id: The ID of the child.
 
         Returns:
             A dictionary containing the progress report, or None if no data is available.
+
         """
         if not self.progress_records.get(child_id):
             return None
@@ -90,15 +88,15 @@ class AdvancedProgressAnalyzer:
             ],
         }
 
-    def _calculate_metrics(self, interactions: List[Dict]) -> ProgressMetrics:
-        """
-        Calculates progress metrics from a list of interactions.
+    def _calculate_metrics(self, interactions: list[dict]) -> ProgressMetrics:
+        """Calculates progress metrics from a list of interactions.
 
         Args:
             interactions: A list of interactions.
 
         Returns:
             The calculated progress metrics.
+
         """
         # Mock progress analysis
         return ProgressMetrics(

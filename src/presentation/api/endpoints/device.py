@@ -1,4 +1,4 @@
-"""
+
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import logging
@@ -7,10 +7,6 @@ from pydantic import BaseModel, Field
 from src.application.services.ai_orchestration_service import AIOrchestrationService
 from src.application.services.audio_processing_service import AudioProcessingService
 from src.infrastructure.dependencies import get_ai_orchestration_service, get_audio_processing_service
-"""
-
-🧸 Device Management Endpoints
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="api")

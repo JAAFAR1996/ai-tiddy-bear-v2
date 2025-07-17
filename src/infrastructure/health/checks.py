@@ -1,24 +1,25 @@
 import asyncio
-import logging
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import httpx
 import redis.asyncio as redis
 from pydantic import BaseModel
 from sqlalchemy import text
+
 from src.infrastructure.config.settings import get_settings
-from src.infrastructure.persistence.database import Database
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.database import Database
 
 logger = get_logger(__name__, component="infrastructure")
 
 
 class DependencyCheck(BaseModel):
     """Individual dependency check result."""
+
     name: str
     status: str  # "healthy", "unhealthy", "unknown"
     response_time_ms: float
-    details: Dict[str, Any]
+    details: dict[str, Any]
     error: str = None
 
 
@@ -55,7 +56,8 @@ async def check_redis() -> DependencyCheck:
     try:
         settings = get_settings()
         redis_client = redis.from_url(
-            str(settings.redis.REDIS_URL), decode_responses=True
+            str(settings.redis.REDIS_URL),
+            decode_responses=True,
         )
         # Test connection
         await redis_client.ping()
@@ -104,18 +106,18 @@ async def check_openai() -> DependencyCheck:
                 details={
                     "api_status": "accessible",
                     "rate_limit_remaining": response.headers.get(
-                        "x-ratelimit-remaining-requests", "unknown"
+                        "x-ratelimit-remaining-requests",
+                        "unknown",
                     ),
                 },
             )
-        else:
-            return DependencyCheck(
-                name="openai",
-                status="unhealthy",
-                response_time_ms=response_time,
-                details={"status_code": response.status_code},
-                error=f"API returned status {response.status_code}",
-            )
+        return DependencyCheck(
+            name="openai",
+            status="unhealthy",
+            response_time_ms=response_time,
+            details={"status_code": response.status_code},
+            error=f"API returned status {response.status_code}",
+        )
     except Exception as e:
         response_time = (asyncio.get_event_loop().time() - start_time) * 1000
         return DependencyCheck(
@@ -127,7 +129,7 @@ async def check_openai() -> DependencyCheck:
         )
 
 
-async def check_all_dependencies() -> List[DependencyCheck]:
+async def check_all_dependencies() -> list[DependencyCheck]:
     """Check all external dependencies concurrently."""
     tasks = [
         check_database(),
@@ -145,7 +147,7 @@ async def check_all_dependencies() -> List[DependencyCheck]:
                     response_time_ms=0.0,
                     details={},
                     error=str(result),
-                )
+                ),
             )
         else:
             dependency_checks.append(result)

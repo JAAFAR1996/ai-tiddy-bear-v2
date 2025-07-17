@@ -5,18 +5,16 @@ status from various application components and external dependencies.
 """
 
 import asyncio
-import logging
-import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.infrastructure.health.checks.database_check import DatabaseHealthCheck
 from src.infrastructure.health.checks.redis_check import RedisHealthCheck
 from src.infrastructure.health.checks.system_check import SystemHealthCheck
 from src.infrastructure.health.models import (
+    HealthCheckResult,
     HealthStatus,
     SystemHealth,
-    HealthCheckResult,
 )
 from src.infrastructure.logging_config import get_logger
 
@@ -24,14 +22,13 @@ logger = get_logger(__name__, component="infrastructure")
 
 
 class HealthCheckManager:
-    """Manages and coordinates all health checks"""
+    """Manages and coordinates all health checks."""
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         self.config = config or {}
         self.start_time = datetime.utcnow()
         # Initialize health checks
-        self.database_check = DatabaseHealthCheck(
-            self.config.get("database_session"))
+        self.database_check = DatabaseHealthCheck(self.config.get("database_session"))
         self.redis_check = RedisHealthCheck(self.config.get("redis_client"))
         self.system_check = SystemHealthCheck()
         # Cache for health check results with thread safety
@@ -41,7 +38,7 @@ class HealthCheckManager:
         self._cache_lock = asyncio.Lock()
 
     async def check_health(self, detailed: bool = False) -> SystemHealth:
-        """Run all health checks and return system health status"""
+        """Run all health checks and return system health status."""
         # Thread-safe cache check
         async with self._cache_lock:
             # Use cache if available and fresh
@@ -75,11 +72,11 @@ class HealthCheckManager:
                     HealthCheckResult(
                         name="unknown",
                         status=HealthStatus.UNHEALTHY,
-                        message=f"Check failed: {str(result)}",
+                        message=f"Check failed: {result!s}",
                         details={"error": str(result)},
                         duration_ms=0,
                         timestamp=datetime.utcnow(),
-                    )
+                    ),
                 )
                 failed_checks += 1
             else:
@@ -124,8 +121,8 @@ class HealthCheckManager:
             self._last_check_time = datetime.utcnow()
         return result
 
-    async def get_readiness(self) -> Dict[str, Any]:
-        """Check if system is ready to serve requests"""
+    async def get_readiness(self) -> dict[str, Any]:
+        """Check if system is ready to serve requests."""
         health = await self.check_health()
         return {
             "ready": health.status in [HealthStatus.HEALTHY, HealthStatus.DEGRADED],
@@ -136,8 +133,8 @@ class HealthCheckManager:
             },
         }
 
-    async def get_liveness(self) -> Dict[str, Any]:
-        """Check if system is alive (basic health check)"""
+    async def get_liveness(self) -> dict[str, Any]:
+        """Check if system is alive (basic health check)."""
         try:
             # Simple check - just verify the service is responsive
             return {
@@ -155,12 +152,11 @@ class HealthCheckManager:
 
 
 # Global instance
-_health_manager: Optional[HealthCheckManager] = None
+_health_manager: HealthCheckManager | None = None
 
 
-def get_health_manager(
-        config: Optional[Dict[str, Any]] = None) -> HealthCheckManager:
-    """Get or create health check manager instance"""
+def get_health_manager(config: dict[str, Any] | None = None) -> HealthCheckManager:
+    """Get or create health check manager instance."""
     global _health_manager
     if _health_manager is None:
         _health_manager = HealthCheckManager(config)

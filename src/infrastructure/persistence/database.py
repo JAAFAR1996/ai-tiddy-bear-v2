@@ -1,14 +1,14 @@
-import logging
-import os
-from typing import AsyncGenerator, Optional
-from sqlalchemy.exc import IntegrityError, DataError, DatabaseError
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.exc import DatabaseError, DataError, IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
+
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
 from src.infrastructure.persistence.database.validators import (
     DatabaseConnectionValidator,
 )
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="persistence")
 
@@ -21,12 +21,12 @@ class Database:
 
     def __init__(
         self,
-        database_url: str = None,
-        pool_size: Optional[int] = None,
-        max_overflow: Optional[int] = None,
-        pool_recycle: Optional[int] = None,
-        pool_pre_ping: Optional[bool] = None,
-        pool_timeout: Optional[int] = None,
+        database_url: str | None = None,
+        pool_size: int | None = None,
+        max_overflow: int | None = None,
+        pool_recycle: int | None = None,
+        pool_pre_ping: bool | None = None,
+        pool_timeout: int | None = None,
     ) -> None:
         """Initialize database with production-grade configuration."""
         if database_url:
@@ -50,8 +50,7 @@ class Database:
             self.config.pool_timeout = pool_timeout
 
         # Log database configuration
-        logger.info(
-            f"Initializing database for {self.config.environment} environment")
+        logger.info(f"Initializing database for {self.config.environment} environment")
         logger.info(f"Database engine: {self.config.engine_type}")
 
         # Validate production requirements
@@ -63,8 +62,7 @@ class Database:
             # Get engine configuration from config
             engine_kwargs = self.config.get_engine_kwargs()
             # Create async engine with production configuration
-            self.engine = create_async_engine(
-                self.database_url, **engine_kwargs)
+            self.engine = create_async_engine(self.database_url, **engine_kwargs)
             # Create session maker with optimized settings
             session_kwargs = {
                 "expire_on_commit": False,
@@ -73,19 +71,17 @@ class Database:
                 != "production",  # Manual control in production
                 "autocommit": False,  # Always explicit transaction control
             }
-            self.async_session = async_sessionmaker(
-                self.engine, **session_kwargs)
+            self.async_session = async_sessionmaker(self.engine, **session_kwargs)
             # Log successful initialization (without exposing credentials)
             safe_url = self._get_safe_url_for_logging(self.database_url)
             logger.info(f"Database engine created successfully: {safe_url}")
         except Exception as e:
             logger.critical(f"Failed to create database engine: {e}")
             safe_url = self._get_safe_url_for_logging(self.database_url)
-            raise ConnectionError(
-                f"Database connection failed: {safe_url}") from e
+            raise ConnectionError(f"Database connection failed: {safe_url}") from e
 
     def _get_safe_url_for_logging(self, url: str) -> str:
-        """Create safe URL for logging (without exposing passwords)"""
+        """Create safe URL for logging (without exposing passwords)."""
         try:
             from urllib.parse import urlparse, urlunparse
 
@@ -115,8 +111,7 @@ class Database:
             if self.config.validate_connection:
                 validator = DatabaseConnectionValidator(self.config)
                 if not await validator.validate_connection():
-                    raise ConnectionError(
-                        "Database connection validation failed")
+                    raise ConnectionError("Database connection validation failed")
             async with self.engine.begin() as conn:
                 # Register all models using the model registry
                 from src.infrastructure.persistence.model_registry import (
@@ -140,7 +135,7 @@ class Database:
             raise ConnectionError("Database initialization failed") from e
 
     async def _apply_production_optimizations(self, conn) -> None:
-        """Apply production optimizations"""
+        """Apply production optimizations."""
         try:
             from sqlalchemy import text
 
@@ -180,22 +175,21 @@ class Database:
             except (IntegrityError, DataError, DatabaseError) as db_error:
                 logger.error(f"Database error during transaction: {db_error}")
                 await session.rollback()
-                raise DatabaseError(
-                    f"Transaction failed: {db_error}") from db_error
+                raise DatabaseError(f"Transaction failed: {db_error}") from db_error
             except (ConnectionError, TimeoutError) as conn_error:
-                logger.error(
-                    f"Connection error during transaction: {conn_error}")
+                logger.error(f"Connection error during transaction: {conn_error}")
                 await session.rollback()
                 raise ConnectionError(
-                    f"Database connection failed: {conn_error}"
+                    f"Database connection failed: {conn_error}",
                 ) from conn_error
             except Exception as unexpected_error:
                 logger.critical(
-                    f"Unexpected error during database transaction", exc_info=True
+                    "Unexpected error during database transaction",
+                    exc_info=True,
                 )
                 await session.rollback()
                 raise RuntimeError(
-                    "Database operation failed due to unexpected error"
+                    "Database operation failed due to unexpected error",
                 ) from unexpected_error
             finally:
                 await session.close()

@@ -1,5 +1,4 @@
-"""
-Provides services for parent-child verification and relationship management.
+"""Provides services for parent-child verification and relationship management.
 
 This module has been refactored into a clean, modular architecture.
 The original functionality is preserved while improving maintainability and security.
@@ -25,28 +24,28 @@ from .verification.verification_service import ParentChildVerificationService
 __all__ = [
     "ParentChildVerificationService",
     "RelationshipManager",
+    "RelationshipRecord",
     "RelationshipStatus",
     "RelationshipType",
     "VerificationRecord",
-    "RelationshipRecord",
 ]
 
 
 def get_verification_service() -> ParentChildVerificationService:
-    """
-    Factory function to create a ParentChildVerificationService instance.
+    """Factory function to create a ParentChildVerificationService instance.
 
     Returns:
         A configured verification service instance.
+
     """
     return ParentChildVerificationService()
 
 
 def get_relationship_manager() -> RelationshipManager:
-    """
-    Factory function to create a RelationshipManager instance.
+    """Factory function to create a RelationshipManager instance.
 
     Returns:
         A configured relationship manager instance.
+
     """
     return RelationshipManager()

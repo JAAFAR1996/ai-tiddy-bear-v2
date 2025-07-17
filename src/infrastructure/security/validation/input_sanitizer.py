@@ -1,16 +1,13 @@
 """
+🔒 Input Sanitization Service
+Advanced input cleaning and validation for child safety
+"""
 from dataclasses import dataclass
 from typing import Dict, Any, List, Optional
 import html
 import logging
 import re
 import urllib.parse
-"""
-
-🔒 Input Sanitization Service
-Advanced input cleaning and validation for child safety
-"""
-
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="security")
 
@@ -47,9 +44,9 @@ class InputSanitizer:
         
         # Safe character patterns
         self.safe_patterns = {
-            'name': r'^[a-zA-Z\\s\\-\\'\\.]{1,50}$',
-            'child_message': r'^[a-zA-Z0-9\\s\\.\\,\\!\\?\\-\\:\\\'\\\"]{1,500}$',
-            'email': r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+            'name': r"^[a-zA-Z\s\-'.]{1,50}$",
+            'child_message': r'^[a-zA-Z0-9\s\.,!\?\-:\'\"]{1,500}$',
+            'email': r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
             'numeric': r'^[0-9]+$',
             'uuid': r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
         }
@@ -91,9 +88,9 @@ class InputSanitizer:
         
         # Apply context-specific cleaning
         if context == "name":
-            sanitized = re.sub(r'[^a-zA-Z\\s\\-\\'\\.]', '', sanitized)
+            sanitized = re.sub(r"[^a-zA-Z\s\-'.]", '', sanitized)
         elif context == "message":
-            sanitized = re.sub(r'[^a-zA-Z0-9\\s\\.\\,\\!\\?\\-\\:\\'\\\"]', '', sanitized)
+            sanitized = re.sub(r'[^a-zA-Z0-9\s\.,!\?\-:\'\"]', '', sanitized)
         
         # Length limiting for child safety
         max_lengths = {

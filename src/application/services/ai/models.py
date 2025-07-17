@@ -1,10 +1,9 @@
 """
-from typing import List
-from pydantic import BaseModel, Field
-"""
-
 AI Service Models - Response models for AI service operations
 """
+
+from typing import List
+from pydantic import BaseModel, Field
 
 class AIResponse(BaseModel):
     """AI response model with safety validation"""
@@ -16,3 +15,8 @@ class AIResponse(BaseModel):
     processing_time: float
     cached: bool = False
     moderation_flags: List[str] = Field(default_factory=list)
+    
+    class Config:
+        """Pydantic configuration"""
+        validate_assignment = True
+        frozen = False

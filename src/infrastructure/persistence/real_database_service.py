@@ -4,18 +4,17 @@
 Enterprise-grade database service with SQL Injection prevention and comprehensive security"""
 
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Any
 from uuid import uuid4
-import logging
-import os
-from sqlalchemy import update, delete
-from sqlalchemy.exc import IntegrityError, DataError
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from sqlalchemy import delete, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
+
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database import Database
 from src.infrastructure.persistence.models.child_model import ChildModel
 from src.infrastructure.persistence.models.conversation_model import ConversationModel
-from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.models.user_model import UserModel
 
 logger = get_logger(__name__, component="persistence")
@@ -30,18 +29,16 @@ class DatabaseService:
         logger.info("DatabaseService initialized with SQL injection prevention")
 
     @database_input_validation("users")
-    async def create_user(
-            self, email: str, hashed_password: str, role: str) -> str:
+    async def create_user(self, email: str, hashed_password: str, role: str) -> str:
         """Create a new user with comprehensive input validation and SQL injection prevention."""
         try:
             # Validate and sanitize input parameters
-            user_data = {
-                "email": email,
-                "password_hash": hashed_password,
-                "role": role}
+            user_data = {"email": email, "password_hash": hashed_password, "role": role}
             # Validate operation
             validated_operation = validate_database_operation(
-                "INSERT", "users", user_data
+                "INSERT",
+                "users",
+                user_data,
             )
             validated_data = validated_operation["data"]
             async with self.database.get_session() as session:
@@ -49,11 +46,14 @@ class DatabaseService:
                 safe_session = create_safe_database_session(session)
                 # Check if user already exists using safe query
                 existing_users = await safe_session.safe_select(
-                    "users", ["id"], {"email": validated_data["email"]}, limit=1
+                    "users",
+                    ["id"],
+                    {"email": validated_data["email"]},
+                    limit=1,
                 )
                 if existing_users.rowcount > 0:
                     raise ValueError(
-                        f"User with email {validated_data['email']} already exists"
+                        f"User with email {validated_data['email']} already exists",
                     )
                 # Create new user with validated data
                 user_id = str(uuid4())
@@ -69,30 +69,27 @@ class DatabaseService:
                 session.add(new_user)
                 await session.commit()
                 logger.info(
-                    f"Created user: {validated_data['email']} with role: {validated_data['role']}"
+                    f"Created user: {validated_data['email']} with role: {validated_data['role']}",
                 )
                 return user_id
         except SecurityError as e:
             logger.error(f"Security violation creating user: {e}")
             raise ValueError(f"Invalid input data: {e}")
         except IntegrityError as e:
-            logger.error(
-                f"Database integrity error creating user {email}: {e}")
-            raise ValueError(
-                f"User creation failed: database constraint violation")
+            logger.error(f"Database integrity error creating user {email}: {e}")
+            raise ValueError("User creation failed: database constraint violation")
         except Exception as e:
             logger.error(f"Failed to create user {email}: {e}")
             raise RuntimeError(f"User creation failed: {e}") from e
 
-    async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+    async def get_user_by_email(self, email: str) -> dict[str, Any] | None:
         """Retrieve user by email with SQL injection prevention."""
         try:
             # Validate and sanitize email input
-            email_sanitization = self.sql_prevention.sanitize_input(
-                email, "email")
+            email_sanitization = self.sql_prevention.sanitize_input(email, "email")
             if not email_sanitization.safe:
                 logger.warning(
-                    f"Unsafe email input detected: {email_sanitization.threats_found}"
+                    f"Unsafe email input detected: {email_sanitization.threats_found}",
                 )
                 return None
             sanitized_email = email_sanitization.sanitized_input
@@ -141,7 +138,11 @@ class DatabaseService:
             raise RuntimeError(f"User lookup failed: {e}") from e
 
     async def create_child(
-        self, name: str, age: int, preferences: Dict[str, Any], parent_id: str
+        self,
+        name: str,
+        age: int,
+        preferences: dict[str, Any],
+        parent_id: str,
     ) -> str:
         """Create a new child profile with COPPA compliance verification."""
         # ✅ Verify COPPA compliance before creating child profile
@@ -156,7 +157,7 @@ class DatabaseService:
             )
             if not has_consent:
                 raise ValueError(
-                    "Parental consent required for data collection (COPPA compliance)"
+                    "Parental consent required for data collection (COPPA compliance)",
                 )
         async with self.database.get_session() as session:
             # Generate UUID string for SQLite compatibility
@@ -172,15 +173,15 @@ class DatabaseService:
             session.add(child)
             await session.commit()
             logger.info(
-                f"Created child: {name} (ID: {child_id}) for parent: {parent_id}"
+                f"Created child: {name} (ID: {child_id}) for parent: {parent_id}",
             )
             return child_id
 
-    async def get_child_by_id(self, child_id: str) -> Optional[Dict[str, Any]]:
+    async def get_child_by_id(self, child_id: str) -> dict[str, Any] | None:
         """Retrieve child by ID."""
         async with self.database.get_session() as session:
             result = await session.execute(
-                select(ChildModel).filter(ChildModel.id == child_id)
+                select(ChildModel).filter(ChildModel.id == child_id),
             )
             child = result.scalars().first()
             if child:
@@ -196,14 +197,11 @@ class DatabaseService:
                 }
             return None
 
-    async def update_child(self, child_id: str,
-                           updates: Dict[str, Any]) -> bool:
+    async def update_child(self, child_id: str, updates: dict[str, Any]) -> bool:
         """Update child profile."""
         async with self.database.get_session() as session:
             result = await session.execute(
-                update(ChildModel).where(
-                    ChildModel.id == child_id).values(
-                    **updates)
+                update(ChildModel).where(ChildModel.id == child_id).values(**updates),
             )
             await session.commit()
             return result.rowcount > 0
@@ -212,13 +210,16 @@ class DatabaseService:
         """Delete child profile."""
         async with self.database.get_session() as session:
             result = await session.execute(
-                delete(ChildModel).where(ChildModel.id == child_id)
+                delete(ChildModel).where(ChildModel.id == child_id),
             )
             await session.commit()
             return result.rowcount > 0
 
     async def create_conversation(
-        self, child_id: str, parent_id: str, transcript: List[Dict[str, str]]
+        self,
+        child_id: str,
+        parent_id: str,
+        transcript: list[dict[str, str]],
     ) -> str:
         """Create a new conversation record."""
         async with self.database.get_session() as session:
@@ -235,14 +236,15 @@ class DatabaseService:
             return conversation_id
 
     async def get_conversations_by_child_id(
-        self, child_id: str
-    ) -> List[Dict[str, Any]]:
+        self,
+        child_id: str,
+    ) -> list[dict[str, Any]]:
         """Retrieve conversation history for a child."""
         async with self.database.get_session() as session:
             result = await session.execute(
                 select(ConversationModel)
                 .filter(ConversationModel.child_id == child_id)
-                .order_by(ConversationModel.created_at)
+                .order_by(ConversationModel.created_at),
             )
             conversations = result.scalars().all()
             return [

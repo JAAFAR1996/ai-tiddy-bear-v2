@@ -1,10 +1,7 @@
-"""
-Rate limiting state storage management.
-"""
+"""Rate limiting state storage management."""
+
 import json
-import logging
 import time
-from typing import Any, Dict, Optional
 
 from src.infrastructure.logging_config import get_logger
 
@@ -18,7 +15,7 @@ class RateLimitStorage:
 
     def __init__(self, redis_client=None):
         self.redis_client = redis_client
-        self.local_state: Dict[str, RateLimitState] = {}
+        self.local_state: dict[str, RateLimitState] = {}
 
     async def get_state(self, key: str) -> RateLimitState:
         """Get rate limit state for a key."""

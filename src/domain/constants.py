@@ -1,5 +1,4 @@
-"""
-Domain constants for AI Teddy Bear application.
+"""Domain constants for AI Teddy Bear application.
 This module contains all domain-level constants to eliminate magic numbers
 and improve code maintainability.
 """

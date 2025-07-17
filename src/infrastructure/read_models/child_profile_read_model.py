@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import UUID
 
 
@@ -8,14 +8,14 @@ class ChildProfileReadModel:
     id: UUID
     name: str
     age: int
-    preferences: Dict[str, Any]
+    preferences: dict[str, Any]
 
 
 class ChildProfileReadModelStore:
     def __init__(self) -> None:
-        self._store: Dict[UUID, ChildProfileReadModel] = {}
+        self._store: dict[UUID, ChildProfileReadModel] = {}
 
-    def get_by_id(self, child_id: UUID) -> Optional[ChildProfileReadModel]:
+    def get_by_id(self, child_id: UUID) -> ChildProfileReadModel | None:
         return self._store.get(child_id)
 
     def save(self, child_profile: ChildProfileReadModel) -> None:

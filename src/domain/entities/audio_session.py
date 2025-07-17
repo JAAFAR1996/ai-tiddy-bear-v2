@@ -1,5 +1,4 @@
-"""
-Defines the AudioSession entity for managing audio recording sessions.
+"""Defines the AudioSession entity for managing audio recording sessions.
 
 This entity represents a single audio recording session, capturing details
 such as the associated child, start and end times, path to the audio data,
@@ -25,10 +24,8 @@ class AudioSession:
     processed: bool
 
     @classmethod
-    def create_new(cls, child_id: UUID,
-                   audio_data_path: str) -> "AudioSession":
-        """
-        Creates a new audio session.
+    def create_new(cls, child_id: UUID, audio_data_path: str) -> "AudioSession":
+        """Creates a new audio session.
 
         Args:
             child_id: The ID of the child associated with the session.
@@ -36,6 +33,7 @@ class AudioSession:
 
         Returns:
             A new AudioSession instance.
+
         """
         now = datetime.utcnow()
         return cls(
@@ -49,11 +47,11 @@ class AudioSession:
         )
 
     def mark_processed(self, transcription: str) -> None:
-        """
-        Marks the audio session as processed and updates its transcription.
+        """Marks the audio session as processed and updates its transcription.
 
         Args:
             transcription: The transcribed text of the audio session.
+
         """
         self.transcription = transcription
         self.processed = True

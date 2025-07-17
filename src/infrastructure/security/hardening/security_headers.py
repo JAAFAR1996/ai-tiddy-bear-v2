@@ -1,19 +1,21 @@
-"""Security Headers Middleware for AI Teddy Bear
+"""Security Headers Middleware for AI Teddy Bear.
 
 Comprehensive HTTP security headers for child safety and data protection
 """
+
 from dataclasses import dataclass
-from typing import Dict, Optional, Set
-import logging
+
 from fastapi import Request, Response
 
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
+
 @dataclass
 class SecurityHeadersConfig:
-    """Configuration for security headers"""
+    """Configuration for security headers."""
+
     # Content Security Policy
     csp_default_src: str = "'self'"
     csp_script_src: str = "'self' 'unsafe-inline'"
@@ -40,7 +42,7 @@ class SecurityHeadersConfig:
     referrer_policy: str = "strict-origin-when-cross-origin"
 
     # Permissions Policy (formerly Feature Policy)
-    permissions_policy: Dict[str, str] = None
+    permissions_policy: dict[str, str] = None
 
     # Cross-Origin settings
     cross_origin_embedder_policy: str = "require-corp"
@@ -64,8 +66,9 @@ class SecurityHeadersConfig:
                 "accelerometer": "none",
             }
 
+
 class SecurityHeadersMiddleware:
-    """FastAPI middleware for adding security headers"""
+    """FastAPI middleware for adding security headers."""
 
     def __init__(self, config: SecurityHeadersConfig):
         self.config = config
@@ -76,7 +79,7 @@ class SecurityHeadersMiddleware:
         return response
 
     def _apply_headers(self, response: Response) -> None:
-        """Apply all configured security headers"""
+        """Apply all configured security headers."""
         headers = {
             "Content-Security-Policy": self._get_csp(),
             "Strict-Transport-Security": self._get_hsts(),
@@ -93,7 +96,7 @@ class SecurityHeadersMiddleware:
                 response.headers[header] = value
 
     def _get_csp(self) -> str:
-        """Construct the Content-Security-Policy header"""
+        """Construct the Content-Security-Policy header."""
         csp = {
             "default-src": self.config.csp_default_src,
             "script-src": self.config.csp_script_src,
@@ -108,7 +111,7 @@ class SecurityHeadersMiddleware:
         return "; ".join([f"{key} {value}" for key, value in csp.items()])
 
     def _get_hsts(self) -> str:
-        """Construct the Strict-Transport-Security header"""
+        """Construct the Strict-Transport-Security header."""
         hsts = f"max-age={self.config.hsts_max_age}"
         if self.config.hsts_include_subdomains:
             hsts += "; includeSubDomains"
@@ -117,7 +120,9 @@ class SecurityHeadersMiddleware:
         return hsts
 
     def _get_permissions_policy(self) -> str:
-        """Construct the Permissions-Policy header"""
+        """Construct the Permissions-Policy header."""
         if not self.config.permissions_policy:
             return ""
-        return ", ".join([f"{key}={value}" for key, value in self.config.permissions_policy.items()])
+        return ", ".join(
+            [f"{key}={value}" for key, value in self.config.permissions_policy.items()],
+        )

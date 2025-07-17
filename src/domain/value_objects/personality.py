@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Dict, Any, List
-from uuid import UUID
 from datetime import datetime
+from enum import Enum
+from typing import Any
+from uuid import UUID
 
 
 class PersonalityType(Enum):
@@ -29,12 +29,13 @@ class ChildPersonality:
         interests (List[str]): Key interests of the child.
         last_updated (datetime): Timestamp of the last update to the personality profile.
         metadata (Dict[str, Any]): Additional metadata or raw analysis results.
+
     """
 
     child_id: UUID
     personality_type: PersonalityType = PersonalityType.OTHER
-    traits: Dict[str, float] = field(default_factory=dict)
-    learning_style: List[str] = field(default_factory=list)
-    interests: List[str] = field(default_factory=list)
+    traits: dict[str, float] = field(default_factory=dict)
+    learning_style: list[str] = field(default_factory=list)
+    interests: list[str] = field(default_factory=list)
     last_updated: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
 
 from src.domain.entities.conversation import Conversation
 
@@ -10,11 +9,11 @@ class ConversationRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, conversation_id: str) -> Optional[Conversation]:
+    async def get_by_id(self, conversation_id: str) -> Conversation | None:
         pass
 
     @abstractmethod
-    async def get_by_child_id(self, child_id: str) -> List[Conversation]:
+    async def get_by_child_id(self, child_id: str) -> list[Conversation]:
         pass
 
     @abstractmethod

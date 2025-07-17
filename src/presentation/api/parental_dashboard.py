@@ -1,7 +1,7 @@
 try:
-    from typing import Dict, Any, Optional
-    from uuid import UUID
     import sys
+    from typing import Any, Dict, Optional
+    from uuid import UUID
     try: 
         from pydantic import BaseModel, Field
     except ImportError as e: 
@@ -23,15 +23,22 @@ try:
 
     from src.application.dto.child_data import ChildData
     from src.application.dto.story_response import StoryResponse
-    from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
-    from src.application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
-    from src.infrastructure.dependencies import (
-        get_manage_child_profile_use_case,
-        get_generate_dynamic_story_use_case,
+    from src.application.use_cases.generate_dynamic_story import (
+        GenerateDynamicStoryUseCase,
     )
-    from src.infrastructure.security.coppa import get_consent_manager  # ✅ COPPA consent management
-    from src.infrastructure.security.real_auth_service import get_current_parent, UserInfo
+    from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
+    from src.infrastructure.dependencies import (
+        get_generate_dynamic_story_use_case,
+        get_manage_child_profile_use_case,
+    )
+    from src.infrastructure.security.coppa import (
+        get_consent_manager,  # ✅ COPPA consent management
+    )
     from src.infrastructure.security.error_handler import get_secure_error_handler
+    from src.infrastructure.security.real_auth_service import (
+        UserInfo,
+        get_current_parent,
+    )
 
     router = APIRouter()
 

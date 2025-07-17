@@ -1,5 +1,4 @@
-"""
-Manages accessibility features for children with special needs.
+"""Manages accessibility features for children with special needs.
 
 This service handles the creation and management of accessibility profiles,
 ensuring that the AI Teddy Bear adapts its interaction to the specific needs
@@ -8,17 +7,15 @@ hearing impairments, motor difficulties, and learning disabilities.
 """
 
 import logging
-from enum import Enum
-from typing import Any, List
+from typing import Any
 from uuid import UUID
 
-from src.domain.value_objects.accessibility import AccessibilityProfile, SpecialNeedType
 from src.domain.interfaces.accessibility_profile_repository import (
     IAccessibilityProfileRepository,
 )
-from src.infrastructure.logging_config import get_logger
+from src.domain.value_objects.accessibility import AccessibilityProfile, SpecialNeedType
 from src.infrastructure.config.accessibility_config import AccessibilityConfig
-
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="accessibility_service")
 
@@ -32,23 +29,24 @@ class AccessibilityService:
         accessibility_config: AccessibilityConfig,
         logger: logging.Logger = logger,
     ) -> None:
-        """
-        Initializes the accessibility service with a repository for persistence and configuration.
+        """Initializes the accessibility service with a repository for persistence and configuration.
 
         Args:
             repository: The repository for storing and retrieving accessibility profiles.
             accessibility_config: Configuration for accessibility rules and settings.
             logger: Logger instance for logging service operations.
+
         """
         self.repository = repository
         self.config = accessibility_config
         self.logger = logger
 
     async def create_accessibility_profile(
-        self, child_id: UUID, needs: List[SpecialNeedType]
+        self,
+        child_id: UUID,
+        needs: list[SpecialNeedType],
     ) -> AccessibilityProfile:
-        """
-        Creates an accessibility profile for a child and persists it.
+        """Creates an accessibility profile for a child and persists it.
 
         Args:
             child_id: The ID of the child.
@@ -56,9 +54,9 @@ class AccessibilityService:
 
         Returns:
             The created AccessibilityProfile.
+
         """
-        self.logger.info(
-            f"Creating accessibility profile for child: {child_id}")
+        self.logger.info(f"Creating accessibility profile for child: {child_id}")
         profile = AccessibilityProfile(
             child_id=child_id,
             special_needs=needs,
@@ -70,65 +68,63 @@ class AccessibilityService:
         )
         await self.repository.save_profile(profile)
         self.logger.info(
-            f"Accessibility profile created and saved for child: {child_id}"
+            f"Accessibility profile created and saved for child: {child_id}",
         )
         return profile
 
     async def get_accessibility_profile(
-        self, child_id: UUID
+        self,
+        child_id: UUID,
     ) -> AccessibilityProfile | None:
-        """
-        Retrieves the accessibility profile for a child from the repository.
+        """Retrieves the accessibility profile for a child from the repository.
 
         Args:
             child_id: The ID of the child.
 
         Returns:
             The accessibility profile, or None if not found.
+
         """
         self.logger.debug(
-            f"Attempting to retrieve accessibility profile for child: {child_id}"
+            f"Attempting to retrieve accessibility profile for child: {child_id}",
         )
         profile = await self.repository.get_profile_by_child_id(child_id)
         if profile:
-            self.logger.info(
-                f"Accessibility profile found for child: {child_id}")
+            self.logger.info(f"Accessibility profile found for child: {child_id}")
         else:
-            self.logger.info(
-                f"Accessibility profile not found for child: {child_id}")
+            self.logger.info(f"Accessibility profile not found for child: {child_id}")
         return profile
 
     def _get_adaptations(self, needs: list[SpecialNeedType]) -> list[str]:
-        """
-        Gets recommended adaptations based on special needs from the configuration.
+        """Gets recommended adaptations based on special needs from the configuration.
 
         Args:
             needs: A list of special needs.
 
         Returns:
             A list of recommended adaptations.
+
         """
         if not needs:
             return []
 
         adaptations = []
         for need in needs:
-            adaptations.extend(
-                self.config.adaptation_rules.get(
-                    need.value, []))
+            adaptations.extend(self.config.adaptation_rules.get(need.value, []))
         return list(set(adaptations))  # Remove duplicates
 
     def _get_accessibility_settings(
-        self, needs: list[SpecialNeedType]
+        self,
+        needs: list[SpecialNeedType],
     ) -> dict[str, Any]:
-        """
-        Gets accessibility settings based on special needs from the configuration.
+        """Gets accessibility settings based on special needs from the configuration.
 
         Args:
             needs: A list of special needs.
 
         Returns:
             A dictionary of accessibility settings.
+
         """
         settings = {
             "audio_enabled": True,
@@ -138,8 +134,7 @@ class AccessibilityService:
         }
         for need in needs:
             # Apply overrides from configuration
-            overrides = self.config.accessibility_settings_rules.get(
-                need.value, {})
+            overrides = self.config.accessibility_settings_rules.get(need.value, {})
             settings.update(overrides)
 
         # Ensure core settings are dynamically calculated if not overridden
@@ -148,9 +143,7 @@ class AccessibilityService:
         if SpecialNeedType.VISUAL_IMPAIRMENT in needs:
             settings["visual_enabled"] = False
         if any(
-            need in [
-                SpecialNeedType.MOTOR_IMPAIRMENT,
-                SpecialNeedType.COGNITIVE_DELAY]
+            need in [SpecialNeedType.MOTOR_IMPAIRMENT, SpecialNeedType.COGNITIVE_DELAY]
             for need in needs
         ):
             settings["simplified_ui"] = True

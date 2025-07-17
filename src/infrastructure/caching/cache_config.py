@@ -1,9 +1,10 @@
-"""from typing import Dict, Any"""
+"""from typing import Dict, Any."""
+
 """Cache configuration and constants"""
 
 
 class CacheConfig:
-    """Cache configuration settings"""
+    """Cache configuration settings."""
 
     # Default TTL values (in seconds)
     DEFAULT_TTL = 3600  # 1 hour
@@ -32,12 +33,12 @@ class CacheConfig:
 
 
 def get_cache_key(prefix: str, identifier: str) -> str:
-    """Generate cache key with prefix"""
+    """Generate cache key with prefix."""
     return f"{prefix}{identifier}"
 
 
 def parse_cache_key(key: str) -> Dict[str, str]:
-    """Parse cache key into components"""
+    """Parse cache key into components."""
     parts = key.split(":", 1)
     if len(parts) == 2:
         return {"prefix": parts[0] + ":", "identifier": parts[1]}

@@ -1,17 +1,12 @@
-import asyncio
-import json
 import logging
-import sys
 from datetime import datetime
-import timedelta
-from typing import Optional
-import Dict
+
 import Any
+import Dict
 import List
+
 from .models import AIResponse
 from .utils import AIServiceUtils
-from src.domain.value_objects.age_group import AgeGroup
-from src.domain.value_objects.safety_level import SafetyLevel  # Production imports - fail fast with proper error handling
 
 try:
     from openai import AsyncOpenAI
@@ -27,17 +22,18 @@ Enterprise-grade AI service for child-safe interactions following hexagonal arch
 
 logger = logging.getLogger(__name__)
 
+
 class AITeddyBearService:
-    """
-    Production-grade AI service for child-safe interactions.
+    """Production-grade AI service for child-safe interactions.
     Features:
     - Real OpenAI GPT-4 integration
     - Multi-layer content filtering
     - Age-appropriate response generation
     - COPPA compliance
     - Performance monitoring
-    - Comprehensive error handling
+    - Comprehensive error handling.
     """
+
     def __init__(self, openai_api_key: str, redis_cache=None, settings=None) -> None:
         if not openai_api_key:
             raise ValueError("OpenAI API key is required for production use")
@@ -67,11 +63,11 @@ class AITeddyBearService:
         message: str,
         child_age: int,
         child_name: str,
-        context: Optional[List[Dict[str, str]]] = None,
-        parent_guidelines: Optional[str] = None,
+        context: List[Dict[str, str]] | None = None,
+        parent_guidelines: str | None = None,
     ) -> AIResponse:
-        """
-        Generate safe, age-appropriate AI response.
+        """Generate safe, age-appropriate AI response.
+
         Args:
             message: Child's input message
             child_age: Age of the child (for COPPA compliance)
@@ -83,12 +79,13 @@ class AITeddyBearService:
         Raises:
             ValueError: If input validation fails
             Exception: If AI service fails
+
         """
         start_time = datetime.utcnow()
         # Input validation
         if child_age > 13:
             raise ValueError(
-                "Service only available for children 13 and under (COPPA compliance)"
+                "Service only available for children 13 and under (COPPA compliance)",
             )
         if not message or not message.strip():
             raise ValueError("Message cannot be empty")
@@ -105,11 +102,13 @@ class AITeddyBearService:
             moderation_result = await self._moderate_content(message)
             if not moderation_result["safe"]:
                 raise ValueError(
-                    f"Content flagged by moderation: {moderation_result['categories']}"
+                    f"Content flagged by moderation: {moderation_result['categories']}",
                 )
             # Generate age-appropriate system prompt
             system_prompt = self._create_system_prompt(
-                child_age, child_name, parent_guidelines
+                child_age,
+                child_name,
+                parent_guidelines,
             )
             # Prepare conversation messages
             messages = [{"role": "system", "content": system_prompt}]
@@ -130,7 +129,9 @@ class AITeddyBearService:
             ai_content = response.choices[0].message.content
             # Post-process and validate response
             processed_response = await self._post_process_response(
-                ai_content, child_age, moderation_result
+                ai_content,
+                child_age,
+                moderation_result,
             )
             # Calculate processing time
             processing_time = (datetime.utcnow() - start_time).total_seconds()
@@ -140,7 +141,7 @@ class AITeddyBearService:
                 await self._cache_response(cache_key, processed_response)
             logger.info(
                 f"AI response generated for child age {child_age}, "
-                f"processing time: {processing_time:.3f}s"
+                f"processing time: {processing_time:.3f}s",
             )
             return processed_response
         except Exception as e:
@@ -149,7 +150,7 @@ class AITeddyBearService:
             return await self._get_fallback_response(child_name, child_age)
 
     async def _moderate_content(self, content: str) -> Dict[str, Any]:
-        """Use OpenAI moderation API to check content safety"""
+        """Use OpenAI moderation API to check content safety."""
         try:
             moderation = await self.client.moderations.create(input=content)
             result = moderation.results[0]
@@ -168,9 +169,12 @@ class AITeddyBearService:
             return {"safe": False, "categories": ["moderation_error"], "scores": {}}
 
     def _create_system_prompt(
-        self, child_age: int, child_name: str, parent_guidelines: Optional[str] = None
+        self,
+        child_age: int,
+        child_name: str,
+        parent_guidelines: str | None = None,
     ) -> str:
-        """Create age-appropriate system prompt"""
+        """Create age-appropriate system prompt."""
         age_group = self._get_age_group(child_age)
         base_prompt = f"""You are a friendly, caring AI teddy bear speaking to {child_name}, who is {child_age} years old.
 CRITICAL SAFETY RULES:
@@ -191,9 +195,12 @@ CONVERSATION STYLE:
         return base_prompt
 
     async def _post_process_response(
-        self, content: str, child_age: int, moderation_result: Dict
+        self,
+        content: str,
+        child_age: int,
+        moderation_result: Dict,
     ) -> AIResponse:
-        """Process and validate AI response"""
+        """Process and validate AI response."""
         # Content safety analysis
         safety_score = self._calculate_safety_score(content, moderation_result)
         age_appropriate = self._check_age_appropriateness(content, child_age)
@@ -218,37 +225,39 @@ CONVERSATION STYLE:
         )
 
     def _calculate_safety_score(self, content: str, moderation_result: Dict) -> float:
-        """Calculate content safety score"""
+        """Calculate content safety score."""
         return AIServiceUtils.calculate_safety_score(
-            content, moderation_result, self.banned_topics
+            content,
+            moderation_result,
+            self.banned_topics,
         )
 
     def _check_age_appropriateness(self, content: str, age: int) -> bool:
-        """Check if content is appropriate for child's age"""
+        """Check if content is appropriate for child's age."""
         return AIServiceUtils.check_age_appropriateness(content, age)
 
     def _analyze_sentiment(self, content: str) -> str:
-        """Simple sentiment analysis"""
+        """Simple sentiment analysis."""
         return AIServiceUtils.analyze_sentiment(content)
 
     def _extract_topics(self, content: str) -> List[str]:
-        """Extract main topics from content"""
+        """Extract main topics from content."""
         return AIServiceUtils.extract_topics(content)
 
     def _clean_content(self, content: str) -> str:
-        """Clean and sanitize content"""
+        """Clean and sanitize content."""
         return AIServiceUtils.clean_content(content)
 
     def _get_age_group(self, age: int) -> str:
-        """Get age group classification"""
+        """Get age group classification."""
         return AIServiceUtils.get_age_group(age)
 
     def _generate_cache_key(self, message: str, age: int, name: str) -> str:
-        """Generate cache key for response"""
+        """Generate cache key for response."""
         return AIServiceUtils.generate_cache_key(message, age, name)
 
-    async def _get_cached_response(self, cache_key: str) -> Optional[AIResponse]:
-        """Get cached response if available"""
+    async def _get_cached_response(self, cache_key: str) -> AIResponse | None:
+        """Get cached response if available."""
         try:
             if self.redis_cache:
                 cached_data = await self.redis_cache.get(cache_key)
@@ -259,18 +268,22 @@ CONVERSATION STYLE:
         return None
 
     async def _cache_response(self, cache_key: str, response: AIResponse) -> None:
-        """Cache the response for future use"""
+        """Cache the response for future use."""
         try:
             if self.redis_cache:
                 # Cache for 1 hour
                 await self.redis_cache.setex(
-                    cache_key, 3600, response.model_dump_json()
+                    cache_key,
+                    3600,
+                    response.model_dump_json(),
                 )
         except Exception as e:
             logger.warning(f"Cache storage error: {e}")
 
     async def _get_fallback_response(
-        self, child_name: str, child_age: int
+        self,
+        child_name: str,
+        child_age: int,
     ) -> AIResponse:
-        """Get safe fallback response when AI service fails"""
+        """Get safe fallback response when AI service fails."""
         return AIServiceUtils.get_fallback_response(child_name, child_age)

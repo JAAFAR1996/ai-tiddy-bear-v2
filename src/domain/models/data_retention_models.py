@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
 
 
 class DataType(Enum):
     """Types of data with different retention requirements."""
+
     CONVERSATION_DATA = "conversation_data"
     VOICE_RECORDINGS = "voice_recordings"
     INTERACTION_LOGS = "interaction_logs"
@@ -17,14 +16,14 @@ class DataType(Enum):
 
 class RetentionPolicy:
     """Data retention policy configuration."""
-    
+
     def __init__(
         self,
         data_type: DataType,
         retention_days: int,
         child_age_group: str,
-        auto_delete: bool=True,
-        requires_consent: bool=True,
+        auto_delete: bool = True,
+        requires_consent: bool = True,
     ) -> None:
         self.data_type = data_type
         self.retention_days = retention_days

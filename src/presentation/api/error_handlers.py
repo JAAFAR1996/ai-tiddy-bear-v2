@@ -1,14 +1,11 @@
-"""
+
 from typing import Any, Dict, Optional
 from uuid import uuid4
 import logging
 from fastapi import HTTPException, status
 import traceback
-"""
 
-Centralized Error Handling for Child Safety API
-Consistent, secure error handling across all endpoints
-"""
+
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="api")

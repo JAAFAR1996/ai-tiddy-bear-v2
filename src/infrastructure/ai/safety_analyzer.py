@@ -1,5 +1,4 @@
-import logging
-from typing import Any, Dict
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -45,12 +44,15 @@ class SafetyAnalyzer:
         ]
         logger.info("SafetyAnalyzer initialized.")
 
-    async def analyze_safety(self, text: str) -> Dict[str, Any]:
+    async def analyze_safety(self, text: str) -> dict[str, Any]:
         """Performs a multi-layer safety analysis on the given text.
+
         Args:
             text: The text to analyze.
+
         Returns:
             A dictionary containing safety analysis results.
+
         """
         flagged_keywords = []
         text_lower = text.lower()

@@ -1,4 +1,5 @@
-"""Common Container - Production Only"""
+"""Common Container - Production Only."""
+
 from src.infrastructure.di.container import DIContainer as Container
 from src.infrastructure.di.container import get_container
 

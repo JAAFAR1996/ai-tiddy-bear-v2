@@ -1,4 +1,3 @@
-"""
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import hashlib
@@ -8,12 +7,9 @@ import re
 import secrets
 import sys
 from src.domain.constants import COPPA_MAX_RETENTION_DAYS
-"""
-Environment Security Validator
-Ensures all secrets are properly configured and secure before application startup
-"""
-
 from src.infrastructure.logging_config import get_logger
+
+
 
 logger = get_logger(__name__, component="security")
 
@@ -156,7 +152,7 @@ class EnvironmentSecurityValidator:
         for count in freq.values():
             probability = count / total
             if probability > 0:
-                entropy -= probability * (probability and probability * 2).bit_length()
+                entropy -= probability * (probability).bit_length()
         
         return entropy * len(value)
     

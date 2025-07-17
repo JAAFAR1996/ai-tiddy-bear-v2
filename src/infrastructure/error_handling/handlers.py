@@ -1,11 +1,12 @@
 """
+Error handling utilities and standardized response formatting.
+"""
+
 from datetime import datetime
 from typing import Dict, Any, Optional, Union
 import logging
 import traceback
 from .exceptions import AITeddyError
-
-"""Error handling utilities and standardized response formatting."""
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
@@ -122,4 +123,3 @@ def get_error_response(
     """
     handler = ErrorHandler(log_errors=False, include_details=include_details)
     return handler.handle_error(error)
-"""

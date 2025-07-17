@@ -1,5 +1,4 @@
-"""
-🔒 AI Teddy Bear - Production Database Configuration
+"""🔒 AI Teddy Bear - Production Database Configuration.
 
 Refactored to be under 300 lines by extracting components
 Translated Arabic comments to English
@@ -12,6 +11,7 @@ The actual implementation is split across:
 - database/migrations.py: Migration and security setup
 - database/initializer.py: Database initialization logic
 """
+
 import warnings
 
 from .database import (

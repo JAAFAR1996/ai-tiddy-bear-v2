@@ -1,25 +1,23 @@
-"""
-Cache invalidation strategy
-"""
-from typing import List, Optional, Set
-import asyncio
-import logging
+"""Cache invalidation strategy."""
+
 import redis.asyncio as redis
-from ..cache_config import CacheConfig
+
 from src.infrastructure.logging_config import get_logger
+
+from ..cache_config import CacheConfig
 
 logger = get_logger(__name__, component="infrastructure")
 
 
 class CacheInvalidationStrategy:
-    """Manages cache invalidation patterns and strategies"""
-    
+    """Manages cache invalidation patterns and strategies."""
+
     def __init__(self, redis_client: redis.Redis) -> None:
         self.redis_client = redis_client
         self.config = CacheConfig()
 
     async def invalidate_pattern(self, pattern: str) -> int:
-        """Invalidate all keys matching pattern"""
+        """Invalidate all keys matching pattern."""
         try:
             # Use SCAN to find keys (better than KEYS for production)
             keys_to_delete = []
@@ -35,7 +33,7 @@ class CacheInvalidationStrategy:
             return 0
 
     async def invalidate_by_event(self, event_type: str) -> int:
-        """Invalidate cache based on event type"""
+        """Invalidate cache based on event type."""
         patterns = self.config.INVALIDATION_PATTERNS.get(event_type, [])
         if not patterns:
             logger.warning(f"No invalidation patterns defined for event: {event_type}")
@@ -48,11 +46,11 @@ class CacheInvalidationStrategy:
         return total_deleted
 
     async def invalidate_child_data(self, child_id: str) -> int:
-        """Invalidate all cache entries for a specific child"""
+        """Invalidate all cache entries for a specific child."""
         patterns = [
             f"{self.config.CHILD_PREFIX}{child_id}*",
             f"{self.config.SAFETY_PREFIX}{child_id}*",
-            f"{self.config.AI_RESPONSE_PREFIX}{child_id}*"
+            f"{self.config.AI_RESPONSE_PREFIX}{child_id}*",
         ]
         total_deleted = 0
         for pattern in patterns:
@@ -61,12 +59,12 @@ class CacheInvalidationStrategy:
         return total_deleted
 
     async def invalidate_user_session(self, user_id: str) -> int:
-        """Invalidate user session data"""
+        """Invalidate user session data."""
         pattern = f"{self.config.SESSION_PREFIX}{user_id}*"
         return await self.invalidate_pattern(pattern)
 
     async def clear_expired(self) -> int:
-        """Clear expired entries(Redis handles this automatically with TTL)"""
+        """Clear expired entries(Redis handles this automatically with TTL)."""
         # This is a placeholder - Redis automatically removes expired keys
         # But we can use this for custom expiration logic if needed
         logger.debug("Redis handles expiration automatically via TTL")

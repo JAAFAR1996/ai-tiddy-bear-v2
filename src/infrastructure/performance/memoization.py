@@ -1,9 +1,10 @@
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 
 def memoize(func: Callable[..., Any]) -> Callable[..., Any]:
     """A simple memoization decorator."""
-    cache: Dict[Any, Any] = {}
+    cache: dict[Any, Any] = {}
 
     def wrapper(*args: Any) -> Any:
         if args in cache:

@@ -1,5 +1,4 @@
-"""
-Provides critical safety checks and enforces production environment settings.
+"""Provides critical safety checks and enforces production environment settings.
 
 This module ensures that the application adheres to strict security and
 compliance standards when running in a production environment. It forces
@@ -8,29 +7,22 @@ violations, and performs validations to prevent misconfigurations that
 could compromise child safety or data integrity.
 """
 
-import logging
 import os
-import sys
-from typing import List, Optional
 
-from src.infrastructure.config.env_security import SecureEnvironmentManager
-from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.main_security_service import (
-    MainSecurityService,
-)  # Import the new security service
-from src.infrastructure.di.container import container
-from src.domain.exceptions.base import (
+from src.domain.exceptions.base import (  # Import custom exception
     StartupValidationException,
-)  # Import custom exception
+)
+from src.infrastructure.config.env_security import SecureEnvironmentManager
+from src.infrastructure.di.container import container
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="config")
 
 _env_manager = SecureEnvironmentManager()
 
 
-def env_get(key: str, default: Optional[str] = None) -> Optional[str]:
-    """
-    Retrieves an environment variable's value using the secure environment manager.
+def env_get(key: str, default: str | None = None) -> str | None:
+    """Retrieves an environment variable's value using the secure environment manager.
 
     Args:
         key: The environment variable key.
@@ -38,17 +30,18 @@ def env_get(key: str, default: Optional[str] = None) -> Optional[str]:
 
     Returns:
         The value of the environment variable, or the default value.
+
     """
     return _env_manager.get_env_var(key, default)
 
 
 def env_set_secure(key: str, value: str) -> None:
-    """
-    Sets an environment variable securely.
+    """Sets an environment variable securely.
 
     Args:
         key: The environment variable key.
         value: The value to set.
+
     """
     os.environ[key] = value
 
@@ -72,8 +65,7 @@ def env_set_secure(key: str, value: str) -> None:
 
 
 def enforce_production_safety() -> None:
-    """
-    Enforces production safety settings regardless of configuration.
+    """Enforces production safety settings regardless of configuration.
 
     This function has side effects and will exit if validation fails in production.
     """
@@ -87,8 +79,7 @@ def enforce_production_safety() -> None:
         env_set_secure("SECURE_COOKIES", "True")
         env_set_secure("FORCE_HTTPS", "True")
 
-        logger.warning(
-            "Production environment detected - enforcing security settings:")
+        logger.warning("Production environment detected - enforcing security settings:")
         logger.warning("  - DEBUG: False (forced)")
         logger.warning("  - CONTENT_MODERATION_ENABLED: True (forced)")
         logger.warning("  - COPPA_COMPLIANCE_MODE: True (forced)")
@@ -107,7 +98,7 @@ def enforce_production_safety() -> None:
         for variant in debug_variants:
             if env_get(variant, "").lower() in ["true", "1", "yes", "on"]:
                 logger.critical(
-                    f"SECURITY VIOLATION: {variant} was set to True in production!"
+                    f"SECURITY VIOLATION: {variant} was set to True in production!",
                 )
                 env_set_secure(variant, "False")
 
@@ -120,8 +111,8 @@ def enforce_production_safety() -> None:
         if errors:
             error_messages = "; ".join(errors)
             logger.critical(
-                f"Production environment validation failed: {error_messages}"
+                f"Production environment validation failed: {error_messages}",
             )
             raise StartupValidationException(
-                f"Critical production environment security checks failed: {error_messages}"
+                f"Critical production environment security checks failed: {error_messages}",
             )

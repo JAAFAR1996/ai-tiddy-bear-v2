@@ -1,12 +1,15 @@
-"""from typing import Listimport asyncioimport loggingfrom .data_models import ChaosMetric, SystemHealthSnapshot"""
+"""from typing import Listimport asyncioimport loggingfrom .data_models import ChaosMetric, SystemHealthSnapshot."""
+
 """Metrics Collector Implementation"""
 
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="chaos")
 
+
 class ChaosMetricsCollector:
-    """Advanced metrics collector for chaos experiments"""
+    """Advanced metrics collector for chaos experiments."""
+
     def __init__(self) -> None:
         self.metrics_buffer: List[ChaosMetric] = []
         self.health_snapshots: List[SystemHealthSnapshot] = []
@@ -14,7 +17,7 @@ class ChaosMetricsCollector:
         self.is_collecting = False
 
     async def start_collection(self, experiment_id: str):
-        """Start metrics collection for experiment"""
+        """Start metrics collection for experiment."""
         self.is_collecting = True
         logger.info(f"Starting metrics collection for experiment {experiment_id}")
         while self.is_collecting:
@@ -31,14 +34,18 @@ class ChaosMetricsCollector:
                 await asyncio.sleep(self.collection_interval)
 
     async def stop_collection(self):
-        """Stop metrics collection"""
+        """Stop metrics collection."""
         self.is_collecting = False
         logger.info("Stopped metrics collection")
 
-    async def _collect_health_snapshot(self, experiment_id: str) -> SystemHealthSnapshot:
-        """Collect system health snapshot"""
+    async def _collect_health_snapshot(
+        self,
+        experiment_id: str,
+    ) -> SystemHealthSnapshot:
+        """Collect system health snapshot."""
         # Mock implementation
         from datetime import datetime
+
         return SystemHealthSnapshot(
             timestamp=datetime.now(),
             experiment_id=experiment_id,
@@ -47,31 +54,34 @@ class ChaosMetricsCollector:
             avg_response_time=100.0,
             error_rate=0.0,
             throughput=1000.0,
-            safety_violations=0
+            safety_violations=0,
         )
 
     async def _collect_metrics(self, experiment_id: str) -> List[ChaosMetric]:
-        """Collect individual service metrics"""
+        """Collect individual service metrics."""
         # Mock implementation
-        from datetime import datetime
         import random
+        from datetime import datetime
+
         metrics = []
         services = ["auth_service", "user_service", "chat_service"]
         for service in services:
-            metrics.append(ChaosMetric(
-                timestamp=datetime.now(),
-                experiment_id=experiment_id,
-                service_name=service,
-                metric_name="cpu_usage",
-                metric_value=random.uniform(0.5, 1.0),
-                tags={"region": "us-east-1"}
-            ))
+            metrics.append(
+                ChaosMetric(
+                    timestamp=datetime.now(),
+                    experiment_id=experiment_id,
+                    service_name=service,
+                    metric_name="cpu_usage",
+                    metric_value=random.uniform(0.5, 1.0),
+                    tags={"region": "us-east-1"},
+                ),
+            )
         return metrics
 
     def get_all_metrics(self) -> List[ChaosMetric]:
-        """Get all collected metrics"""
+        """Get all collected metrics."""
         return self.metrics_buffer
 
     def get_health_snapshots(self) -> List[SystemHealthSnapshot]:
-        """Get all health snapshots"""
+        """Get all health snapshots."""
         return self.health_snapshots

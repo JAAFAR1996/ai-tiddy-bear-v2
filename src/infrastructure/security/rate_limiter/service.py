@@ -1,10 +1,8 @@
-"""
-Main rate limiting service implementation.
-"""
+"""Main rate limiting service implementation."""
+
 import asyncio
-import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.comprehensive_audit_integration import (
@@ -13,7 +11,7 @@ from src.infrastructure.security.comprehensive_audit_integration import (
 
 from .child_safety import ChildSafetyHandler
 from .config import DefaultConfigurations
-from .core import RateLimitConfig, RateLimitResult, RateLimitState
+from .core import RateLimitConfig, RateLimitResult
 from .storage import RateLimitStorage
 from .strategies import RateLimitingStrategies
 
@@ -21,8 +19,7 @@ logger = get_logger(__name__, component="security")
 
 
 class ComprehensiveRateLimiter:
-    """
-    Comprehensive rate limiting service with multiple strategies and child safety features.
+    """Comprehensive rate limiting service with multiple strategies and child safety features.
 
     Features:
     - Multiple rate limiting strategies (fixed window, sliding window, token bucket)
@@ -36,9 +33,9 @@ class ComprehensiveRateLimiter:
 
     def __init__(self, redis_client=None):
         self.storage = RateLimitStorage(redis_client)
-        self.configs: Dict[
-            str, RateLimitConfig
-        ] = DefaultConfigurations.get_default_configs()
+        self.configs: dict[str, RateLimitConfig] = (
+            DefaultConfigurations.get_default_configs()
+        )
         self.child_safety_handler = ChildSafetyHandler()
         self.audit_integration = get_audit_integration()
         # Start cleanup task
@@ -48,13 +45,12 @@ class ComprehensiveRateLimiter:
         self,
         key: str,
         config_name: str,
-        user_id: Optional[str] = None,
-        child_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        request_details: Optional[Dict[str, Any]] = None,
+        user_id: str | None = None,
+        child_id: str | None = None,
+        ip_address: str | None = None,
+        request_details: dict[str, Any] | None = None,
     ) -> RateLimitResult:
-        """
-        Check if request is within rate limits.
+        """Check if request is within rate limits.
 
         Args:
             key: Unique identifier for rate limiting (e.g., user_id, ip_address)
@@ -66,6 +62,7 @@ class ComprehensiveRateLimiter:
 
         Returns:
             RateLimitResult indicating if request is allowed
+
         """
         config = self.configs.get(config_name)
         if not config:
@@ -97,7 +94,11 @@ class ComprehensiveRateLimiter:
             # Trigger child safety violation if applicable
             if config.child_safe_mode:
                 await self.child_safety_handler.handle_child_safety_violation(
-                    config, key, user_id, child_id, ip_address
+                    config,
+                    key,
+                    user_id,
+                    child_id,
+                    ip_address,
                 )
                 result.child_safety_triggered = True
 

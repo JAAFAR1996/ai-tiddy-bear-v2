@@ -1,8 +1,4 @@
-"""
-Child safety specific rate limiting features.
-"""
-import logging
-from typing import Any, Dict, Optional
+"""Child safety specific rate limiting features."""
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.comprehensive_audit_integration import (
@@ -24,9 +20,9 @@ class ChildSafetyHandler:
         self,
         config: RateLimitConfig,
         key: str,
-        user_id: Optional[str],
-        child_id: Optional[str],
-        ip_address: Optional[str],
+        user_id: str | None,
+        child_id: str | None,
+        ip_address: str | None,
     ) -> None:
         """Handle rate limit violations that trigger child safety protocols."""
         # Log as security incident
@@ -60,7 +56,7 @@ class ChildSafetyHandler:
         # Block if more than 3 rate limit denials in the last 5 minutes
         if recent_requests > config.max_requests * 3:
             logger.warning(
-                f"Suspicious activity detected for key {state.key}, blocking."
+                f"Suspicious activity detected for key {state.key}, blocking.",
             )
             return True
 

@@ -1,1 +1,0 @@
-class PluginType(Enum):from enum import Enumclass PluginType(Enum):    AI_SERVICE = "AI_SERVICE"    CUSTOM = "CUSTOM"def create_plugin_manager(path) -> PluginManager:    passdef create_plugin_manifest(name, version, description, author, plugin_type, entry_point):    pass

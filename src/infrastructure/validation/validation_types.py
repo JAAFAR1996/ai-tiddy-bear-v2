@@ -1,11 +1,10 @@
 """
+Validation Types and Data Structures
+Common types, enums, and data classes used across validation modules.
+"""
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Any
-"""
-
-"""Validation Types and Data Structures
-Common types, enums, and data classes used across validation modules."""
 
 
 @dataclass
@@ -95,8 +94,8 @@ SECURITY_PATTERNS = {
         r"document\.|window\.|location\.",
     ],
     'path_traversal': [
-        r"\.\./|\.\.\\/|/\.\./|\\\.\.\\\",
-        r"(\x2e\x2e\x2f|%2e%2e%2f|\x2e\x2e/)",
+        r"\.\./|\.\.\\/|/\.\./|\\\.\.\\",
+        r"(\x2e\x2e\x2f|%2e%2e%2f|\x2e\x2e/)"
     ],
     'command_injection': [
         r"(;|\|&|&&|\|\||`|\$\()",

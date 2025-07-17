@@ -1,12 +1,11 @@
 """
-from typing import Optional
-from src.domain.interfaces.encryption_interface import EncryptionServiceInterface
-"""
-
 Encryption Service Adapter
 Implements the domain encryption interface using infrastructure encryption services, 
 maintaining Hexagonal Architecture separation of concerns.
 """
+
+from typing import Optional
+from src.domain.interfaces.encryption_interface import EncryptionServiceInterface
 
 class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
     """

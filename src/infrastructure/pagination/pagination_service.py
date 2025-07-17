@@ -1,12 +1,12 @@
-from typing import Generic, List, Optional, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel
 
 T = TypeVar("T")
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
-    items: List[T]
+class PaginatedResponse[T](BaseModel):
+    items: list[T]
     total: int
     page: int
     size: int
@@ -17,7 +17,10 @@ class PaginatedResponse(BaseModel, Generic[T]):
 class PaginationService:
     @staticmethod
     def paginate(
-        items: List[T], page: int, size: int, total: Optional[int] = None
+        items: list[T],
+        page: int,
+        size: int,
+        total: int | None = None,
     ) -> PaginatedResponse[T]:
         if total is None:
             total = len(items)

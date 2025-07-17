@@ -1,5 +1,4 @@
-"""
-Defines data models for speech-to-text transcription results.
+"""Defines data models for speech-to-text transcription results.
 
 This module provides the `TranscriptionResult` dataclass, which encapsulates
 all relevant information about a transcribed audio segment, including the

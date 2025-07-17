@@ -1,12 +1,11 @@
 """
+Fallback Response Generator for ChatGPT - Safe Responses When API Fails
+"""
+
 from datetime import datetime
 from typing import Dict, List, Any
 import logging
 import random
-"""
-
-Fallback Response Generator for ChatGPT - Safe Responses When API Fails
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")

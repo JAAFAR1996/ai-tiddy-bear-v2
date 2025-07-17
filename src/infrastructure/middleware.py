@@ -1,5 +1,4 @@
-"""
-from typing import List
+"""from typing import List
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,16 +11,16 @@ from src.presentation.api.middleware.request_logging import RequestLoggingMiddle
 from src.presentation.api.middleware.security.child_safety_middleware import ChildSafetyMiddleware
 from src.presentation.api.middleware.security.rate_limiting_middleware import RateLimitingMiddleware
 from src.presentation.api.middleware.security_headers_refactored_clean import SecurityHeadersMiddleware
-from src.infrastructure.logging_config import get_logger
+from src.infrastructure.logging_config import get_logger.
 """
 
 logger = get_logger(__name__, component="infrastructure")
 
+
 def setup_middleware(app: FastAPI) -> None:
-    """
-    Setup comprehensive middleware stack for child safety and security.
+    """Setup comprehensive middleware stack for child safety and security.
     Middleware order is critical - applied in reverse order(last added=first executed)
-    Args: app: FastAPI application instance
+    Args: app: FastAPI application instance.
     """
     settings = get_settings()
     is_production = settings.application.ENVIRONMENT == "production"
@@ -86,80 +85,89 @@ def setup_middleware(app: FastAPI) -> None:
     # Log final middleware configuration
     _log_middleware_summary(is_production, cors_origins)
 
-def _get_cors_origins(app_settings: ApplicationSettings, is_production: bool) -> List[str]:
-    """
-    Get CORS allowed origins based on environment with security validation.
+
+def _get_cors_origins(
+    app_settings: ApplicationSettings,
+    is_production: bool,
+) -> List[str]:
+    """Get CORS allowed origins based on environment with security validation.
     Args: app_settings: Application settings
         is_production: Whether running in production
     Returns: List of allowed CORS origins
-    Raises: ValueError: If insecure CORS configuration is detected
+    Raises: ValueError: If insecure CORS configuration is detected.
     """
     if is_production:
         # In production, CORS_ORIGINS must be explicitly configured and secure.
         # If not set, it defaults to an empty list, which will be caught by validation.
-        configured_origins = app_settings.CORS_ORIGINS if app_settings.CORS_ORIGINS is not None else []
+        configured_origins = (
+            app_settings.CORS_ORIGINS if app_settings.CORS_ORIGINS is not None else []
+        )
         if not configured_origins:
-            logger.warning("CORS_ORIGINS is empty or not set in production. This might lead to CORS issues. Ensure it's configured securely.")
+            logger.warning(
+                "CORS_ORIGINS is empty or not set in production. This might lead to CORS issues. Ensure it's configured securely.",
+            )
         return configured_origins
-    else:
-        # In development, allow common localhost origins for convenience.
-        return [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:8080",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080",
-            "http://localhost", # For some development setups
-            "http://127.0.0.1" # For some development setups
-        ]
+    # In development, allow common localhost origins for convenience.
+    return [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8080",
+        "http://localhost",  # For some development setups
+        "http://127.0.0.1",  # For some development setups
+    ]
+
 
 def _validate_cors_origins(origins: List[str], is_production: bool) -> None:
-    """
-    Validate CORS origins for security compliance.
+    """Validate CORS origins for security compliance.
     Args: origins: List of CORS origins to validate
         is_production: Whether running in production
-    Raises: ValueError: If insecure configuration is detected
+    Raises: ValueError: If insecure configuration is detected.
     """
     for origin in origins:
         if is_production and origin == "*":
-            raise ValueError("Wildcard CORS origin (*) not allowed in production for child safety")
+            raise ValueError(
+                "Wildcard CORS origin (*) not allowed in production for child safety",
+            )
         if is_production and not origin.startswith("https://"):
-            raise ValueError(f"Non-HTTPS origin '{origin}' not allowed in production: {origin}")
+            raise ValueError(
+                f"Non-HTTPS origin '{origin}' not allowed in production: {origin}",
+            )
         suspicious_patterns = ["javascript:", "data:", "file:", "ftp://"]
         if any(pattern in origin.lower() for pattern in suspicious_patterns):
             raise ValueError(f"Suspicious origin pattern detected: {origin}")
     logger.info(f"CORS origins validation passed: {len(origins)} origins validated")
 
+
 def _get_trusted_hosts(app_settings: ApplicationSettings) -> List[str]:
-    """
-    Get trusted hosts for production deployment.
+    """Get trusted hosts for production deployment.
     Args: app_settings: Application settings
-    Returns: List of trusted host patterns
+    Returns: List of trusted host patterns.
     """
     if app_settings.TRUSTED_HOSTS:
         return app_settings.TRUSTED_HOSTS
     # Default production trusted hosts
-    return [
-        "aiteddybear.com",
-        "*.aiteddybear.com",
-        "localhost",
-        "127.0.0.1"
-    ]
+    return ["aiteddybear.com", "*.aiteddybear.com", "localhost", "127.0.0.1"]
+
 
 def _log_middleware_summary(is_production: bool, cors_origins: List[str]) -> None:
-    """
-    Log summary of middleware configuration.
+    """Log summary of middleware configuration.
     Args: is_production: Whether running in production
-        cors_origins: Configured CORS origins
+        cors_origins: Configured CORS origins.
     """
     logger.info("🔒 Middleware Configuration Summary:")
     logger.info(f"   • Environment: {'Production' if is_production else 'Development'}")
-    logger.info(f"   • Error Handling: ✅ Enabled")
-    logger.info(f"   • Request Logging: ✅ Enabled")
-    logger.info(f"   • Security Headers: ✅ Enabled")
-    logger.info(f"   • Child Safety: ✅ Enabled")
-    logger.info(f"   • Rate Limiting: ✅ Enabled")
+    logger.info("   • Error Handling: ✅ Enabled")
+    logger.info("   • Request Logging: ✅ Enabled")
+    logger.info("   • Security Headers: ✅ Enabled")
+    logger.info("   • Child Safety: ✅ Enabled")
+    logger.info("   • Rate Limiting: ✅ Enabled")
     logger.info(f"   • CORS Origins: {len(cors_origins)} configured")
-    logger.info(f"   • HTTPS Redirect: {'✅ Enabled' if is_production else '❌ Development Only'}")
-    logger.info(f"   • Trusted Hosts: {'✅ Enabled' if is_production else '❌ Development Only'}")
+    logger.info(
+        f"   • HTTPS Redirect: {'✅ Enabled' if is_production else '❌ Development Only'}",
+    )
+    logger.info(
+        f"   • Trusted Hosts: {'✅ Enabled' if is_production else '❌ Development Only'}",
+    )
     logger.info("🧸 AI Teddy Bear middleware stack ready for child-safe interactions!")

@@ -3,12 +3,14 @@
 This module monitors and enforces secure logging practices
 throughout the AI Teddy Bear application to prevent data leaks.
 """
-from pathlib import Path
-from typing import Dict, List, Set, Any, Optional
 import logging
 import re
 import warnings
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
+
 from .log_sanitizer import LogSanitizer, SensitiveDataType
+
 
 class LoggingSecurityMonitor:
     """
@@ -21,14 +23,14 @@ class LoggingSecurityMonitor:
         # Patterns to detect potential sensitive data in logs
         self.sensitive_patterns = {
             'email': r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
-            'phone': r'\b\+?[\d\s\-\(Þ)]{10,}\b',
+            'phone': r'\b\+?[\d\s\-\(\)]{10,}\b',
             'child_id': r'\bchild_id["\s]*[:=]["\s]*[A-Za-z0-9\-_]+',
             'parent_id': r'\bparent_id["\s]*[:=]["\s]*[A-Za-z0-9\-_]+',
             'ssn': r'\b\d{3}-?\d{2}-?\d{4}\b',
             'credit_card': r'\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b',
             'ip_address': r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b',
             'api_key': r'\b[A-Za-z0-9]{32,}\b',
-            'password': r'password["\s]*[:=]["\s]*[^\s"']+',
+            'password': r'password["\s]*[:=]["\s]*[^\s"\']+',
             'token': r'token["\s]*[:=]["\s]*[A-Za-z0-9\-_\.]+',
         }
 

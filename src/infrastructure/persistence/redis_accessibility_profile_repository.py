@@ -1,6 +1,4 @@
 import json
-from datetime import datetime
-from typing import Optional, List
 from uuid import UUID
 
 from redis.asyncio import Redis
@@ -15,8 +13,7 @@ logger = get_logger(__name__, component="redis_accessibility_repository")
 
 
 class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
-    """
-    Redis implementation of the accessibility profile repository.
+    """Redis implementation of the accessibility profile repository.
     Serializes and deserializes AccessibilityProfile objects to/from Redis.
     """
 
@@ -27,8 +24,9 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
         self.logger = logger
 
     async def get_profile_by_child_id(
-        self, child_id: UUID
-    ) -> Optional[AccessibilityProfile]:
+        self,
+        child_id: UUID,
+    ) -> AccessibilityProfile | None:
         key = self.PROFILE_KEY_PREFIX + str(child_id)
         try:
             profile_data_json = await self.redis_client.get(key)
@@ -43,24 +41,26 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
                     child_id=UUID(profile_data_dict["child_id"]),
                     special_needs=special_needs,
                     preferred_interaction_mode=profile_data_dict.get(
-                        "preferred_interaction_mode", "voice"
+                        "preferred_interaction_mode",
+                        "voice",
                     ),
                     voice_speed_adjustment=profile_data_dict.get(
-                        "voice_speed_adjustment", 1.0
+                        "voice_speed_adjustment",
+                        1.0,
                     ),
                     volume_level=profile_data_dict.get("volume_level", 0.8),
-                    subtitles_enabled=profile_data_dict.get(
-                        "subtitles_enabled", False),
+                    subtitles_enabled=profile_data_dict.get("subtitles_enabled", False),
                     additional_settings=profile_data_dict.get(
-                        "additional_settings", {}
+                        "additional_settings",
+                        {},
                     ),
                 )
                 self.logger.debug(
-                    f"Retrieved accessibility profile for child {child_id} from Redis."
+                    f"Retrieved accessibility profile for child {child_id} from Redis.",
                 )
                 return profile
             self.logger.debug(
-                f"Accessibility profile for child {child_id} not found in Redis."
+                f"Accessibility profile for child {child_id} not found in Redis.",
             )
             return None
         except Exception as e:
@@ -85,7 +85,7 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
             }
             await self.redis_client.set(key, json.dumps(profile_data_dict))
             self.logger.debug(
-                f"Saved accessibility profile for child {profile.child_id} to Redis."
+                f"Saved accessibility profile for child {profile.child_id} to Redis.",
             )
         except Exception as e:
             self.logger.error(
@@ -100,11 +100,11 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
             result = await self.redis_client.delete(key)
             if result > 0:
                 self.logger.debug(
-                    f"Deleted accessibility profile for child {child_id} from Redis."
+                    f"Deleted accessibility profile for child {child_id} from Redis.",
                 )
                 return True
             self.logger.debug(
-                f"Accessibility profile for child {child_id} not found for deletion in Redis."
+                f"Accessibility profile for child {child_id} not found for deletion in Redis.",
             )
             return False
         except Exception as e:
@@ -114,12 +114,12 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
             )
             return False
 
-    async def get_all_profiles(self) -> List[AccessibilityProfile]:
+    async def get_all_profiles(self) -> list[AccessibilityProfile]:
         # In a production system, this operation should be avoided or carefully paginated
         # as it can be very resource intensive on large datasets.
         # For now, a placeholder that logs a warning.
         self.logger.warning(
-            "Attempted to retrieve all accessibility profiles. This operation is not optimized for large datasets."
+            "Attempted to retrieve all accessibility profiles. This operation is not optimized for large datasets.",
         )
         # A real implementation would involve Redis SCAN or other techniques
         return []

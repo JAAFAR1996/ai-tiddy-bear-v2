@@ -1,4 +1,4 @@
-"""
+
 from typing import Callable, Dict, Any, Optional
 import logging
 import time
@@ -8,9 +8,7 @@ from src.infrastructure.security.comprehensive_rate_limiter import (
     get_rate_limiter,
     RateLimitResult)
 
-"""Rate Limiting Middleware for FastAPI
-Provides comprehensive rate limiting with child safety features.
-"""
+
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="middleware")

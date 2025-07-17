@@ -1,15 +1,11 @@
-"""
-Usage Repository
+"""Usage Repository.
 
 Handles all usage statistics and analytics database operations.
 """
-from datetime import datetime, timedelta
-from typing import Any, Dict, List
-from uuid import uuid4
 
-from sqlalchemy import and_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database import Database
@@ -30,12 +26,13 @@ class UsageRepository:
 
         Args:
             database: Database instance
+
         """
         self.database = database
         logger.info("UsageRepository initialized")
 
     @database_input_validation("usage_statistics")
-    async def record_usage(self, usage_record: Dict[str, Any]) -> str:
+    async def record_usage(self, usage_record: dict[str, Any]) -> str:
         """Record usage statistics for a child.
 
         Args:
@@ -43,6 +40,7 @@ class UsageRepository:
 
         Returns:
             Usage record ID
+
         """
         try:
             required_fields = ["child_id", "activity_type", "duration"]
@@ -52,11 +50,13 @@ class UsageRepository:
 
             if usage_record["duration"] < 0:
                 raise ValueError(
-                    f"Duration cannot be negative: {usage_record['duration']}"
+                    f"Duration cannot be negative: {usage_record['duration']}",
                 )
 
             validated_operation = validate_database_operation(
-                "INSERT", "usage_statistics", usage_record
+                "INSERT",
+                "usage_statistics",
+                usage_record,
             )
             validated_data = validated_operation["data"]
             usage_id = str(uuid4())
@@ -81,9 +81,7 @@ class UsageRepository:
             raise
 
     @database_input_validation("usage_statistics")
-    async def get_usage_summary(
-        self, child_id: str, days: int = 30
-    ) -> Dict[str, Any]:
+    async def get_usage_summary(self, child_id: str, days: int = 30) -> dict[str, Any]:
         """Get usage summary for a child over a period.
 
         Args:
@@ -92,6 +90,7 @@ class UsageRepository:
 
         Returns:
             Dictionary with usage summary
+
         """
         # Mock implementation
         logger.info(f"Fetching usage summary for child {child_id} for last {days} days")

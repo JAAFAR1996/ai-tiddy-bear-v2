@@ -1,4 +1,7 @@
 """
+Comprehensive Monitoring Infrastructure Package
+Enterprise - grade monitoring and alerting for AI Teddy Bear backend.
+"""
 from .comprehensive_monitoring import (
     ComprehensiveMonitoringService,
     ChildSafetyMonitor,
@@ -9,11 +12,6 @@ from .comprehensive_monitoring import (
     Alert,
     monitoring_service,
     monitor_performance)
-"""
-
-Comprehensive Monitoring Infrastructure Package
-Enterprise - grade monitoring and alerting for AI Teddy Bear backend.
-"""
 
 __all__ = [
     'ComprehensiveMonitoringService',

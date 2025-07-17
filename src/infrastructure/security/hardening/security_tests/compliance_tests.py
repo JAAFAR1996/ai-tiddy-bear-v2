@@ -1,24 +1,27 @@
-"""Compliance Security Tests"""
-from typing import Dict, List, Any
-import logging
+"""Compliance Security Tests."""
+
 import re
-from .base_tester import BaseSecurityTester
+from typing import Any
+
 from src.infrastructure.logging_config import get_logger
+
+from .base_tester import BaseSecurityTester
 
 logger = get_logger(__name__, component="security")
 
-class ComplianceTester(BaseSecurityTester):
-    """Tests for compliance requirements"""
 
-    def test_coppa_compliance(self) -> Dict[str, Any]:
-        """Test COPPA compliance"""
+class ComplianceTester(BaseSecurityTester):
+    """Tests for compliance requirements."""
+
+    def test_coppa_compliance(self) -> dict[str, Any]:
+        """Test COPPA compliance."""
         issues = []
         coppa_requirements = [
             ("parental_consent", "Parental consent mechanism"),
             ("age_verification", "Age verification system"),
             ("data_encryption", "Child data encryption"),
             ("coppa_compliance", "COPPA compliance flag"),
-            ("child_safety", "Child safety measures")
+            ("child_safety", "Child safety measures"),
         ]
         python_files = self.scan_python_files()
         compliance_score = 0
@@ -26,21 +29,19 @@ class ComplianceTester(BaseSecurityTester):
             content = self.read_file_safely(file_path)
             if not content:
                 continue
-            for requirement, description in coppa_requirements:
+            for requirement, _description in coppa_requirements:
                 if requirement in content.lower():
                     compliance_score += 1
                     break
 
         if compliance_score < len(coppa_requirements):
             missing_requirements = len(coppa_requirements) - compliance_score
-            issues.append(f"Missing {missing_requirements} COPPA compliance requirements")
+            issues.append(
+                f"Missing {missing_requirements} COPPA compliance requirements",
+            )
 
         # Check for age restrictions
-        age_patterns = [
-            r'age\s*[<>=]\s*13',
-            r'min_age\s*=\s*13',
-            r'COPPA_AGE_LIMIT'
-        ]
+        age_patterns = [r"age\s*[<>=]\s*13", r"min_age\s*=\s*13", r"COPPA_AGE_LIMIT"]
         has_age_restrictions = False
         for file_path in python_files:
             content = self.read_file_safely(file_path)
@@ -56,18 +57,23 @@ class ComplianceTester(BaseSecurityTester):
         recommendations = [
             "Implement clear parental consent flow",
             "Verify user age before collecting personal information",
-            "Encrypt all personally identifiable information (PII)"
+            "Encrypt all personally identifiable information (PII)",
         ]
         return self.create_test_result(
             passed=len(issues) == 0,
             issues=issues,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
-    def test_gdpr_compliance(self) -> Dict[str, Any]:
-        """Test GDPR compliance"""
+    def test_gdpr_compliance(self) -> dict[str, Any]:
+        """Test GDPR compliance."""
         issues = []
-        gdpr_keywords = ["GDPR", "data protection", "right to be forgotten", "data portability"]
+        gdpr_keywords = [
+            "GDPR",
+            "data protection",
+            "right to be forgotten",
+            "data portability",
+        ]
         python_files = self.scan_python_files()
         has_gdpr_references = False
         for file_path in python_files:
@@ -84,10 +90,10 @@ class ComplianceTester(BaseSecurityTester):
         recommendations = [
             "Ensure a lawful basis for data processing",
             "Implement mechanisms for data subject rights (access, rectification, erasure)",
-            "Provide clear privacy notices"
+            "Provide clear privacy notices",
         ]
         return self.create_test_result(
             passed=len(issues) == 0,
             issues=issues,
-            recommendations=recommendations
+            recommendations=recommendations,
         )

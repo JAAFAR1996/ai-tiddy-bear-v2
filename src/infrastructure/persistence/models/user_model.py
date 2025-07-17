@@ -1,17 +1,20 @@
-"""User Model for AI Teddy Bear Authentication System
+"""User Model for AI Teddy Bear Authentication System.
 
 Production-grade SQLAlchemy model with comprehensive security features
 """
+
 from datetime import datetime
-from typing import Optional, Dict, Any
 from uuid import uuid4
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text
-from sqlalchemy.orm import relationship
+
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.types import JSON
+
 from src.infrastructure.persistence.database import Base
+
 
 class UserModel(Base):
     """SQLAlchemy model for user accounts with comprehensive security features."""
+
     __tablename__ = "users"
 
     # Primary identification

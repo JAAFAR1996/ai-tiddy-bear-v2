@@ -1,6 +1,5 @@
 """Reusable validation mixins for Pydantic models."""
 
-from typing import List, Any, Dict
 from pydantic import field_validator
 
 MIN_CHILD_AGE = 1
@@ -16,7 +15,7 @@ class ChildValidationMixin:
     def validate_age(cls, v) -> int:
         if v is not None and v > MAX_CHILD_AGE:
             raise ValueError(
-                f"Age must be {MAX_CHILD_AGE} or under for COPPA compliance"
+                f"Age must be {MAX_CHILD_AGE} or under for COPPA compliance",
             )
         return v
 
@@ -38,7 +37,7 @@ class ChildValidationMixin:
 
     @field_validator("interests")
     @classmethod
-    def validate_interests(cls, v) -> List[str]:
+    def validate_interests(cls, v) -> list[str]:
         if v is None:
             return v
         if len(v) > MAX_INTERESTS_COUNT:
@@ -54,11 +53,11 @@ class ChildValidationMixin:
                 char in sanitized_interest for char in ["<", ">", "&", '"', "'", "\x00"]
             ):
                 raise ValueError(
-                    f'Interest "{sanitized_interest}" contains invalid characters'
+                    f'Interest "{sanitized_interest}" contains invalid characters',
                 )
             if len(sanitized_interest) > 50:
                 raise ValueError(
-                    f'Interest "{sanitized_interest}" is too long (max 50 characters)'
+                    f'Interest "{sanitized_interest}" is too long (max 50 characters)',
                 )
             sanitized_interests.append(sanitized_interest)
         return sanitized_interests
@@ -66,7 +65,6 @@ class ChildValidationMixin:
     @field_validator("language")
     @classmethod
     def validate_language(cls, v) -> str:
-        if v is not None:
-            if v not in ALLOWED_LANGUAGES:
-                raise ValueError(f"Language must be one of: {ALLOWED_LANGUAGES}")
+        if v is not None and v not in ALLOWED_LANGUAGES:
+            raise ValueError(f"Language must be one of: {ALLOWED_LANGUAGES}")
         return v

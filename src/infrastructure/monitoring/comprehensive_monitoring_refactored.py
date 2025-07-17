@@ -1,6 +1,5 @@
-import asyncio
-import logging
-from typing import Any, Callable, Coroutine, Dict, List
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -10,16 +9,20 @@ logger = get_logger(__name__, component="infrastructure")
 class ComprehensiveMonitoring:
     """A comprehensive monitoring system for the AI Teddy Bear application."""
 
-    def __init__(self, enable_logging: bool = True, enable_metrics: bool = True) -> None:
+    def __init__(
+        self,
+        enable_logging: bool = True,
+        enable_metrics: bool = True,
+    ) -> None:
         self.enable_logging = enable_logging
         self.enable_metrics = enable_metrics
-        self.metrics: Dict[str, Any] = {
+        self.metrics: dict[str, Any] = {
             "requests_total": 0,
             "errors_total": 0,
             "latency_ms": [],
         }
 
-    def log_event(self, event_name: str, details: Dict[str, Any]) -> None:
+    def log_event(self, event_name: str, details: dict[str, Any]) -> None:
         """Logs a specific event if logging is enabled."""
         if self.enable_logging:
             logger.info(f"Event: {event_name}", extra=details)
@@ -35,7 +38,7 @@ class ComprehensiveMonitoring:
             else:
                 self.metrics[metric_name] = value
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Returns the current metrics."""
         return self.metrics
 
@@ -56,7 +59,10 @@ class ComprehensiveMonitoring:
 
         return wrapper
 
-    def monitor_coroutine(self, coro: Callable[..., Coroutine[Any, Any, Any]]) -> Callable[..., Coroutine[Any, Any, Any]]:
+    def monitor_coroutine(
+        self,
+        coro: Callable[..., Coroutine[Any, Any, Any]],
+    ) -> Callable[..., Coroutine[Any, Any, Any]]:
         """Decorator to monitor an asynchronous function."""
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:

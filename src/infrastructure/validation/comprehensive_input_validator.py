@@ -25,13 +25,14 @@ DEPRECATED: Use specific validator modules instead:
 
 # Re-export validators for backward compatibility
 from .child_safety_validator import ChildSafetyValidator, get_child_safety_validator
-from .general_input_validator import GeneralInputValidator, get_general_input_validator
 from .comprehensive_validator import (
     ComprehensiveValidator,
     get_comprehensive_validator,
     validate_child_registration,
+    validate_file_upload,
     validate_message_input,
-    validate_file_upload)
+)
+from .general_input_validator import GeneralInputValidator, get_general_input_validator
 
 # Issue deprecation warning
 warnings.warn(

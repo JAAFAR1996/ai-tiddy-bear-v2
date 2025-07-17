@@ -1,17 +1,20 @@
-"""Main Security Tester Class"""
+"""Main Security Tester Class."""
+
 from datetime import datetime
-from typing import Dict, Any
-import logging
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
+
 from .authentication_tests import AuthenticationTester
 from .compliance_tests import ComplianceTester
 from .encryption_tests import EncryptionTester
 from .injection_tests import InjectionTester
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
+
 class SecurityTester:
-    """Main security testing orchestrator"""
+    """Main security testing orchestrator."""
 
     def __init__(self, base_path: str = ".") -> None:
         self.base_path = base_path
@@ -20,15 +23,15 @@ class SecurityTester:
         self.encryption_tester = EncryptionTester(base_path)
         self.compliance_tester = ComplianceTester(base_path)
 
-    def run_all_security_tests(self) -> Dict[str, Any]:
-        """Run all security tests"""
+    def run_all_security_tests(self) -> dict[str, Any]:
+        """Run all security tests."""
         logger.info("🔒 Starting comprehensive security tests...")
         results = {
             "test_date": datetime.now().isoformat(),
             "total_tests": 0,
             "passed_tests": 0,
             "failed_tests": 0,
-            "test_results": []
+            "test_results": [],
         }
 
         # Define all tests
@@ -60,16 +63,16 @@ class SecurityTester:
         return results
 
     def generate_security_report(self) -> str:
-        """Generate a comprehensive security report"""
+        """Generate a comprehensive security report."""
         results = self.run_all_security_tests()
         report = f"""# Security Report
 
-**Date:** {results['test_date']}
+**Date:** {results["test_date"]}
 
 **Summary:**
-- **Total Tests:** {results['total_tests']}
-- **Passed:** {results['passed_tests']}
-- **Failed:** {results['failed_tests']}
+- **Total Tests:** {results["total_tests"]}
+- **Passed:** {results["passed_tests"]}
+- **Failed:** {results["failed_tests"]}
 
 ---
 

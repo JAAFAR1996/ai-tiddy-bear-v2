@@ -1,12 +1,11 @@
 """
+ChatGPT Integration Module for AI Teddy Bear
+"""
+
 from .client import ChatGPTClient
 from .fallback_responses import FallbackResponseGenerator
 from .response_enhancer import ResponseEnhancer
 from .safety_filter import SafetyFilter
-"""
-
-ChatGPT Integration Module for AI Teddy Bear
-"""
 
 __all__ = [
     'ChatGPTClient',

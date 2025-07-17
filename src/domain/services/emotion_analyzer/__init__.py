@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from typing import Dict
 
 
 @dataclass
 class EmotionResult:
     primary_emotion: str
     confidence: float
-    all_emotions: Dict[str, float]
+    all_emotions: dict[str, float]
 
 
 class EmotionAnalyzer:
@@ -16,6 +15,6 @@ class EmotionAnalyzer:
         if "sad" in text:
             return EmotionResult("sad", 0.9, {"sad": 0.9})
         return EmotionResult("calm", 0.5, {"calm": 0.5})
-    
+
     def analyze_voice(self, audio_features) -> EmotionResult:
         return EmotionResult("happy", 0.8, {"happy": 0.8})

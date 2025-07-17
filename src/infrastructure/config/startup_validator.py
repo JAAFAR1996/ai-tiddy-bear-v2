@@ -1,12 +1,12 @@
 """Startup validation to ensure all critical dependencies are available."""
 
-from typing import List, Dict, Any, Tuple, Optional
-import logging
-import os
 import importlib.metadata
+from typing import Any
+
 from fastapi import Depends  # Only Depends is needed at the module level
-from src.infrastructure.logging_config import get_logger
+
 from src.infrastructure.config.settings import Settings
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_health_check import (
     check_database_connection,
 )
@@ -21,8 +21,8 @@ class StartupValidator:
         self,
         settings: Settings = Depends(Settings),
     ) -> None:
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
         self.settings = settings
 
     def validate_dependencies(self) -> bool:
@@ -68,15 +68,14 @@ class StartupValidator:
         if not self.settings.security.JWT_SECRET_KEY:
             self._add_error("❌ JWT_SECRET_KEY is required but not set")
         elif len(self.settings.security.JWT_SECRET_KEY) < 32:
-            self._add_error(
-                "❌ JWT_SECRET_KEY must be at least 32 characters long")
+            self._add_error("❌ JWT_SECRET_KEY must be at least 32 characters long")
         else:
             logger.debug("✅ JWT_SECRET_KEY configured")
         if not self.settings.ai.OPENAI_API_KEY:
             self._add_error("❌ OPENAI_API_KEY is required but not set")
         elif not self.settings.ai.OPENAI_API_KEY.startswith("sk-"):
             self._add_error(
-                "❌ OPENAI_API_KEY must be a valid OpenAI API key (starts with 'sk-')"
+                "❌ OPENAI_API_KEY must be a valid OpenAI API key (starts with 'sk-')",
             )
         else:
             logger.debug("✅ OPENAI_API_KEY configured")
@@ -92,7 +91,7 @@ class StartupValidator:
             self._add_error("❌ COPPA_ENCRYPTION_KEY is required but not set")
         elif len(self.settings.security.COPPA_ENCRYPTION_KEY) != 44:
             self._add_error(
-                "❌ COPPA_ENCRYPTION_KEY must be a valid Fernet key (44 characters)"
+                "❌ COPPA_ENCRYPTION_KEY must be a valid Fernet key (44 characters)",
             )
         else:
             logger.debug("✅ COPPA_ENCRYPTION_KEY configured")
@@ -125,9 +124,7 @@ class StartupValidator:
         return len(self.errors) == 0
 
     async def _validate_database_connection_robust(self) -> bool:
-        """
-        Validates the database connection with proper error handling, timeouts, and retries.
-        """
+        """Validates the database connection with proper error handling, timeouts, and retries."""
         logger.info("🔍 Validating database connection...")
         if not self.settings.DATABASE_URL:
             self._add_error("DATABASE_URL is not configured.")
@@ -136,21 +133,20 @@ class StartupValidator:
             is_healthy = await check_database_connection(self.settings.DATABASE_URL)
             if not is_healthy:
                 self._add_error(
-                    "Database connection health check failed after multiple retries."
+                    "Database connection health check failed after multiple retries.",
                 )
                 return False
             logger.info("✅ Database connection is healthy.")
             return True
         except Exception as e:
             self._add_error(
-                f"An unexpected error occurred during database validation: {e}", e
+                f"An unexpected error occurred during database validation: {e}",
+                e,
             )
             return False
 
     async def validate_all(self) -> bool:
-        """
-        Runs all startup validations, including asynchronous checks.
-        """
+        """Runs all startup validations, including asynchronous checks."""
         logger.info("🚀 Starting comprehensive startup validation...")
         # Synchronous validations
         sync_validations = [
@@ -171,15 +167,12 @@ class StartupValidator:
             logger.error(f"❌ {len(self.errors)} critical errors found:")
             for error in self.errors:
                 logger.error(f"  - {error}")
-            logger.critical(
-                "🛑 System cannot start due to critical validation errors.")
+            logger.critical("🛑 System cannot start due to critical validation errors.")
             return False
-        logger.info(
-            "✅ All startup validations passed successfully. System is ready.")
+        logger.info("✅ All startup validations passed successfully. System is ready.")
         return True
 
-    def _add_error(self, message: str,
-                   exc: Optional[Exception] = None) -> None:
+    def _add_error(self, message: str, exc: Exception | None = None) -> None:
         """Adds an error to the list and logs it, optionally with an exception."""
         self.errors.append(message)
         if exc:
@@ -187,7 +180,7 @@ class StartupValidator:
         else:
             logger.error(message)
 
-    def get_validation_report(self) -> Dict[str, Any]:
+    def get_validation_report(self) -> dict[str, Any]:
         """Get detailed validation report."""
         return {
             "valid": len(self.errors) == 0,
@@ -199,8 +192,7 @@ class StartupValidator:
 
 
 async def validate_startup(validator: "StartupValidator") -> bool:
-    """
-    Asynchronous startup validation function.
+    """Asynchronous startup validation function.
     Runs the provided validator, raising a critical error if validation fails.
     """
     try:
@@ -208,7 +200,7 @@ async def validate_startup(validator: "StartupValidator") -> bool:
         if not is_valid:
             # Errors are already logged by the validator
             raise RuntimeError(
-                "Startup validation failed. Check logs for critical errors."
+                "Startup validation failed. Check logs for critical errors.",
             )
         return True
     except Exception as e:

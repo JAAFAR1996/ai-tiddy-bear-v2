@@ -1,5 +1,4 @@
-"""
-The application layer of the AI Teddy Bear backend.
+"""The application layer of the AI Teddy Bear backend.
 
 This package contains the core business logic, use cases, and application services
 that orchestrate interactions between the domain layer and the infrastructure layer.

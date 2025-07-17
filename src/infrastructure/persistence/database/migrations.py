@@ -1,6 +1,6 @@
-import logging
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
+
 from .config import DatabaseConfig
 
 """Database Migration and Security Setup
@@ -8,31 +8,37 @@ Extracted from production_database_config.py to reduce file size
 Translated Arabic comments to English"""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="persistence")
 
 
 class DatabaseMigrationManager:
-    """Database migration manager"""
-    
+    """Database migration manager."""
+
     def __init__(self, config: DatabaseConfig) -> None:
         self.config = config
-    
+
     async def create_production_schema(self) -> bool:
-        """Create secure production schema"""
+        """Create secure production schema."""
         try:
             if self.config.engine_type != "postgresql":
-                logger.warning("Production schema optimization only available for PostgreSQL")
+                logger.warning(
+                    "Production schema optimization only available for PostgreSQL",
+                )
                 return True
-            
-            engine = create_async_engine(self.config.database_url, **self.config.get_engine_kwargs())
+
+            engine = create_async_engine(
+                self.config.database_url,
+                **self.config.get_engine_kwargs(),
+            )
             async with engine.begin() as conn:
                 # Enable necessary PostgreSQL extensions
                 await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
                 await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
                 await conn.execute(
-                    text('CREATE EXTENSION IF NOT EXISTS "pg_stat_statements"')
+                    text('CREATE EXTENSION IF NOT EXISTS "pg_stat_statements"'),
                 )
-                
+
                 # Create audit function for COPPA compliance
                 audit_function = """
                 CREATE OR REPLACE FUNCTION audit_child_data_changes()
@@ -53,7 +59,7 @@ class DatabaseMigrationManager:
                 $$ LANGUAGE plpgsql;
                 """
                 await conn.execute(text(audit_function))
-                
+
                 # Security settings for child data protection
                 security_settings = [
                     "SET row_security = on",
@@ -62,9 +68,9 @@ class DatabaseMigrationManager:
                 ]
                 for setting in security_settings:
                     await conn.execute(text(setting))
-                
+
                 logger.info("Production PostgreSQL schema optimizations applied")
-            
+
             await engine.dispose()
             return True
         except Exception as e:
@@ -72,12 +78,13 @@ class DatabaseMigrationManager:
             if self.config.environment == "production":
                 raise RuntimeError(f"Production schema creation failed: {e}")
             return False
-    
+
     async def setup_child_data_security(self) -> bool:
-        """Setup child data security"""
+        """Setup child data security."""
         try:
             engine = create_async_engine(
-                self.config.database_url, **self.config.get_engine_kwargs()
+                self.config.database_url,
+                **self.config.get_engine_kwargs(),
             )
             async with engine.begin() as conn:
                 if self.config.engine_type == "postgresql":
@@ -103,7 +110,7 @@ class DatabaseMigrationManager:
                         except Exception as e:
                             if "already exists" not in str(e):
                                 logger.warning(f"Failed to create security policy: {e}")
-                
+
                 # Create indexes for performance
                 performance_indexes = [
                     "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_children_parent_id ON children(parent_id)",
@@ -118,9 +125,9 @@ class DatabaseMigrationManager:
                     except Exception as e:
                         if "already exists" not in str(e):
                             logger.warning(f"Failed to create index: {e}")
-                
+
                 logger.info("Child data security measures configured")
-            
+
             await engine.dispose()
             return True
         except Exception as e:

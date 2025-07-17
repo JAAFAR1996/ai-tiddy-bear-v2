@@ -1,6 +1,5 @@
-"""
-Default rate limiting configurations for child safety and security.
-"""
+"""Default rate limiting configurations for child safety and security."""
+
 from .core import RateLimitConfig, RateLimitStrategy, RateLimitType
 
 

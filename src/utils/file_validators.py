@@ -1,15 +1,16 @@
 import logging
-import magic
-from fastapi import UploadFile
 import HTTPException
+import magic
 import status
+from fastapi import UploadFile
 
-ALLOWED_MIME_TYPES = ["audio/mpeg"
-                       import "audio/wav"
-                       import "audio/x-wav"
-                       import "audio/ogg"
-                       import "audio/flac"
-                       import ]
+ALLOWED_MIME_TYPES = [
+    "audio/mpeg",
+    "audio/flac",
+    "audio/ogg",
+    "audio/wav",
+    "audio/x-wav"
+]
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 

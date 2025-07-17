@@ -1,41 +1,44 @@
 """Kafka Event Store Implementation for Event Sourcing."""
 
 from datetime import datetime
-from typing import List, Any, Dict, Optional
+from typing import Any
 from uuid import UUID, uuid4
-import json
-import logging
-from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
-from aiokafka.errors import KafkaError
+
 import msgpack
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from aiokafka.errors import KafkaError
+
 from src.domain.repositories.event_store import EventStore
 from src.infrastructure.config.settings import Settings
 
 """Kafka Event Store Implementation for Event Sourcing."""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="persistence")
+
 
 class KafkaEventStore(EventStore):
     """Kafka implementation of EventStore for high-throughput event streaming."""
-    
+
     def __init__(self, settings: Settings) -> None:
         """Initialize Kafka event store.
-        
+
         Args:
             settings: Application settings with Kafka configuration
+
         """
         self.bootstrap_servers = settings.kafka.KAFKA_BOOTSTRAP_SERVERS
         self.topic_prefix = "ai-teddy-events"
-        self.producer: Optional[AIOKafkaProducer] = None
-        self.consumer: Optional[AIOKafkaConsumer] = None
+        self.producer: AIOKafkaProducer | None = None
+        self.consumer: AIOKafkaConsumer | None = None
         self._initialized = False
-    
+
     async def initialize(self) -> None:
         """Initialize Kafka producer and consumer."""
         if self._initialized:
             return
-        
+
         try:
             # Initialize producer for writing events
             self.producer = AIOKafkaProducer(
@@ -49,7 +52,7 @@ class KafkaEventStore(EventStore):
                 linger_ms=10,  # Wait up to 10ms for batching
             )
             await self.producer.start()
-            
+
             # Initialize consumer for reading events
             self.consumer = AIOKafkaConsumer(
                 bootstrap_servers=self.bootstrap_servers,
@@ -62,7 +65,7 @@ class KafkaEventStore(EventStore):
                 max_poll_records=1000,
             )
             await self.consumer.start()
-            
+
             self._initialized = True
             logger.info("Kafka event store initialized successfully")
         except Exception as e:
@@ -77,18 +80,20 @@ class KafkaEventStore(EventStore):
             await self.consumer.stop()
         self._initialized = False
 
-    async def save_events(self, aggregate_id: UUID, events: List[Any]) -> None:
+    async def save_events(self, aggregate_id: UUID, events: list[Any]) -> None:
         """Save events to Kafka topic.
+
         Args:
             aggregate_id: UUID of the aggregate
             events: List of domain events to persist
+
         """
         if not self._initialized:
             await self.initialize()
-        
+
         if not events:
             return
-        
+
         topic = self._get_topic_name(aggregate_id)
         try:
             # Send events to Kafka
@@ -105,53 +110,59 @@ class KafkaEventStore(EventStore):
                     "metadata": {
                         "user_id": getattr(event, "user_id", None),
                         "correlation_id": getattr(
-                            event, "correlation_id", str(uuid4())
+                            event,
+                            "correlation_id",
+                            str(uuid4()),
                         ),
                         "causation_id": getattr(event, "causation_id", str(uuid4())),
                     },
                 }
-                
+
                 # Send to Kafka
                 future = await self.producer.send(
-                    topic=topic, key=str(aggregate_id), value=event_data
+                    topic=topic,
+                    key=str(aggregate_id),
+                    value=event_data,
                 )
                 futures.append(future)
-            
+
             # Wait for all events to be sent
             for future in futures:
                 await future
-            
+
             logger.info(
-                f"Saved {len(events)} events for aggregate {aggregate_id} to Kafka"
+                f"Saved {len(events)} events for aggregate {aggregate_id} to Kafka",
             )
         except KafkaError as e:
             logger.error(
-                f"Kafka error while saving events for aggregate {aggregate_id}: {e}"
+                f"Kafka error while saving events for aggregate {aggregate_id}: {e}",
             )
             raise
         except Exception as e:
             logger.error(f"Failed to save events for aggregate {aggregate_id}: {e}")
             raise
 
-    async def load_events(self, aggregate_id: UUID) -> List[Any]:
+    async def load_events(self, aggregate_id: UUID) -> list[Any]:
         """Load all events for an aggregate from Kafka.
+
         Args:
             aggregate_id: UUID of the aggregate
         Returns:
             List of domain events in chronological order
+
         """
         if not self._initialized:
             await self.initialize()
-        
+
         topic = self._get_topic_name(aggregate_id)
         try:
             # Subscribe to the specific topic
             self.consumer.subscribe([topic])
             events = []
-            
+
             # Seek to beginning
             await self.consumer.seek_to_beginning()
-            
+
             # Read all messages for this aggregate
             async for msg in self.consumer:
                 if msg.key == str(aggregate_id):
@@ -164,7 +175,7 @@ class KafkaEventStore(EventStore):
                     )
                     if event:
                         events.append(event)
-                
+
                 # Check if we've reached the end
                 partitions = self.consumer.assignment()
                 for partition in partitions:
@@ -172,12 +183,12 @@ class KafkaEventStore(EventStore):
                     end_offset = self.consumer.highwater(partition)
                     if position >= end_offset - 1:
                         break
-            
+
             # Unsubscribe after reading
             self.consumer.unsubscribe()
-            
+
             logger.debug(
-                f"Loaded {len(events)} events for aggregate {aggregate_id} from Kafka"
+                f"Loaded {len(events)} events for aggregate {aggregate_id} from Kafka",
             )
             return events
         except Exception as e:
@@ -185,27 +196,31 @@ class KafkaEventStore(EventStore):
             raise
 
     async def load_events_from_offset(
-        self, aggregate_id: UUID, offset: int
-    ) -> List[Any]:
+        self,
+        aggregate_id: UUID,
+        offset: int,
+    ) -> list[Any]:
         """Load events from a specific offset.
+
         Args:
             aggregate_id: UUID of the aggregate
             offset: Kafka offset to start from
         Returns:
             List of domain events from the given offset
+
         """
         if not self._initialized:
             await self.initialize()
-        
+
         topic = self._get_topic_name(aggregate_id)
         try:
             self.consumer.subscribe([topic])
-            
+
             # Seek to specific offset
             partitions = self.consumer.assignment()
             for partition in partitions:
                 self.consumer.seek(partition, offset)
-            
+
             events = []
             async for msg in self.consumer:
                 if msg.key == str(aggregate_id):
@@ -217,40 +232,44 @@ class KafkaEventStore(EventStore):
                     )
                     if event:
                         events.append(event)
-                
+
                 # Check if we've reached the end
                 for partition in partitions:
                     position = await self.consumer.position(partition)
                     end_offset = self.consumer.highwater(partition)
                     if position >= end_offset - 1:
                         break
-            
+
             self.consumer.unsubscribe()
             return events
         except Exception as e:
             logger.error(
-                f"Failed to load events from offset for aggregate {aggregate_id}: {e}"
+                f"Failed to load events from offset for aggregate {aggregate_id}: {e}",
             )
             raise
 
     def _get_topic_name(self, aggregate_id: UUID) -> str:
         """Get Kafka topic name for an aggregate.
+
         Args:
             aggregate_id: UUID of the aggregate
         Returns:
             Kafka topic name
+
         """
         # Use a partitioning strategy for topic assignment
         # This example uses a simple hash-based partitioning
         partition_id = hash(str(aggregate_id)) % 10
         return f"{self.topic_prefix}-{partition_id}"
 
-    def _serialize_event(self, event: Any) -> Dict[str, Any]:
+    def _serialize_event(self, event: Any) -> dict[str, Any]:
         """Serialize domain event to dictionary.
+
         Args:
             event: Domain event instance
         Returns:
             Serialized event data
+
         """
         event_data = {}
         for attr in dir(event):
@@ -269,28 +288,31 @@ class KafkaEventStore(EventStore):
     def _deserialize_event(
         self,
         event_type: str,
-        event_data: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]],
-    ) -> Optional[Any]:
+        event_data: dict[str, Any],
+        metadata: dict[str, Any] | None,
+    ) -> Any | None:
         """Deserialize event data back to domain event.
+
         Args:
             event_type: Name of the event class
             event_data: Serialized event data
             metadata: Event metadata
         Returns:
             Domain event instance or None if deserialization fails
+
         """
         try:
             # Dynamic import based on event type
             if event_type == "ChildRegistered":
                 from src.domain.events.child_registered import ChildRegistered
+
                 return ChildRegistered(**event_data)
-            elif event_type == "ChildProfileUpdated":
+            if event_type == "ChildProfileUpdated":
                 from src.domain.events.child_profile_updated import ChildProfileUpdated
+
                 return ChildProfileUpdated(**event_data)
-            else:
-                logger.warning(f"Unknown event type: {event_type}")
-                return None
+            logger.warning(f"Unknown event type: {event_type}")
+            return None
         except Exception as e:
             logger.error(f"Failed to deserialize event {event_type}: {e}")
             return None

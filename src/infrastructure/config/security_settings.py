@@ -1,5 +1,4 @@
-"""
-Defines security-related configuration settings for the application.
+"""Defines security-related configuration settings for the application.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to various security parameters, including secret keys,
@@ -7,8 +6,6 @@ JWT configuration, COPPA encryption keys, rate limiting, login attempt limits,
 and lockout durations. It centralizes security configurations to ensure
 consistent application of security policies.
 """
-
-from typing import Dict
 
 from pydantic import Field, SecretStr, model_validator
 
@@ -28,22 +25,21 @@ class SecuritySettings(BaseApplicationSettings):
     COPPA_ENCRYPTION_KEY: str = Field(..., env="COPPA_ENCRYPTION_KEY")
 
     RATE_LIMIT_REQUESTS_PER_MINUTE: int = Field(
-        60, env="RATE_LIMIT_REQUESTS_PER_MINUTE"
+        60,
+        env="RATE_LIMIT_REQUESTS_PER_MINUTE",
     )
-    RATE_LIMIT_REQUESTS_PER_HOUR: int = Field(
-        3600, env="RATE_LIMIT_REQUESTS_PER_HOUR")
+    RATE_LIMIT_REQUESTS_PER_HOUR: int = Field(3600, env="RATE_LIMIT_REQUESTS_PER_HOUR")
     MAX_LOGIN_ATTEMPTS: int = Field(5, env="MAX_LOGIN_ATTEMPTS")
     LOCKOUT_DURATION_SECONDS: int = Field(300, env="LOCKOUT_DURATION_SECONDS")
 
     JWT_ALGORITHM: str = Field("HS256", env="JWT_ALGORITHM")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
-        30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(7, env="REFRESH_TOKEN_EXPIRE_DAYS")
 
     VAULT_URL: str | None = Field(None, env="VAULT_URL")
     VAULT_TOKEN: SecretStr | None = Field(None, env="VAULT_TOKEN")
 
-    RATE_LIMITS: Dict[str, Dict[str, int]] = Field(
+    RATE_LIMITS: dict[str, dict[str, int]] = Field(
         {
             "/auth/login": {"requests": 5, "window": 60},
             "/auth/register": {"requests": 3, "window": 60},
@@ -61,7 +57,7 @@ class SecuritySettings(BaseApplicationSettings):
             "/metrics": {"requests": 1000, "window": 60},
             "/docs": {"requests": 60, "window": 60},
             "/redoc": {"requests": 60, "window": 60},
-        }
+        },
     )
 
     @model_validator(mode="after")
@@ -71,6 +67,6 @@ class SecuritySettings(BaseApplicationSettings):
             self.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60
         ):
             raise ValueError(
-                "ACCESS_TOKEN_EXPIRE_MINUTES cannot exceed REFRESH_TOKEN_EXPIRE_DAYS."
+                "ACCESS_TOKEN_EXPIRE_MINUTES cannot exceed REFRESH_TOKEN_EXPIRE_DAYS.",
             )
         return self

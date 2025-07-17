@@ -1,19 +1,21 @@
-"""Standardized Logging Infrastructure
+"""Standardized Logging Infrastructure.
 ==================================
 Provides consistent logging patterns across all AI Teddy Bear services
-with special focus on child safety and COPPA compliance logging."""
+with special focus on child safety and COPPA compliance logging.
+"""
 
 from .standards import (
-    StandardLogger,
-    LogLevel,
     LogCategory,
+    LogLevel,
+    StandardLogger,
+    configure_logging,
     get_standard_logger,
-    configure_logging)
+)
 
 __all__ = [
-    "StandardLogger",
-    "LogLevel",
     "LogCategory",
+    "LogLevel",
+    "StandardLogger",
+    "configure_logging",
     "get_standard_logger",
-    "configure_logging"
 ]

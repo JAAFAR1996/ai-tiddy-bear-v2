@@ -1,6 +1,5 @@
-"""
-Production Constants for AI Teddy Bear
-All magic numbers and constant values in one place for easy maintenance
+"""Production Constants for AI Teddy Bear
+All magic numbers and constant values in one place for easy maintenance.
 """
 
 # Child Safety Constants
@@ -81,7 +80,10 @@ LOG_ROTATION_SIZE_MB = 100
 LOG_RETENTION_DAYS = 30
 LOG_LEVEL_PRODUCTION = "WARNING"
 LOG_LEVEL_DEVELOPMENT = "DEBUG"
-SENSITIVE_LOG_INTERACTION_KEYS = ["full_message_content", "raw_audio_data"]  # Define keys to be excluded from child interaction logs.
+SENSITIVE_LOG_INTERACTION_KEYS = [
+    "full_message_content",
+    "raw_audio_data",
+]  # Define keys to be excluded from child interaction logs.
 
 # Error Handling Constants
 MAX_ERROR_MESSAGE_LENGTH = 500
@@ -219,26 +221,26 @@ OPENAPI_COMMON_RESPONSES = {
                         "detail": {"type": "string"},
                         "timestamp": {"type": "string", "format": "date-time"},
                     },
-                }
+                },
             },
         },
     },
     "Unauthorized": {
         "description": "Unauthorized - Invalid or missing authentication",
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}}
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
     "Forbidden": {
         "description": "Forbidden - Insufficient permissions",
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}}
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
     "NotFound": {
         "description": "Not found - Resource does not exist",
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}}
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
     "TooManyRequests": {
@@ -258,7 +260,7 @@ OPENAPI_COMMON_RESPONSES = {
             },
         },
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}}
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
 }

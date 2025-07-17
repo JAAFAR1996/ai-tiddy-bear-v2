@@ -1,14 +1,9 @@
-"""
+
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import logging
 from src.infrastructure.monitoring import (
-"""
 
-Monitoring Dashboard API Endpoints
-Provides real - time monitoring data and system health information
-with child safety focus and COPPA compliance tracking.
-"""
     monitoring_service, AlertSeverity, MetricType, AlertStatus)
 from src.infrastructure.pagination import (
     PaginationService, PaginationRequest, extract_pagination_params)

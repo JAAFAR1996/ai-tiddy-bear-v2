@@ -1,15 +1,12 @@
 """
+🔒 SQL Query Validation Service
+Advanced SQL injection prevention and query safety
+"""
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 import logging
 import re
-"""
-
-🔒 SQL Query Validation Service
-Advanced SQL injection prevention and query safety
-"""
-
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="security")
 

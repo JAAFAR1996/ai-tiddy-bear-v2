@@ -1,5 +1,4 @@
-"""
-Defines Kafka-related configuration settings for the application.
+"""Defines Kafka-related configuration settings for the application.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to Kafka connection details, such as bootstrap servers

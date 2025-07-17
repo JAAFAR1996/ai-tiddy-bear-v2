@@ -1,1 +1,0 @@
-@dataclass(frozen=True)from dataclasses import dataclassfrom uuid import UUIDfrom src.domain.events.domain_events import DomainEvent@dataclass(frozen=True)class ConversationUpdatedEvent(DomainEvent):    conversation_id: UUID    child_id: UUID    updated_summary: str    updated_emotion_analysis: str    updated_sentiment_score: float

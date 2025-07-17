@@ -1,1 +1,28 @@
-"""import warningsfrom .validation import ("""Input Validation Middleware for AI Teddy BearRefactored to be under 300 lines by extracting componentsTranslated Arabic comments to EnglishThis file now serves as a facade that re - exports functionality from modular components.The actual implementation is split across: - validation / validation_config.py: Configuration classes and enums - validation / validation_rules.py: Validation rules and patterns - validation / sanitizer.py: Input sanitization logic - validation / middleware.py: ASGI middleware implementation"""    InputValidationConfig,    ValidationRule,    ValidationSeverity,    InputSanitizer,    InputValidationMiddleware,    create_input_validation_middleware)# Re-export for backward compatibility__all__ = [    "InputValidationConfig",    "ValidationRule",    "ValidationSeverity",    "InputSanitizer",    "InputValidationMiddleware",    "create_input_validation_middleware"]# Deprecation warning for direct importswarnings.warn(    "Importing from input_validation.py is deprecated. "    "Please import from src.infrastructure.security.hardening.validation instead.",    DeprecationWarning,    stacklevel=2)# Implements pattern-based validation, content filtering, and sanitization# Provides special protections for child users with COPPA compliance
+
+import warnings
+from .validation import (
+    InputValidationConfig,
+    ValidationRule,
+    ValidationSeverity,
+    InputSanitizer,
+    InputValidationMiddleware,
+    create_input_validation_middleware
+)
+# Re-export for backward compatibility
+__all__ = [
+    "InputValidationConfig",
+    "ValidationRule",
+    "ValidationSeverity",
+    "InputSanitizer",
+    "InputValidationMiddleware",
+    "create_input_validation_middleware"
+]
+# Deprecation warning for direct imports
+warnings.warn(
+    "Importing from input_validation.py is deprecated. "
+    "Please import from src.infrastructure.security.hardening.validation instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+# Implements pattern-based validation, content filtering, and sanitization
+# Provides special protections for child users with COPPA compliance

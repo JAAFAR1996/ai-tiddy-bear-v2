@@ -1,14 +1,13 @@
-"""
-Child Repository
+"""Child Repository.
 
 Handles all child-related database operations with COPPA compliance.
 """
+
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import update
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from src.infrastructure.logging_config import get_logger
@@ -17,7 +16,6 @@ from src.infrastructure.persistence.models.child_model import ChildModel
 from src.infrastructure.security.coppa import get_consent_manager
 from src.infrastructure.security.database_input_validator import (
     SecurityError,
-    create_safe_database_session,
     database_input_validation,
     validate_database_operation,
 )
@@ -33,15 +31,14 @@ class ChildRepository:
 
         Args:
             database: Database instance
+
         """
         self.database = database
         self.consent_manager = get_consent_manager()
         logger.info("ChildRepository initialized with COPPA compliance")
 
     @database_input_validation("children")
-    async def create_child(
-        self, parent_id: str, child_data: Dict[str, Any]
-    ) -> str:
+    async def create_child(self, parent_id: str, child_data: dict[str, Any]) -> str:
         """Create a new child profile with COPPA compliance.
 
         Args:
@@ -53,6 +50,7 @@ class ChildRepository:
 
         Raises:
             ValueError: If data is invalid or parent lacks consent
+
         """
         try:
             # Verify parental consent
@@ -61,7 +59,9 @@ class ChildRepository:
 
             # Validate child data
             validated_operation = validate_database_operation(
-                "INSERT", "children", child_data
+                "INSERT",
+                "children",
+                child_data,
             )
             validated_data = validated_operation["data"]
             child_id = str(uuid4())
@@ -87,7 +87,7 @@ class ChildRepository:
             raise
 
     @database_input_validation("children")
-    async def get_child_by_id(self, child_id: str) -> Optional[Dict[str, Any]]:
+    async def get_child_by_id(self, child_id: str) -> dict[str, Any] | None:
         """Get child profile by ID.
 
         Args:
@@ -95,11 +95,12 @@ class ChildRepository:
 
         Returns:
             Child profile data or None if not found
+
         """
         try:
             async with self.database.get_session() as session:
                 result = await session.execute(
-                    select(ChildModel).where(ChildModel.id == child_id)
+                    select(ChildModel).where(ChildModel.id == child_id),
                 )
                 child = result.scalar_one_or_none()
                 if child:
@@ -118,7 +119,9 @@ class ChildRepository:
 
     @database_input_validation("children")
     async def update_child_preferences(
-        self, child_id: str, preferences: Dict[str, Any]
+        self,
+        child_id: str,
+        preferences: dict[str, Any],
     ) -> bool:
         """Update child preferences.
 
@@ -128,10 +131,13 @@ class ChildRepository:
 
         Returns:
             True if successful, False otherwise
+
         """
         try:
             validated_operation = validate_database_operation(
-                "UPDATE", "children", {"preferences": preferences}
+                "UPDATE",
+                "children",
+                {"preferences": preferences},
             )
             validated_preferences = validated_operation["data"]["preferences"]
 

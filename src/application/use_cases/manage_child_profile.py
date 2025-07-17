@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Any
 from uuid import UUID
 
 from src.application.dto.child_data import ChildData
@@ -22,19 +22,24 @@ class ManageChildProfileUseCase:
         self.event_bus = event_bus
 
     async def create_child_profile(
-        self, name: str, age: int, preferences: Dict[str, Any]
+        self,
+        name: str,
+        age: int,
+        preferences: dict[str, Any],
     ) -> ChildData:
         child = ChildProfile.create_new(name, age, preferences)
         await self.child_repository.save(child)
         for event in child.get_uncommitted_events():
             await self.event_bus.publish(event)
         return ChildData(
-            id=child.id, name=child.name, age=child.age, preferences=child.preferences
+            id=child.id,
+            name=child.name,
+            age=child.age,
+            preferences=child.preferences,
         )
 
-    async def get_child_profile(self, child_id: UUID) -> Optional[ChildData]:
-        child_read_model = self.child_profile_read_model_store.get_by_id(
-            child_id)
+    async def get_child_profile(self, child_id: UUID) -> ChildData | None:
+        child_read_model = self.child_profile_read_model_store.get_by_id(child_id)
         if child_read_model:
             return ChildData(
                 id=child_read_model.id,
@@ -47,12 +52,12 @@ class ManageChildProfileUseCase:
     async def update_child_profile(
         self,
         child_id: UUID,
-        name: Optional[str] = None,
-        age: Optional[int] = None,
-        preferences: Optional[Dict[str, Any]] = None,
-    ) -> Optional[ChildData]:
+        name: str | None = None,
+        age: int | None = None,
+        preferences: dict[str, Any] | None = None,
+    ) -> ChildData | None:
         child = await self.child_repository.get_by_id(
-            child_id
+            child_id,
         )  # Use write model for update
         if child:
             child.update_profile(name, age, preferences)

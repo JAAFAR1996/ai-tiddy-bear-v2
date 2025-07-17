@@ -1,5 +1,4 @@
-"""
-Defines privacy-related configuration settings for the application.
+"""Defines privacy-related configuration settings for the application.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to privacy controls, such as COPPA compliance enablement.

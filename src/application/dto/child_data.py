@@ -1,7 +1,7 @@
 """from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, Any, Optional
-from uuid import UUID
+from uuid import UUID.
 """
 
 """
@@ -31,18 +31,18 @@ try:
 except ImportError as e:
     raise ImportError(
         "Pydantic is required for COPPA-compliant child data handling. "
-        "Install with: pip install pydantic"
+        "Install with: pip install pydantic",
     ) from e
+
 
 @dataclass
 class ChildData:
-    """
-    COPPA - Compliant Child Data Transfer Object
-    
+    """COPPA - Compliant Child Data Transfer Object.
+
     Represents child information in compliance with the Children's Online Privacy
     Protection Act (COPPA). This class enforces strict data protection standards
     and privacy requirements for children under 13 years of age.
-    
+
     Attributes:
         id: Unique identifier for the child (UUID format)
         name: Child's name(encrypted in database)
@@ -54,85 +54,110 @@ class ChildData:
         data_created: When child data was first created
         last_interaction: Last interaction timestamp
         encrypted_data: Flag indicating if data is encrypted
-    
+
     COPPA Compliance:
         - Age restricted to 3 - 13 years
         - Requires verified parental consent
         - Automatic data expiration after 90 days
         - Minimal data collection principle
-    
+
     Raises:
         ValueError: If age is outside COPPA compliance range
         ValueError: If parental consent is missing for children under 13
+
     """
+
     id: UUID = field(metadata={"description": "Unique child identifier"})
     name: str = field(metadata={"description": "Child name (will be encrypted)"})
-    age: int = field(metadata={"description": "Child age (3-13 years, COPPA compliant)"})
-    preferences: Dict[str, Any] = field(default_factory=dict, metadata={"description": "Child preferences and settings"})
-    parent_id: Optional[UUID] = field(default=None, metadata={"description": "Parent/guardian identifier"})
-    consent_granted: bool = field(default=False, metadata={"description": "Parental consent status"})
-    consent_date: Optional[datetime] = field(default=None, metadata={"description": "Consent grant timestamp"})
-    data_created: datetime = field(default_factory=datetime.utcnow, metadata={"description": "Data creation timestamp"})
-    last_interaction: Optional[datetime] = field(default=None, metadata={"description": "Last interaction timestamp"})
-    encrypted_data: bool = field(default=False, metadata={"description": "Data encryption status"})
+    age: int = field(
+        metadata={"description": "Child age (3-13 years, COPPA compliant)"},
+    )
+    preferences: Dict[str, Any] = field(
+        default_factory=dict,
+        metadata={"description": "Child preferences and settings"},
+    )
+    parent_id: Optional[UUID] = field(
+        default=None,
+        metadata={"description": "Parent/guardian identifier"},
+    )
+    consent_granted: bool = field(
+        default=False,
+        metadata={"description": "Parental consent status"},
+    )
+    consent_date: Optional[datetime] = field(
+        default=None,
+        metadata={"description": "Consent grant timestamp"},
+    )
+    data_created: datetime = field(
+        default_factory=datetime.utcnow,
+        metadata={"description": "Data creation timestamp"},
+    )
+    last_interaction: Optional[datetime] = field(
+        default=None,
+        metadata={"description": "Last interaction timestamp"},
+    )
+    encrypted_data: bool = field(
+        default=False,
+        metadata={"description": "Data encryption status"},
+    )
 
     def __post_init__(self) -> None:
-        """
-        Validate child data for COPPA compliance after initialization.
-        
+        """Validate child data for COPPA compliance after initialization.
+
         Performs comprehensive validation to ensure all child data meets
         COPPA requirements and safety standards before use.
-        
+
         Raises:
             ValueError: If data violates COPPA compliance rules
             ValueError: If required parental consent is missing
+
         """
         # Age validation for COPPA compliance
         if not isinstance(self.age, int) or not (3 <= self.age <= 13):
             raise ValueError(
                 f"COPPA Violation: Child age must be between 3-13 years. "
-                f"Received age: {self.age}"
+                f"Received age: {self.age}",
             )
-            
+
         # Name validation
         if not self.name or not self.name.strip():
             raise ValueError("Child name cannot be empty")
-            
+
         if len(self.name.strip()) > 100:
             raise ValueError("Child name too long (max 100 characters)")
-            
+
         # Parental consent validation for children under 13
         if self.age < 13:
             if not self.parent_id:
                 raise ValueError(
-                    "COPPA Compliance: Parent ID required for children under 13"
+                    "COPPA Compliance: Parent ID required for children under 13",
                 )
-                
+
             if not self.consent_granted:
                 raise ValueError(
-                    "COPPA Compliance: Parental consent required for children under 13"
+                    "COPPA Compliance: Parental consent required for children under 13",
                 )
-                
+
             if not self.consent_date:
                 raise ValueError(
-                    "COPPA Compliance: Consent date required when consent is granted"
+                    "COPPA Compliance: Consent date required when consent is granted",
                 )
-                
+
         # Data retention check (90 days maximum)
         if self.data_created:
             days_since_creation = (datetime.utcnow() - self.data_created).days
             if days_since_creation > 90:
                 raise ValueError(
                     f"COPPA Compliance: Child data expired after 90 days. "
-                    f"Data age: {days_since_creation} days"
+                    f"Data age: {days_since_creation} days",
                 )
 
     def is_coppa_compliant(self) -> bool:
-        """
-        Check if child data meets COPPA compliance requirements.
-        
+        """Check if child data meets COPPA compliance requirements.
+
         Returns:
             bool: True if data is COPPA compliant, False otherwise
+
         """
         try:
             # This will raise ValueError if not compliant
@@ -142,14 +167,14 @@ class ChildData:
             return False
 
     def should_purge_data(self) -> bool:
-        """
-        Determine if child data should be automatically purged.
-        
+        """Determine if child data should be automatically purged.
+
         Returns:
             bool: True if data should be purged(older than 90 days)
+
         """
         if not self.data_created:
             return False
-            
+
         days_since_creation = (datetime.utcnow() - self.data_created).days
         return days_since_creation >= 90

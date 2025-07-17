@@ -1,17 +1,19 @@
 from dataclasses import dataclass
-from typing import List
+
 
 @dataclass
 class LogSanitizationConfig:
     """Configuration for log sanitization."""
+
     # Patterns to redact completely
-    redact_patterns: List[str]
+    redact_patterns: list[str]
     # Patterns to partially mask (show first/last few characters)
-    mask_patterns: List[str]
+    mask_patterns: list[str]
     # Fields that should never be logged
-    forbidden_fields: List[str]
+    forbidden_fields: list[str]
     # Maximum length for log values
     max_value_length: int = 100
+
 
 def get_default_log_sanitization_config() -> LogSanitizationConfig:
     """Get default sanitization configuration for child-safe system."""
@@ -51,6 +53,7 @@ def get_default_log_sanitization_config() -> LogSanitizationConfig:
         ],
         max_value_length=100,
     )
+
 
 def create_child_safe_log_sanitization_config() -> LogSanitizationConfig:
     """Create a log sanitization configuration specifically for child-safe logging."""

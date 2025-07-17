@@ -1,5 +1,4 @@
-"""
-Defines comprehensive production configuration settings for the AI Teddy Bear application.
+"""Defines comprehensive production configuration settings for the AI Teddy Bear application.
 
 This module extends various base settings classes to provide a complete set
 of configurations for a production environment, including AI, security,
@@ -8,10 +7,9 @@ for robust validation and ensures that all necessary parameters for a secure
 and performant deployment are properly defined.
 """
 
-import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import Field, root_validator, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -57,12 +55,12 @@ class ProductionSettings(
     # ================================
     # CORS Configuration
     # ================================
-    cors_origins: List[str] = Field(
-        default_factory=lambda: ["https://app.aiteddybear.com"]
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["https://app.aiteddybear.com"],
     )
     cors_allow_credentials: bool = True
-    cors_allow_methods: List[str] = Field(default_factory=lambda: ["*"])
-    cors_allow_headers: List[str] = Field(default_factory=lambda: ["*"])
+    cors_allow_methods: list[str] = Field(default_factory=lambda: ["*"])
+    cors_allow_headers: list[str] = Field(default_factory=lambda: ["*"])
 
     # ================================
     # Security Configuration (Overrides from SecuritySettings if needed)
@@ -82,25 +80,23 @@ class ProductionSettings(
     log_dir: Path = Field(Path("logs"), env="LOG_DIR")
 
     @validator("data_dir", "log_dir", pre=True)
-    def create_dirs_if_not_exists(cls, v: str) -> Path:
-        """
-        Ensures that the specified directory exists, creating it if necessary.
+    def create_dirs_if_not_exists(self, v: str) -> Path:
+        """Ensures that the specified directory exists, creating it if necessary.
 
         Args:
             v: The path string for the directory.
 
         Returns:
             A Path object representing the directory.
+
         """
         path = Path(v)
         path.mkdir(parents=True, exist_ok=True)
         return path
 
     @root_validator(pre=True)
-    def check_production_env_vars(
-            cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Performs a root validation to ensure critical environment variables
+    def check_production_env_vars(self, values: dict[str, Any]) -> dict[str, Any]:
+        """Performs a root validation to ensure critical environment variables
         are set for production.
 
         Args:
@@ -111,6 +107,7 @@ class ProductionSettings(
 
         Raises:
             ValueError: If critical production environment variables are missing.
+
         """
         if values.get("environment") == "production":
             required_prod_vars = [
@@ -118,10 +115,9 @@ class ProductionSettings(
                 "JWT_SECRET_KEY",
                 "OPENAI_API_KEY",
             ]
-            missing_vars = [
-                var for var in required_prod_vars if not os.getenv(var)]
+            missing_vars = [var for var in required_prod_vars if not os.getenv(var)]
             if missing_vars:
                 raise ValueError(
-                    f"Missing critical production environment variables: {missing_vars}"
+                    f"Missing critical production environment variables: {missing_vars}",
                 )
         return values

@@ -1,4 +1,3 @@
-"""
 from typing import Dict, Any, Optional
 from fastapi import Request
 from .header_config import SecurityHeadersConfig, CSPConfig

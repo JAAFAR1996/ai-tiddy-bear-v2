@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
+
 
 @dataclass
 class ExceptionHandlerConfig:
@@ -14,15 +15,23 @@ class ExceptionHandlerConfig:
     error_threshold_per_minute: int = 0
     circuit_breaker_timeout_seconds: int = 0
 
+
 class EnterpriseExceptionHandler:
     def __init__(self, config: ExceptionHandlerConfig) -> None:
         self.config = config
 
-    def handle_exception(self, exception: Exception, error_code: Optional[str] = None, additional_data: Optional[Dict[str, Any]] = None, reraise: bool = True):
+    def handle_exception(
+        self,
+        exception: Exception,
+        error_code: str | None = None,
+        additional_data: dict[str, Any] | None = None,
+        reraise: bool = True,
+    ):
         return None
 
     def get_circuit_breaker(self, service_name: str):
         return MockCircuitBreaker()
+
 
 class MockCircuitBreaker:
     def __init__(self) -> None:
@@ -38,16 +47,22 @@ class MockCircuitBreaker:
     def on_success(self):
         pass
 
+
 def handle_exceptions(*args, **kwargs):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 def with_retry(*args, **kwargs):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator

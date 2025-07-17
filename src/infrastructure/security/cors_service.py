@@ -1,13 +1,10 @@
-"""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Set, Union
 import logging
 import re
 import urllib.parse
-"""CORS Security Service
-Provides secure Cross - Origin Resource Sharing configuration for child safety.
-Implements strict CORS policies to prevent unauthorized access."""
 
 from src.infrastructure.logging_config import get_logger
 

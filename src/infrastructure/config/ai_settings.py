@@ -1,5 +1,4 @@
-"""
-Defines AI-related configuration settings for the application.
+"""Defines AI-related configuration settings for the application.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to AI service configurations, such as OpenAI API key,

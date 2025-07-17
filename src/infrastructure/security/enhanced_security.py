@@ -1,4 +1,4 @@
-"""
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -9,10 +9,8 @@ import json
 import logging
 import os
 import secrets
-"""
-Enhanced Security Module for AI Teddy Bear
-Comprehensive security implementation with best practices
-"""
+
+
 
 from src.infrastructure.logging_config import get_logger
 

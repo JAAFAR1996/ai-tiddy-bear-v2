@@ -1,5 +1,4 @@
-"""
-Provides services for exporting child data in a COPPA-compliant manner.
+"""Provides services for exporting child data in a COPPA-compliant manner.
 
 This service handles requests for data export, supporting various formats
 (JSON, CSV, XML, PDF) and granular data category selection. It ensures
@@ -10,20 +9,18 @@ audit logs for compliance.
 import logging
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
 from .data_export.formatters import DataExportFormatters
 from .data_export.types import (
+    EXPORT_LIMITS,
     ChildProfile,
     ConversationData,
-    DataCategory,
-    ExportFormat,
     ExportRequest,
     ExportResult,
     ExportStatus,
-    EXPORT_LIMITS,
     SafetyEvent,
     UsageStatistics,
 )
@@ -35,33 +32,32 @@ class DataExportService:
     def __init__(
         self,
         storage_path: str = "exports",
-        logger: logging.Logger = get_logger(
-            __name__, component="data_export_service"),
+        logger: logging.Logger = get_logger(__name__, component="data_export_service"),
     ) -> None:
         """Initializes the data export service.
 
         Args:
             storage_path: The path where exported files will be stored.
             logger: Logger instance for logging service operations.
+
         """
         self.storage_path = storage_path
         self.formatters = DataExportFormatters(storage_path)
-        self.active_exports: Dict[str, ExportResult] = {}
+        self.active_exports: dict[str, ExportResult] = {}
         self.logger = logger
         self.logger.info(
-            f"Data export service initialized with storage path: {storage_path}"
+            f"Data export service initialized with storage path: {storage_path}",
         )
 
-    def _sanitize_data_for_export(
-            self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Recursively sanitizes sensitive data fields before export to prevent PII exposure.
+    def _sanitize_data_for_export(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Recursively sanitizes sensitive data fields before export to prevent PII exposure.
 
         Args:
             data: The dictionary containing data to be sanitized.
 
         Returns:
             A new dictionary with sensitive fields sanitized.
+
         """
         sanitized_data = {}
         for key, value in data.items():
@@ -91,14 +87,14 @@ class DataExportService:
         return sanitized_data
 
     def request_export(self, request: ExportRequest) -> ExportResult:
-        """
-        Requests a data export for a child.
+        """Requests a data export for a child.
 
         Args:
             request: The export request with configuration.
 
         Returns:
             An ExportResult object with operation details.
+
         """
         export_id = str(uuid.uuid4())
         result = ExportResult(
@@ -117,8 +113,7 @@ class DataExportService:
             result.status = ExportStatus.COMPLETED
             result.file_path = exported_file_path
             result.completed_at = datetime.utcnow()
-            self.logger.info(
-                f"Export {export_id} completed: {exported_file_path}")
+            self.logger.info(f"Export {export_id} completed: {exported_file_path}")
         except Exception as e:
             result.status = ExportStatus.FAILED
             result.error_message = str(e)
@@ -127,27 +122,27 @@ class DataExportService:
 
         return result
 
-    def get_export_status(self, export_id: str) -> Optional[ExportResult]:
-        """
-        Retrieves the status of an ongoing or completed export operation.
+    def get_export_status(self, export_id: str) -> ExportResult | None:
+        """Retrieves the status of an ongoing or completed export operation.
 
         Args:
             export_id: The ID of the export operation.
 
         Returns:
             The ExportResult object, or None if the export ID is not found.
+
         """
         return self.active_exports.get(export_id)
 
     def _validate_export_request(self, request: ExportRequest) -> None:
-        """
-        Validates the export request against predefined limits and rules.
+        """Validates the export request against predefined limits and rules.
 
         Args:
             request: The export request to validate.
 
         Raises:
             ValueError: If the request is invalid.
+
         """
         if request.end_date < request.start_date:
             raise ValueError("End date cannot be before start date.")
@@ -156,23 +151,23 @@ class DataExportService:
             "max_days_range"
         ]:
             raise ValueError(
-                f"Date range exceeds maximum allowed {EXPORT_LIMITS["max_days_range"]} days."
+                f"Date range exceeds maximum allowed {EXPORT_LIMITS['max_days_range']} days.",
             )
 
         if len(request.data_categories) > EXPORT_LIMITS["max_categories"]:
             raise ValueError(
-                f"Too many data categories requested. Max: {EXPORT_LIMITS["max_categories"]}."
+                f"Too many data categories requested. Max: {EXPORT_LIMITS['max_categories']}.",
             )
 
     def _simulate_export(self, request: ExportRequest) -> str:
-        """
-        Simulates the data export process and returns a dummy file path.
+        """Simulates the data export process and returns a dummy file path.
 
         Args:
             request: The export request.
 
         Returns:
             A dummy file path for the exported data.
+
         """
         # In a real system, this would fetch data from various sources
         # (e.g., database, file storage) and format it.
@@ -180,14 +175,10 @@ class DataExportService:
             "child_profile": ChildProfile(child_id=request.child_id, name="Test Child"),
             "conversations": [
                 ConversationData(timestamp=datetime.utcnow(), text="Hello"),
-                ConversationData(
-                    timestamp=datetime.utcnow(),
-                    text="How are you?"),
+                ConversationData(timestamp=datetime.utcnow(), text="How are you?"),
             ],
             "safety_events": [
-                SafetyEvent(
-                    timestamp=datetime.utcnow(),
-                    description="Minor flag"),
+                SafetyEvent(timestamp=datetime.utcnow(), description="Minor flag"),
             ],
             "usage_statistics": UsageStatistics(total_interactions=100),
         }
@@ -197,6 +188,8 @@ class DataExportService:
 
         # Use the formatter to save the dummy data
         file_path = self.formatters.format_and_save(
-            request.export_format, request.child_id, sanitized_dummy_data
+            request.export_format,
+            request.child_id,
+            sanitized_dummy_data,
         )
         return file_path

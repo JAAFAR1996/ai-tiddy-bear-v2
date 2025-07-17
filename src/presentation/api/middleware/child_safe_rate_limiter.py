@@ -1,14 +1,10 @@
-"""
+
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 import json
 from fastapi import Request, Response
 from src.domain.constants import RATE_LIMIT_RETRY_AFTER_SECONDS
-"""
 
-Child - Safe Rate Limiting Middleware
-Provides COPPA - compliant rate limiting with child - friendly responses.
-"""
 
 class ChildSafeRateLimiter:
     """Rate limiter with child - friendly error messages."""

@@ -1,10 +1,4 @@
-"""
 from .security_headers import (
-"""
-
-Middleware package for AI Teddy Bear API
-Comprehensive middleware for child safety, security, and COPPA compliance
-"""
     SecurityHeadersMiddleware,
     ChildSafetyMiddleware,
     RateLimitingMiddleware)

@@ -1,32 +1,38 @@
-"""Health check models and enums"""
+"""Health check models and enums."""
 
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Any
+from typing import Any
+
 
 class HealthStatus(str, Enum):
-    """Health check status levels"""
+    """Health check status levels."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
     CRITICAL = "critical"
 
+
 @dataclass
 class HealthCheckResult:
-    """Result of a health check"""
+    """Result of a health check."""
+
     name: str
     status: HealthStatus
     message: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     duration_ms: float
     timestamp: datetime
 
+
 @dataclass
 class SystemHealth:
-    """Overall system health status"""
+    """Overall system health status."""
+
     status: HealthStatus
     uptime: float
-    checks: List[HealthCheckResult]
-    summary: Dict[str, Any]
+    checks: list[HealthCheckResult]
+    summary: dict[str, Any]
     timestamp: datetime

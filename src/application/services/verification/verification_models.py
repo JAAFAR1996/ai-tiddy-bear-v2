@@ -2,7 +2,8 @@
 from datetime import datetime
 from enum import Enum
 from typing import Dict, Any, Optional, List
-from uuid import UUID"""
+from uuid import UUID.
+"""
 
 """Verification Data Models
 Defines core data structures for parent - child relationship verification."""
@@ -10,6 +11,7 @@ Defines core data structures for parent - child relationship verification."""
 
 class RelationshipStatus(Enum):
     """Parent - child relationship verification status."""
+
     VERIFIED = "verified"
     PENDING = "pending"
     DENIED = "denied"
@@ -19,6 +21,7 @@ class RelationshipStatus(Enum):
 
 class RelationshipType(Enum):
     """Types of parent - child relationships."""
+
     BIOLOGICAL_PARENT = "biological_parent"
     ADOPTIVE_PARENT = "adoptive_parent"
     LEGAL_GUARDIAN = "legal_guardian"
@@ -29,6 +32,7 @@ class RelationshipType(Enum):
 @dataclass
 class VerificationRecord:
     """Individual verification attempt record."""
+
     verification_id: str
     parent_id: str
     child_id: str
@@ -43,6 +47,7 @@ class VerificationRecord:
 @dataclass
 class RelationshipRecord:
     """Parent - child relationship record."""
+
     relationship_id: str
     parent_id: str
     child_id: str

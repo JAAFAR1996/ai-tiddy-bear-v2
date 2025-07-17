@@ -1,5 +1,4 @@
-"""
-Configures FastAPI routing for the AI Teddy Bear application.
+"""Configures FastAPI routing for the AI Teddy Bear application.
 
 This module sets up the main application routes, including API endpoints
 for ESP32 devices, parental dashboard, health checks, ChatGPT interactions,
@@ -8,33 +7,31 @@ modules, ensuring the application can still start even if some components
 are unavailable.
 """
 
-import logging
-
 from fastapi import FastAPI
 
-from src.infrastructure.logging_config import get_logger
-from src.common.constants import (
-    API_PREFIX_ESP32,
-    API_TAG_ESP32,
-    API_PREFIX_DASHBOARD,
-    API_TAG_DASHBOARD,
-    API_PREFIX_HEALTH,
-    API_TAG_HEALTH,
-    API_PREFIX_CHATGPT,
-    API_TAG_CHATGPT,
+from src.common.constants import (  # Import new constants
     API_PREFIX_AUTH,
+    API_PREFIX_CHATGPT,
+    API_PREFIX_DASHBOARD,
+    API_PREFIX_ESP32,
+    API_PREFIX_HEALTH,
     API_TAG_AUTH,
-)  # Import new constants
+    API_TAG_CHATGPT,
+    API_TAG_DASHBOARD,
+    API_TAG_ESP32,
+    API_TAG_HEALTH,
+)
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="presentation")
 
 # Import routers with proper error handling
 try:
+    from src.presentation.api.endpoints.auth import router as auth_router
+    from src.presentation.api.endpoints.chatgpt import router as chatgpt_router
     from src.presentation.api.esp32_endpoints import router as esp32_router
     from src.presentation.api.health_endpoints import router as health_router
     from src.presentation.api.parental_dashboard import router as parental_router
-    from src.presentation.api.endpoints.auth import router as auth_router
-    from src.presentation.api.endpoints.chatgpt import router as chatgpt_router
 except ImportError as e:
     logger.error(f"Failed to import API routers: {e}")
     # Set routers to None for graceful degradation
@@ -46,6 +43,7 @@ def setup_routing(app: FastAPI) -> None:
 
     Args:
         app: The FastAPI application instance.
+
     """
     router_configs = [
         (esp32_router, API_PREFIX_ESP32, API_TAG_ESP32, "ESP32"),

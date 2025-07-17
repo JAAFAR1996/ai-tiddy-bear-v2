@@ -1,4 +1,6 @@
 """
+Middleware أمان شامل لحماية التطبيق
+"""
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Dict, List
@@ -6,11 +8,6 @@ import json
 import logging
 import re
 import time
-"""
-
-Middleware أمان شامل لحماية التطبيق
-"""
-
 try:
     from fastapi import Request, Response, HTTPException
     from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -20,9 +17,7 @@ except ImportError as e:
     logger.error(f"CRITICAL ERROR: FastAPI is required for production use: {e}")
     logger.error("Install required dependencies: pip install fastapi starlette")
     raise ImportError(f"Missing middleware dependencies: {e}") from e
-
 logger = get_logger(__name__, component="security")
-
 import redis.asyncio as redis
 
 class RateLimiter:

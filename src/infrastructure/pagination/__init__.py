@@ -1,3 +1,3 @@
-from .pagination_service import PaginationService, PaginatedResponse
+from .pagination_service import PaginatedResponse, PaginationService
 
-__all__ = ["PaginationService", "PaginatedResponse"]
+__all__ = ["PaginatedResponse", "PaginationService"]

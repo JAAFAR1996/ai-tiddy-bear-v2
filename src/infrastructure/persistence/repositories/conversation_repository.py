@@ -1,14 +1,13 @@
-"""
-Conversation Repository
+"""Conversation Repository.
 
 Handles all conversation and interaction-related database operations.
 """
+
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import and_, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_
 from sqlalchemy.future import select
 from sqlalchemy.sql import func
 
@@ -34,13 +33,17 @@ class ConversationRepository:
 
         Args:
             database: Database instance
+
         """
         self.database = database
         logger.info("ConversationRepository initialized")
 
     @database_input_validation("conversations")
     async def create_conversation(
-        self, child_id: str, message: str, response: str
+        self,
+        child_id: str,
+        message: str,
+        response: str,
     ) -> str:
         """Create a new conversation record.
 
@@ -51,6 +54,7 @@ class ConversationRepository:
 
         Returns:
             Conversation ID
+
         """
         try:
             conversation_data = {
@@ -59,7 +63,9 @@ class ConversationRepository:
                 "response": response,
             }
             validated_operation = validate_database_operation(
-                "INSERT", "conversations", conversation_data
+                "INSERT",
+                "conversations",
+                conversation_data,
             )
             validated_data = validated_operation["data"]
             conversation_id = str(uuid4())
@@ -85,8 +91,10 @@ class ConversationRepository:
 
     @database_input_validation("conversations")
     async def get_conversations_by_child_id(
-        self, child_id: str, limit: int = 100
-    ) -> List[Dict[str, Any]]:
+        self,
+        child_id: str,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
         """Get conversations for a child.
 
         Args:
@@ -95,6 +103,7 @@ class ConversationRepository:
 
         Returns:
             List of conversation records
+
         """
         try:
             async with self.database.get_session() as session:
@@ -102,7 +111,7 @@ class ConversationRepository:
                     select(ConversationModel)
                     .where(ConversationModel.child_id == child_id)
                     .order_by(ConversationModel.created_at.desc())
-                    .limit(limit)
+                    .limit(limit),
                 )
                 conversations = result.scalars().all()
                 return [
@@ -120,8 +129,10 @@ class ConversationRepository:
 
     @database_input_validation("conversations")
     async def get_recent_conversation_summary(
-        self, child_id: str, days: int = 7
-    ) -> Dict[str, Any]:
+        self,
+        child_id: str,
+        days: int = 7,
+    ) -> dict[str, Any]:
         """Get a summary of recent conversations.
 
         Args:
@@ -130,6 +141,7 @@ class ConversationRepository:
 
         Returns:
             Summary of conversation statistics
+
         """
         try:
             start_date = datetime.utcnow() - timedelta(days=days)
@@ -139,14 +151,14 @@ class ConversationRepository:
                         func.count(ConversationModel.id),
                         func.avg(
                             func.length(ConversationModel.message)
-                            + func.length(ConversationModel.response)
+                            + func.length(ConversationModel.response),
                         ),
                     ).where(
                         and_(
                             ConversationModel.child_id == child_id,
                             ConversationModel.created_at >= start_date,
-                        )
-                    )
+                        ),
+                    ),
                 )
                 count, avg_length = result.one()
                 return {

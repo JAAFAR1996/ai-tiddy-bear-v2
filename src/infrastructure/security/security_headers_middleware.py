@@ -1,15 +1,12 @@
 """
+Security Headers Middleware
+Implements comprehensive security headers for OWASP compliance
+"""
 from typing import Callable
 import logging
 import os
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
-"""
-
-Security Headers Middleware
-Implements comprehensive security headers for OWASP compliance
-"""
-
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="security")
 
@@ -53,7 +50,7 @@ class SecurityHeadersMiddleware:
         return send_wrapper
 
     def _get_security_headers(self, request: Request) -> dict:
-        """
+        """Return security headers for the response."""
         headers = {}
         
         if self.is_production:
@@ -79,7 +76,7 @@ class SecurityHeadersMiddleware:
         return headers
         
     def _get_csp_policy(self) -> str:
-        """
+        """Return the Content Security Policy string."""
         policy_directives = [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline'",  # Allow inline scripts for FastAPI docs

@@ -1,13 +1,12 @@
 """
+AI Service Utilities - Extracted from main service for better maintainability
+"""
+
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 import hashlib
 import random
 from .models import AIResponse
-"""
-
-AI Service Utilities - Extracted from main service for better maintainability
-"""
 
 class AIServiceUtils:
     """Utility functions for AI service operations"""

@@ -1,4 +1,5 @@
-"""
+
+from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -10,11 +11,12 @@ import os
 import sqlite3
 from cryptography.fernet import Fernet
 from src.infrastructure.security.path_validator import get_secure_file_operations
-"""
+
 
 """Production - ready SQLite conversation repository with COPPA compliance"""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="persistence")
 
 
@@ -32,7 +34,7 @@ class ConversationSQLiteRepository:
         self._init_database()
 
     def _get_or_create_encryption_key(self) -> bytes:
-        """
+        
         secure_ops = get_secure_file_operations()
         key_filename = "conversation_key.key"
         try:

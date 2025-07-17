@@ -1,5 +1,4 @@
-"""
-Defines secure configuration settings for the AI Teddy Bear project.
+"""Defines secure configuration settings for the AI Teddy Bear project.
 
 This module provides critical security-related settings, including JWT
 configuration, rate limiting, content filtering, COPPA compliance parameters,
@@ -8,14 +7,10 @@ that sensitive configurations are properly managed for a robust and secure
 application environment.
 """
 
-import logging
-import os
 import secrets
 import sys
-from typing import List, Optional
 
 from pydantic import Field, field_validator
-from pydantic.networks import AnyHttpUrl
 from pydantic_settings import BaseSettings
 
 from src.infrastructure.logging_config import get_logger
@@ -30,7 +25,10 @@ class SecureSettings(BaseSettings):
     JWT_SECRET: str = Field(..., min_length=32, description="JWT secret key")
     JWT_ALGORITHM: str = Field(default="HS256", description="JWT algorithm")
     JWT_EXPIRE_MINUTES: int = Field(
-        default=30, ge=5, le=1440, description="JWT expiration in minutes"
+        default=30,
+        ge=5,
+        le=1440,
+        description="JWT expiration in minutes",
     )
 
     # Rate Limiting
@@ -53,8 +51,7 @@ class SecureSettings(BaseSettings):
     @field_validator("JWT_SECRET", "SESSION_SECRET")
     @classmethod
     def validate_secrets(cls, v: str) -> str:
-        """
-        Validates the strength of secret keys.
+        """Validates the strength of secret keys.
 
         Args:
             v: The secret key string.
@@ -64,6 +61,7 @@ class SecureSettings(BaseSettings):
 
         Raises:
             ValueError: If the secret key is too short or is a default placeholder.
+
         """
         if len(v) < 32:
             raise ValueError("Secret key must be at least 32 characters")
@@ -78,11 +76,11 @@ class SecureSettings(BaseSettings):
 
 # Example usage and generation of a new secret key
 def generate_new_secret_key() -> str:
-    """
-    Generates a new strong secret key.
+    """Generates a new strong secret key.
 
     Returns:
         A randomly generated URL-safe text string.
+
     """
     return secrets.token_urlsafe(32)
 

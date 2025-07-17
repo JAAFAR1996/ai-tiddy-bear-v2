@@ -1,13 +1,12 @@
 """
+Response Enhancer for ChatGPT - Child - Friendly Response Enhancement
+"""
+
 from datetime import datetime
 from typing import Dict, List, Any
 import logging
 import random
 import re
-"""
-
-Response Enhancer for ChatGPT - Child - Friendly Response Enhancement
-"""
 
 PRESCHOOL_MAX_AGE = 5
 ELEMENTARY_MAX_AGE = 8

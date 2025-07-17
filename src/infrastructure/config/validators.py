@@ -1,11 +1,11 @@
-from typing import List, Optional, Dict, Any, Union
+import logging
 import os
 import secrets
-import re
-import logging
+
 from pydantic import field_validator
 
 logger = logging.getLogger(__name__)
+
 
 class SettingsValidators:
     @field_validator("SECRET_KEY", mode="before")
@@ -51,10 +51,10 @@ class SettingsValidators:
         ]
         if any(pattern in v.lower() for pattern in weak_patterns):
             logger.critical(
-                "SECURITY ALERT: Insecure default credentials detected in DATABASE_URL"
+                "SECURITY ALERT: Insecure default credentials detected in DATABASE_URL",
             )
             if os.getenv("ENVIRONMENT") == "production":
                 raise ValueError(
-                    "Production environment cannot use default/weak credentials in DATABASE_URL"
+                    "Production environment cannot use default/weak credentials in DATABASE_URL",
                 )
         return v

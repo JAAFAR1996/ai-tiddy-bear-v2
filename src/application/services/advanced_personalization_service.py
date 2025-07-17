@@ -1,5 +1,4 @@
-"""
-Manages advanced personalization features for a tailored user experience.
+"""Manages advanced personalization features for a tailored user experience.
 
 This service analyzes child interactions to create detailed personality profiles.
 These profiles are then used to generate personalized content, such as stories
@@ -8,18 +7,16 @@ interaction preferences.
 """
 
 import logging
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Dict, Any, List
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
 
-from src.domain.value_objects.personality import ChildPersonality, PersonalityType
+from src.application.interfaces.ai_provider import AIProvider
 from src.domain.interfaces.personality_profile_repository import (
     IPersonalityProfileRepository,
 )
+from src.domain.value_objects.personality import ChildPersonality, PersonalityType
 from src.infrastructure.logging_config import get_logger
-from src.application.interfaces.ai_provider import AIProvider
 
 logger = get_logger(__name__, component="advanced_personalization_service")
 
@@ -33,13 +30,13 @@ class AdvancedPersonalizationService:
         ai_provider: AIProvider,
         logger: logging.Logger = logger,
     ) -> None:
-        """
-        Initializes the advanced personalization service with a repository for persistence and an AI provider.
+        """Initializes the advanced personalization service with a repository for persistence and an AI provider.
 
         Args:
             repository: The repository for storing and retrieving personality profiles.
             ai_provider: The AI provider for personality analysis.
             logger: Logger instance for logging service operations.
+
         """
         self.repository = repository
         self.ai_provider = ai_provider
@@ -47,10 +44,11 @@ class AdvancedPersonalizationService:
         # self.personality_profiles: Dict[str, ChildPersonality] = {}
 
     async def create_personality_profile(
-        self, child_id: UUID, interactions: List[Dict[str, Any]]
+        self,
+        child_id: UUID,
+        interactions: list[dict[str, Any]],
     ) -> ChildPersonality:
-        """
-        Analyzes child interactions to create a personality profile and persists it.
+        """Analyzes child interactions to create a personality profile and persists it.
 
         Args:
             child_id: The ID of the child.
@@ -58,57 +56,53 @@ class AdvancedPersonalizationService:
 
         Returns:
             The created child personality profile.
+
         """
         self.logger.info(f"Creating personality profile for child: {child_id}")
         personality = await self._analyze_interactions(child_id, interactions)
         await self.repository.save_profile(personality)
-        self.logger.info(
-            f"Personality profile created and saved for child: {child_id}")
+        self.logger.info(f"Personality profile created and saved for child: {child_id}")
         return personality
 
-    async def get_personality_profile(
-            self, child_id: UUID) -> ChildPersonality | None:
-        """
-        Retrieves the personality profile for a child from the repository.
+    async def get_personality_profile(self, child_id: UUID) -> ChildPersonality | None:
+        """Retrieves the personality profile for a child from the repository.
 
         Args:
             child_id: The ID of the child.
 
         Returns:
             The child's personality profile, or None if not found.
+
         """
         self.logger.debug(
-            f"Attempting to retrieve personality profile for child: {child_id}"
+            f"Attempting to retrieve personality profile for child: {child_id}",
         )
         profile = await self.repository.get_profile_by_child_id(child_id)
         if profile:
-            self.logger.info(
-                f"Personality profile found for child: {child_id}")
+            self.logger.info(f"Personality profile found for child: {child_id}")
         else:
-            self.logger.info(
-                f"Personality profile not found for child: {child_id}")
+            self.logger.info(f"Personality profile not found for child: {child_id}")
         return profile
 
-    async def get_personalized_content(
-            self, child_id: UUID) -> Dict[str, Any] | None:
-        """
-        Gets personalized content recommendations for a child from their profile.
+    async def get_personalized_content(self, child_id: UUID) -> dict[str, Any] | None:
+        """Gets personalized content recommendations for a child from their profile.
 
         Args:
             child_id: The ID of the child.
 
         Returns:
             A dictionary of personalized content, or None if no profile exists.
+
         """
         profile = await self.get_personality_profile(child_id)
         if not profile:
             self.logger.info(
-                f"No personality profile found for child {child_id}. Cannot provide personalized content."
+                f"No personality profile found for child {child_id}. Cannot provide personalized content.",
             )
             return None
 
         self.logger.debug(
-            f"Generating personalized content for child {child_id} (Personality: {profile.personality_type.value})."
+            f"Generating personalized content for child {child_id} (Personality: {profile.personality_type.value}).",
         )
         try:
             # Convert profile to a dictionary for the AI provider
@@ -120,8 +114,7 @@ class AdvancedPersonalizationService:
                 profile_dict,
                 {"current_time": str(datetime.now())},  # Example context
             )
-            self.logger.info(
-                f"AI generated personalized content for child {child_id}.")
+            self.logger.info(f"AI generated personalized content for child {child_id}.")
             return personalized_content
         except Exception as e:
             self.logger.error(
@@ -129,8 +122,7 @@ class AdvancedPersonalizationService:
                 exc_info=True,
             )
             # Fallback to a generic content recommendation if AI service fails
-            self.logger.warning(
-                "Falling back to generic content recommendations.")
+            self.logger.warning("Falling back to generic content recommendations.")
             return {
                 "stories": ["A generic story for everyone"],
                 "activities": ["A generic fun activity"],
@@ -138,19 +130,21 @@ class AdvancedPersonalizationService:
             }
 
     async def _analyze_interactions(
-        self, child_id: UUID, interactions: List[Dict[str, Any]]
+        self,
+        child_id: UUID,
+        interactions: list[dict[str, Any]],
     ) -> ChildPersonality:
-        """
-        Analyzes interactions to determine personality traits using the AI provider.
+        """Analyzes interactions to determine personality traits using the AI provider.
 
         Args:
             interactions: A list of interactions (e.g., {"text": "...", "sentiment": "..."}).
 
         Returns:
             A child personality profile based on AI analysis.
+
         """
         self.logger.info(
-            "Analyzing child interactions for personality traits using AI provider."
+            "Analyzing child interactions for personality traits using AI provider.",
         )
         try:
             # Assuming AIProvider.analyze_personality returns a dictionary
@@ -161,7 +155,8 @@ class AdvancedPersonalizationService:
             # This mapping logic might need to be more sophisticated in a real
             # system.
             personality_type_str = personality_data.get(
-                "personality_type", "OTHER"
+                "personality_type",
+                "OTHER",
             ).upper()
             personality_type = (
                 PersonalityType[personality_type_str]
@@ -178,9 +173,7 @@ class AdvancedPersonalizationService:
                 metadata=personality_data.get("metadata", {}),
             )
         except Exception as e:
-            self.logger.error(
-                f"Error during personality analysis: {e}",
-                exc_info=True)
+            self.logger.error(f"Error during personality analysis: {e}", exc_info=True)
             # Fallback to a default or generic personality if AI analysis fails
             return ChildPersonality(
                 child_id=child_id,

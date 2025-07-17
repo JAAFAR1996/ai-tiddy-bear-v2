@@ -1,4 +1,3 @@
-"""
 from typing import Dict, Any
 from src.infrastructure.config.settings import get_settings
 """Content Security Policy configurations for child safety.

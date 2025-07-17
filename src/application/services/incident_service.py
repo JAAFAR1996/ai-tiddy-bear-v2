@@ -1,5 +1,4 @@
-"""
-Provides services for reporting, tracking, and resolving incidents.
+"""Provides services for reporting, tracking, and resolving incidents.
 
 This service allows for the creation of incident reports, retrieval of incident
 details, and resolution of incidents. It helps in maintaining a record of
@@ -8,7 +7,7 @@ accountability.
 """
 
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 
 class IncidentService:
@@ -16,18 +15,17 @@ class IncidentService:
 
     def __init__(self) -> None:
         """Initializes the incident service."""
-        self.incidents: list[Dict[str, Any]] = []
+        self.incidents: list[dict[str, Any]] = []
 
-    async def report_incident(
-            self, incident_details: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Reports a new incident.
+    async def report_incident(self, incident_details: dict[str, Any]) -> dict[str, Any]:
+        """Reports a new incident.
 
         Args:
             incident_details: A dictionary containing details about the incident.
 
         Returns:
             A dictionary representing the reported incident.
+
         """
         incident_id = f"inc_{len(self.incidents) + 1}"
         incident = {
@@ -39,15 +37,15 @@ class IncidentService:
         self.incidents.append(incident)
         return incident
 
-    async def get_incident(self, incident_id: str) -> Dict[str, Any] | None:
-        """
-        Retrieves details of a specific incident.
+    async def get_incident(self, incident_id: str) -> dict[str, Any] | None:
+        """Retrieves details of a specific incident.
 
         Args:
             incident_id: The ID of the incident to retrieve.
 
         Returns:
             A dictionary representing the incident, or None if not found.
+
         """
         for inc in self.incidents:
             if inc.get("id") == incident_id:
@@ -55,10 +53,11 @@ class IncidentService:
         return None
 
     async def resolve_incident(
-        self, incident_id: str, resolution_details: Dict[str, Any]
-    ) -> Dict[str, Any] | None:
-        """
-        Resolves an existing incident.
+        self,
+        incident_id: str,
+        resolution_details: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Resolves an existing incident.
 
         Args:
             incident_id: The ID of the incident to resolve.
@@ -66,6 +65,7 @@ class IncidentService:
 
         Returns:
             A dictionary representing the resolved incident, or None if not found.
+
         """
         for inc in self.incidents:
             if inc.get("id") == incident_id:

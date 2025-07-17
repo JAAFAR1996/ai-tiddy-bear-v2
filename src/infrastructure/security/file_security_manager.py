@@ -1,27 +1,19 @@
 import hashlib
-import logging
 import mimetypes
 import re
-from datetime import datetime
-import timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
+
 class SecurityManager:
     """Handles audio file validation and security checks."""
-    
+
     def __init__(self) -> None:
-        self.allowed_audio_types = [
-            "wav",
-            "mp3",
-            "m4a",
-            "ogg",
-            "flac"
-        ]
+        self.allowed_audio_types = ["wav", "mp3", "m4a", "ogg", "flac"]
         self.max_file_size = 10 * 1024 * 1024  # 10MB
         self.blocked_extensions = [
             ".exe",
@@ -34,61 +26,64 @@ class SecurityManager:
             ".ps1",
         ]
 
-    def validate_audio_file(self, filename: str, file_content: bytes) -> Dict[str, Any]:
+    def validate_audio_file(self, filename: str, file_content: bytes) -> dict[str, Any]:
         """Validate audio file for security and format compliance.
+
         Args:
             filename: Name of the file
             file_content: File content as bytes
         Returns:
             Dict containing validation results
+
         """
         result = {"is_valid": False, "errors": [], "warnings": [], "file_info": {}}
-        
+
         try:
             # Check file size
             if len(file_content) > self.max_file_size:
                 result["errors"].append(
-                    f"File size exceeds maximum allowed size of {self.max_file_size} bytes"
+                    f"File size exceeds maximum allowed size of {self.max_file_size} bytes",
                 )
                 return result
-                
+
             if len(file_content) == 0:
                 result["errors"].append("File is empty")
                 return result
-                
+
             # Sanitize filename
             sanitized_filename = self.sanitize_filename(filename)
             if sanitized_filename != filename:
                 result["warnings"].append(
-                    f"Filename was sanitized from '{filename}' to '{sanitized_filename}'"
+                    f"Filename was sanitized from '{filename}' to '{sanitized_filename}'",
                 )
-                
+
             # Check file extension
             file_extension = Path(sanitized_filename).suffix.lower().lstrip(".")
             if file_extension not in self.allowed_audio_types:
                 result["errors"].append(
-                    f"File extension '{file_extension}' is not allowed. Allowed types: {', '.join(self.allowed_audio_types)}"
+                    f"File extension '{file_extension}' is not allowed. Allowed types: {', '.join(self.allowed_audio_types)}",
                 )
                 return result
-                
+
             # Check for blocked extensions
             if any(
                 sanitized_filename.lower().endswith(ext)
                 for ext in self.blocked_extensions
             ):
                 result["errors"].append(
-                    "File extension is blocked for security reasons"
+                    "File extension is blocked for security reasons",
                 )
                 return result
-                
+
             # Basic audio file validation using magic numbers
             validation_result = self._validate_audio_magic_numbers(
-                file_content, file_extension
+                file_content,
+                file_extension,
             )
             if not validation_result["is_valid"]:
                 result["errors"].extend(validation_result["errors"])
                 return result
-                
+
             # File passed all checks
             result["is_valid"] = True
             result["file_info"] = {
@@ -100,24 +95,26 @@ class SecurityManager:
                 or "application/octet-stream",
                 "file_hash": hashlib.sha256(file_content).hexdigest(),
             }
-            
+
             logger.info(f"Audio file validation successful for {sanitized_filename}")
             return result
-        except (ValueError, IOError, OSError, RuntimeError) as e:
+        except (ValueError, OSError, RuntimeError) as e:
             logger.error(f"Error validating audio file {filename}: {e}")
-            result["errors"].append(f"Validation error: {str(e)}")
+            result["errors"].append(f"Validation error: {e!s}")
             return result
 
     def _validate_audio_magic_numbers(
-        self, file_content: bytes, expected_type: str
-    ) -> Dict[str, Any]:
+        self,
+        file_content: bytes,
+        expected_type: str,
+    ) -> dict[str, Any]:
         """Validate audio file using magic numbers/headers."""
         result = {"is_valid": False, "errors": []}
-        
+
         if len(file_content) < 12:
             result["errors"].append("File too small to contain valid audio header")
             return result
-            
+
         # Check magic numbers for different audio formats
         header = file_content[:12]
         try:
@@ -155,15 +152,14 @@ class SecurityManager:
                     result["is_valid"] = True
                 else:
                     result["errors"].append("Invalid FLAC file header")
+            # For other formats, just check that it's not executable
+            elif not self._is_executable_file(header):
+                result["is_valid"] = True
             else:
-                # For other formats, just check that it's not executable
-                if not self._is_executable_file(header):
-                    result["is_valid"] = True
-                else:
-                    result["errors"].append("File appears to be executable")
+                result["errors"].append("File appears to be executable")
         except (ValueError, IndexError, TypeError) as e:
-            result["errors"].append(f"Magic number validation error: {str(e)}")
-            
+            result["errors"].append(f"Magic number validation error: {e!s}")
+
         return result
 
     def _is_executable_file(self, header: bytes) -> bool:
@@ -177,32 +173,34 @@ class SecurityManager:
             b"\xce\xfa\xed\xfe",  # Mach-O
             b"\xcf\xfa\xed\xfe",  # Mach-O 64-bit
         ]
-        
+
         return any(header.startswith(exe_header) for exe_header in executable_headers)
 
     def sanitize_filename(self, filename: str) -> str:
         """Sanitize filename for security.
+
         Args:
             filename: Original filename
         Returns:
             str: Sanitized filename
+
         """
         try:
             # Remove any path components
             filename = Path(filename).name
-            
+
             # Remove or replace dangerous characters
             # Allow alphanumeric, dots, hyphens, underscores
             sanitized = re.sub(r"[^a-zA-Z0-9._-]", "_", filename)
-            
+
             # Prevent hidden files
             if sanitized.startswith("."):
                 sanitized = "file" + sanitized
-                
+
             # Prevent empty filename
             if not sanitized or sanitized == ".":
                 sanitized = "unnamed_file"
-                
+
             # Limit length
             if len(sanitized) > 255:
                 name_part = sanitized[:200]
@@ -213,11 +211,11 @@ class SecurityManager:
                     sanitized = name_part + ext
                 else:
                     sanitized = name_part
-                    
+
             # Ensure it has some extension
             if "." not in sanitized:
                 sanitized += ".txt"
-                
+
             logger.debug(f"Sanitized filename: '{filename}' -> '{sanitized}'")
             return sanitized
         except Exception as e:

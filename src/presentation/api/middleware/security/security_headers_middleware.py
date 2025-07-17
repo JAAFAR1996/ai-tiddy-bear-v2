@@ -1,4 +1,4 @@
-"""
+
 from typing import Dict, Any, Optional
 import logging
 import time
@@ -7,8 +7,7 @@ from fastapi import Request, Response
 from fastapi.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 from .headers_config import (
-    """Simplified Security Headers Middleware
-Implements essential security headers with child safety focus."""
+   
     SecurityLevel,
     get_headers_config,
     COPPA_HEADERS,

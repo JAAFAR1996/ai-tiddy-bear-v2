@@ -1,28 +1,30 @@
 """Parental Consent Enforcement Service
-Ensures parental consent is properly validated for all child operations."""
+Ensures parental consent is properly validated for all child operations.
+"""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
+
 from src.domain.interfaces.logging_interface import (
-    DomainLoggerInterface, 
+    DomainLoggerInterface,
     NullDomainLogger,
 )
 from src.domain.models.consent_models import ConsentRecord, ConsentStatus, ConsentType
 from src.domain.services.coppa_age_validation import (
-    AgeValidationResult, 
+    AgeValidationResult,
     COPPAAgeValidator,
 )
 
 
 class ParentalConsentEnforcer:
     """Enforces parental consent requirements across all operations."""
-    
-    def __init__(self, logger: DomainLoggerInterface=None) -> None:
+
+    def __init__(self, logger: DomainLoggerInterface = None) -> None:
         self._logger = logger or NullDomainLogger()
         self.required_consents = self._initialize_consent_requirements()
-        self.consent_cache: Dict[str, Dict[ConsentType, ConsentRecord]] = {}
-    
-    def _initialize_consent_requirements(self) -> Dict[str, Set[ConsentType]]:
+        self.consent_cache: dict[str, dict[ConsentType, ConsentRecord]] = {}
+
+    def _initialize_consent_requirements(self) -> dict[str, set[ConsentType]]:
         """Initialize consent requirements by age group."""
         return {
             # Children under 13 (COPPA applies) - Strict requirements
@@ -50,13 +52,14 @@ class ParentalConsentEnforcer:
             "valid_adult": set(),  # No parental consent required
         }
 
-    def get_required_consents(self, child_age: int) -> Set[ConsentType]:
-        """
-        Get required consents for a child's age.
+    def get_required_consents(self, child_age: int) -> set[ConsentType]:
+        """Get required consents for a child's age.
+
         Args:
             child_age: Child's age in years
         Returns:
             Set of required consent types
+
         """
         age_validation = COPPAAgeValidator.validate_age(child_age)
         if age_validation == AgeValidationResult.VALID_CHILD:
@@ -75,10 +78,10 @@ class ParentalConsentEnforcer:
         child_id: str,
         child_age: int,
         operation_type: ConsentType,
-        consent_records: List[ConsentRecord],
-    ) -> Dict[str, Any]:
-        """
-        Validate if parental consent exists for a specific operation.
+        consent_records: list[ConsentRecord],
+    ) -> dict[str, Any]:
+        """Validate if parental consent exists for a specific operation.
+
         Args:
             child_id: Child identifier
             child_age: Child's age in years
@@ -86,6 +89,7 @@ class ParentalConsentEnforcer:
             consent_records: Available consent records
         Returns:
             Validation result with consent status
+
         """
         required_consents = self.get_required_consents(child_age)
         # Check if consent is required for this age group
@@ -126,16 +130,20 @@ class ParentalConsentEnforcer:
         }
 
     def validate_all_required_consents(
-        self, child_id: str, child_age: int, consent_records: List[ConsentRecord]
-    ) -> Dict[str, Any]:
-        """
-        Validate all required consents for a child.
+        self,
+        child_id: str,
+        child_age: int,
+        consent_records: list[ConsentRecord],
+    ) -> dict[str, Any]:
+        """Validate all required consents for a child.
+
         Args:
             child_id: Child identifier
             child_age: Child's age in years
             consent_records: Available consent records
         Returns:
             Complete validation results
+
         """
         required_consents = self.get_required_consents(child_age)
         if not required_consents:
@@ -153,7 +161,10 @@ class ParentalConsentEnforcer:
         expired_consents = []
         for consent_type in required_consents:
             result = self.validate_consent_for_operation(
-                child_id, child_age, consent_type, consent_records
+                child_id,
+                child_age,
+                consent_type,
+                consent_records,
             )
             validation_results[consent_type.value] = result
             if result["can_proceed"]:
@@ -172,13 +183,17 @@ class ParentalConsentEnforcer:
             "detailed_results": validation_results,
             "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(child_age),
             "message": self._generate_consent_message(
-                all_valid, missing_consents, expired_consents
+                all_valid,
+                missing_consents,
+                expired_consents,
             ),
         }
 
     def _find_consent_record(
-        self, consent_records: List[ConsentRecord], consent_type: ConsentType
-    ) -> Optional[ConsentRecord]:
+        self,
+        consent_records: list[ConsentRecord],
+        consent_type: ConsentType,
+    ) -> ConsentRecord | None:
         """Find consent record for specific type."""
         for record in consent_records:
             if record.consent_type == consent_type:
@@ -189,11 +204,9 @@ class ParentalConsentEnforcer:
         """Check if consent record is valid and not expired."""
         if consent_record.status != ConsentStatus.GRANTED:
             return False
-        if consent_record.expires_at and datetime.utcnow() > consent_record.expires_at:
-            return False
-        return True
+        return not (consent_record.expires_at and datetime.utcnow() > consent_record.expires_at)
 
-    def _consent_record_to_dict(self, record: ConsentRecord) -> Dict[str, Any]:
+    def _consent_record_to_dict(self, record: ConsentRecord) -> dict[str, Any]:
         """Convert consent record to dictionary."""
         return {
             "consent_id": record.consent_id,
@@ -205,7 +218,10 @@ class ParentalConsentEnforcer:
         }
 
     def _generate_consent_message(
-        self, all_valid: bool, missing_consents: List[str], expired_consents: List[str]
+        self,
+        all_valid: bool,
+        missing_consents: list[str],
+        expired_consents: list[str],
     ) -> str:
         """Generate human-readable consent status message."""
         if all_valid:
@@ -217,13 +233,14 @@ class ParentalConsentEnforcer:
             messages.append(f"Expired consent for: {', '.join(expired_consents)}")
         return "; ".join(messages)
 
-    def get_consent_requirements_summary(self, child_age: int) -> Dict[str, Any]:
-        """
-        Get summary of consent requirements for a child's age.
+    def get_consent_requirements_summary(self, child_age: int) -> dict[str, Any]:
+        """Get summary of consent requirements for a child's age.
+
         Args:
             child_age: Child's age in years
         Returns:
             Summary of consent requirements
+
         """
         required_consents = self.get_required_consents(child_age)
         age_validation = COPPAAgeValidator.validate_age(child_age)
@@ -242,14 +259,13 @@ class ParentalConsentEnforcer:
         """Get compliance level based on age validation."""
         if age_validation == AgeValidationResult.VALID_CHILD:
             return "strict_coppa_compliance"
-        elif age_validation == AgeValidationResult.VALID_TEEN:
+        if age_validation == AgeValidationResult.VALID_TEEN:
             return "moderate_parental_oversight"
-        elif age_validation == AgeValidationResult.VALID_ADULT:
+        if age_validation == AgeValidationResult.VALID_ADULT:
             return "standard_privacy_protection"
-        else:
-            return "blocked_interaction"
+        return "blocked_interaction"
 
-    def _get_consent_recommendations(self, child_age: int) -> List[str]:
+    def _get_consent_recommendations(self, child_age: int) -> list[str]:
         """Get recommendations for consent management."""
         recommendations = []
         if COPPAAgeValidator.is_coppa_applicable(child_age):
@@ -260,7 +276,7 @@ class ParentalConsentEnforcer:
                     "Provide easy consent withdrawal mechanisms for parents",
                     "Maintain detailed audit logs of all consent activities",
                     "Use secure verification methods (email + additional verification)",
-                ]
+                ],
             )
         elif child_age < 18:
             recommendations.extend(
@@ -268,6 +284,6 @@ class ParentalConsentEnforcer:
                     "Consider obtaining parental consent for enhanced protection",
                     "Implement privacy-by-design for teen users",
                     "Provide parental visibility into teen's interactions",
-                ]
+                ],
             )
         return recommendations

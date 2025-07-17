@@ -1,12 +1,9 @@
-"""
+
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from src.infrastructure.di.fastapi_dependencies import (
-"""
 
-Example of simplified dependency injection in endpoints
-"""
     get_current_parent,
     get_child_service,
     get_conversation_service,

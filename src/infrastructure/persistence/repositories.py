@@ -1,13 +1,10 @@
-"""
-Data Repository for AI Teddy Bear
+"""Data Repository for AI Teddy Bear.
 
 Handles secure data operations with COPPA compliance and child safety.
 """
-import asyncio
-import json
-import logging
+
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -29,10 +26,12 @@ class DataRepository:
         self.max_data_size = 1024 * 1024  # 1MB per child
 
     async def get_data(
-        self, query: str, child_id: str = None, data_type: str = "general"
-    ) -> Dict[str, Any]:
-        """
-        Retrieve data with comprehensive safety and privacy controls.
+        self,
+        query: str,
+        child_id: str | None = None,
+        data_type: str = "general",
+    ) -> dict[str, Any]:
+        """Retrieve data with comprehensive safety and privacy controls.
 
         Args:
             query: The data query or filter
@@ -45,6 +44,7 @@ class DataRepository:
         Raises:
             ValueError: If query validation fails
             PermissionError: If access is not allowed
+
         """
         # Input validation
         if not query or not isinstance(query, str):
@@ -62,18 +62,23 @@ class DataRepository:
         # Handle different data types
         if data_type == "child_profile" and child_id:
             return await self._get_child_profile(child_id)
-        elif data_type == "conversation_history" and child_id:
+        if data_type == "conversation_history" and child_id:
             return await self._get_conversation_history(child_id)
-        elif data_type == "safety_report" and child_id:
+        if data_type == "safety_report" and child_id:
             return await self._get_safety_report(child_id)
-        elif data_type == "system_health":
+        if data_type == "system_health":
             return await self._get_system_health()
-        else:
-            # Default case for general queries
-            return {"status": "Query processed", "data": "No specific data type matched"}
+        # Default case for general queries
+        return {
+            "status": "Query processed",
+            "data": "No specific data type matched",
+        }
 
     async def _log_data_access(
-        self, query: str, child_id: Optional[str], data_type: str
+        self,
+        query: str,
+        child_id: str | None,
+        data_type: str,
     ) -> None:
         """Logs data access attempts for security auditing."""
         log_entry = {
@@ -90,19 +95,19 @@ class DataRepository:
         """Validates if a child ID exists."""
         return child_id in self._child_data
 
-    async def _get_child_profile(self, child_id: str) -> Dict[str, Any]:
+    async def _get_child_profile(self, child_id: str) -> dict[str, Any]:
         """Retrieves a child's profile data."""
         if child_id not in self._child_data:
             raise ValueError("Child profile not found")
         return self._child_data[child_id]
 
-    async def _get_conversation_history(self, child_id: str) -> Dict[str, Any]:
+    async def _get_conversation_history(self, child_id: str) -> dict[str, Any]:
         """Retrieves conversation history for a child."""
         if child_id not in self._conversations:
             return {"history": []}
         return {"history": self._conversations[child_id]}
 
-    async def _get_safety_report(self, child_id: str) -> Dict[str, Any]:
+    async def _get_safety_report(self, child_id: str) -> dict[str, Any]:
         """Generates a safety report for a child."""
         # In a real system, this would involve complex analysis
         return {
@@ -112,7 +117,7 @@ class DataRepository:
             "last_check": datetime.utcnow().isoformat(),
         }
 
-    async def _get_system_health(self) -> Dict[str, Any]:
+    async def _get_system_health(self) -> dict[str, Any]:
         """Returns system health and operational metrics."""
         return {
             "status": "OK",
@@ -123,6 +128,6 @@ class DataRepository:
 
     async def clean_expired_data(self) -> None:
         """Removes data that has expired based on retention policies."""
-        retention_limit = datetime.utcnow() - timedelta(days=self.data_retention_days)
+        datetime.utcnow() - timedelta(days=self.data_retention_days)
         # Implement logic to iterate through data and remove if older than retention_limit
         logger.info("Expired data cleaning process completed.")

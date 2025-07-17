@@ -1,5 +1,4 @@
-"""
-Defines Sentry-related configuration settings for error tracking.
+"""Defines Sentry-related configuration settings for error tracking.
 
 This module uses Pydantic to manage environment variables and provide
 structured access to the Sentry DSN (Data Source Name). It ensures that

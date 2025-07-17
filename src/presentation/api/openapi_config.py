@@ -1,27 +1,29 @@
-"""OpenAPI Configuration for AI Teddy Bear API"
+"""OpenAPI Configuration for AI Teddy Bear API".
 
 This module defines the custom OpenAPI schema generation for the FastAPI application,
 including detailed descriptions, server URLs, security schemes, and common error responses.
 """
 
-from typing import Any, Dict
+from typing import Any
+
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from src.common.constants import (
-    OPENAPI_TITLE,
-    OPENAPI_VERSION,
+
+from src.common.constants import (  # Import OpenAPI constants
+    OPENAPI_BEARER_DESCRIPTION,  # Import the new constant
+    OPENAPI_COMMON_RESPONSES,
+    OPENAPI_CONTACT_INFO,
     OPENAPI_DESCRIPTION,
-    OPENAPI_SERVERS,
-    OPENAPI_TAGS,
     OPENAPI_EXTERNAL_DOCS,
     OPENAPI_LICENSE_INFO,
-    OPENAPI_CONTACT_INFO,
-    OPENAPI_COMMON_RESPONSES,
-    OPENAPI_BEARER_DESCRIPTION,  # Import the new constant
-)  # Import OpenAPI constants
+    OPENAPI_SERVERS,
+    OPENAPI_TAGS,
+    OPENAPI_TITLE,
+    OPENAPI_VERSION,
+)
 
 
-def custom_openapi(app: FastAPI) -> Dict[str, Any]:
+def custom_openapi(app: FastAPI) -> dict[str, Any]:
     """Generate custom OpenAPI schema with comprehensive documentation."""
     if app.openapi_schema:
         return app.openapi_schema
@@ -40,7 +42,7 @@ def custom_openapi(app: FastAPI) -> Dict[str, Any]:
             "scheme": "bearer",
             "bearerFormat": "JWT",
             "description": OPENAPI_BEARER_DESCRIPTION,
-        }
+        },
     }
     # Add global security requirement
     openapi_schema["security"] = [{"bearerAuth": []}]

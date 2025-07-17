@@ -1,18 +1,17 @@
-"""
-from typing import Dict, Any
+"""from typing import Dict, Any
 from fastapi import FastAPI # Added FastAPI import
 from starlette.middleware.cors import CORSMiddleware
-from src.infrastructure.config.settings import get_settings
+from src.infrastructure.config.settings import get_settings.
 """
 
 """CORS middleware configuration for child safety and security.
 Implements 2025 security standards for AI Teddy Bear system.
 """
 
+
 def get_cors_settings() -> Dict[str, Any]:
-    """
-    Get CORS settings with child safety and security focus.
-    Returns: Dictionary with CORS configuration optimized for child safety
+    """Get CORS settings with child safety and security focus.
+    Returns: Dictionary with CORS configuration optimized for child safety.
     """
     settings = get_settings()
     # Base CORS settings for production security
@@ -57,6 +56,7 @@ def get_cors_settings() -> Dict[str, Any]:
         cors_config["allow_origins"] = []
 
     return cors_config
+
 
 def setup_cors_middleware(app: FastAPI) -> None:
     """Legacy function for backwards compatibility."""

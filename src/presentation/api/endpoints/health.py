@@ -1,8 +1,7 @@
 # Standard library imports
-import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 # Third-party imports - production required
 try:
@@ -10,10 +9,10 @@ try:
     from pydantic import BaseModel
 except ImportError as e:
     logging.getLogger(__name__).critical(
-        f"CRITICAL ERROR: FastAPI and Pydantic required: {e}"
+        f"CRITICAL ERROR: FastAPI and Pydantic required: {e}",
     )
     logging.getLogger(__name__).critical(
-        "Install required dependencies: pip install fastapi pydantic"
+        "Install required dependencies: pip install fastapi pydantic",
     )
     raise ImportError(f"Missing required dependencies for health endpoints: {e}") from e
 
@@ -32,33 +31,34 @@ Enterprise-grade health monitoring with dependency checks"""
 
 router = APIRouter(prefix="/api/v1/health", tags=["Health v1"])
 
+
 class HealthStatus(BaseModel):
     """Health check response model."""
+
     status: str  # "healthy", "degraded", "unhealthy"
     timestamp: datetime
-    checks: Dict[str, Dict[str, Any]]
-    metrics: Dict[str, Any]
+    checks: dict[str, dict[str, Any]]
+    metrics: dict[str, Any]
     uptime_seconds: float
     version: str
 
+
 from src.infrastructure.health.checks import (
-    DependencyCheck,
     check_all_dependencies,
     check_database,
-    check_openai,
     check_redis,
 )
 
+
 @router.get("/", response_model=HealthStatus)
 async def basic_health_check() -> HealthStatus:
-    """
-    Basic health check endpoint.
+    """Basic health check endpoint.
     Returns overall system health status.
     """
     try:
         settings = get_settings()
         monitor = get_performance_monitor()
-        
+
         # Get performance metrics
         if monitor:
             health_data = await monitor.get_health_status()
@@ -67,14 +67,14 @@ async def basic_health_check() -> HealthStatus:
         else:
             metrics = {}
             uptime = 0
-        
+
         # Check critical dependencies
         dependency_checks = await check_all_dependencies()
-        
+
         # Format checks
         checks = {}
         overall_healthy = True
-        
+
         for check in dependency_checks:
             checks[check.name] = {
                 "status": check.status,
@@ -84,7 +84,7 @@ async def basic_health_check() -> HealthStatus:
             }
             if check.status != "healthy":
                 overall_healthy = False
-        
+
         # Determine overall status
         if overall_healthy:
             status = "healthy"
@@ -96,7 +96,7 @@ async def basic_health_check() -> HealthStatus:
             status = "unhealthy"  # Critical dependencies failing
         else:
             status = "degraded"  # Non-critical dependencies failing
-        
+
         return HealthStatus(
             status=status,
             timestamp=datetime.now(),
@@ -109,46 +109,45 @@ async def basic_health_check() -> HealthStatus:
         logger.error(f"Health check error: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Health check failed: {str(e)}",
+            detail=f"Health check failed: {e!s}",
         )
 
+
 @router.get("/ready")
-async def readiness_check() -> Dict[str, Any]:
-    """
-    Kubernetes readiness probe endpoint.
+async def readiness_check() -> dict[str, Any]:
+    """Kubernetes readiness probe endpoint.
     Checks if the application is ready to serve traffic.
     """
     try:
         # Check critical dependencies only
         db_check = await check_database()
         redis_check = await check_redis()
-        
+
         ready = db_check.status == "healthy" and redis_check.status == "healthy"
-        
+
         if ready:
             return {
                 "status": "ready",
                 "timestamp": datetime.now().isoformat(),
                 "checks": {"database": db_check.status, "redis": redis_check.status},
             }
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Service not ready",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not ready",
+        )
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Readiness check error: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Readiness check failed: {str(e)}",
+            detail=f"Readiness check failed: {e!s}",
         )
 
+
 @router.get("/live")
-async def liveness_check() -> Dict[str, Any]:
-    """
-    Kubernetes liveness probe endpoint.
+async def liveness_check() -> dict[str, Any]:
+    """Kubernetes liveness probe endpoint.
     Simple check to verify the application is alive.
     """
     return {
@@ -157,11 +156,10 @@ async def liveness_check() -> Dict[str, Any]:
         "pid": os.getpid() if "os" in globals() else None,
     }
 
+
 @router.get("/metrics")
-async def get_metrics() -> Dict[str, Any]:
-    """
-    Get application performance metrics.
-    """
+async def get_metrics() -> dict[str, Any]:
+    """Get application performance metrics."""
     try:
         monitor = get_performance_monitor()
         if monitor:
@@ -176,23 +174,21 @@ async def get_metrics() -> Dict[str, Any]:
                 "cache_hit_rate": metrics.cache_hit_rate,
                 "timestamp": metrics.timestamp.isoformat(),
             }
-        else:
-            return {
-                "error": "Performance monitoring not available",
-                "timestamp": datetime.now().isoformat(),
-            }
+        return {
+            "error": "Performance monitoring not available",
+            "timestamp": datetime.now().isoformat(),
+        }
     except Exception as e:
         logger.error(f"Metrics endpoint error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Metrics collection failed: {str(e)}",
+            detail=f"Metrics collection failed: {e!s}",
         )
 
+
 @router.get("/dependencies")
-async def check_dependencies() -> Dict[str, Any]:
-    """
-    Detailed dependency health checks.
-    """
+async def check_dependencies() -> dict[str, Any]:
+    """Detailed dependency health checks."""
     try:
         dependency_checks = await check_all_dependencies()
         return {
@@ -211,5 +207,5 @@ async def check_dependencies() -> Dict[str, Any]:
         logger.error(f"Dependencies check error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Dependencies check failed: {str(e)}",
+            detail=f"Dependencies check failed: {e!s}",
         )

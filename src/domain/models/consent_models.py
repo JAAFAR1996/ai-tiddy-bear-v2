@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ConsentType(Enum):
     """Types of parental consent required."""
+
     DATA_COLLECTION = "data_collection"
     VOICE_RECORDING = "voice_recording"
     INTERACTION_LOGGING = "interaction_logging"
@@ -19,6 +20,7 @@ class ConsentType(Enum):
 
 class ConsentStatus(Enum):
     """Status of parental consent."""
+
     GRANTED = "granted"
     DENIED = "denied"
     PENDING = "pending"
@@ -29,7 +31,7 @@ class ConsentStatus(Enum):
 
 class ConsentRecord:
     """Record of parental consent."""
-    
+
     def __init__(
         self,
         consent_id: str,
@@ -37,11 +39,11 @@ class ConsentRecord:
         parent_id: str,
         consent_type: ConsentType,
         status: ConsentStatus,
-        granted_at: Optional[datetime]=None,
-        expires_at: Optional[datetime]=None,
-        verification_method: str="email",
-        consent_text: str="",
-        metadata: Optional[Dict[str, Any]]=None,
+        granted_at: datetime | None = None,
+        expires_at: datetime | None = None,
+        verification_method: str = "email",
+        consent_text: str = "",
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self.consent_id = consent_id
         self.child_id = child_id

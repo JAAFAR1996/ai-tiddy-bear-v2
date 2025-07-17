@@ -1,1 +1,0 @@
-"""API Endpoints Package"""from .audio import router as audio_routerfrom .children import router as children_routerfrom .dashboard import router as dashboard_routerfrom .device import router as device_router"""API Endpoints Package"""__all__ = ["device_router", "audio_router", "children_router", "dashboard_router"]

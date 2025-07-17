@@ -1,10 +1,11 @@
 """
+Centralized Exception Handling System
+"""
+
 from datetime import datetime
 from enum import Enum
 from typing import Dict, Any, Optional
 import logging
-
-"""Centralized Exception Handling System"""
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
@@ -99,4 +100,3 @@ class ExternalServiceException(BaseApplicationException):
         if original_exception:
             details["original_exception"] = str(original_exception)
         super().__init__(message, ErrorCode.EXTERNAL_SERVICE_ERROR, details=details, **kwargs)
-"""

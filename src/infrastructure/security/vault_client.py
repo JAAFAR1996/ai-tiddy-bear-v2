@@ -1,16 +1,18 @@
 import asyncio
 from functools import lru_cache
-from typing import Dict
+
 import Any
 import Optional
 from pydantic import SecretStr
+
 from src.infrastructure.config.settings import get_settings
 
-try: 
-    import hvac  # type: ignore    
+try:
+    import hvac  # type: ignore
+
     VAULT_AVAILABLE = True
 except ImportError:
-    VAULT_AVAILABLE = False    
+    VAULT_AVAILABLE = False
     hvac = None
 
 """HashiCorp Vault client for enterprise-grade secret management.
@@ -23,9 +25,10 @@ To enable Vault integration:
 If Vault is not configured, the system will use environment variables instead.
 """
 
+
 class VaultClient:
     """Enterprise-grade secrets management using HashiCorp Vault."""
-    
+
     def __init__(self, vault_url: str, vault_token: SecretStr) -> None:
         self.vault_url = vault_url
         self.vault_token = vault_token
@@ -39,7 +42,8 @@ class VaultClient:
         try:
             # Run in thread pool to avoid blocking
             self.client = await asyncio.get_event_loop().run_in_executor(
-                None, self._init_client
+                None,
+                self._init_client,
             )
             self._initialized = True
         except Exception as e:
@@ -48,26 +52,31 @@ class VaultClient:
     def _init_client(self) -> Any:
         if not VAULT_AVAILABLE:
             raise ImportError(
-                "hvac package not installed. Install with: pip install hvac"
+                "hvac package not installed. Install with: pip install hvac",
             )
         """Initialize the HVAC client (synchronous operation)."""
         client = hvac.Client(
-            url=self.vault_url, token=self.vault_token.get_secret_value()
+            url=self.vault_url,
+            token=self.vault_token.get_secret_value(),
         )
         if not client.is_authenticated():
             raise ConnectionError("Vault authentication failed")
         return client
 
     async def get_secret(
-        self, secret_path: str, mount_point: str = "secret"
-    ) -> Dict[str, Any]:
-        """
-        Retrieve a secret from Vault.
+        self,
+        secret_path: str,
+        mount_point: str = "secret",
+    ) -> dict[str, Any]:
+        """Retrieve a secret from Vault.
+
         Args:
             secret_path: Path to the secret in Vault
             mount_point: Vault mount point (default: "secret")
+
         Returns:
             Dictionary containing the secret data
+
         """
         if not self._initialized:
             await self.initialize()
@@ -86,14 +95,18 @@ class VaultClient:
             raise ValueError(f"Failed to retrieve secret '{secret_path}': {e}")
 
     async def put_secret(
-        self, secret_path: str, secret_data: Dict[str, Any], mount_point: str = "secret"
+        self,
+        secret_path: str,
+        secret_data: dict[str, Any],
+        mount_point: str = "secret",
     ) -> None:
-        """
-        Store a secret in Vault.
+        """Store a secret in Vault.
+
         Args:
             secret_path: Path to store the secret
             secret_data: Dictionary containing the secret data
             mount_point: Vault mount point (default: "secret")
+
         """
         if not self._initialized:
             await self.initialize()
@@ -110,7 +123,8 @@ class VaultClient:
         except Exception as e:
             raise ValueError(f"Failed to store secret '{secret_path}': {e}")
 
-@lru_cache()
+
+@lru_cache
 async def get_vault_client() -> Optional[VaultClient]:
     """Get a configured Vault client instance."""
     if not VAULT_AVAILABLE:
@@ -119,7 +133,8 @@ async def get_vault_client() -> Optional[VaultClient]:
     if not settings.security.VAULT_URL or not settings.security.VAULT_TOKEN:
         return None
     client = VaultClient(
-        str(settings.security.VAULT_URL), settings.security.VAULT_TOKEN
+        str(settings.security.VAULT_URL),
+        settings.security.VAULT_TOKEN,
     )
     await client.initialize()
     return client

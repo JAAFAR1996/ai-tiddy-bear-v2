@@ -1,6 +1,6 @@
-import logging
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
+
 from .config import DatabaseConfig
 
 """Database Connection and Schema Validators
@@ -8,21 +8,23 @@ Extracted from production_database_config.py to reduce file size
 Translated Arabic comments to English"""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="persistence")
 
 
 class DatabaseConnectionValidator:
-    """Database connection validator"""
-    
+    """Database connection validator."""
+
     def __init__(self, config: DatabaseConfig) -> None:
         self.config = config
-    
+
     async def validate_connection(self) -> bool:
-        """Validate database connection"""
+        """Validate database connection."""
         try:
             # Create temporary engine for validation
             engine = create_async_engine(
-                self.config.database_url, **self.config.get_engine_kwargs()
+                self.config.database_url,
+                **self.config.get_engine_kwargs(),
             )
             # Test connection with safe parameterized queries
             async with engine.begin() as conn:
@@ -43,12 +45,13 @@ class DatabaseConnectionValidator:
             if self.config.environment == "production":
                 raise RuntimeError(f"Production database connection failed: {e}")
             return False
-    
+
     async def validate_schema_compatibility(self) -> bool:
-        """Validate database schema compatibility"""
+        """Validate database schema compatibility."""
         try:
             engine = create_async_engine(
-                self.config.database_url, **self.config.get_engine_kwargs()
+                self.config.database_url,
+                **self.config.get_engine_kwargs(),
             )
             async with engine.begin() as conn:
                 # Check for required tables
@@ -65,14 +68,14 @@ class DatabaseConnectionValidator:
                         result = await conn.execute(
                             text(
                                 "SELECT EXISTS (SELECT FROM information_schema.tables "
-                                "WHERE table_name = :table_name)"
+                                "WHERE table_name = :table_name)",
                             ),
                             {"table_name": table},
                         )
                         exists = result.scalar()
                         if not exists:
                             logger.warning(
-                                f"Table '{table}' does not exist - will be created"
+                                f"Table '{table}' does not exist - will be created",
                             )
                 elif self.config.engine_type == "sqlite":
                     # SQLite table check
@@ -80,14 +83,14 @@ class DatabaseConnectionValidator:
                         result = await conn.execute(
                             text(
                                 "SELECT name FROM sqlite_master "
-                                "WHERE type='table' AND name=:table_name"
+                                "WHERE type='table' AND name=:table_name",
                             ),
                             {"table_name": table},
                         )
                         exists = result.fetchone() is not None
                         if not exists:
                             logger.warning(
-                                f"Table '{table}' does not exist - will be created"
+                                f"Table '{table}' does not exist - will be created",
                             )
             await engine.dispose()
             return True

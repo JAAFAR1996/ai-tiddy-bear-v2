@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""🧸 AI Teddy Bear - Core Features Test Suite
+"""🧸 AI Teddy Bear - Core Features Test Suite.
 ===========================================
 Comprehensive test file for verifying all core AI Teddy Bear functionality.
 This file tests the 5 key features without requiring external dependencies.
 """
-import sys
-import os
-import logging
-from pathlib import Path
-from typing import Dict, Any, List
+
 import json
-import time
+import logging
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -25,20 +24,22 @@ class CoreFeaturesTest:
 
     def __init__(self) -> None:
         """Initialize the core features test suite with empty results tracking."""
-        self.results: Dict[str, Any] = {
+        self.results: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "features": {},
             "summary": {"total": 5, "passed": 0, "failed": 0, "errors": []},
         }
 
     def test_child_safety_protection(
-        self, coppa_service: Any, content_filter_service: Any
+        self,
+        coppa_service: Any,
+        content_filter_service: Any,
     ) -> bool:
         """Test 1: Child Safety Protection System."""
         feature_name = "Child Safety Protection"
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info(f"Testing Feature 1: {feature_name}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         try:
             # Test COPPA compliance
             # Test age validation
@@ -50,11 +51,11 @@ class CoreFeaturesTest:
             ]
             for age, expected_compliant, description in tests:
                 result = coppa_service.validate_child_age(age)
-                assert (
-                    result["compliant"] == expected_compliant
-                ), f"Age validation failed for: {description}"
+                assert result["compliant"] == expected_compliant, (
+                    f"Age validation failed for: {description}"
+                )
                 logger.info(
-                    f"  ✅ Age {age}: {description} - {'Compliant' if result['compliant'] else 'Non-compliant'}"
+                    f"  ✅ Age {age}: {description} - {'Compliant' if result['compliant'] else 'Non-compliant'}",
                 )
             # Test content filtering
             unsafe_phrases = [
@@ -68,14 +69,14 @@ class CoreFeaturesTest:
                 "Learning is fun and exciting",
             ]
             for phrase in unsafe_phrases:
-                assert (
-                    content_filter_service.filter_text(phrase) is True
-                ), f"Unsafe phrase was not filtered: {phrase}"
+                assert content_filter_service.filter_text(phrase) is True, (
+                    f"Unsafe phrase was not filtered: {phrase}"
+                )
                 logger.info(f'  ✅ Filtered unsafe phrase: "{phrase[:20]}..."')
             for phrase in safe_phrases:
-                assert (
-                    content_filter_service.filter_text(phrase) is False
-                ), f"Safe phrase was filtered: {phrase}"
+                assert content_filter_service.filter_text(phrase) is False, (
+                    f"Safe phrase was filtered: {phrase}"
+                )
                 logger.info(f'  ✅ Allowed safe phrase: "{phrase[:20]}..."')
             self.results["features"][feature_name] = {"status": "PASSED"}
             self.results["summary"]["passed"] += 1
@@ -94,9 +95,9 @@ class CoreFeaturesTest:
     def test_ai_intelligence(self) -> bool:
         """Test 2: AI Intelligence System."""
         feature_name = "AI Intelligence"
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info(f"Testing Feature 2: {feature_name}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         try:
             # This is a placeholder for a real AI intelligence test
             logger.info("  ✅ AI responded intelligently (mock test)")
@@ -117,14 +118,14 @@ class CoreFeaturesTest:
     def test_parental_controls(self, parental_controls_service: Any) -> bool:
         """Test 3: Parental Controls System."""
         feature_name = "Parental Controls"
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info(f"Testing Feature 3: {feature_name}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         try:
             settings = parental_controls_service.get_settings("child123")
-            assert (
-                settings["interaction_limit"] == 30
-            ), "Interaction limit not set correctly"
+            assert settings["interaction_limit"] == 30, (
+                "Interaction limit not set correctly"
+            )
             logger.info("  ✅ Parental controls are correctly configured")
             self.results["features"][feature_name] = {"status": "PASSED"}
             self.results["summary"]["passed"] += 1
@@ -143,9 +144,9 @@ class CoreFeaturesTest:
     def test_security_features(self, security_service: Any) -> bool:
         """Test 4: Security Features System."""
         feature_name = "Security Features"
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info(f"Testing Feature 4: {feature_name}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         try:
             result = security_service.scan()
             assert result["status"] == "ok", "Security scan failed"
@@ -167,9 +168,9 @@ class CoreFeaturesTest:
     def test_api_endpoints(self, api_service: Any) -> bool:
         """Test 5: API Endpoints System."""
         feature_name = "API Endpoints"
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info(f"Testing Feature 5: {feature_name}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         try:
             result = api_service.get_status()
             assert result == "ok", "API status check failed"
@@ -190,8 +191,7 @@ class CoreFeaturesTest:
 
     def save_results(self) -> None:
         """Save the test results to a JSON file."""
-        results_path = Path(__file__).parent / \
-            "CORE_FEATURES_TEST_RESULTS.json"
+        results_path = Path(__file__).parent / "CORE_FEATURES_TEST_RESULTS.json"
         with open(results_path, "w") as f:
             json.dump(self.results, f, indent=2)
         logger.info(f"\n📝 Test results saved to {results_path}")

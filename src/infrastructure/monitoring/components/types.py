@@ -1,12 +1,16 @@
-"""
+
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Any
-"""
 
-Monitoring types and data classes.
-"""
+
+# Monitoring types and data classes.
+
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Dict, List, Optional, Any
 
 class AlertSeverity(Enum):
     """Alert severity levels."""

@@ -1,4 +1,6 @@
 """
+Unified SQL Injection Protection System
+"""
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
@@ -6,11 +8,6 @@ import logging
 import re
 from .validation.input_sanitizer import InputSanitizer, get_input_sanitizer
 from .validation.query_validator import SQLQueryValidator, get_query_validator
-"""
-
-Unified SQL Injection Protection System
-"""
-
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="security")
 

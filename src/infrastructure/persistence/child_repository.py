@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
 
 from src.domain.entities.child import Child
 
@@ -10,11 +9,11 @@ class ChildRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, child_id: str) -> Optional[Child]:
+    async def get_by_id(self, child_id: str) -> Child | None:
         pass
 
     @abstractmethod
-    async def get_all(self) -> List[Child]:
+    async def get_all(self) -> list[Child]:
         pass
 
     @abstractmethod

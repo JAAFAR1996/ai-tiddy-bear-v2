@@ -1,14 +1,15 @@
-from typing import List, Dict, Any
+from typing import Any
+
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
-from dependency_injector.wiring import inject, Provide
 from fastapi.security import HTTPBearer
+
+from src.domain.entities.child_delete_response import ChildDeleteResponse
+from src.domain.entities.child_profile import ChildProfile
 from src.domain.entities.user import User
 from src.infrastructure.di.container import container
-from src.presentation.api.endpoints.children.route_handlers import ChildRouteHandlers
-from src.domain.entities.child_profile import ChildProfile
-from src.common.container import AppContainer
 from src.infrastructure.logging_config import get_logger
-from src.domain.entities.child_delete_response import ChildDeleteResponse
+from src.presentation.api.endpoints.children.route_handlers import ChildRouteHandlers
 
 logger = get_logger(__name__, component="api")
 # Security dependency
@@ -17,15 +18,13 @@ security = HTTPBearer()
 try:
     from fastapi import APIRouter, HTTPException, status
 except ImportError as e:
-    logger.critical(
-        f"CRITICAL ERROR: FastAPI is required for production use: {e}")
+    logger.critical(f"CRITICAL ERROR: FastAPI is required for production use: {e}")
     logger.critical("Install required dependencies: pip install fastapi")
-    raise ImportError(
-        f"Missing required dependencies for children routes: {e}") from e
+    raise ImportError(f"Missing required dependencies for children routes: {e}") from e
 
 
 def _setup_create_child_route(router: APIRouter) -> None:
-    """Setup create child endpoint"""
+    """Setup create child endpoint."""
 
     @router.post("/", response_model=ChildProfile)
     @inject
@@ -33,7 +32,7 @@ def _setup_create_child_route(router: APIRouter) -> None:
         request: ChildProfile,
         current_user: User = Depends(container.auth_service.get_current_user),
         child_route_handlers: ChildRouteHandlers = Depends(
-            Provide[container.child_route_handlers]
+            Provide[container.child_route_handlers],
         ),
     ):
         """Create a new child profile with COPPA compliance."""
@@ -41,14 +40,14 @@ def _setup_create_child_route(router: APIRouter) -> None:
 
 
 def _setup_get_children_route(router: APIRouter) -> None:
-    """Setup get children endpoint"""
+    """Setup get children endpoint."""
 
-    @router.get("/", response_model=List[ChildProfile])
+    @router.get("/", response_model=list[ChildProfile])
     @inject
     async def get_children_endpoint(
         current_user: User = Depends(container.auth_service.get_current_user),
         child_route_handlers: ChildRouteHandlers = Depends(
-            Provide[container.child_route_handlers]
+            Provide[container.child_route_handlers],
         ),
     ):
         """Get list of children for the authenticated parent."""
@@ -56,7 +55,7 @@ def _setup_get_children_route(router: APIRouter) -> None:
 
 
 def _setup_get_child_route(router: APIRouter) -> None:
-    """Setup get individual child endpoint"""
+    """Setup get individual child endpoint."""
 
     @router.get("/{child_id}", response_model=ChildProfile)
     @inject
@@ -64,7 +63,7 @@ def _setup_get_child_route(router: APIRouter) -> None:
         child_id: str,
         current_user: User = Depends(container.auth_service.get_current_user),
         child_route_handlers: ChildRouteHandlers = Depends(
-            Provide[container.child_route_handlers]
+            Provide[container.child_route_handlers],
         ),
     ):
         """Get detailed information for a specific child."""
@@ -72,7 +71,7 @@ def _setup_get_child_route(router: APIRouter) -> None:
 
 
 def _setup_update_child_route(router: APIRouter) -> None:
-    """Setup update child endpoint"""
+    """Setup update child endpoint."""
 
     @router.put("/{child_id}", response_model=ChildProfile)
     @inject
@@ -81,17 +80,19 @@ def _setup_update_child_route(router: APIRouter) -> None:
         request: ChildProfile,
         current_user: User = Depends(container.auth_service.get_current_user),
         child_route_handlers: ChildRouteHandlers = Depends(
-            Provide[container.child_route_handlers]
+            Provide[container.child_route_handlers],
         ),
     ):
         """Update an existing child profile."""
         return await child_route_handlers.update_child_handler(
-            child_id, request, current_user
+            child_id,
+            request,
+            current_user,
         )
 
 
 def _setup_delete_child_route(router: APIRouter) -> None:
-    """Setup delete child endpoint"""
+    """Setup delete child endpoint."""
 
     @router.delete("/{child_id}", response_model=ChildDeleteResponse)
     @inject
@@ -99,7 +100,7 @@ def _setup_delete_child_route(router: APIRouter) -> None:
         child_id: str,
         current_user: User = Depends(container.auth_service.get_current_user),
         child_route_handlers: ChildRouteHandlers = Depends(
-            Provide[container.child_route_handlers]
+            Provide[container.child_route_handlers],
         ),
     ):
         """Delete a child profile with COPPA compliance checks."""
@@ -109,18 +110,19 @@ def _setup_delete_child_route(router: APIRouter) -> None:
 def _setup_safety_routes(router: APIRouter) -> None:
     """Setup child safety-related endpoints."""
 
-    @router.get("/{child_id}/safety-status", response_model=Dict[str, Any])
+    @router.get("/{child_id}/safety-status", response_model=dict[str, Any])
     @inject
     async def get_child_safety_status_endpoint(
         child_id: str,
         current_user: User = Depends(container.auth_service.get_current_user),
         child_route_handlers: ChildRouteHandlers = Depends(
-            Provide[container.child_route_handlers]
+            Provide[container.child_route_handlers],
         ),
     ):
         """Get real-time safety status for a child profile."""
         return await child_route_handlers.get_child_safety_status_handler(
-            child_id, current_user
+            child_id,
+            current_user,
         )
 
 
@@ -138,7 +140,7 @@ def _setup_monitoring_routes(router: APIRouter) -> None:
                     "activity_type": "conversation",
                     "duration": 300,
                     "safety_score": 95,
-                }
+                },
             ]
             return {
                 "child_id": child_id,
@@ -149,7 +151,7 @@ def _setup_monitoring_routes(router: APIRouter) -> None:
             logger.error(f"Error getting activity log: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get activity log: {str(e)}",
+                detail=f"Failed to get activity log: {e!s}",
             )
 
     @router.get("/{child_id}/compliance-report")
@@ -170,7 +172,7 @@ def _setup_monitoring_routes(router: APIRouter) -> None:
             logger.error(f"Error getting compliance report: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get compliance report: {str(e)}",
+                detail=f"Failed to get compliance report: {e!s}",
             )
 
 

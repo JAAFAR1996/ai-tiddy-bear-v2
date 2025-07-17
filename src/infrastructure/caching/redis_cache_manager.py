@@ -1,33 +1,29 @@
-"""from datetime import timedeltafrom typing import Any, Optional, Dict, Listimport jsonimport loggingfrom redis.exceptions import RedisErrorimport redis.asyncio as redisfrom .cache_config import CacheConfig, get_cache_keyfrom .strategies.invalidation_strategy import CacheInvalidationStrategy"""
+"""from datetime import timedeltafrom typing import Any, Optional, Dict, Listimport jsonimport loggingfrom redis.exceptions import RedisErrorimport redis.asyncio as redisfrom .cache_config import CacheConfig, get_cache_keyfrom .strategies.invalidation_strategy import CacheInvalidationStrategy."""
+
 """Redis cache manager - main caching interface"""
-import json
-import logging
-from datetime import timedelta
-from typing import Any, Dict, List, Optional
 
 import redis.asyncio as redis
-from redis.exceptions import RedisError
 
 from src.infrastructure.logging_config import get_logger
 
-from .cache_config import CacheConfig, get_cache_key
+from .cache_config import CacheConfig
 from .strategies.invalidation_strategy import CacheInvalidationStrategy
 
 logger = get_logger(__name__, component="infrastructure")
 
 
 class RedisCacheManager:
-    """Production Redis cache manager with child safety features"""
+    """Production Redis cache manager with child safety features."""
 
     def __init__(self, redis_url: str = "redis://localhost:6379/0") -> None:
         self.redis_url = redis_url
-        self.redis_client: Optional[redis.Redis] = None
+        self.redis_client: redis.Redis | None = None
         self.config = CacheConfig()
-        self.invalidation_strategy: Optional[CacheInvalidationStrategy] = None
+        self.invalidation_strategy: CacheInvalidationStrategy | None = None
         self._initialized = False
 
     async def initialize(self) -> None:
-        """Initialize Redis connection"""
+        """Initialize Redis connection."""
         if self._initialized:
             return
         try:
@@ -53,7 +49,7 @@ class RedisCacheManager:
             raise
 
     async def close(self) -> None:
-        """Close Redis connection"""
+        """Close Redis connection."""
         if self.redis_client:
             await self.redis_client.close()
             self._initialized = False

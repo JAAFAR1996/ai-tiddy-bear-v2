@@ -1,34 +1,31 @@
 """Enterprise-grade encryption service with key rotation support.
-Compliant with COPPA, PCI-DSS, and OWASP standards for 2025."""
+Compliant with COPPA, PCI-DSS, and OWASP standards for 2025.
+"""
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, Union
 import base64
 import json
-import logging
+import math  # Added for math.log2
 import os
 import secrets
+from collections import Counter
+from datetime import datetime, timedelta
+from typing import Any
+
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
 from src.infrastructure.logging_config import get_logger
-from collections import Counter
-import math  # Added for math.log2
 
 logger = get_logger(__name__, component="security")
 
 
 class EncryptionKeyError(Exception):
-    """Raised when encryption key operations fail"""
-
-    pass
+    """Raised when encryption key operations fail."""
 
 
 class EncryptionService:
-    """
-    Secure encryption service with key validation and rotation capabilities.
+    """Secure encryption service with key validation and rotation capabilities.
     Implements defense-in-depth with multiple layers of security.
     """
 
@@ -38,23 +35,22 @@ class EncryptionService:
     MIN_KEY_ENTROPY = 256
 
     def __init__(self) -> None:
-        self._fernet: Optional[Fernet] = None
-        self._key_version: Optional[str] = None
-        self._key_created_at: Optional[datetime] = None
+        self._fernet: Fernet | None = None
+        self._key_version: str | None = None
+        self._key_created_at: datetime | None = None
         self._initialize_encryption()
 
     def _initialize_encryption(self) -> None:
-        """Initialize encryption with comprehensive validation"""
+        """Initialize encryption with comprehensive validation."""
         try:
             # Get primary encryption key
             primary_key = os.getenv("COPPA_ENCRYPTION_KEY")
             if not primary_key:
-                logger.critical(
-                    "COPPA_ENCRYPTION_KEY not found in environment")
+                logger.critical("COPPA_ENCRYPTION_KEY not found in environment")
                 raise EncryptionKeyError(
                     "COPPA_ENCRYPTION_KEY environment variable is required. "
                     'Generate with: python -c "from cryptography.fernet import Fernet; '
-                    'Fernet.generate_key().decode()"'
+                    'Fernet.generate_key().decode()"',
                 )
             # Validate key format and strength
             self._validate_encryption_key(primary_key)
@@ -69,13 +65,11 @@ class EncryptionService:
             if self._is_key_rotation_needed():
                 logger.warning("Encryption key rotation is recommended")
         except Exception as e:
-            logger.critical(
-                f"Failed to initialize encryption service: {str(e)}")
-            raise EncryptionKeyError(
-                f"Encryption initialization failed: {str(e)}")
+            logger.critical(f"Failed to initialize encryption service: {e!s}")
+            raise EncryptionKeyError(f"Encryption initialization failed: {e!s}")
 
     def _validate_encryption_key(self, key: str) -> None:
-        """Validate encryption key meets security requirements"""
+        """Validate encryption key meets security requirements."""
         # Check key format
         try:
             # Verify it's a valid Fernet key
@@ -88,25 +82,23 @@ class EncryptionService:
                 raise ValueError("Key validation failed")
         except Exception as e:
             raise EncryptionKeyError(
-                f"Invalid encryption key format: {str(e)}. "
-                "Key must be a valid Fernet key (32 bytes base64-encoded)"
+                f"Invalid encryption key format: {e!s}. "
+                "Key must be a valid Fernet key (32 bytes base64-encoded)",
             )
         # Check for default/weak keys and entropy
         if not self._is_key_strong(key):
             raise EncryptionKeyError(
                 "Detected weak or insufficiently strong encryption key. "
-                "Please generate a new, secure key for production use."
+                "Please generate a new, secure key for production use.",
             )
 
     def _derive_key(self, master_key: str) -> bytes:
-        """Derive encryption key using PBKDF2"""
+        """Derive encryption key using PBKDF2."""
         # Use application-specific salt
-        salt = os.getenv(
-            "PBKDF2_SALT",
-            secrets.token_bytes(16).hex()).encode("utf-8")
+        salt = os.getenv("PBKDF2_SALT", secrets.token_bytes(16).hex()).encode("utf-8")
         if os.getenv("PBKDF2_SALT") is None:
             logger.warning(
-                "PBKDF2_SALT not found in environment, using randomly generated salt."
+                "PBKDF2_SALT not found in environment, using randomly generated salt.",
             )
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -119,7 +111,7 @@ class EncryptionService:
         return derived_key
 
     def _get_key_version(self) -> str:
-        """Get current key version from environment or generate"""
+        """Get current key version from environment or generate."""
         version = os.getenv("ENCRYPTION_KEY_VERSION")
         if not version:
             # Generate new version identifier
@@ -128,7 +120,7 @@ class EncryptionService:
         return version
 
     def _get_key_creation_date(self) -> datetime:
-        """Get key creation date from environment or current date"""
+        """Get key creation date from environment or current date."""
         date_str = os.getenv("ENCRYPTION_KEY_CREATED_AT")
         if date_str:
             try:
@@ -138,7 +130,7 @@ class EncryptionService:
         return datetime.utcnow()
 
     def _is_key_rotation_needed(self) -> bool:
-        """Check if key rotation is needed based on age"""
+        """Check if key rotation is needed based on age."""
         if not self._key_created_at:
             return True
         key_age = datetime.utcnow() - self._key_created_at
@@ -164,9 +156,8 @@ class EncryptionService:
             logger.error(f"Error calculating key entropy: {e}", exc_info=True)
             return False
 
-    def encrypt(self, data: Union[str, bytes, Dict[str, Any]]) -> str:
-        """
-        Encrypt data with metadata for key rotation support.
+    def encrypt(self, data: str | bytes | dict[str, Any]) -> str:
+        """Encrypt data with metadata for key rotation support.
         Returns base64-encoded encrypted data with version info.
         """
         if not self._fernet:
@@ -194,11 +185,8 @@ class EncryptionService:
         # Return base64-encoded result
         return base64.b64encode(encrypted).decode("utf-8")
 
-    def decrypt(
-        self, encrypted_data: Union[str, bytes]
-    ) -> Union[str, bytes, Dict[str, Any]]:
-        """
-        Decrypt data with support for key rotation.
+    def decrypt(self, encrypted_data: str | bytes) -> str | bytes | dict[str, Any]:
+        """Decrypt data with support for key rotation.
         Handles multiple key versions for smooth rotation.
         """
         if not self._fernet:
@@ -218,7 +206,7 @@ class EncryptionService:
             # Log key version for monitoring
             if metadata.get("version") != self._key_version:
                 logger.info(
-                    f"Decrypting data from older key version: {metadata.get('version')}"
+                    f"Decrypting data from older key version: {metadata.get('version')}",
                 )
             # Decode actual data
             data_bytes = base64.b64decode(data_b64)
@@ -235,15 +223,14 @@ class EncryptionService:
         except InvalidToken:
             logger.error("Failed to decrypt data - invalid token or wrong key")
             raise EncryptionKeyError(
-                "Decryption failed - data may be corrupted or key mismatch"
+                "Decryption failed - data may be corrupted or key mismatch",
             )
         except Exception as e:
-            logger.error(f"Decryption error: {str(e)}")
-            raise EncryptionKeyError(f"Decryption failed: {str(e)}")
+            logger.error(f"Decryption error: {e!s}")
+            raise EncryptionKeyError(f"Decryption failed: {e!s}")
 
     def rotate_key(self, new_key: str) -> None:
-        """
-        Rotate encryption key (for administrative use).
+        """Rotate encryption key (for administrative use).
         This should be called through a secure admin interface.
         """
         # Validate new key
@@ -258,21 +245,21 @@ class EncryptionService:
             self._key_version = f"v{int(old_version.split('_')[0][1:]) + 1}_{datetime.utcnow().strftime('%Y%m%d')}"
             self._key_created_at = datetime.utcnow()
             logger.info(
-                f"Key rotated successfully from {old_version} to {self._key_version}"
+                f"Key rotated successfully from {old_version} to {self._key_version}",
             )
         except Exception as e:
             # Rollback on failure
             self._fernet = old_fernet
             self._key_version = old_version
-            logger.error(f"Key rotation failed: {str(e)}")
-            raise EncryptionKeyError(f"Key rotation failed: {str(e)}")
+            logger.error(f"Key rotation failed: {e!s}")
+            raise EncryptionKeyError(f"Key rotation failed: {e!s}")
 
     def generate_secure_key(self) -> str:
-        """Generate a new secure encryption key"""
+        """Generate a new secure encryption key."""
         return Fernet.generate_key().decode()
 
-    def get_key_info(self) -> Dict[str, Any]:
-        """Get current key information (for monitoring)"""
+    def get_key_info(self) -> dict[str, Any]:
+        """Get current key information (for monitoring)."""
         return {
             "version": self._key_version,
             "created_at": (
@@ -284,11 +271,11 @@ class EncryptionService:
 
 
 # Global encryption service instance
-_encryption_service: Optional[EncryptionService] = None
+_encryption_service: EncryptionService | None = None
 
 
 def get_encryption_service() -> EncryptionService:
-    """Get or create global encryption service instance"""
+    """Get or create global encryption service instance."""
     global _encryption_service
     if _encryption_service is None:
         _encryption_service = EncryptionService()

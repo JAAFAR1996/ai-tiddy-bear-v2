@@ -13,7 +13,9 @@ class AIBiasDetector:
         }
 
     async def detect_bias(
-        self, response_text: str, context: ConversationContext
+        self,
+        response_text: str,
+        context: ConversationContext,
     ) -> SafetyAnalysisResult:
         self.bias_statistics["total_analyses"] += 1
         has_bias = False
@@ -41,7 +43,7 @@ class AIBiasDetector:
             bias_scores["cultural"] = 0.6
             bias_categories.append("cultural")
             mitigation_suggestions.append(
-                "Be inclusive of diverse cultural backgrounds."
+                "Be inclusive of diverse cultural backgrounds.",
             )
             self.bias_statistics["cultural_bias_detected"] += 1
 
@@ -53,7 +55,7 @@ class AIBiasDetector:
             bias_scores["socioeconomic"] = 0.5
             bias_categories.append("socioeconomic")
             mitigation_suggestions.append(
-                "Avoid assumptions about socioeconomic status."
+                "Avoid assumptions about socioeconomic status.",
             )
             self.bias_statistics["socioeconomic_bias_detected"] += 1
 
@@ -62,7 +64,7 @@ class AIBiasDetector:
             bias_scores["age"] = 0.4
             bias_categories.append("age")
             mitigation_suggestions.append(
-                "Tailor content to age-appropriate levels without being dismissive."
+                "Tailor content to age-appropriate levels without being dismissive.",
             )
             self.bias_statistics["age_bias_detected"] += 1
 
@@ -91,7 +93,9 @@ class AIBiasDetector:
         )
 
     async def batch_analyze_bias(
-        self, responses: List[str], contexts: List[ConversationContext]
+        self,
+        responses: List[str],
+        contexts: List[ConversationContext],
     ) -> List[SafetyAnalysisResult]:
         results = []
         for i, response in enumerate(responses):

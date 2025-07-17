@@ -1,6 +1,4 @@
-from typing import Dict
-
-ERROR_MESSAGES: Dict[str, str] = {
+ERROR_MESSAGES: dict[str, str] = {
     "VALIDATION_ERROR": "Invalid input provided. Please check your data and try again.",
     "AUTHENTICATION_ERROR": "Authentication failed. Please check your credentials.",
     "AUTHORIZATION_ERROR": "You don't have permission to access this resource.",
@@ -25,6 +23,7 @@ ERROR_MESSAGES: Dict[str, str] = {
     "SERVICE_UNAVAILABLE": "Service is temporarily unavailable. Please try again later.",
     "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
 }
+
 
 def get_error_message(error_code: str) -> str:
     """Retrieves a standardized error message for a given error code."""

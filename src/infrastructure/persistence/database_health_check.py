@@ -1,15 +1,18 @@
 import asyncio
 import logging
-from sqlalchemy.ext.asyncio import create_async_engine
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 logger = logging.getLogger(__name__)
 
-async def check_database_connection(database_url: str,
-                                   retries: int=5,
-                                   delay: float=2.0) -> bool:
-    """
-    Attempts to connect to the database and execute a simple query to verify connectivity.
+
+async def check_database_connection(
+    database_url: str,
+    retries: int = 5,
+    delay: float = 2.0,
+) -> bool:
+    """Attempts to connect to the database and execute a simple query to verify connectivity.
     Includes retry logic with exponential backoff.
     """
     engine = None

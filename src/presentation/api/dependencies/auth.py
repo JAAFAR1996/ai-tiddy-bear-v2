@@ -1,21 +1,25 @@
-from typing import Any, Dict
+from typing import Any
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.infrastructure.security.real_auth_service import ProductionAuthService
+
 from src.infrastructure.di.container import container
+from src.infrastructure.security.real_auth_service import ProductionAuthService
 
 security = HTTPBearer()
+
 
 async def get_authenticated_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     auth_service: ProductionAuthService = Depends(container.auth_service),
-) -> Dict[str, Any]:
-    """
-    Verify authentication for child audio access - COPPA compliance required.
+) -> dict[str, Any]:
+    """Verify authentication for child audio access - COPPA compliance required.
+
     Returns:
         Dict containing authenticated user data including parent verification
     Raises:
         HTTPException: If authentication fails or user not authorized for child data
+
     """
     try:
         token = credentials.credentials
@@ -26,7 +30,7 @@ async def get_authenticated_user(
                 detail="Invalid authentication token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
+
         user_role = payload.get("role", "")
         if user_role not in ["parent", "guardian", "admin"]:
             raise HTTPException(

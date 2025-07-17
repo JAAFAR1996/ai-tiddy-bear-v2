@@ -1,16 +1,10 @@
-"""
 from pathlib import Path
 import logging
 import os
 import tempfile
 from unittest.mock import Mock, patch
 import pytest
-"""
 
-Test Path Traversal Vulnerability Fixes
-This module tests all the security fixes implemented to prevent
-path traversal attacks across the AI Teddy Bear system.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="security")

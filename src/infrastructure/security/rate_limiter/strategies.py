@@ -1,8 +1,6 @@
-"""
-Rate limiting strategy implementations.
-"""
+"""Rate limiting strategy implementations."""
+
 import time
-from typing import Optional
 
 from .core import RateLimitConfig, RateLimitResult, RateLimitState, RateLimitStrategy
 
@@ -12,37 +10,45 @@ class RateLimitingStrategies:
 
     @staticmethod
     async def apply_strategy(
-        config: RateLimitConfig, state: RateLimitState
+        config: RateLimitConfig,
+        state: RateLimitState,
     ) -> RateLimitResult:
         """Apply the configured rate limiting strategy."""
         current_time = time.time()
         if config.strategy == RateLimitStrategy.FIXED_WINDOW:
             return await RateLimitingStrategies._apply_fixed_window(
-                config, state, current_time
+                config,
+                state,
+                current_time,
             )
-        elif config.strategy == RateLimitStrategy.SLIDING_WINDOW:
+        if config.strategy == RateLimitStrategy.SLIDING_WINDOW:
             return await RateLimitingStrategies._apply_sliding_window(
-                config, state, current_time
+                config,
+                state,
+                current_time,
             )
-        elif config.strategy == RateLimitStrategy.TOKEN_BUCKET:
+        if config.strategy == RateLimitStrategy.TOKEN_BUCKET:
             return await RateLimitingStrategies._apply_token_bucket(
-                config, state, current_time
+                config,
+                state,
+                current_time,
             )
-        else:
-            # Default to sliding window
-            return await RateLimitingStrategies._apply_sliding_window(
-                config, state, current_time
-            )
+        # Default to sliding window
+        return await RateLimitingStrategies._apply_sliding_window(
+            config,
+            state,
+            current_time,
+        )
 
     @staticmethod
     async def _apply_fixed_window(
-        config: RateLimitConfig, state: RateLimitState, current_time: float
+        config: RateLimitConfig,
+        state: RateLimitState,
+        current_time: float,
     ) -> RateLimitResult:
         """Apply fixed window rate limiting."""
         # Calculate window start
-        window_start = (
-            int(current_time / config.window_seconds) * config.window_seconds
-        )
+        window_start = int(current_time / config.window_seconds) * config.window_seconds
 
         # Reset counter if we're in a new window
         if not state.first_request or state.first_request < window_start:
@@ -61,18 +67,19 @@ class RateLimitingStrategies:
                 reset_time=reset_time,
                 retry_after=int(reset_time - current_time),
             )
-        else:
-            state.requests.append(current_time)
-            state.total_requests += 1
-            return RateLimitResult(
-                allowed=True,
-                remaining=config.max_requests - current_requests - 1,
-                reset_time=window_start + config.window_seconds,
-            )
+        state.requests.append(current_time)
+        state.total_requests += 1
+        return RateLimitResult(
+            allowed=True,
+            remaining=config.max_requests - current_requests - 1,
+            reset_time=window_start + config.window_seconds,
+        )
 
     @staticmethod
     async def _apply_sliding_window(
-        config: RateLimitConfig, state: RateLimitState, current_time: float
+        config: RateLimitConfig,
+        state: RateLimitState,
+        current_time: float,
     ) -> RateLimitResult:
         """Apply sliding window rate limiting."""
         # Remove requests outside the window
@@ -87,17 +94,18 @@ class RateLimitingStrategies:
                 reset_time=reset_time,
                 retry_after=int(reset_time - current_time),
             )
-        else:
-            state.requests.append(current_time)
-            return RateLimitResult(
-                allowed=True,
-                remaining=config.max_requests - len(state.requests),
-                reset_time=current_time + config.window_seconds,
-            )
+        state.requests.append(current_time)
+        return RateLimitResult(
+            allowed=True,
+            remaining=config.max_requests - len(state.requests),
+            reset_time=current_time + config.window_seconds,
+        )
 
     @staticmethod
     async def _apply_token_bucket(
-        config: RateLimitConfig, state: RateLimitState, current_time: float
+        config: RateLimitConfig,
+        state: RateLimitState,
+        current_time: float,
     ) -> RateLimitResult:
         """Apply token bucket rate limiting."""
         # Refill tokens
@@ -113,11 +121,10 @@ class RateLimitingStrategies:
                 remaining=int(state.tokens),
                 reset_time=current_time + (1 / config.refill_rate),
             )
-        else:
-            time_to_next_token = (1 - state.tokens) / config.refill_rate
-            return RateLimitResult(
-                allowed=False,
-                remaining=0,
-                reset_time=current_time + time_to_next_token,
-                retry_after=int(time_to_next_token),
-            )
+        time_to_next_token = (1 - state.tokens) / config.refill_rate
+        return RateLimitResult(
+            allowed=False,
+            remaining=0,
+            reset_time=current_time + time_to_next_token,
+            retry_after=int(time_to_next_token),
+        )

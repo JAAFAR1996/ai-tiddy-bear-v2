@@ -1,12 +1,9 @@
-"""
-Provides services for generating dynamic and personalized stories.
+"""Provides services for generating dynamic and personalized stories.
 
 This service leverages an AI provider to create unique stories tailored to
 a child's name, age, preferences, and chosen theme. It aims to enhance
 the interactive experience by offering engaging and relevant narrative content.
 """
-
-from typing import Any, Dict, List
 
 from src.application.interfaces.ai_provider import AIProvider
 from src.domain.value_objects.child_preferences import ChildPreferences
@@ -20,6 +17,7 @@ class DynamicStoryService:
 
         Args:
             ai_provider: The AI provider to use for story generation.
+
         """
         self.ai_provider = ai_provider
 
@@ -31,8 +29,7 @@ class DynamicStoryService:
         theme: str = "adventure",
         length: str = "short",  # short, medium, long
     ) -> str:
-        """
-        Generates a personalized story for a child.
+        """Generates a personalized story for a child.
 
         Args:
             child_name: The name of the child.
@@ -43,6 +40,7 @@ class DynamicStoryService:
 
         Returns:
             The generated story content.
+
         """
         prompt = (
             f"Generate a {length} story for a {child_age}-year-old named {child_name}. "

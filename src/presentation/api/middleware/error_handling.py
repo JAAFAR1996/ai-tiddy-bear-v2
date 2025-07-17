@@ -25,6 +25,7 @@ Comprehensive error handling with child safety and COPPA compliance
     handle_exception)
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="middleware")
 
 

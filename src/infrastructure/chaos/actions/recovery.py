@@ -1,10 +1,9 @@
-"""
-from datetime import datetime
+"""from datetime import datetime
 from typing import Any, Dict, List
 import asyncio
 import logging
 import time
-import httpx
+import httpx.
 """
 
 """Recovery and Restoration Actions
@@ -12,12 +11,13 @@ SRE Team Implementation - Task 15
 Recovery actions for restoring system state after chaos experiments"""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="chaos")
 
 
 class RecoveryActions:
-    """Recovery and restoration actions"""
-    
+    """Recovery and restoration actions."""
+
     def __init__(self) -> None:
         self.service_endpoints = {
             "child-service": "https://child-service:8000",
@@ -34,11 +34,11 @@ class RecoveryActions:
 
 
 async def restore_all_systems(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
-    """Restore all systems to normal operation"""
+    """Restore all systems to normal operation."""
     recovery = RecoveryActions()
     restoration_results = {}
     logger.info("🔄 Starting system restoration")
-    
+
     try:
         async with httpx.AsyncClient() as client:
             for service_name, base_url in recovery.service_endpoints.items():
@@ -59,25 +59,25 @@ async def restore_all_systems(configuration: Dict[str, Any] = None) -> Dict[str,
                     else:
                         restoration_results[service_name] = False
                         logger.error(
-                            f"❌ {service_name} restoration failed: {restore_response.status_code}"
+                            f"❌ {service_name} restoration failed: {restore_response.status_code}",
                         )
                 except Exception as e:
                     restoration_results[service_name] = False
                     logger.error(f"❌ {service_name} restoration error: {e}")
                 await asyncio.sleep(2)
-        
+
         logger.info("⏳ Waiting for services to stabilize...")
         await asyncio.sleep(10)
-        
+
         verification_results = await verify_system_health(recovery.service_endpoints)
         all_restored = all(restoration_results.values())
         all_healthy = all(verification_results.values())
         success = all_restored and all_healthy
-        
+
         logger.info(
-            f"{'✅' if success else '❌'} System restoration {'completed' if success else 'failed'}"
+            f"{'✅' if success else '❌'} System restoration {'completed' if success else 'failed'}",
         )
-        
+
         return {
             "action": "restore_all_systems",
             "restoration_results": restoration_results,
@@ -91,11 +91,11 @@ async def restore_all_systems(configuration: Dict[str, Any] = None) -> Dict[str,
 
 
 async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
-    """Clear all chaos - related state and configurations"""
+    """Clear all chaos - related state and configurations."""
     recovery = RecoveryActions()
     clear_results = {}
     logger.info("🧹 Clearing chaos state")
-    
+
     try:
         async with httpx.AsyncClient() as client:
             for service_name, base_url in recovery.service_endpoints.items():
@@ -110,11 +110,16 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
                         },
                         timeout=15,
                     )
-                    clear_results[service_name] = clear_response.status_code in [200, 202]
+                    clear_results[service_name] = clear_response.status_code in [
+                        200,
+                        202,
+                    ]
                 except Exception as e:
                     clear_results[service_name] = False
-                    logger.error(f"❌ Failed to clear chaos state for {service_name}: {e}")
-        
+                    logger.error(
+                        f"❌ Failed to clear chaos state for {service_name}: {e}",
+                    )
+
         success = all(clear_results.values())
         return {
             "action": "clear_chaos_state",
@@ -130,9 +135,9 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
 async def restore_network_policies(
     configuration: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
-    """Restore normal network policies"""
+    """Restore normal network policies."""
     logger.info("🌐 Restoring network policies")
-    
+
     try:
         network_commands = [
             "tc qdisc del dev eth0 root",
@@ -140,7 +145,7 @@ async def restore_network_policies(
             "iptables -F INPUT",
         ]
         success_count = 0
-        
+
         for command in network_commands:
             try:
                 logger.info(f"Executing: {command}")
@@ -148,7 +153,7 @@ async def restore_network_policies(
                 await asyncio.sleep(1)
             except Exception as e:
                 logger.error(f"❌ Network policy restoration failed: {command} - {e}")
-        
+
         success = success_count == len(network_commands)
         return {
             "action": "restore_network_policies",
@@ -162,7 +167,9 @@ async def restore_network_policies(
 
 
 async def _restart_service(
-    session: httpx.AsyncClient, service: str, endpoint: str
+    session: httpx.AsyncClient,
+    service: str,
+    endpoint: str,
 ) -> bool:
     """Restarts a single service and waits for it to become ready."""
     try:
@@ -172,14 +179,14 @@ async def _restart_service(
             json={"force": True, "wait_for_ready": True},
             timeout=60,
         )
-        
+
         if restart_response.status_code in [200, 202]:
             if await wait_for_service_ready(service, endpoint, 60):
                 logger.info(f"✅ {service} restarted successfully.")
                 return True
-        
+
         logger.error(
-            f"❌ {service} restart failed: Status {restart_response.status_code}"
+            f"❌ {service} restart failed: Status {restart_response.status_code}",
         )
         return False
     except (httpx.RequestError, asyncio.TimeoutError) as e:
@@ -193,23 +200,26 @@ async def _identify_failed_services(recovery: RecoveryActions) -> List[str]:
     failed_services = [
         service for service, healthy in health_results.items() if not healthy
     ]
-    
+
     if failed_services:
         logger.info(f"Found {len(failed_services)} failed services: {failed_services}")
     else:
         logger.info("✅ No failed services found.")
-    
+
     return failed_services
 
 
 async def _restart_multiple_services(
-    failed_services: List[str], recovery: RecoveryActions
+    failed_services: List[str],
+    recovery: RecoveryActions,
 ) -> Dict[str, bool]:
     """Restart multiple failed services concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = {
             service: _restart_service(
-                session, service, recovery.service_endpoints[service]
+                session,
+                service,
+                recovery.service_endpoints[service],
             )
             for service in failed_services
         }
@@ -222,7 +232,7 @@ async def restart_failed_services(
     """Identifies and restarts services that failed during chaos experiments."""
     recovery = RecoveryActions()
     logger.info("🔄 Checking for failed services to restart.")
-    
+
     try:
         failed_services = await _identify_failed_services(recovery)
         if not failed_services:
@@ -231,10 +241,10 @@ async def restart_failed_services(
                 "success": True,
                 "restarted_services": [],
             }
-        
+
         results = await _restart_multiple_services(failed_services, recovery)
         success = all(results.values())
-        
+
         return {
             "action": "restart_failed_services",
             "restarted_services": results,
@@ -248,35 +258,35 @@ async def restart_failed_services(
 async def validate_system_recovery(
     configuration: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
-    """Validate complete system recovery"""
+    """Validate complete system recovery."""
     recovery = RecoveryActions()
     validation_results = {}
     logger.info("✅ Validating system recovery")
-    
+
     try:
         health_results = await verify_system_health(recovery.service_endpoints)
         validation_results["service_health"] = health_results
-        
+
         functionality_tests = await test_critical_functionality()
         validation_results["functionality_tests"] = functionality_tests
-        
+
         safety_validation = await validate_safety_systems()
         validation_results["safety_validation"] = safety_validation
-        
+
         performance_check = await check_performance_metrics()
         validation_results["performance_check"] = performance_check
-        
+
         overall_success = (
             all(health_results.values())
             and all(functionality_tests.values())
             and safety_validation.get("all_systems_safe", False)
             and performance_check.get("performance_acceptable", False)
         )
-        
+
         logger.info(
-            f"{'✅' if overall_success else '❌'} System recovery validation {'passed' if overall_success else 'failed'}"
+            f"{'✅' if overall_success else '❌'} System recovery validation {'passed' if overall_success else 'failed'}",
         )
-        
+
         return {
             "action": "validate_system_recovery",
             "validation_results": validation_results,
@@ -293,9 +303,9 @@ async def validate_system_recovery(
 
 
 async def verify_system_health(service_endpoints: Dict[str, str]) -> Dict[str, bool]:
-    """Verify health of all services"""
+    """Verify health of all services."""
     health_results = {}
-    
+
     async with httpx.AsyncClient() as client:
         for service_name, base_url in service_endpoints.items():
             try:
@@ -304,16 +314,18 @@ async def verify_system_health(service_endpoints: Dict[str, str]) -> Dict[str, b
             except Exception as e:
                 health_results[service_name] = False
                 logger.error(f"Health check failed for {service_name}: {e}")
-    
+
     return health_results
 
 
 async def wait_for_service_ready(
-    service_name: str, base_url: str, timeout_seconds: int
+    service_name: str,
+    base_url: str,
+    timeout_seconds: int,
 ) -> bool:
-    """Wait for service to be ready"""
+    """Wait for service to be ready."""
     start_time = time.time()
-    
+
     async with httpx.AsyncClient() as client:
         while time.time() - start_time < timeout_seconds:
             try:
@@ -323,20 +335,20 @@ async def wait_for_service_ready(
                     return True
             except httpx.RequestError as exc:
                 logger.warning(
-                    f"Waiting for service {service_name} to be ready. Error: {exc}"
+                    f"Waiting for service {service_name} to be ready. Error: {exc}",
                 )
             await asyncio.sleep(2)
-    
+
     logger.error(
-        f"Service {service_name} did not become ready in {timeout_seconds} seconds."
+        f"Service {service_name} did not become ready in {timeout_seconds} seconds.",
     )
     return False
 
 
 async def test_critical_functionality() -> Dict[str, bool]:
-    """Test critical system functionality"""
+    """Test critical system functionality."""
     tests = {}
-    
+
     try:
         async with httpx.AsyncClient() as client:
             child_test = await client.post(
@@ -345,14 +357,14 @@ async def test_critical_functionality() -> Dict[str, bool]:
                 timeout=10,
             )
             tests["child_service_functionality"] = child_test.status_code == 200
-            
+
             ai_test = await client.post(
                 "https://ai-service:8000/chat",
                 json={"message": "Hello", "child_age": 8},
                 timeout=15,
             )
             tests["ai_service_functionality"] = ai_test.status_code == 200
-            
+
             safety_test = await client.post(
                 "https://safety-service:8000/moderate",
                 json={"content": "test content"},
@@ -361,12 +373,12 @@ async def test_critical_functionality() -> Dict[str, bool]:
             tests["safety_service_functionality"] = safety_test.status_code == 200
     except Exception as e:
         logger.error(f"Functionality test error: {e}")
-    
+
     return tests
 
 
 async def validate_safety_systems() -> Dict[str, Any]:
-    """Validate safety systems are operational"""
+    """Validate safety systems are operational."""
     try:
         async with httpx.AsyncClient() as client:
             filter_test = await client.post(
@@ -375,27 +387,29 @@ async def validate_safety_systems() -> Dict[str, Any]:
                 timeout=10,
             )
             content_filter_working = (
-                filter_test.status_code == 200 and filter_test.json().get("blocked", False)
+                filter_test.status_code == 200
+                and filter_test.json().get("blocked", False)
             )
-            
+
             parental_test = await client.get(
-                "https://child-service:8000/parental/health", timeout=10
+                "https://child-service:8000/parental/health",
+                timeout=10,
             )
             parental_controls_working = parental_test.status_code == 200
-            
+
             age_test = await client.post(
                 "https://child-service:8000/age/verify",
                 json={"child_id": "test", "claimed_age": 10},
                 timeout=10,
             )
             age_verification_working = age_test.status_code in [200, 422]
-        
+
         all_systems_safe = (
             content_filter_working
             and parental_controls_working
             and age_verification_working
         )
-        
+
         return {
             "content_filter_working": content_filter_working,
             "parental_controls_working": parental_controls_working,
@@ -408,19 +422,20 @@ async def validate_safety_systems() -> Dict[str, Any]:
 
 
 async def check_performance_metrics() -> Dict[str, Any]:
-    """Check system performance metrics"""
+    """Check system performance metrics."""
     try:
         async with httpx.AsyncClient() as client:
             start_time = time.time()
             test_response = await client.get(
-                "https://graphql-federation:8000/health", timeout=5
+                "https://graphql-federation:8000/health",
+                timeout=5,
             )
             response_time = time.time() - start_time
-        
+
         performance_acceptable = (
             test_response.status_code == 200 and response_time < 2.0
         )
-        
+
         return {
             "response_time": response_time,
             "performance_acceptable": performance_acceptable,

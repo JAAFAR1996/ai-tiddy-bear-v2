@@ -1,26 +1,34 @@
 """Encrypted Field Value Object for Sensitive Data Protection
 Pure domain implementation that delegates encryption to infrastructure services
-while maintaining clean architectural boundaries."""
+while maintaining clean architectural boundaries.
+"""
 
-from typing import Any, Union
+from typing import Any
+
 from src.domain.interfaces.encryption_interface import (
-    EncryptionServiceInterface, 
-    SecureFieldInterface, 
+    EncryptionServiceInterface,
     NullEncryptionService,
+    SecureFieldInterface,
 )
 
+
 class EncryptedField(SecureFieldInterface[Any]):
-    """
-    Value object for encrypted storage of sensitive data.
+    """Value object for encrypted storage of sensitive data.
     Provides transparent encryption/decryption for HIPAA/COPPA compliance.
     Uses dependency injection for encryption service to maintain clean architecture.
     """
-    def __init__(self, value: Any, encryption_service: EncryptionServiceInterface=None) -> None:
-        """
-        Initialize encrypted field with a value.
+
+    def __init__(
+        self,
+        value: Any,
+        encryption_service: EncryptionServiceInterface = None,
+    ) -> None:
+        """Initialize encrypted field with a value.
+
         Args:
             value: Any serializable value to encrypt
             encryption_service: Service to handle encryption operations
+
         """
         self._encryption_service = encryption_service or NullEncryptionService()
         self._original_value = value
@@ -28,52 +36,54 @@ class EncryptedField(SecureFieldInterface[Any]):
         self._is_encrypted = self._encryption_service.is_available()
 
     def _serialize_and_encrypt(self, value: Any) -> str:
-        """
-        Serialize value to string and encrypt.
+        """Serialize value to string and encrypt.
+
         Args:
             value: Value to serialize and encrypt
         Returns:
             Encrypted string representation
+
         """
         if value is None:
             return ""
-        
+
         # Convert to string representation
         if isinstance(value, str):
             serialized = value
-        elif isinstance(value, (int, float, bool)):
+        elif isinstance(value, int | float | bool):
             serialized = str(value)
-        elif isinstance(value, (list, dict)):
+        elif isinstance(value, list | dict):
             # For complex types, use string representation
             # In infrastructure layer, this would use proper JSON serialization
             serialized = str(value)
         else:
             serialized = str(value)
-        
+
         return self._encryption_service.encrypt(serialized)
 
     def get_value(self) -> Any:
         """Get the decrypted value."""
         if not self._encrypted_data:
             return None
-        
+
         if self._is_encrypted:
             decrypted_str = self._encryption_service.decrypt(self._encrypted_data)
             return self._deserialize_value(decrypted_str)
-        
+
         return self._deserialize_value(self._encrypted_data)
 
     def _deserialize_value(self, serialized: str) -> Any:
-        """
-        Deserialize string back to original type.
+        """Deserialize string back to original type.
+
         Args:
             serialized: Serialized string value
         Returns:
             Deserialized value
+
         """
         if not serialized:
             return None
-        
+
         # For domain purity, we return the original value type
         # In infrastructure layer, proper JSON deserialization would occur
         return self._original_value
@@ -88,15 +98,18 @@ class EncryptedField(SecureFieldInterface[Any]):
 
     @classmethod
     def from_encrypted_data(
-        cls, encrypted_data: str, encryption_service: EncryptionServiceInterface = None
+        cls,
+        encrypted_data: str,
+        encryption_service: EncryptionServiceInterface = None,
     ) -> "EncryptedField":
-        """
-        Create EncryptedField from already encrypted data.
+        """Create EncryptedField from already encrypted data.
+
         Args:
             encrypted_data: Previously encrypted data
             encryption_service: Service to handle decryption
         Returns:
             EncryptedField instance
+
         """
         instance = cls.__new__(cls)
         instance._encryption_service = encryption_service or NullEncryptionService()

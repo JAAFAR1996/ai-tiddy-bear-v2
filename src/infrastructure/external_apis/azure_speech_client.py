@@ -1,5 +1,6 @@
 import httpx
 
+
 class AzureSpeechClient:
     def __init__(self, api_key: str, region: str) -> None:
         self.api_key = api_key
@@ -16,13 +17,17 @@ class AzureSpeechClient:
         # For a basic HTTP POST, you might need to adjust headers/URL based on Azure docs.
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                self.base_url, headers=self.headers, content=audio_data
+                self.base_url,
+                headers=self.headers,
+                content=audio_data,
             )
             response.raise_for_status()
             return str(response.json()["DisplayText"])
 
     async def text_to_speech(
-        self, text: str, voice_name: str = "en-US-JennyNeural"
+        self,
+        text: str,
+        voice_name: str = "en-US-JennyNeural",
     ) -> bytes:
         tts_url = f"https://{self.region}.tts.speech.microsoft.com/cognitiveservices/v1"
         tts_headers = {
@@ -33,7 +38,9 @@ class AzureSpeechClient:
         ssml_text = f"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><voice name='{voice_name}'>{text}</voice></speak>"
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                tts_url, headers=tts_headers, content=ssml_text.encode("utf-8")
+                tts_url,
+                headers=tts_headers,
+                content=ssml_text.encode("utf-8"),
             )
             response.raise_for_status()
             return response.content

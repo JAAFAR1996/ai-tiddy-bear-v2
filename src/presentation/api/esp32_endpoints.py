@@ -1,4 +1,4 @@
-"""
+
 from datetime import datetime
 from typing import Dict, Any, Optional
 import json
@@ -12,10 +12,7 @@ from .middleware.consent_verification import ConsentVerificationRoute, require_c
 from src.application.services.ai_orchestration_service import AIOrchestrationService
 from src.infrastructure.di.container import Container
 from src.infrastructure.persistence.real_database_service import DatabaseService
-"""
 
-Real ESP32 API endpoints for AI Teddy Bear
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="api")

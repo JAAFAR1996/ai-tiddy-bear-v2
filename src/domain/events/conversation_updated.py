@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from uuid import UUID
+
 from src.domain.events.domain_events import DomainEvent
+
 
 @dataclass(frozen=True)
 class ConversationUpdatedEvent(DomainEvent):

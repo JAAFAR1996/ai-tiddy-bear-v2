@@ -1,9 +1,8 @@
-import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict
+from typing import Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
@@ -18,15 +17,17 @@ class RateLimiterService:
         self.settings = settings
         self.max_login_attempts = self.settings.security.MAX_LOGIN_ATTEMPTS
         self.lockout_duration = timedelta(
-            seconds=self.settings.security.LOCKOUT_DURATION_SECONDS
+            seconds=self.settings.security.LOCKOUT_DURATION_SECONDS,
         )
         # Rate limiting storage
         self.login_attempts = defaultdict(list)
         self.locked_accounts = {}
 
     async def check_rate_limit(
-        self, email: str, ip_address: str = None
-    ) -> Dict[str, Any]:
+        self,
+        email: str,
+        ip_address: str | None = None,
+    ) -> dict[str, Any]:
         """Enhanced rate limiting with IP tracking and progressive delays."""
         now = datetime.utcnow()
 
@@ -41,15 +42,14 @@ class RateLimiterService:
                     "allowed": False,
                     "reason": "account_locked",
                     "retry_after": int(remaining_time),
-                    "message": f"Account locked. Try again in {int(remaining_time/60)} minutes.",
+                    "message": f"Account locked. Try again in {int(remaining_time / 60)} minutes.",
                 }
-            else:
-                # Unlock account
-                del self.locked_accounts[email]
-                self.login_attempts[email] = []
-                logger.info(
-                    f"Account unlocked after lockout period: {email}"
-                )  # TODO: Sanitize email
+            # Unlock account
+            del self.locked_accounts[email]
+            self.login_attempts[email] = []
+            logger.info(
+                f"Account unlocked after lockout period: {email}",
+            )  # TODO: Sanitize email
 
         # Clean old attempts (older than 1 hour)
         hour_ago = now - timedelta(hours=1)
@@ -70,7 +70,7 @@ class RateLimiterService:
 
         return {"allowed": True}
 
-    async def record_failed_login(self, email: str, ip_address: str = None) -> None:
+    async def record_failed_login(self, email: str, ip_address: str | None = None) -> None:
         """Record a failed login attempt."""
         self.login_attempts[email].append(datetime.utcnow())
         logger.info(f"Failed login attempt recorded for: {email}")

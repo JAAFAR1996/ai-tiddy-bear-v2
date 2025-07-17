@@ -1,6 +1,4 @@
-import asyncio
 import logging
-import io
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
@@ -9,7 +7,6 @@ from src.api.endpoints.voice_models import (
     AudioValidationResult,
     SpeechToTextResult,
     TextToSpeechResult,
-    VoiceProcessingRequest,
     VoiceResponse,
 )
 from src.application.services.voice_service import VoiceService
@@ -32,21 +29,21 @@ async def process_voice_message(
     audio_file: UploadFile = File(...),
     voice_service: VoiceService = Depends(VoiceService),
 ):
-    """
-    Handles the processing of a voice message from the AI Teddy Bear.
-    """
+    """Handles the processing of a voice message from the AI Teddy Bear."""
     logger.info(f"Received voice message for child_id: {child_id}")
 
     # Speech-to-Text
     stt_result = await voice_service.speech_to_text(audio_file, child_age)
     if not stt_result.success:
         raise HTTPException(
-            status_code=500, detail=f"Speech-to-text failed: {stt_result.error}"
+            status_code=500,
+            detail=f"Speech-to-text failed: {stt_result.error}",
         )
 
     if not stt_result.child_appropriate:
         raise HTTPException(
-            status_code=403, detail="Content not appropriate for child."
+            status_code=403,
+            detail="Content not appropriate for child.",
         )
 
     # AI Response Generation (Placeholder)
@@ -59,7 +56,8 @@ async def process_voice_message(
     tts_result = await voice_service.text_to_speech(ai_response_text, child_age)
     if not tts_result.success or not tts_result.audio_data:
         raise HTTPException(
-            status_code=500, detail=f"Text-to-speech failed: {tts_result.error}"
+            status_code=500,
+            detail=f"Text-to-speech failed: {tts_result.error}",
         )
 
     # Return audio directly as a response
@@ -76,9 +74,7 @@ async def validate_audio_file_endpoint(
     audio_file: UploadFile = File(...),
     voice_service: VoiceService = Depends(VoiceService),
 ):
-    """
-    Validates an uploaded audio file.
-    """
+    """Validates an uploaded audio file."""
     logger.info(f"Received audio file for validation: {audio_file.filename}")
     validation_result = await voice_service.validate_audio_file(audio_file)
     if not validation_result.valid:
@@ -97,11 +93,8 @@ async def speech_to_text_endpoint(
     audio_file: UploadFile = File(...),
     voice_service: VoiceService = Depends(VoiceService),
 ):
-    """
-    Converts speech from an audio file to text.
-    """
-    logger.info(
-        f"Received audio for speech-to-text for child age: {child_age}")
+    """Converts speech from an audio file to text."""
+    logger.info(f"Received audio for speech-to-text for child age: {child_age}")
     stt_result = await voice_service.speech_to_text(audio_file, child_age)
     if not stt_result.success:
         raise HTTPException(status_code=500, detail=stt_result.error)
@@ -120,9 +113,7 @@ async def text_to_speech_endpoint(
     voice_preference: str = Form("friendly"),
     voice_service: VoiceService = Depends(VoiceService),
 ):
-    """
-    Converts text to speech.
-    """
+    """Converts text to speech."""
     logger.info(f"Received text for text-to-speech for child age: {child_age}")
     tts_result = await voice_service.text_to_speech(text, child_age, voice_preference)
     if not tts_result.success:

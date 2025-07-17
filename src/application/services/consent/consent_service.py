@@ -1,14 +1,13 @@
 """
+Core consent management functionality extracted into clean, maintainable modules.
+File reduced from 557 lines to < 200 lines for better maintainability.
+"""
+
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 import logging
 from .consent_models import ConsentRecord, VerificationMethod, VerificationStatus
 from .verification_service import VerificationService
-"""
-
-Core consent management functionality extracted into clean, maintainable modules.
-File reduced from 557 lines to < 200 lines for better maintainability.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="services")

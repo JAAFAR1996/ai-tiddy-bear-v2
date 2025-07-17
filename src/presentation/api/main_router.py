@@ -1,24 +1,23 @@
-import logging
-
 try:
     from fastapi import APIRouter
+
     FASTAPI_AVAILABLE = True
 except ImportError as e:
-    raise ImportError("FastAPI is required for production API deployment. "
-        "Install with: pip install fastapi uvicorn") from e
+    raise ImportError(
+        "FastAPI is required for production API deployment. "
+        "Install with: pip install fastapi uvicorn",
+    ) from e
 
 """Main router for all endpoints"""
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="api")
 
 # Import all endpoint routers
 from src.presentation.api.endpoints.auth import router as auth_router
 from src.presentation.api.endpoints.children import router as children_router
 from src.presentation.api.endpoints.conversations import router as conversations_router
-from src.presentation.api.middleware.consent_verification import (
-    ConsentVerificationMiddleware,
-)  # ✅ COPPA middleware
 
 # Create main API router
 api_router = APIRouter(prefix="/api/v1")
@@ -28,10 +27,11 @@ api_router.include_router(auth_router)
 api_router.include_router(children_router)
 api_router.include_router(conversations_router)
 
+
 # Add health check endpoint
 @api_router.get("/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint."""
     return {
         "status": "healthy",
         "service": "AI Teddy Bear API",
@@ -39,10 +39,11 @@ async def health_check():
         "timestamp": "2025-01-01T00:00:00Z",
     }
 
+
 # Add API info endpoint
 @api_router.get("/info")
 async def api_info():
-    """API information endpoint"""
+    """API information endpoint."""
     return {
         "name": "AI Teddy Bear API",
         "version": "2.0.0",
@@ -61,6 +62,7 @@ async def api_info():
             "Multilingual support",
         ],
     }
+
 
 # ✅ COPPA Consent Verification Integration
 # ConsentVerificationMiddleware should be applied at the FastAPI app level:

@@ -1,4 +1,5 @@
 from pydantic import Field
+
 from src.infrastructure.config.base_settings import BaseApplicationSettings
 
 

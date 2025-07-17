@@ -1,12 +1,11 @@
-"""
-Advanced rate limiting for child safety and system protection.
+"""Advanced rate limiting for child safety and system protection.
 
 Implements 2025 slowapi patterns with child-specific controls.
 """
-import logging
+
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
@@ -25,7 +24,7 @@ try:
     SLOWAPI_AVAILABLE = True
 except (ImportError, UnicodeDecodeError) as e:
     logger.warning(
-        f"slowapi not available or config error: {e}, using mock implementation"
+        f"slowapi not available or config error: {e}, using mock implementation",
     )
     SLOWAPI_AVAILABLE = False
 
@@ -76,8 +75,7 @@ except ImportError:
 
 
 class ChildSafetyRateLimiter:
-    """
-    Advanced rate limiter with child-specific safety controls.
+    """Advanced rate limiter with child-specific safety controls.
     Implements dynamic rate limits based on user behavior and child safety context.
     """
 
@@ -91,7 +89,7 @@ class ChildSafetyRateLimiter:
         # Child-specific limits
         self.child_interaction_limits = defaultdict(list)
         self.child_lockout_period = timedelta(
-            seconds=self.settings.security.CHILD_LOCKOUT_SECONDS
+            seconds=self.settings.security.CHILD_LOCKOUT_SECONDS,
         )
         self.max_child_interactions = (
             self.settings.security.CHILD_MAX_INTERACTIONS_PER_MINUTE
@@ -101,20 +99,18 @@ class ChildSafetyRateLimiter:
         return self.limiter
 
     async def check_child_interaction(self, child_id: str, request: Request) -> None:
-        """
-        Rate limit child interactions to prevent abuse and ensure safety.
-        """
+        """Rate limit child interactions to prevent abuse and ensure safety."""
         now = datetime.utcnow()
         # Clean up old interactions
         self.child_interaction_limits[child_id] = [
-            t for t in self.child_interaction_limits[child_id] if now - t < timedelta(minutes=1)
+            t
+            for t in self.child_interaction_limits[child_id]
+            if now - t < timedelta(minutes=1)
         ]
 
         # Check if limit exceeded
         if len(self.child_interaction_limits[child_id]) >= self.max_child_interactions:
-            logger.warning(
-                f"Child interaction limit exceeded for child_id: {child_id}"
-            )
+            logger.warning(f"Child interaction limit exceeded for child_id: {child_id}")
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail="Interaction limit reached. Please try again later.",
@@ -124,17 +120,14 @@ class ChildSafetyRateLimiter:
         self.child_interaction_limits[child_id].append(now)
 
     def register_rate_limit_handler(self, app: FastAPI) -> None:
-        """
-        Register the rate limit exceeded handler with the FastAPI app.
-        """
+        """Register the rate limit exceeded handler with the FastAPI app."""
 
         @app.exception_handler(RateLimitExceeded)
         async def rate_limit_exceeded_handler(
-            request: Request, exc: RateLimitExceeded
+            request: Request,
+            exc: RateLimitExceeded,
         ) -> JSONResponse:
-            logger.warning(
-                f"Rate limit exceeded for {request.url.path}: {exc.detail}"
-            )
+            logger.warning(f"Rate limit exceeded for {request.url.path}: {exc.detail}")
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={"detail": f"Rate limit exceeded: {exc.detail}"},

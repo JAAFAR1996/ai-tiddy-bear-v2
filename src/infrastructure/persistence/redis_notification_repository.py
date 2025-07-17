@@ -1,6 +1,5 @@
 import json
-from datetime import datetime, timedelta
-from typing import Optional, List
+from datetime import datetime
 from uuid import UUID
 
 from redis.asyncio import Redis
@@ -13,8 +12,7 @@ logger = get_logger(__name__, component="redis_notification_repository")
 
 
 class RedisNotificationRepository(INotificationRepository):
-    """
-    Redis implementation of the notification repository.
+    """Redis implementation of the notification repository.
     Stores notification records in Redis.
     """
 
@@ -25,8 +23,7 @@ class RedisNotificationRepository(INotificationRepository):
         self.redis_client = redis_client
         self.logger = logger
 
-    async def save_notification(
-            self, notification: NotificationRecord) -> None:
+    async def save_notification(self, notification: NotificationRecord) -> None:
         key = self.NOTIFICATION_KEY_PREFIX + str(notification.id)
         history_key = self.RECIPIENT_HISTORY_KEY_PREFIX + notification.recipient
         try:
@@ -55,10 +52,12 @@ class RedisNotificationRepository(INotificationRepository):
             # for a smaller set of recent items
             await self.redis_client.lpush(history_key, str(notification.id))
             await self.redis_client.ltrim(
-                history_key, 0, 99
+                history_key,
+                0,
+                99,
             )  # Keep last 100 notifications per recipient
             self.logger.debug(
-                f"Saved notification {notification.id} for recipient {notification.recipient} to Redis."
+                f"Saved notification {notification.id} for recipient {notification.recipient} to Redis.",
             )
         except Exception as e:
             self.logger.error(
@@ -68,8 +67,9 @@ class RedisNotificationRepository(INotificationRepository):
             raise  # Re-raise to ensure calling service handles persistence failure
 
     async def get_notification_by_id(
-        self, notification_id: UUID
-    ) -> Optional[NotificationRecord]:
+        self,
+        notification_id: UUID,
+    ) -> NotificationRecord | None:
         key = self.NOTIFICATION_KEY_PREFIX + str(notification_id)
         try:
             notification_data_json = await self.redis_client.get(key)
@@ -83,15 +83,14 @@ class RedisNotificationRepository(INotificationRepository):
                     channel=notification_data_dict["channel"],
                     urgent=notification_data_dict["urgent"],
                     created_at=datetime.fromisoformat(
-                        notification_data_dict["created_at"]
+                        notification_data_dict["created_at"],
                     ),
-                    status=NotificationStatus[notification_data_dict["status"].upper(
-                    )],
+                    status=NotificationStatus[notification_data_dict["status"].upper()],
                     attempts=notification_data_dict.get("attempts", 0),
                     max_attempts=notification_data_dict.get("max_attempts", 3),
                     last_attempt_at=(
                         datetime.fromisoformat(
-                            notification_data_dict["last_attempt_at"]
+                            notification_data_dict["last_attempt_at"],
                         )
                         if notification_data_dict.get("last_attempt_at")
                         else None
@@ -100,11 +99,10 @@ class RedisNotificationRepository(INotificationRepository):
                     metadata=notification_data_dict.get("metadata", {}),
                 )
                 self.logger.debug(
-                    f"Retrieved notification {notification_id} from Redis."
+                    f"Retrieved notification {notification_id} from Redis.",
                 )
                 return notification
-            self.logger.debug(
-                f"Notification {notification_id} not found in Redis.")
+            self.logger.debug(f"Notification {notification_id} not found in Redis.")
             return None
         except Exception as e:
             self.logger.error(
@@ -114,8 +112,9 @@ class RedisNotificationRepository(INotificationRepository):
             return None
 
     async def get_notifications_for_recipient(
-        self, recipient: str
-    ) -> List[NotificationRecord]:
+        self,
+        recipient: str,
+    ) -> list[NotificationRecord]:
         history_key = self.RECIPIENT_HISTORY_KEY_PREFIX + recipient
         try:
             notification_ids_str = await self.redis_client.lrange(history_key, 0, -1)
@@ -126,7 +125,7 @@ class RedisNotificationRepository(INotificationRepository):
                 if notification:
                     notifications.append(notification)
             self.logger.debug(
-                f"Retrieved {len(notifications)} notifications for recipient {recipient}."
+                f"Retrieved {len(notifications)} notifications for recipient {recipient}.",
             )
             return notifications
         except Exception as e:
@@ -141,11 +140,10 @@ class RedisNotificationRepository(INotificationRepository):
         try:
             result = await self.redis_client.delete(key)
             if result > 0:
-                self.logger.debug(
-                    f"Deleted notification {notification_id} from Redis.")
+                self.logger.debug(f"Deleted notification {notification_id} from Redis.")
                 return True
             self.logger.debug(
-                f"Notification {notification_id} not found for deletion in Redis."
+                f"Notification {notification_id} not found for deletion in Redis.",
             )
             return False
         except Exception as e:

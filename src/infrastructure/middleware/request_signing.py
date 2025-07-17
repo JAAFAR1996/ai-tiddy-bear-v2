@@ -1,4 +1,4 @@
-"""
+
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple, Any
 import asyncio
@@ -10,12 +10,6 @@ from fastapi import HTTPException, Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 import hmac
-"""
-
-Request Signing Middleware
-Provides HMAC - SHA256 request signature validation for API security.
-Prevents request tampering and replay attacks.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")
@@ -48,12 +42,12 @@ class RequestSigningMiddleware(BaseHTTPMiddleware):
             timestamp_header: HTTP header containing request timestamp
             max_age_seconds: Maximum age for timestamp validation
             require_timestamp: Whether timestamp validation is required
-            exempt_paths: Paths that don't require signatures (e.g., health checks)
+            exempt_paths: Paths that do not require signatures (e.g., health checks)
         """
         super().__init__(app)
         if not secret_key or len(secret_key) < 32:
             raise ValueError("Secret key must be at least 32 characters long")
-        self.secret_key = secret_key.encode('utf - 8')
+        self.secret_key = secret_key.encode('utf-8')
         self.signature_header = signature_header
         self.timestamp_header = timestamp_header
         self.max_age_seconds = max_age_seconds
@@ -256,7 +250,7 @@ class RequestSigningMiddleware(BaseHTTPMiddleware):
             response_payload = f"{response.status_code}\n{body.decode('utf - 8', errors='ignore')}"
             response_signature = hmac.new(
                 self.secret_key,
-                response_payload.encode('utf - 8'),
+                response_payload.encode('utf-8'),
                 hashlib.sha256
             ).hexdigest()
             
@@ -316,7 +310,7 @@ class RequestSigningHelper:
     """
     def __init__(self, secret_key: str) -> None:
         """Initialize with shared secret key."""
-        self.secret_key = secret_key.encode('utf - 8')
+        self.secret_key = secret_key.encode('utf-8')
 
     def sign_request(
         self,
@@ -377,7 +371,7 @@ class RequestSigningHelper:
         response_payload = f"{status_code}\n{response_body}"
         expected_signature = hmac.new(
             self.secret_key,
-            response_payload.encode('utf - 8'), 
+            response_payload.encode('utf-8'), 
             hashlib.sha256
         ).hexdigest() 
         

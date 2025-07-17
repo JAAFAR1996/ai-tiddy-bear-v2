@@ -1,15 +1,16 @@
-"""
-from dataclasses import dataclass
+"""from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional.
 """
 
 """Security Headers Configuration
 Defines configuration and constants for security headers middleware.
 """
 
+
 class SecurityLevel(Enum):
     """Security levels for different environments."""
+
     DEVELOPMENT = "development"
     STAGING = "staging"
     PRODUCTION = "production"
@@ -17,6 +18,7 @@ class SecurityLevel(Enum):
 
 class CSPDirective(Enum):
     """Content Security Policy directive types."""
+
     DEFAULT_SRC = "default-src"
     SCRIPT_SRC = "script-src"
     STYLE_SRC = "style-src"
@@ -37,30 +39,31 @@ class CSPDirective(Enum):
 @dataclass
 class SecurityHeadersConfig:
     """Configuration for security headers."""
+
     # Basic security headers
     x_content_type_options: str = "nosniff"
     x_frame_options: str = "DENY"
     x_xss_protection: str = "1; mode=block"
     referrer_policy: str = "strict-origin-when-cross-origin"
-    
+
     # HTTPS and transport security
     strict_transport_security: Optional[str] = None
     expect_ct: Optional[str] = None
-    
+
     # Content Security Policy
     content_security_policy: Optional[str] = None
-    
+
     # Permissions Policy (formerly Feature Policy)
     permissions_policy: Optional[str] = None
-    
+
     # Child safety specific headers
     x_robots_tag: str = "noindex, nofollow, noarchive, nosnippet"
     x_permitted_cross_domain_policies: str = "none"
-    
+
     # COPPA compliance headers
     x_coppa_compliant: str = "true"
     x_child_safe: str = "true"
-    
+
     # Custom headers for child protection
     x_parental_controls: str = "enabled"
     x_content_filtering: str = "strict"
@@ -68,13 +71,14 @@ class SecurityHeadersConfig:
 
 class ProductionHeadersConfig(SecurityHeadersConfig):
     """Production - specific security headers configuration."""
+
     def __init__(self) -> None:
         super().__init__()
-        
+
         # Strict HTTPS enforcement
         self.strict_transport_security = "max-age=31536000; includeSubDomains; preload"
         self.expect_ct = "max-age=86400, enforce"
-        
+
         # Strict Content Security Policy for production
         self.content_security_policy = (
             "default-src 'self'; "
@@ -91,7 +95,7 @@ class ProductionHeadersConfig(SecurityHeadersConfig):
             "base-uri 'self'; "
             "upgrade-insecure-requests"
         )
-        
+
         # Strict permissions policy
         self.permissions_policy = (
             "geolocation=(), "
@@ -112,9 +116,10 @@ class ProductionHeadersConfig(SecurityHeadersConfig):
 
 class DevelopmentHeadersConfig(SecurityHeadersConfig):
     """Development - specific security headers configuration."""
+
     def __init__(self) -> None:
         super().__init__()
-        
+
         # Relaxed CSP for development
         self.content_security_policy = (
             "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
@@ -129,7 +134,7 @@ class DevelopmentHeadersConfig(SecurityHeadersConfig):
             "form-action 'self'; "
             "base-uri 'self'"
         )
-        
+
         # Relaxed permissions policy
         self.permissions_policy = (
             "geolocation=(), "
@@ -146,9 +151,9 @@ def get_headers_config(security_level: SecurityLevel) -> SecurityHeadersConfig:
     configs = {
         SecurityLevel.PRODUCTION: ProductionHeadersConfig,
         SecurityLevel.STAGING: ProductionHeadersConfig,  # Use production config for staging
-        SecurityLevel.DEVELOPMENT: DevelopmentHeadersConfig
+        SecurityLevel.DEVELOPMENT: DevelopmentHeadersConfig,
     }
-    
+
     config_class = configs.get(security_level, ProductionHeadersConfig)
     return config_class()
 
@@ -161,7 +166,7 @@ COPPA_HEADERS = {
     "X-Content-Filtering": "strict",
     "X-Data-Retention": "90-days",
     "X-Privacy-Policy": "https://aiteddy.com/privacy",
-    "X-Terms-Of-Service": "https://aiteddy.com/terms"
+    "X-Terms-Of-Service": "https://aiteddy.com/terms",
 }
 
 # Security headers that should always be present
@@ -171,7 +176,7 @@ REQUIRED_SECURITY_HEADERS = [
     "X-XSS-Protection",
     "Referrer-Policy",
     "Content-Security-Policy",
-    "X-COPPA-Compliant"
+    "X-COPPA-Compliant",
 ]
 
 # Headers to remove for security (server information leakage)
@@ -179,5 +184,5 @@ HEADERS_TO_REMOVE = [
     "Server",
     "X-Powered-By",
     "X-AspNet-Version",
-    "X-AspNetMvc-Version"
+    "X-AspNetMvc-Version",
 ]

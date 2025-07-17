@@ -1,14 +1,15 @@
 """ChatGPT API endpoints للمحادثة مع الأطفال"""
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="api")
 
 # Production imports - fail fast with proper exceptions
 try:
+    from fastapi import APIRouter, Depends, HTTPException, status
     from pydantic import BaseModel
-    from fastapi import APIRouter, HTTPException, Depends, status
 except ImportError as e:
     logger.error(f"CRITICAL ERROR: Core dependencies missing: {e}")
     logger.error("Install required dependencies: pip install pydantic fastapi")
@@ -17,8 +18,12 @@ except ImportError as e:
 # Import services with proper error handling
 try:
     from src.infrastructure.ai.real_ai_service import ProductionAIService
+except ImportError:
+    pass
+
 from src.application.services.ai_orchestration_service import AIOrchestrationService
 from src.infrastructure.di.container import container
+
 
 # Request/Response Models
 class ChatRequest(BaseModel):

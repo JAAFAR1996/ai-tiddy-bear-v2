@@ -1,5 +1,4 @@
-"""
-Manages parental consent for data collection and processing.
+"""Manages parental consent for data collection and processing.
 
 This service ensures compliance with regulations like COPPA by enforcing
 parental consent requirements for various operations involving child data.
@@ -8,7 +7,6 @@ retrieve the current consent status for a child.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
 
 from src.domain.interfaces.logging_interface import (
     DomainLoggerInterface,
@@ -28,9 +26,9 @@ class ConsentService:
         """Initializes the consent service."""
         self._logger = logger or NullDomainLogger()
         self.required_consents = self._initialize_consent_requirements()
-        self.consent_cache: Dict[str, Dict[ConsentType, ConsentRecord]] = {}
+        self.consent_cache: dict[str, dict[ConsentType, ConsentRecord]] = {}
 
-    def _initialize_consent_requirements(self) -> Dict[str, Set[ConsentType]]:
+    def _initialize_consent_requirements(self) -> dict[str, set[ConsentType]]:
         """Initializes consent requirements by age group."""
         return {
             # Children under 13 (COPPA applies) - Strict requirements
@@ -58,31 +56,32 @@ class ConsentService:
             "valid_adult": set(),  # No parental consent required
         }
 
-    def get_required_consents(self, child_age: int) -> Set[ConsentType]:
-        """
-        Gets the set of consent types required for a given child's age.
+    def get_required_consents(self, child_age: int) -> set[ConsentType]:
+        """Gets the set of consent types required for a given child's age.
 
         Args:
             child_age: The age of the child.
 
         Returns:
             A set of required consent types.
+
         """
         age_validation = COPPAAgeValidator.validate_age(child_age)
         if age_validation == AgeValidationResult.CHILD:
             return self.required_consents["valid_child"]
-        elif age_validation == AgeValidationResult.TEEN:
+        if age_validation == AgeValidationResult.TEEN:
             return self.required_consents["valid_teen"]
-        elif age_validation == AgeValidationResult.ADULT:
+        if age_validation == AgeValidationResult.ADULT:
             return self.required_consents["valid_adult"]
-        else:
-            return set()  # Invalid age, no consents required
+        return set()  # Invalid age, no consents required
 
     def record_consent(
-        self, child_id: str, consent_type: ConsentType, parent_id: str
+        self,
+        child_id: str,
+        consent_type: ConsentType,
+        parent_id: str,
     ) -> ConsentRecord:
-        """
-        Records a parental consent for a specific child and consent type.
+        """Records a parental consent for a specific child and consent type.
 
         Args:
             child_id: The ID of the child.
@@ -91,6 +90,7 @@ class ConsentService:
 
         Returns:
             The recorded consent record.
+
         """
         record = ConsentRecord(
             child_id=child_id,
@@ -103,13 +103,12 @@ class ConsentService:
             self.consent_cache[child_id] = {}
         self.consent_cache[child_id][consent_type] = record
         self._logger.info(
-            f"Consent recorded: child_id={child_id}, consent_type={consent_type.value}"
+            f"Consent recorded: child_id={child_id}, consent_type={consent_type.value}",
         )
         return record
 
     def check_consent(self, child_id: str, consent_type: ConsentType) -> bool:
-        """
-        Checks if a specific consent has been granted for a child.
+        """Checks if a specific consent has been granted for a child.
 
         Args:
             child_id: The ID of the child.
@@ -117,15 +116,17 @@ class ConsentService:
 
         Returns:
             True if consent is granted, False otherwise.
+
         """
         consent_record = self.consent_cache.get(child_id, {}).get(consent_type)
         return consent_record and consent_record.status == ConsentStatus.GRANTED
 
     def revoke_consent(
-        self, child_id: str, consent_type: ConsentType
-    ) -> Optional[ConsentRecord]:
-        """
-        Revokes a previously granted consent for a child.
+        self,
+        child_id: str,
+        consent_type: ConsentType,
+    ) -> ConsentRecord | None:
+        """Revokes a previously granted consent for a child.
 
         Args:
             child_id: The ID of the child.
@@ -133,6 +134,7 @@ class ConsentService:
 
         Returns:
             The revoked consent record, or None if not found.
+
         """
         if (
             child_id in self.consent_cache
@@ -142,21 +144,20 @@ class ConsentService:
             record.status = ConsentStatus.REVOKED
             record.timestamp = datetime.now()
             self._logger.info(
-                f"Consent revoked: child_id={child_id}, consent_type={consent_type.value}"
+                f"Consent revoked: child_id={child_id}, consent_type={consent_type.value}",
             )
             return record
         return None
 
-    def get_consent_status(
-            self, child_id: str) -> Dict[ConsentType, ConsentStatus]:
-        """
-        Retrieves the current consent status for all consent types for a child.
+    def get_consent_status(self, child_id: str) -> dict[ConsentType, ConsentStatus]:
+        """Retrieves the current consent status for all consent types for a child.
 
         Args:
             child_id: The ID of the child.
 
         Returns:
             A dictionary mapping consent types to their current status.
+
         """
         status = {}
         for consent_type in ConsentType:
