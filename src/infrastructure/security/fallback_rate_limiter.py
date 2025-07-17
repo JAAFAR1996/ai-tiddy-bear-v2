@@ -1,4 +1,4 @@
-"""
+
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
@@ -7,25 +7,13 @@ import logging
 import threading
 import time
 
-"""
-Fallback Rate Limiter Service
-Provides in -memory rate limiting when Redis is unavailable.
-Implements sliding window algorithm with automatic cleanup.
-"""
 
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
 class SlidingWindowRateLimiter:
-    """
-    Thread - safe sliding window rate limiter for fallback scenarios.
-    Features:
-    - Per - user rate limiting with configurable windows
-    - Memory - efficient with automatic cleanup
-    - Thread - safe for concurrent access
-    - Configurable rate limits and time windows
-    """
+   
     def __init__(self, default_limit: int = 100, window_seconds: int = 60) -> None:
         """Initialize rate limiter with default settings."""
         self.default_limit = default_limit
@@ -353,7 +341,7 @@ class FallbackRateLimitService:
         """Reset rate limits for user across all systems."""
         # Reset fallback limits
         fallback_reset = await self.fallback_limiter.reset_user_limits(user_id, endpoint)
-        
+
         # Reset Redis limits if available
         redis_reset = True
         if hasattr(self, '_redis_client') and self._redis_client:

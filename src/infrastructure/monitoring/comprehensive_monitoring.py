@@ -1,4 +1,4 @@
-"""
+
 from collections import defaultdict, deque
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
@@ -11,11 +11,7 @@ import logging
 import os
 import threading
 import time
-"""
 
-Comprehensive Monitoring and Alerting System
-Enterprise - grade monitoring for AI Teddy Bear backend with child safety focus.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="monitoring")

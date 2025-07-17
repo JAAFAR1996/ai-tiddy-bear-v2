@@ -1,15 +1,9 @@
-"""
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Set, Any
 import logging
-"""
-
-Security Headers Service
-Provides comprehensive security headers for child safety and COPPA compliance.
-Implements enterprise - grade HTTP security headers with child - specific protections.
-"""
 
 from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="security")

@@ -1,14 +1,11 @@
-"""
+
 from typing import Optional, Any
 from uuid import uuid4
 import logging
 import os
 from fastapi import HTTPException, status
 import traceback
-"""
-Secure Error Handler for Production API Responses
-Prevents sensitive information leakage through error messages
-"""
+
 
 from src.infrastructure.logging_config import get_logger
 
