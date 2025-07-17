@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(rm:*)",
+      "Bash(python -m black:*)",
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(chmod:*)",
+      "Bash(python test:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(python:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(PYTHONPATH=/mnt/c/Users/jaafa/Desktop/5555/ai-teddy/backend python3 src/CORE_FEATURES_TEST.py)",
+      "Bash(true)",
+      "Bash(-print)",
+      "Bash(cp:*)",
+      "Bash(awk:*)"
+    ],
+    "deny": []
+  }
+}

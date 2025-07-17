@@ -1,0 +1,218 @@
+"""
+from typing import Callable
+import logging
+import os
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
+"""
+
+Security Headers Middleware
+Implements comprehensive security headers for OWASP compliance
+"""
+
+from src.infrastructure.logging_config import get_logger
+logger = get_logger(__name__, component="security")
+
+class SecurityHeadersMiddleware:
+    """
+    Implements: 
+    - OWASP security headers 
+    - Content Security Policy 
+    - HSTS enforcement 
+    - XSS protection 
+    - Clickjacking protection
+    """
+    def __init__(self, app) -> None:
+        self.app = app
+        self.is_production = os.getenv('ENVIRONMENT') == 'production'
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope, receive)
+        
+        # Process request through middleware
+        response = await self._process_request(request)
+        if response:
+            await response(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+    async def _process_request(self, request: Request) -> None:
+        """Process incoming request and add security headers to response"""
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                headers = dict(message.get("headers", []))
+                security_headers = self._get_security_headers(request)
+                for name, value in security_headers.items():
+                    headers[name.encode()] = value.encode()
+                message["headers"] = list(headers.items())
+            await send(message)
+        return send_wrapper
+
+    def _get_security_headers(self, request: Request) -> dict:
+        """
+        headers = {}
+        
+        if self.is_production:
+            headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        
+        csp_policy = self._get_csp_policy()
+        headers["Content-Security-Policy"] = csp_policy
+        headers["X-Frame-Options"] = "DENY"
+        headers["X-Content-Type-Options"] = "nosniff"
+        headers["X-XSS-Protection"] = "1; mode=block"
+        headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        headers["Permissions-Policy"] = "microphone=(), camera=(), geolocation=(), payment=()"
+        headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        headers["Cross-Origin-Resource-Policy"] = "same-site"
+        headers["Server"] = ""
+        
+        if self._is_sensitive_endpoint(request.url.path):
+            headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+            headers["Pragma"] = "no-cache"
+            headers["Expires"] = "0"
+        
+        return headers
+        
+    def _get_csp_policy(self) -> str:
+        """
+        policy_directives = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",  # Allow inline scripts for FastAPI docs
+            "style-src 'self' 'unsafe-inline'",   # Allow inline styles
+            "img-src 'self' data: https:",
+            "font-src 'self'",
+            "connect-src 'self'",
+            "media-src 'none'",
+            "object-src 'none'",
+            "child-src 'none'",
+            "frame-src 'none'",
+            "worker-src 'none'",
+            "manifest-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'none'",
+            "upgrade-insecure-requests"
+        ]
+        
+        if self.is_production:
+            policy_directives.append("block-all-mixed-content")
+        
+        return "; ".join(policy_directives)
+
+    def _is_sensitive_endpoint(self, path: str) -> bool:
+        """Check if endpoint handles sensitive data"""
+        sensitive_patterns = [
+            "/auth/",
+            "/children/",
+            "/parents/",
+            "/export/",
+            "/admin/"
+        ]
+        return any(pattern in path for pattern in sensitive_patterns)
+
+class CSRFProtectionMiddleware:
+    """
+    """
+    def __init__(self, app) -> None:
+        self.app = app
+        self.exempt_paths = ["/docs", "/redoc", "/openapi.json", "/health"]
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope, receive)
+        
+        # Check if CSRF protection needed
+        if self._needs_csrf_protection(request):
+            if not await self._validate_csrf_token(request):
+                response = JSONResponse(
+                    status_code=403,
+                    content={"detail": "CSRF token validation failed"}
+                )
+                await response(scope, receive, send)
+                return
+        
+        await self.app(scope, receive, send)
+
+    def _needs_csrf_protection(self, request: Request) -> bool:
+        """Check if request needs CSRF protection"""
+        # Only protect state-changing methods
+        if request.method not in ["POST", "PUT", "PATCH", "DELETE"]:
+            return False
+        
+        # Skip exempt paths
+        path = request.url.path
+        if any(exempt in path for exempt in self.exempt_paths):
+            return False
+        
+        return True
+
+    async def _validate_csrf_token(self, request: Request) -> bool:
+        """Validate CSRF token"""
+        # Get CSRF token from header
+        csrf_token = request.headers.get("X-CSRF-Token")
+        if not csrf_token:
+            logger.warning("Missing CSRF token in request")
+            return False
+        
+        # In production, validate against session-based CSRF token
+        # For now, check basic format
+        if len(csrf_token) < 32:
+            logger.warning("Invalid CSRF token format")
+            return False
+        
+        return True
+
+class RequestValidationMiddleware:
+    """
+    """
+    def __init__(self, app) -> None:
+        self.app = app
+        self.max_request_size = int(os.getenv('MAX_REQUEST_SIZE', '10485760'))  # 10MB
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope, receive)
+        
+        # Validate request size
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                size = int(content_length)
+                if size > self.max_request_size:
+                    response = JSONResponse(
+                        status_code=413,
+                        content={"detail": "Request entity too large"}
+                    )
+                    await response(scope, receive, send)
+                    return
+            except ValueError:
+                pass
+        
+        # Validate content type for POST/PUT requests
+        if request.method in ["POST", "PUT", "PATCH"]:
+            content_type = request.headers.get("content-type", "")
+            allowed_types = [
+                "application/json",
+                "application/x-www-form-urlencoded",
+                "multipart/form-data"
+            ]
+            if not any(allowed in content_type for allowed in allowed_types):
+                response = JSONResponse(
+                    status_code=415,
+                    content={"detail": "Unsupported media type"}
+                )
+                await response(scope, receive, send)
+                return
+        
+        await self.app(scope, receive, send)

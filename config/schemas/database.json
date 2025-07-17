@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Database Configuration Schema",
+  "description": "Database configuration settings schema",
+  "type": "object",
+  "properties": {
+    "DATABASE": {
+      "type": "object",
+      "description": "Database configuration",
+      "properties": {
+        "DATABASE_URL": {
+          "type": "string",
+          "format": "uri"
+        },
+        "REDIS_URL": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "MONGODB_URL": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "CONNECTION_POOL_SIZE": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "CONNECTION_TIMEOUT": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 30000
+        },
+        "ENABLE_MIGRATIONS": {
+          "type": "boolean"
+        },
+        "BACKUP_ENABLED": {
+          "type": "boolean"
+        },
+        "BACKUP_SCHEDULE": {
+          "type": "string",
+          "pattern": "^(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})$"
+        }
+      },
+      "required": ["DATABASE_URL"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["DATABASE"],
+  "additionalProperties": false
+}

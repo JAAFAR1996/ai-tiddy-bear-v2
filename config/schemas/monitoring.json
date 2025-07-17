@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Monitoring Schema",
+  "description": "Monitoring and alerting configuration schema",
+  "type": "object",
+  "properties": {
+    "MONITORING": {
+      "type": "object",
+      "description": "Monitoring and alerting configuration",
+      "properties": {
+        "ENABLE_METRICS": {
+          "type": "boolean"
+        },
+        "METRICS_PROVIDER": {
+          "type": "string",
+          "enum": ["prometheus", "datadog", "newrelic", "cloudwatch"]
+        },
+        "METRICS_PORT": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "ENABLE_TRACING": {
+          "type": "boolean"
+        },
+        "TRACING_PROVIDER": {
+          "type": "string",
+          "enum": ["jaeger", "zipkin", "datadog", "newrelic"]
+        },
+        "TRACE_SAMPLE_RATE": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ENABLE_HEALTH_CHECK": {
+          "type": "boolean"
+        },
+        "HEALTH_CHECK_INTERVAL": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "ENABLE_ALERTS": {
+          "type": "boolean"
+        },
+        "ALERT_CHANNELS": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["email", "slack", "pagerduty", "webhook"]
+          },
+          "uniqueItems": true
+        },
+        "ALERT_THRESHOLDS": {
+          "type": "object",
+          "properties": {
+            "CPU_PERCENT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "MEMORY_PERCENT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "DISK_PERCENT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "ERROR_RATE": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "RESPONSE_TIME_MS": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["ENABLE_METRICS", "ENABLE_HEALTH_CHECK"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["MONITORING"],
+  "additionalProperties": false
+}

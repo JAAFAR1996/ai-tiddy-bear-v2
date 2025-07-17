@@ -1,0 +1,11 @@
+--- a/src/CORE_FEATURES_TEST.py
++++ b/src/CORE_FEATURES_TEST.py
+@@ -24,7 +24,7 @@
+ # Configure logging
+ logging.basicConfig(
+     level=logging.INFO,
+-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
++    format='{asctime} - {name} - {levelname} - {message}'
+ )
+ logger = logging.getLogger(__name__)
+ 

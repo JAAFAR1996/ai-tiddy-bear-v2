@@ -1,0 +1,22 @@
+--- a/src/infrastructure/config/env_security.py
++++ b/src/infrastructure/config/env_security.py
+@@ -200,7 +200,7 @@
+         for key, value in self._loaded_vars.items():
+             safe_dict[key] = self.mask_value(key, value)
+         return safe_dict
+-
+-    def validate_production_security(self) -> List[str]:
++    
++    def validate_prod_security(self) -> List[str]:
+         """
+         Validate production security requirements.
+ 
+@@ -310,7 +310,7 @@
+ 
+     def _validate_environment(self) -> None:
+         """Validate environment configuration."""
+-        errors = self.validate_production_security()
++        errors = self.validate_prod_security()
+ 
+         if errors:
+             for error in errors:

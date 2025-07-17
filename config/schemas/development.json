@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Development Schema",
+  "description": "Development and debugging settings schema",
+  "type": "object",
+  "properties": {
+    "DEVELOPMENT": {
+      "type": "object",
+      "description": "Development and debugging settings",
+      "properties": {
+        "ENABLE_DEBUG_MODE": {
+          "type": "boolean"
+        },
+        "ENABLE_SWAGGER_UI": {
+          "type": "boolean"
+        },
+        "ENABLE_GRAPHQL": {
+          "type": "boolean"
+        },
+        "MOCK_EXTERNAL_SERVICES": {
+          "type": "boolean"
+        },
+        "ENABLE_HOT_RELOAD": {
+          "type": "boolean"
+        },
+        "ENABLE_PROFILER": {
+          "type": "boolean"
+        },
+        "TEST_MODE": {
+          "type": "boolean"
+        },
+        "SEED_DATABASE": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["DEVELOPMENT"],
+  "additionalProperties": false
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Server Configuration Schema",
+  "description": "Server configuration settings schema",
+  "type": "object",
+  "properties": {
+    "SERVER": {
+      "type": "object",
+      "description": "Server configuration",
+      "properties": {
+        "FLASK_HOST": {
+          "type": "string",
+          "format": "ipv4",
+          "default": "0.0.0.0"
+        },
+        "FLASK_PORT": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "WEBSOCKET_PORT": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "ENABLE_CORS": {
+          "type": "boolean"
+        },
+        "CORS_ORIGINS": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "MAX_CONTENT_LENGTH_MB": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "REQUEST_TIMEOUT_SECONDS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "ENABLE_HTTPS": {
+          "type": "boolean"
+        },
+        "SSL_CERT_PATH": {
+          "type": ["string", "null"]
+        },
+        "SSL_KEY_PATH": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["FLASK_HOST", "FLASK_PORT", "WEBSOCKET_PORT"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["SERVER"],
+  "additionalProperties": false
+}

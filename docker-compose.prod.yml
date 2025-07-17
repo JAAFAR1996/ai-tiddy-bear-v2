@@ -1,0 +1,323 @@
+# Production Docker Compose for AI Teddy Bear
+# Complete production deployment with all services
+
+version: '3.8'
+
+services:
+  # Main Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: ai-teddy-backend:latest
+    container_name: ai-teddy-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://ai_teddy_user:${DB_PASSWORD}@db:5432/ai_teddy_prod
+      - REDIS_URL=redis://redis:6379/0
+      # JWT_SECRET_KEY is a critical secret and must be injected via a secure secrets management solution (e.g., Vault, AWS Secrets Manager) at runtime. Do NOT hardcode or expose directly.
+      # OPENAI_API_KEY is a critical secret and must be managed by a secure secrets management solution. Do NOT expose directly.
+      - SENTRY_DSN=${SENTRY_DSN}
+      # COPPA_ENCRYPTION_KEY is critical for child data protection and must be managed by a robust secrets management system.
+      - LOG_LEVEL=INFO
+      - REQUIRE_HTTPS=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - app_logs:/app/logs
+      - app_data:/app/data
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: ai-teddy-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=ai_teddy_prod
+      - POSTGRES_USER=ai_teddy_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 # Used only during init; ensure DATABASE_URL and pg_hba.conf enforce SCRAM for client connections.
+      # Connection pooling settings for SQLAlchemy (passed to application via env vars)
+      - DB_POOL_SIZE=20 # Consider externalizing for dynamic tuning based on production load.
+      - DB_MAX_OVERFLOW=0 # Consider externalizing for dynamic tuning based on production load.
+      - DB_POOL_RECYCLE=3600 # Consider externalizing for dynamic tuning based on production load.
+      - DB_TIMEOUT=5 # Consider externalizing for dynamic tuning based on production load.
+      - DB_ECHO=false # Consider externalizing for dynamic tuning based on production load.
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_teddy_user -d ai_teddy_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ai-teddy-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"] # Using a lightweight 'ping' command for robust Redis health checks, avoiding data modification.
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: ai-teddy-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # SSL certificates should be managed via automated provisioning and renewal (e.g., Certbot, cloud provider service) and dynamically injected.
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - ai-teddy-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Background Task Worker (Optional)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: ai-teddy-backend:latest
+    container_name: ai-teddy-worker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://ai_teddy_user:${DB_PASSWORD}@db:5432/ai_teddy_prod
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WORKER_MODE=true
+    command: ["python", "-m", "src.infrastructure.tasks.worker"]
+    volumes:
+      - app_logs:/app/logs
+      - app_data:/app/data
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # Monitoring - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-teddy-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - ai-teddy-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h' # Consider externalizing this retention time for dynamic adjustment.
+      - '--web.enable-lifecycle'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Monitoring - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-teddy-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false # Ensures user signup is disabled by default for security.
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD} # CRITICAL: Admin password must be strong and securely managed.
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Log Aggregation - ELK Stack (Optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ai-teddy-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true # CRITICAL: X-Pack security is enabled for production to prevent unauthorized access.
+      - xpack.security.authc.token.enabled=true # Enable token-based authentication
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD} # CRITICAL: Use strong, unique passwords for default users, managed via a secrets manager.
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD} # CRITICAL: Use strong, unique passwords for default users, managed via a secrets manager.
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: ai-teddy-logstash
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    environment:
+      - "ELASTICSEARCH_USERNAME=logstash_system" # Ensure Logstash uses a dedicated user with proper permissions.
+      - "ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}" # Use managed secret for Logstash to connect to Elasticsearch.
+    volumes:
+      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - app_logs:/app/logs:ro # Read-only for security; ensure this does not hinder advanced Logstash features requiring write access.
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: ai-teddy-kibana
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system # Ensure Kibana uses a dedicated user with proper permissions.
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD} # Use managed secret for Kibana to connect to Elasticsearch.
+    networks:
+      - ai-teddy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+# Networks
+networks:
+  ai-teddy-network:
+    driver: bridge
+    name: ai-teddy-network
+
+# Volumes
+volumes:
+  postgres_data:
+    driver: local
+    name: ai-teddy-postgres-data
+  redis_data:
+    driver: local
+    name: ai-teddy-redis-data
+  app_logs:
+    driver: local
+    name: ai-teddy-app-logs
+  app_data:
+    driver: local
+    name: ai-teddy-app-data
+  nginx_logs:
+    driver: local
+    name: ai-teddy-nginx-logs
+  prometheus_data:
+    driver: local
+    name: ai-teddy-prometheus-data
+  grafana_data:
+    driver: local
+    name: ai-teddy-grafana-data
+  elasticsearch_data:
+    driver: local
+    name: ai-teddy-elasticsearch-data

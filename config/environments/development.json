@@ -1,0 +1,305 @@
+{
+  "APPLICATION": {
+    "NAME": "AI Teddy Bear",
+    "VERSION": "1.0.0",
+    "ENVIRONMENT": "development",
+    "DEBUG": false,
+    "SECRET_KEY": "${DEVELOPMENT_APPLICATION_SECRET_KEY}",
+    "TIMEZONE": "UTC"
+  },
+  "SERVER": {
+    "FLASK_HOST": "0.0.0.0",
+    "FLASK_PORT": 5000,
+    "WEBSOCKET_PORT": 8080,
+    "ENABLE_CORS": true,
+    "CORS_ORIGINS": ["http://localhost:3000", "http://localhost:5000"],
+    "MAX_CONTENT_LENGTH_MB": 16,
+    "REQUEST_TIMEOUT_SECONDS": 30,
+    "ENABLE_HTTPS": false,
+    "SSL_CERT_PATH": null,
+    "SSL_KEY_PATH": null
+  },
+  "DATABASE": {
+    "DATABASE_URL": "sqlite:///data/teddy_bear.db",
+    "REDIS_URL": "redis://localhost:6379/0",
+    "MONGODB_URL": null,
+    "CONNECTION_POOL_SIZE": 10,
+    "CONNECTION_TIMEOUT": 5000,
+    "ENABLE_MIGRATIONS": true,
+    "BACKUP_ENABLED": true,
+    "BACKUP_SCHEDULE": "0 2 * * *"
+  },
+  "LLM_SETTINGS": {
+    "DEFAULT_PROVIDER": "openai",
+    "DEFAULT_MODEL": "gpt-4-turbo",
+    "FALLBACK_PROVIDER": "anthropic",
+    "FALLBACK_MODEL": "claude-3-sonnet",
+    "MAX_TOKENS": 2000,
+    "TEMPERATURE": 0.7,
+    "TOP_P": 0.9,
+    "FREQUENCY_PENALTY": 0.5,
+    "PRESENCE_PENALTY": 0.5,
+    "SYSTEM_PROMPT": "You are a friendly, educational AI teddy bear designed to interact safely with children. Always be kind, patient, and age-appropriate in your responses.",
+    "ENABLE_FUNCTION_CALLING": true,
+    "STREAM_RESPONSES": true,
+    "CONTEXT_WINDOW_SIZE": 4096,
+    "MEMORY_TYPE": "conversation_buffer_window",
+    "MEMORY_SIZE": 10
+  },
+  "API_KEYS": {
+    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+    "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+    "GOOGLE_GEMINI_API_KEY": "${GOOGLE_GEMINI_API_KEY}",
+    "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}",
+    "AZURE_SPEECH_KEY": "${AZURE_SPEECH_KEY}",
+    "AZURE_SPEECH_REGION": "${AZURE_SPEECH_REGION}",
+    "HUGGINGFACE_API_KEY": "${HUGGINGFACE_API_KEY}",
+    "COHERE_API_KEY": "${COHERE_API_KEY}",
+    "PERSPECTIVE_API_KEY": "${PERSPECTIVE_API_KEY}",
+    "SENTRY_DSN": "${SENTRY_DSN}"
+  },
+  "VOICE_SETTINGS": {
+    "DEFAULT_ENGINE": "elevenlabs",
+    "DEFAULT_VOICE_ID": "21m00Tcm4TlvDq8ikWAM",
+    "DEFAULT_LANGUAGE": "en-US",
+    "VOICE_SPEED": 1.0,
+    "VOICE_PITCH": 1.0,
+    "VOICE_VOLUME": 0.8,
+    "ENABLE_VOICE_CLONING": false,
+    "VOICE_SAMPLE_RATE": 24000,
+    "VOICE_CHANNELS": 1,
+    "ENABLE_EMOTION_SYNTHESIS": true,
+    "EMOTION_INTENSITY": 0.7,
+    "SUPPORTED_LANGUAGES": [
+      "en-US",
+      "en-GB",
+      "es-ES",
+      "es-MX",
+      "fr-FR",
+      "de-DE",
+      "it-IT",
+      "pt-BR",
+      "ja-JP",
+      "ko-KR",
+      "zh-CN",
+      "zh-TW",
+      "ar-SA",
+      "hi-IN",
+      "ru-RU"
+    ],
+    "VOICE_CACHE_ENABLED": true,
+    "VOICE_CACHE_MAX_SIZE_MB": 500,
+    "VOICE_CACHE_TTL_HOURS": 24
+  },
+  "AUDIO_PROCESSING": {
+    "SAMPLE_RATE": 16000,
+    "CHANNELS": 1,
+    "BIT_DEPTH": 16,
+    "FRAME_DURATION_MS": 20,
+    "BUFFER_SIZE": 1024,
+    "NOISE_REDUCTION_LEVEL": 0.7,
+    "VAD_AGGRESSIVENESS": 2,
+    "NORMALIZE_AUDIO": true,
+    "REMOVE_SILENCE": true,
+    "ENHANCE_VOICE": true,
+    "ECHO_CANCELLATION": true,
+    "AUDIO_CODEC": "opus",
+    "STREAMING_CHUNK_SIZE": 1024
+  },
+  "STREAMING_SETTINGS": {
+    "ENABLE_WEBSOCKET": true,
+    "WEBSOCKET_PING_INTERVAL": 25,
+    "WEBSOCKET_PING_TIMEOUT": 60,
+    "MAX_BUFFER_SIZE": 1000000,
+    "STREAM_TIMEOUT_SECONDS": 300,
+    "RECONNECT_ATTEMPTS": 3,
+    "RECONNECT_DELAY_MS": 1000,
+    "ENABLE_COMPRESSION": true,
+    "COMPRESSION_LEVEL": 6
+  },
+  "CONTENT_MODERATION": {
+    "ENABLE_MODERATION": true,
+    "MODERATION_PROVIDER": "perspective",
+    "SAFETY_LEVEL": "STRICT",
+    "BLOCK_THRESHOLD": 0.7,
+    "WARNING_THRESHOLD": 0.5,
+    "CATEGORIES": {
+      "TOXICITY": true,
+      "SEVERE_TOXICITY": true,
+      "IDENTITY_ATTACK": true,
+      "INSULT": true,
+      "PROFANITY": true,
+      "THREAT": true,
+      "SEXUAL_CONTENT": true,
+      "VIOLENCE": true,
+      "SELF_HARM": true,
+      "HATE_SPEECH": true
+    },
+    "CUSTOM_BLOCK_LIST": ["drugs", "alcohol", "weapons"],
+    "CUSTOM_ALLOW_LIST": ["medicine", "doctor", "hospital"],
+    "LOG_VIOLATIONS": true,
+    "NOTIFY_PARENTS": true,
+    "AUTO_REPORT_THRESHOLD": 0.9
+  },
+  "PARENTAL_CONTROLS": {
+    "ENABLE_DASHBOARD": true,
+    "REQUIRE_PARENT_APPROVAL": true,
+    "DEFAULT_TIME_LIMITS": {
+      "DAILY_MINUTES": 60,
+      "SESSION_MINUTES": 20,
+      "BREAK_MINUTES": 10
+    },
+    "CONTENT_FILTERS": {
+      "EDUCATIONAL_ONLY": false,
+      "BLOCK_EXTERNAL_CONTENT": true,
+      "APPROVED_TOPICS": ["science", "math", "reading", "art", "music"],
+      "BLOCKED_TOPICS": ["politics", "religion", "violence"]
+    },
+    "ACTIVITY_REPORTS": {
+      "ENABLE_DAILY": true,
+      "ENABLE_WEEKLY": true,
+      "EMAIL_REPORTS": true,
+      "INCLUDE_TRANSCRIPTS": false
+    },
+    "EMERGENCY_CONTACTS": {
+      "ENABLE_PANIC_BUTTON": true,
+      "EMERGENCY_PHRASE": "help me teddy",
+      "NOTIFY_METHODS": ["email", "sms", "app"]
+    }
+  },
+  "PRIVACY_COMPLIANCE": {
+    "GDPR_ENABLED": true,
+    "COPPA_ENABLED": true,
+    "CCPA_ENABLED": true,
+    "DATA_RETENTION_DAYS": 30,
+    "REQUIRE_CONSENT": true,
+    "ANONYMIZE_DATA": true,
+    "ALLOW_DATA_EXPORT": true,
+    "ALLOW_DATA_DELETION": true,
+    "ENCRYPT_AT_REST": true,
+    "ENCRYPT_IN_TRANSIT": true,
+    "PII_DETECTION": true,
+    "PII_MASKING": true
+  },
+  "INTERACTION_LIMITS": {
+    "MAX_DAILY_INTERACTIONS": 50,
+    "MAX_INTERACTION_DURATION_SECONDS": 1200,
+    "MIN_INTERACTION_INTERVAL_SECONDS": 30,
+    "MAX_CONSECUTIVE_INTERACTIONS": 5,
+    "COOLDOWN_PERIOD_MINUTES": 15,
+    "AGE_RANGES": {
+      "PRESCHOOL": {
+        "MIN": 3,
+        "MAX": 5,
+        "MAX_DAILY_MINUTES": 30
+      },
+      "ELEMENTARY": {
+        "MIN": 6,
+        "MAX": 8,
+        "MAX_DAILY_MINUTES": 45
+      },
+      "MIDDLE": {
+        "MIN": 9,
+        "MAX": 12,
+        "MAX_DAILY_MINUTES": 60
+      }
+    }
+  },
+  "LOGGING_CONFIG": {
+    "LOG_LEVEL": "INFO",
+    "LOG_DIR": "./logs",
+    "LOG_FORMAT": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "MAX_LOG_FILES": 10,
+    "MAX_LOG_FILE_SIZE_MB": 50,
+    "LOG_ROTATION": "daily",
+    "ENABLE_CONSOLE_LOG": true,
+    "ENABLE_FILE_LOG": true,
+    "ENABLE_SYSLOG": false,
+    "SENSITIVE_DATA_MASK": true,
+    "LOG_RETENTION_DAYS": 90,
+    "ENABLE_AUDIT_LOG": true,
+    "AUDIT_LOG_FILE": "audit.log"
+  },
+  "PERFORMANCE_SETTINGS": {
+    "CACHE_ENABLED": true,
+    "CACHE_BACKEND": "redis",
+    "CACHE_TTL_SECONDS": 3600,
+    "CACHE_MAX_SIZE_MB": 1000,
+    "MAX_CONCURRENT_REQUESTS": 10,
+    "MAX_REQUESTS_PER_MINUTE": 60,
+    "RATE_LIMIT_ENABLED": true,
+    "REQUEST_TIMEOUT_SECONDS": 30,
+    "ENABLE_CONNECTION_POOLING": true,
+    "CONNECTION_POOL_SIZE": 20,
+    "ENABLE_ASYNC_PROCESSING": true,
+    "WORKER_THREADS": 4,
+    "ENABLE_PROFILING": false
+  },
+  "MONITORING": {
+    "ENABLE_METRICS": true,
+    "METRICS_PROVIDER": "prometheus",
+    "METRICS_PORT": 9090,
+    "ENABLE_TRACING": true,
+    "TRACING_PROVIDER": "jaeger",
+    "TRACE_SAMPLE_RATE": 0.1,
+    "ENABLE_HEALTH_CHECK": true,
+    "HEALTH_CHECK_INTERVAL": 30,
+    "ENABLE_ALERTS": true,
+    "ALERT_CHANNELS": ["email", "slack"],
+    "ALERT_THRESHOLDS": {
+      "CPU_PERCENT": 80,
+      "MEMORY_PERCENT": 85,
+      "DISK_PERCENT": 90,
+      "ERROR_RATE": 0.05,
+      "RESPONSE_TIME_MS": 1000
+    }
+  },
+  "FEATURE_FLAGS": {
+    "ENABLE_VOICE_STREAMING": true,
+    "ENABLE_VIDEO_SUPPORT": false,
+    "ENABLE_MULTILINGUAL": true,
+    "ENABLE_OFFLINE_MODE": false,
+    "ENABLE_CUSTOM_VOICES": false,
+    "ENABLE_EMOTION_DETECTION": true,
+    "ENABLE_GESTURE_CONTROL": false,
+    "ENABLE_AR_FEATURES": false,
+    "ENABLE_EDUCATIONAL_GAMES": true,
+    "ENABLE_STORY_MODE": true,
+    "ENABLE_LEARNING_ANALYTICS": true,
+    "ENABLE_SOCIAL_FEATURES": false,
+    "ENABLE_CLOUD_BACKUP": true,
+    "ENABLE_BETA_FEATURES": false
+  },
+  "INTEGRATIONS": {
+    "ENABLE_SCHOOL_INTEGRATION": false,
+    "ENABLE_SMART_HOME": false,
+    "ENABLE_WEARABLES": false,
+    "SUPPORTED_PLATFORMS": ["ios", "android", "web"],
+    "WEBHOOK_ENDPOINTS": {
+      "CONVERSATION_START": null,
+      "CONVERSATION_END": null,
+      "SAFETY_ALERT": null,
+      "PARENT_NOTIFICATION": null
+    }
+  },
+  "BACKUP_RECOVERY": {
+    "ENABLE_AUTO_BACKUP": true,
+    "BACKUP_FREQUENCY": "daily",
+    "BACKUP_RETENTION_DAYS": 30,
+    "BACKUP_LOCATION": "./backups",
+    "ENABLE_CLOUD_BACKUP": false,
+    "CLOUD_BACKUP_PROVIDER": null,
+    "ENABLE_POINT_IN_TIME_RECOVERY": false,
+    "DISASTER_RECOVERY_ENABLED": false
+  },
+  "DEVELOPMENT": {
+    "ENABLE_DEBUG_MODE": false,
+    "ENABLE_SWAGGER_UI": true,
+    "ENABLE_GRAPHQL": false,
+    "MOCK_EXTERNAL_SERVICES": false,
+    "ENABLE_HOT_RELOAD": true,
+    "ENABLE_PROFILER": false,
+    "TEST_MODE": false,
+    "SEED_DATABASE": false
+  }
+}

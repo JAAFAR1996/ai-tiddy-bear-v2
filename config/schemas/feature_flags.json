@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Feature Flags Schema",
+  "description": "Feature toggles schema",
+  "type": "object",
+  "properties": {
+    "FEATURE_FLAGS": {
+      "type": "object",
+      "description": "Feature toggles",
+      "properties": {
+        "ENABLE_VOICE_STREAMING": {
+          "type": "boolean"
+        },
+        "ENABLE_VIDEO_SUPPORT": {
+          "type": "boolean"
+        },
+        "ENABLE_MULTILINGUAL": {
+          "type": "boolean"
+        },
+        "ENABLE_OFFLINE_MODE": {
+          "type": "boolean"
+        },
+        "ENABLE_CUSTOM_VOICES": {
+          "type": "boolean"
+        },
+        "ENABLE_EMOTION_DETECTION": {
+          "type": "boolean"
+        },
+        "ENABLE_GESTURE_CONTROL": {
+          "type": "boolean"
+        },
+        "ENABLE_AR_FEATURES": {
+          "type": "boolean"
+        },
+        "ENABLE_EDUCATIONAL_GAMES": {
+          "type": "boolean"
+        },
+        "ENABLE_STORY_MODE": {
+          "type": "boolean"
+        },
+        "ENABLE_LEARNING_ANALYTICS": {
+          "type": "boolean"
+        },
+        "ENABLE_SOCIAL_FEATURES": {
+          "type": "boolean"
+        },
+        "ENABLE_CLOUD_BACKUP": {
+          "type": "boolean"
+        },
+        "ENABLE_BETA_FEATURES": {
+          "type": "boolean"
+        },
+        "ENABLE_LOCAL_MODELS": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["FEATURE_FLAGS"],
+  "additionalProperties": false
+}

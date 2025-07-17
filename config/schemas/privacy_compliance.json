@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Privacy Compliance Schema",
+  "description": "Privacy and compliance settings schema",
+  "type": "object",
+  "properties": {
+    "PRIVACY_COMPLIANCE": {
+      "type": "object",
+      "description": "Privacy and compliance settings",
+      "properties": {
+        "GDPR_ENABLED": {
+          "type": "boolean"
+        },
+        "COPPA_ENABLED": {
+          "type": "boolean"
+        },
+        "CCPA_ENABLED": {
+          "type": "boolean"
+        },
+        "DATA_RETENTION_DAYS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3650
+        },
+        "REQUIRE_CONSENT": {
+          "type": "boolean"
+        },
+        "ANONYMIZE_DATA": {
+          "type": "boolean"
+        },
+        "ALLOW_DATA_EXPORT": {
+          "type": "boolean"
+        },
+        "ALLOW_DATA_DELETION": {
+          "type": "boolean"
+        },
+        "ENCRYPT_AT_REST": {
+          "type": "boolean"
+        },
+        "ENCRYPT_IN_TRANSIT": {
+          "type": "boolean"
+        },
+        "PII_DETECTION": {
+          "type": "boolean"
+        },
+        "PII_MASKING": {
+          "type": "boolean"
+        }
+      },
+      "required": ["GDPR_ENABLED", "COPPA_ENABLED"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["PRIVACY_COMPLIANCE"],
+  "additionalProperties": false
+}

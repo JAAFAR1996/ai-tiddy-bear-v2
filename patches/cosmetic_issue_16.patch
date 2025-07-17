@@ -1,0 +1,144 @@
+--- a/src/main.py
++++ b/src/main.py
+@@ -50,7 +50,12 @@
+ project_root = Path(__file__).parent.parent.resolve()
+ 
+ class SecurityException(Exception):
+-    """Custom exception for security-related issues."""
++    """Custom exception for security-related issues.
++
++    This exception is raised when a security-sensitive configuration
++    or operation fails validation, indicating a potential vulnerability
++    or misconfiguration that could compromise the system.
++    """
+     pass
+ 
+ # Enforce production safety checks
+--- a/src/infrastructure/logging_config.py
++++ b/src/infrastructure/logging_config.py
+@@ -40,11 +40,18 @@
+     environment: str = "production",
+     log_level: Optional[str] = None,
+     log_file: Optional[str] = None,
+-) -> None:
+-    """
+-    Configures application-wide logging with consistent standards and security.
+-
+-    Ensures sensitive data is not logged and appropriate verbosity is maintained.
+-    """
++) -> None:
++    """
++    Configures application-wide logging with consistent standards and security.
++
++    Ensures sensitive data is not logged and appropriate verbosity is maintained.
++
++    Args:
++        environment (str): The current operating environment (e.g., "production", "development").
++        log_level (Optional[str]): The desired base logging level (e.g., "INFO", "DEBUG").
++        log_file (Optional[str]): Path to a file for logging output. If None, logs to console only.
++    """
+     # Determine base log level
+     if log_level:
+         base_level = getattr(logging, log_level.upper(), logging.INFO)
+@@ -110,14 +117,20 @@
+ 
+ def get_logger(name: str, component: Optional[str] = None) -> logging.Logger:
+     """
+-    Get a logger with appropriate configuration.
+-
+-
+-    Args:
+-        name: Logger name (usually __name__)
+-        component: Component type for level determination
+-
+-    Returns:
+-        Configured logger instance
+-    """
++    Retrieves a logger instance with appropriate configuration based on component.
++
++
++    Args:
++        name (str): The name of the logger (usually `__name__`).
++        component (Optional[str]): The component type for level determination (e.g., "security", "api").
++
++    Returns:
++        logging.Logger: A configured logger instance.
++    """
+     logger = logging.getLogger(name)
+ 
+     # Set appropriate level based on component
+@@ -134,10 +147,16 @@
+     details: Dict[str, Any],
+     severity: str = "WARNING"
+ ) -> None:
+-    """
+-    Log security-related events with consistent format.
+-
+-    """
++    """
++    Logs security-related events with a consistent format.
++
++
++    Args:
++        event_type (str): A string identifying the type of security event (e.g., "LOGIN_FAILED", "UNAUTHORIZED_ACCESS").
++        details (Dict[str, Any]): A dictionary containing relevant details about the event. Sensitive data should be pre-redacted.
++        severity (str): The severity level of the event (e.g., "INFO", "WARNING", "ERROR", "CRITICAL"). Defaults to "WARNING".
++    """
+     security_logger = logging.getLogger("src.security")
+ 
+     # Ensure minimum WARNING level for security events
+@@ -156,9 +175,13 @@
+ 
+ class ChildSafetyFilter(logging.Filter):
+     """
+-    Redacts sensitive information from log records to protect child privacy.
+-    """
++    Redacts sensitive information from log records to protect child privacy.
++
++    This filter inspects log messages and arguments, applying redaction rules
++    to prevent Personally Identifiable Information (PII) from being written
++    to logs. It is crucial for maintaining COPPA compliance and data privacy.
++    """
+     def filter(self, record: logging.LogRecord) -> bool:
+         # Implement redaction logic here
+         if isinstance(record.msg, str):
+@@ -182,9 +205,13 @@
+ 
+ class ProductionFormatter(logging.Formatter):
+     """
+-    A custom log formatter for production environments.
+-    - Omits function names and line numbers to avoid leaking code structure.
+-    - Formats logs as JSON for easier parsing by log management systems.
+-    """
++    A custom log formatter for production environments.
++
++    This formatter is designed to: 
++    - Omit function names and line numbers to avoid leaking code structure.
++    - Format logs as JSON for easier parsing by log management systems.
++    - Ensure sensitive data is handled by `ChildSafetyFilter` before formatting.
++    """
+     def format(self, record: logging.LogRecord) -> str:
+         log_object = {
+             "timestamp": self.formatTime(record, self.datefmt),
+@@ -205,8 +232,16 @@
+     safe: bool,
+     details: Optional[Dict[str, Any]] = None
+ ) -> None:
+-    """
+-    Log child interactions with enhanced privacy protection using BLAKE2b hashing.
+-    """
++    """
++    Logs child interactions with enhanced privacy protection using BLAKE2b hashing.
++
++    This function ensures that child IDs are hashed before logging to protect privacy,
++    and includes relevant interaction details for auditing and analysis.
++
++    Args:
++        interaction_type (str): The type of interaction (e.g., "AI_RESPONSE", "AUDIO_INPUT").
++        child_id (str): The unique identifier of the child. This will be hashed before logging.
++        safe (bool): Indicates whether the interaction was deemed safe by content filters.
++        details (Optional[Dict[str, Any]]): Additional details about the interaction, which will be sanitized.
++    """
+     child_logger = logging.getLogger("src.child_safety")
+ 
+     # Use a more secure hashing algorithm for the child ID

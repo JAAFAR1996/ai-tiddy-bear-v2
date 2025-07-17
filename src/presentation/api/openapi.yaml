@@ -1,0 +1,1128 @@
+openapi: 3.1.0
+info:
+  title: AI Teddy Bear API
+  description: |
+    API documentation for AI Teddy Bear - A smart interactive toy for children
+    
+    ## Features
+    - Real-time voice interaction
+    - Emotion detection and analysis
+    - Educational content delivery
+    - Parent dashboard and monitoring
+    - Safety and content moderation
+    
+  version: 2.0.0
+  contact:
+    name: API Support
+    email: support@aiteddybear.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: https://api.aiteddybear.com/v1
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Children
+    description: Child profile management
+  - name: Conversations
+    description: Voice conversations and interactions
+  - name: Emotions
+    description: Emotion detection and analysis
+  - name: Reports
+    description: Parent reports and analytics
+  - name: ESP32
+    description: Hardware device endpoints
+  - name: WebSocket
+    description: Real-time communication
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: "ERR_001"
+        message:
+          type: string
+          example: "An error occurred"
+        details:
+          type: object
+          additionalProperties: true
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [parent, admin]
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserProfile:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+        language:
+          type: string
+          enum: [ar, en]
+        timezone:
+          type: string
+
+    Child:
+      type: object
+      required:
+        - id
+        - name
+        - age
+        - parentId
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        age:
+          type: integer
+          minimum: 2
+          maximum: 12
+        gender:
+          type: string
+          enum: [male, female, other]
+        parentId:
+          type: string
+          format: uuid
+        preferences:
+          $ref: '#/components/schemas/ChildPreferences'
+        statistics:
+          $ref: '#/components/schemas/ChildStatistics'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ChildPreferences:
+      type: object
+      properties:
+        language:
+          type: string
+          enum: [ar, en]
+        interests:
+          type: array
+          items:
+            type: string
+        educationLevel:
+          type: string
+          enum: [preschool, kindergarten, elementary]
+        storyThemes:
+          type: array
+          items:
+            type: string
+
+    ChildStatistics:
+      type: object
+      properties:
+        totalConversations:
+          type: integer
+        totalInteractionTime:
+          type: integer
+          description: Total interaction time in seconds
+        averageSessionDuration:
+          type: integer
+          description: Average session duration in seconds
+        emotionalTrend:
+          type: object
+          additionalProperties:
+            type: number
+
+    Conversation:
+      type: object
+      required:
+        - id
+        - childId
+        - startTime
+      properties:
+        id:
+          type: string
+          format: uuid
+        childId:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          description: Duration in seconds
+        transcript:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationMessage'
+        emotions:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmotionData'
+        summary:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    ConversationMessage:
+      type: object
+      required:
+        - speaker
+        - text
+        - timestamp
+      properties:
+        speaker:
+          type: string
+          enum: [child, teddy]
+        text:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        audioUrl:
+          type: string
+          format: uri
+
+    EmotionData:
+      type: object
+      required:
+        - emotion
+        - confidence
+        - timestamp
+      properties:
+        emotion:
+          type: string
+          enum: [happy, sad, angry, neutral, excited, calm, confused]
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        timestamp:
+          type: string
+          format: date-time
+        context:
+          type: string
+
+    Report:
+      type: object
+      required:
+        - id
+        - childId
+        - type
+        - period
+      properties:
+        id:
+          type: string
+          format: uuid
+        childId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+        period:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        metrics:
+          $ref: '#/components/schemas/ReportMetrics'
+        insights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Insight'
+        generatedAt:
+          type: string
+          format: date-time
+
+    ReportMetrics:
+      type: object
+      properties:
+        conversationCount:
+          type: integer
+        totalInteractionTime:
+          type: integer
+        emotionalDistribution:
+          type: object
+          additionalProperties:
+            type: number
+        topicFrequency:
+          type: object
+          additionalProperties:
+            type: integer
+        progressIndicators:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressIndicator'
+
+    ProgressIndicator:
+      type: object
+      properties:
+        area:
+          type: string
+          enum: [language, social, emotional, cognitive]
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        trend:
+          type: string
+          enum: [improving, stable, declining]
+
+    Insight:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [achievement, concern, recommendation]
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+        actionable:
+          type: boolean
+
+    ESP32Status:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        online:
+          type: boolean
+        batteryLevel:
+          type: number
+          minimum: 0
+          maximum: 100
+        firmwareVersion:
+          type: string
+        lastSeen:
+          type: string
+          format: date-time
+        audioQuality:
+          type: string
+          enum: [excellent, good, fair, poor]
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      description: Register a new user with email, password, and profile information.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - role
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "new.parent@example.com"
+                password:
+                  type: string
+                  format: password
+                  minLength: 12
+                  example: "SecurePa$$w0rd2025"
+                role:
+                  type: string
+                  enum: [parent]
+                  example: "parent"
+                profile:
+                  $ref: '#/components/schemas/UserProfile'
+              examples:
+                parentRegistration:
+                  summary: Example Parent Registration
+                  value:
+                    email: "new.parent@example.com"
+                    password: "SecurePa$$w0rd2025"
+                    role: "parent"
+                    profile:
+                      firstName: "Jane"
+                      lastName: "Doe"
+                      phoneNumber: "+15551234567"
+                      language: "en"
+                      timezone: "America/New_York"
+      responses:
+        201:
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+              examples:
+                userCreated:
+                  summary: Successful User Registration
+                  value:
+                    user:
+                      id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                      email: "new.parent@example.com"
+                      role: "parent"
+                      profile:
+                        firstName: "Jane"
+                        lastName: "Doe"
+                        phoneNumber: "+15551234567"
+                        language: "en"
+                        timezone: "America/New_York"
+                      createdAt: "2025-01-11T12:00:00Z"
+                      updatedAt: "2025-01-11T12:00:00Z"
+                    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidEmail:
+                  summary: Invalid Email Format
+                  value:
+                    code: "ERR_AUTH_001"
+                    message: "Invalid email format"
+                    details:
+                      field: "email"
+                      value: "invalid-email"
+                passwordTooShort:
+                  summary: Password Too Short
+                  value:
+                    code: "ERR_AUTH_002"
+                    message: "Password must be at least 12 characters long"
+                    details:
+                      field: "password"
+                      minLength: 12
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      description: Authenticate a user and receive access and refresh tokens.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                  refreshToken:
+                    type: string
+        401:
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      description: Refresh an expired access token using a valid refresh token.
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        200:
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  refreshToken:
+                    type: string
+
+  /children:
+    get:
+      tags: [Children]
+      summary: Get all children for a parent
+      description: Retrieves a list of all children associated with the authenticated parent's account.
+      operationId: getChildren
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of children
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  children:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Child'
+                  total:
+                    type: integer
+
+    post:
+      tags: [Children]
+      summary: Add a new child
+      description: Add a new child profile to the parent's account.
+      operationId: addChild
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - age
+              properties:
+                name:
+                  type: string
+                age:
+                  type: integer
+                  minimum: 2
+                  maximum: 12
+                gender:
+                  type: string
+                  enum: [male, female, other]
+                preferences:
+                  $ref: '#/components/schemas/ChildPreferences'
+      responses:
+        201:
+          description: Child created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+
+  /children/{childId}:
+    get:
+      tags: [Children]
+      summary: Get child details
+      description: Retrieves detailed information for a specific child by their unique ID.
+      operationId: getChildById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Child details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+        404:
+          description: Child not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags: [Children]
+      summary: Update child information
+      description: Updates the profile information for a specific child.
+      operationId: updateChild
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                age:
+                  type: integer
+                preferences:
+                  $ref: '#/components/schemas/ChildPreferences'
+      responses:
+        200:
+          description: Child updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+
+    delete:
+      tags: [Children]
+      summary: Delete a child profile
+      description: Deletes a child's profile. This is a soft delete operation.
+      operationId: deleteChild
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Child deleted
+
+  /conversations:
+    get:
+      tags: [Conversations]
+      summary: Get conversations
+      description: Retrieves a list of conversations, with optional filtering by child, date, and pagination.
+      operationId: getConversations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: childId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+                  total:
+                    type: integer
+                  hasMore:
+                    type: boolean
+
+    post:
+      tags: [Conversations]
+      summary: Start a new conversation
+      description: Initiates a new conversation session for a child and returns a session token.
+      operationId: startConversation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - childId
+              properties:
+                childId:
+                  type: string
+                  format: uuid
+                deviceId:
+                  type: string
+      responses:
+        201:
+          description: Conversation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversationId:
+                    type: string
+                    format: uuid
+                  sessionToken:
+                    type: string
+
+  /conversations/{conversationId}:
+    get:
+      tags: [Conversations]
+      summary: Get conversation details
+      description: Retrieves the full details of a single conversation, including transcript and emotion analysis.
+      operationId: getConversationById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Conversation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+
+    patch:
+      tags: [Conversations]
+      summary: End conversation
+      description: Marks a conversation as ended and optionally adds a final summary.
+      operationId: endConversation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                endTime:
+                  type: string
+                  format: date-time
+                summary:
+                  type: string
+      responses:
+        200:
+          description: Conversation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+
+  /conversations/{conversationId}/messages:
+    post:
+      tags: [Conversations]
+      summary: Add message to conversation
+      description: Adds a new message to an ongoing conversation.
+      operationId: addConversationMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationMessage'
+      responses:
+        201:
+          description: Message added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMessage'
+
+  /emotions/analyze:
+    post:
+      tags: [Emotions]
+      summary: Analyze emotion from audio or text
+      description: Analyzes emotion from a provided audio file or text snippet.
+      operationId: analyzeEmotion
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                text:
+                  type: string
+                childId:
+                  type: string
+                  format: uuid
+      responses:
+        200:
+          description: Emotion analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmotionData'
+
+  /reports:
+    get:
+      tags: [Reports]
+      summary: Get reports
+      description: Retrieves a list of generated reports for a specific child.
+      operationId: getReports
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: childId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [daily, weekly, monthly]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        200:
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Report'
+                  total:
+                    type: integer
+
+    post:
+      tags: [Reports]
+      summary: Generate a new report
+      description: Generates a new progress and activity report for a child.
+      operationId: generateReport
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - childId
+                - type
+                - period
+              properties:
+                childId:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum: [daily, weekly, monthly, custom]
+                period:
+                  type: object
+                  properties:
+                    start:
+                      type: string
+                      format: date
+                    end:
+                      type: string
+                      format: date
+      responses:
+        201:
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /reports/{reportId}:
+    get:
+      tags: [Reports]
+      summary: Get report details
+      description: Retrieves the detailed information for a single generated report.
+      operationId: getReportById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Report details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /reports/{reportId}/export:
+    get:
+      tags: [Reports]
+      summary: Export report as PDF
+      description: Exports a specific report as a downloadable PDF file.
+      operationId: exportReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: PDF report
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /esp32/register:
+    post:
+      tags: [ESP32]
+      summary: Register ESP32 device
+      description: Registers a new ESP32 device with the platform.
+      operationId: registerDevice
+      security:
+        - apiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - deviceId
+                - firmwareVersion
+              properties:
+                deviceId:
+                  type: string
+                firmwareVersion:
+                  type: string
+                capabilities:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: Device registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deviceToken:
+                    type: string
+                  config:
+                    type: object
+
+  /esp32/status:
+    post:
+      tags: [ESP32]
+      summary: Update device status
+      description: Updates the status of an ESP32 device (e.g., online, battery level).
+      operationId: updateDeviceStatus
+      security:
+        - apiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ESP32Status'
+      responses:
+        200:
+          description: Status updated
+
+  /esp32/audio/stream:
+    post:
+      tags: [ESP32]
+      summary: Stream audio data
+      description: Streams audio data from the ESP32 device to the server for processing.
+      operationId: streamAudio
+      security:
+        - apiKey: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - audio
+                - conversationId
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                conversationId:
+                  type: string
+                  format: uuid
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        200:
+          description: Audio received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                  processingId:
+                    type: string
+
+  /ws:
+    get:
+      tags: [WebSocket]
+      summary: WebSocket connection for real-time communication
+      operationId: establishWebSocket
+      description: |
+        WebSocket endpoint for real-time communication between ESP32 devices and the server.
+        
+        ### Connection
+        ```
+        ws://localhost:8000/api/v1/ws?token={jwt_token}
+        ```
+        
+        ### Message Types
+        - `audio_stream`: Real-time audio streaming
+        - `emotion_update`: Real-time emotion updates
+        - `conversation_update`: Conversation state updates
+        - `device_status`: Device status updates
+        
+      security:
+        - bearerAuth: []
+      responses:
+        101:
+          description: Switching Protocols
+        401:
+          description: Unauthorized 

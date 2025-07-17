@@ -1,0 +1,50 @@
+"""External service interfaces for the domain layer.
+These interfaces define contracts for external services without
+creating dependencies on specific implementations."""
+
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional
+from uuid import UUID
+
+class IAIService(ABC):
+    """Interface for AI service operations."""
+    
+    @abstractmethod
+    async def generate_response(
+        self,
+        child_id: UUID,
+        conversation_history: List[str],
+        current_input: str,
+        preferences: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Generate an AI response for a child."""
+        pass
+    
+    @abstractmethod
+    async def validate_content_safety(self, content: str) -> Dict[str, Any]:
+        """Validate content for child safety."""
+        pass
+
+class INotificationService(ABC):
+    """Interface for notification operations."""
+    
+    @abstractmethod
+    async def send_parent_notification(
+        self,
+        parent_id: UUID,
+        message: str,
+        notification_type: str,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """Send a notification to a parent."""
+        pass
+    
+    @abstractmethod
+    async def send_safety_alert(
+        self,
+        parent_id: UUID,
+        child_id: UUID,
+        alert_details: Dict[str, Any]
+    ) -> bool:
+        """Send a safety alert notification."""
+        pass

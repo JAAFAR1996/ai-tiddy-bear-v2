@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Audio Processing Schema",
+  "description": "Audio processing configuration schema",
+  "type": "object",
+  "properties": {
+    "AUDIO_PROCESSING": {
+      "type": "object",
+      "description": "Audio processing configuration",
+      "properties": {
+        "SAMPLE_RATE": {
+          "type": "integer",
+          "enum": [8000, 16000, 22050, 44100, 48000]
+        },
+        "CHANNELS": {
+          "type": "integer",
+          "enum": [1, 2]
+        },
+        "BIT_DEPTH": {
+          "type": "integer",
+          "enum": [8, 16, 24, 32]
+        },
+        "FRAME_DURATION_MS": {
+          "type": "integer",
+          "enum": [10, 20, 30]
+        },
+        "BUFFER_SIZE": {
+          "type": "integer",
+          "minimum": 128,
+          "maximum": 8192
+        },
+        "NOISE_REDUCTION_LEVEL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "VAD_AGGRESSIVENESS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "NORMALIZE_AUDIO": {
+          "type": "boolean"
+        },
+        "REMOVE_SILENCE": {
+          "type": "boolean"
+        },
+        "ENHANCE_VOICE": {
+          "type": "boolean"
+        },
+        "ECHO_CANCELLATION": {
+          "type": "boolean"
+        },
+        "AUDIO_CODEC": {
+          "type": "string",
+          "enum": ["opus", "pcm", "mp3", "aac", "ogg"]
+        },
+        "STREAMING_CHUNK_SIZE": {
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 8192
+        }
+      },
+      "required": ["SAMPLE_RATE", "CHANNELS", "BIT_DEPTH"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["AUDIO_PROCESSING"],
+  "additionalProperties": false
+}

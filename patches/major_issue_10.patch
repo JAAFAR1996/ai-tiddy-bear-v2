@@ -1,0 +1,36 @@
+--- a/src/infrastructure/logging_config.py
++++ b/src/infrastructure/logging_config.py
+@@ -10,19 +10,26 @@
+ 
+ LOGGING_LEVELS = {
+     # Security-related logging - always WARNING or higher
+-    "security": logging.WARNING,
+-    "auth": logging.WARNING,
+-    "child_safety": logging.WARNING,
++
++    # Core application components
++    "api": logging.INFO,
++    "application": logging.INFO,
++    "domain": logging.INFO,
++    "infrastructure": logging.INFO,
++    "presentation": logging.INFO,
+ 
+-    # Application components - INFO level
+-    "api": logging.INFO,
+-    "services": logging.INFO,
++    # Specific functional areas
++    "security": logging.WARNING,  # Security events are always important
++    "auth": logging.INFO,
++    "child_safety": logging.WARNING, # Child safety events are always important
+     "database": logging.INFO,
+     "cache": logging.INFO,
+- 
+-    # Infrastructure - INFO level
+-    "infrastructure": logging.INFO,
+     "middleware": logging.INFO,
++    "messaging": logging.INFO,
++    "config": logging.INFO,
++    "di": logging.INFO, # Dependency Injection
+ 
+     # Development/Debug components
+     "debug": logging.DEBUG,

@@ -1,0 +1,1199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AI Teddy Bear Configuration Schema",
+  "description": "Complete configuration schema for AI Teddy Bear application",
+  "type": "object",
+  "properties": {
+    "API_KEYS": {
+      "type": "object",
+      "description": "API keys for external services",
+      "properties": {
+        "OPENAI_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "ANTHROPIC_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "GOOGLE_GEMINI_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^([a-zA-Z0-9-_]{39}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "ELEVENLABS_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^(sk_[a-zA-Z0-9]{40,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "AZURE_SPEECH_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^([a-zA-Z0-9]{32,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "AZURE_SPEECH_REGION": {
+          "type": ["string", "null"],
+          "pattern": "^([a-z]+|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "HUGGINGFACE_API_KEY": {
+          "type": ["string", "null"]
+        },
+        "COHERE_API_KEY": {
+          "type": ["string", "null"]
+        },
+        "PERSPECTIVE_API_KEY": {
+          "type": ["string", "null"]
+        },
+        "SENTRY_DSN": {
+          "type": ["string", "null"],
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "APPLICATION": {
+      "type": "object",
+      "description": "Basic application settings",
+      "properties": {
+        "NAME": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "VERSION": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
+        },
+        "ENVIRONMENT": {
+          "type": "string",
+          "enum": ["development", "staging", "production", "test"]
+        },
+        "DEBUG": {
+          "type": "boolean"
+        },
+        "SECRET_KEY": {
+          "type": "string",
+          "minLength": 32
+        },
+        "TIMEZONE": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z_]+/[A-Z][a-zA-Z_]+$|^UTC$"
+        }
+      },
+      "required": ["NAME", "VERSION", "ENVIRONMENT", "SECRET_KEY"],
+      "additionalProperties": false
+    },
+    "AUDIO_PROCESSING": {
+      "type": "object",
+      "description": "Audio processing configuration",
+      "properties": {
+        "SAMPLE_RATE": {
+          "type": "integer",
+          "enum": [8000, 16000, 22050, 44100, 48000]
+        },
+        "CHANNELS": {
+          "type": "integer",
+          "enum": [1, 2]
+        },
+        "BIT_DEPTH": {
+          "type": "integer",
+          "enum": [8, 16, 24, 32]
+        },
+        "FRAME_DURATION_MS": {
+          "type": "integer",
+          "enum": [10, 20, 30]
+        },
+        "BUFFER_SIZE": {
+          "type": "integer",
+          "minimum": 128,
+          "maximum": 8192
+        },
+        "NOISE_REDUCTION_LEVEL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "VAD_AGGRESSIVENESS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "NORMALIZE_AUDIO": {
+          "type": "boolean"
+        },
+        "REMOVE_SILENCE": {
+          "type": "boolean"
+        },
+        "ENHANCE_VOICE": {
+          "type": "boolean"
+        },
+        "ECHO_CANCELLATION": {
+          "type": "boolean"
+        },
+        "AUDIO_CODEC": {
+          "type": "string",
+          "enum": ["opus", "pcm", "mp3", "aac", "ogg"]
+        },
+        "STREAMING_CHUNK_SIZE": {
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 8192
+        }
+      },
+      "required": ["SAMPLE_RATE", "CHANNELS", "BIT_DEPTH"],
+      "additionalProperties": false
+    },
+    "BACKUP_RECOVERY": {
+      "type": "object",
+      "description": "Backup and recovery settings",
+      "properties": {
+        "ENABLE_AUTO_BACKUP": {
+          "type": "boolean"
+        },
+        "BACKUP_FREQUENCY": {
+          "type": "string",
+          "enum": ["hourly", "daily", "weekly", "monthly"]
+        },
+        "BACKUP_RETENTION_DAYS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        },
+        "BACKUP_LOCATION": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ENABLE_CLOUD_BACKUP": {
+          "type": "boolean"
+        },
+        "CLOUD_BACKUP_PROVIDER": {
+          "type": ["string", "null"],
+          "enum": ["aws", "azure", "gcp", "dropbox", null]
+        },
+        "ENABLE_POINT_IN_TIME_RECOVERY": {
+          "type": "boolean"
+        },
+        "DISASTER_RECOVERY_ENABLED": {
+          "type": "boolean"
+        }
+      },
+      "required": ["ENABLE_AUTO_BACKUP"],
+      "additionalProperties": false
+    },
+    "CONTENT_MODERATION": {
+      "type": "object",
+      "description": "Content moderation settings",
+      "properties": {
+        "ENABLE_MODERATION": {
+          "type": "boolean"
+        },
+        "MODERATION_PROVIDER": {
+          "type": "string",
+          "enum": ["perspective", "azure", "aws", "custom"]
+        },
+        "SAFETY_LEVEL": {
+          "type": "string",
+          "enum": ["LENIENT", "MODERATE", "STRICT", "CUSTOM"]
+        },
+        "BLOCK_THRESHOLD": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "WARNING_THRESHOLD": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "CATEGORIES": {
+          "type": "object",
+          "properties": {
+            "TOXICITY": {
+              "type": "boolean"
+            },
+            "SEVERE_TOXICITY": {
+              "type": "boolean"
+            },
+            "IDENTITY_ATTACK": {
+              "type": "boolean"
+            },
+            "INSULT": {
+              "type": "boolean"
+            },
+            "PROFANITY": {
+              "type": "boolean"
+            },
+            "THREAT": {
+              "type": "boolean"
+            },
+            "SEXUAL_CONTENT": {
+              "type": "boolean"
+            },
+            "VIOLENCE": {
+              "type": "boolean"
+            },
+            "SELF_HARM": {
+              "type": "boolean"
+            },
+            "HATE_SPEECH": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "CUSTOM_BLOCK_LIST": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "CUSTOM_ALLOW_LIST": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "LOG_VIOLATIONS": {
+          "type": "boolean"
+        },
+        "NOTIFY_PARENTS": {
+          "type": "boolean"
+        },
+        "AUTO_REPORT_THRESHOLD": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["ENABLE_MODERATION", "SAFETY_LEVEL"],
+      "additionalProperties": false
+    },
+    "DATABASE": {
+      "type": "object",
+      "description": "Database configuration",
+      "properties": {
+        "DATABASE_URL": {
+          "type": "string",
+          "format": "uri"
+        },
+        "REDIS_URL": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "MONGODB_URL": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "CONNECTION_POOL_SIZE": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "CONNECTION_TIMEOUT": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 30000
+        },
+        "ENABLE_MIGRATIONS": {
+          "type": "boolean"
+        },
+        "BACKUP_ENABLED": {
+          "type": "boolean"
+        },
+        "BACKUP_SCHEDULE": {
+          "type": "string",
+          "pattern": "^(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})$"
+        }
+      },
+      "required": ["DATABASE_URL"],
+      "additionalProperties": false
+    },
+    "DEVELOPMENT": {
+      "type": "object",
+      "description": "Development and debugging settings",
+      "properties": {
+        "ENABLE_DEBUG_MODE": {
+          "type": "boolean"
+        },
+        "ENABLE_SWAGGER_UI": {
+          "type": "boolean"
+        },
+        "ENABLE_GRAPHQL": {
+          "type": "boolean"
+        },
+        "MOCK_EXTERNAL_SERVICES": {
+          "type": "boolean"
+        },
+        "ENABLE_HOT_RELOAD": {
+          "type": "boolean"
+        },
+        "ENABLE_PROFILER": {
+          "type": "boolean"
+        },
+        "TEST_MODE": {
+          "type": "boolean"
+        },
+        "SEED_DATABASE": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "FEATURE_FLAGS": {
+      "type": "object",
+      "description": "Feature toggles",
+      "properties": {
+        "ENABLE_VOICE_STREAMING": {
+          "type": "boolean"
+        },
+        "ENABLE_VIDEO_SUPPORT": {
+          "type": "boolean"
+        },
+        "ENABLE_MULTILINGUAL": {
+          "type": "boolean"
+        },
+        "ENABLE_OFFLINE_MODE": {
+          "type": "boolean"
+        },
+        "ENABLE_CUSTOM_VOICES": {
+          "type": "boolean"
+        },
+        "ENABLE_EMOTION_DETECTION": {
+          "type": "boolean"
+        },
+        "ENABLE_GESTURE_CONTROL": {
+          "type": "boolean"
+        },
+        "ENABLE_AR_FEATURES": {
+          "type": "boolean"
+        },
+        "ENABLE_EDUCATIONAL_GAMES": {
+          "type": "boolean"
+        },
+        "ENABLE_STORY_MODE": {
+          "type": "boolean"
+        },
+        "ENABLE_LEARNING_ANALYTICS": {
+          "type": "boolean"
+        },
+        "ENABLE_SOCIAL_FEATURES": {
+          "type": "boolean"
+        },
+        "ENABLE_CLOUD_BACKUP": {
+          "type": "boolean"
+        },
+        "ENABLE_BETA_FEATURES": {
+          "type": "boolean"
+        },
+        "ENABLE_LOCAL_MODELS": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "INTEGRATIONS": {
+      "type": "object",
+      "description": "Third-party integrations",
+      "properties": {
+        "ENABLE_SCHOOL_INTEGRATION": {
+          "type": "boolean"
+        },
+        "ENABLE_SMART_HOME": {
+          "type": "boolean"
+        },
+        "ENABLE_WEARABLES": {
+          "type": "boolean"
+        },
+        "SUPPORTED_PLATFORMS": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ios", "android", "web", "desktop", "alexa", "google_home"]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "WEBHOOK_ENDPOINTS": {
+          "type": "object",
+          "properties": {
+            "CONVERSATION_START": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "CONVERSATION_END": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "SAFETY_ALERT": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "PARENT_NOTIFICATION": {
+              "type": ["string", "null"],
+              "format": "uri"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "INTERACTION_LIMITS": {
+      "type": "object",
+      "description": "Interaction limit settings",
+      "properties": {
+        "MAX_DAILY_INTERACTIONS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "MAX_INTERACTION_DURATION_SECONDS": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 7200
+        },
+        "MIN_INTERACTION_INTERVAL_SECONDS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "MAX_CONSECUTIVE_INTERACTIONS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "COOLDOWN_PERIOD_MINUTES": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "AGE_RANGES": {
+          "type": "object",
+          "patternProperties": {
+            "^[A-Z]+$": {
+              "type": "object",
+              "properties": {
+                "MIN": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                "MAX": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                "MAX_DAILY_MINUTES": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1440
+                }
+              },
+              "required": ["MIN", "MAX", "MAX_DAILY_MINUTES"],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "required": ["MAX_DAILY_INTERACTIONS"],
+      "additionalProperties": false
+    },
+    "LLM_SETTINGS": {
+      "type": "object",
+      "description": "Language Model configuration",
+      "properties": {
+        "DEFAULT_PROVIDER": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "google", "cohere", "huggingface"]
+        },
+        "DEFAULT_MODEL": {
+          "type": "string",
+          "minLength": 1
+        },
+        "FALLBACK_PROVIDER": {
+          "type": ["string", "null"],
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "cohere",
+            "huggingface",
+            null
+          ]
+        },
+        "FALLBACK_MODEL": {
+          "type": ["string", "null"]
+        },
+        "MAX_TOKENS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32000
+        },
+        "TEMPERATURE": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "TOP_P": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "FREQUENCY_PENALTY": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "PRESENCE_PENALTY": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "SYSTEM_PROMPT": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "ENABLE_FUNCTION_CALLING": {
+          "type": "boolean"
+        },
+        "STREAM_RESPONSES": {
+          "type": "boolean"
+        },
+        "CONTEXT_WINDOW_SIZE": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 128000
+        },
+        "MEMORY_TYPE": {
+          "type": "string",
+          "enum": [
+            "conversation_buffer",
+            "conversation_buffer_window",
+            "conversation_summary",
+            "conversation_knowledge_graph"
+          ]
+        },
+        "MEMORY_SIZE": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": ["DEFAULT_PROVIDER", "DEFAULT_MODEL", "SYSTEM_PROMPT"],
+      "additionalProperties": false
+    },
+    "LOGGING_CONFIG": {
+      "type": "object",
+      "description": "Logging configuration",
+      "properties": {
+        "LOG_LEVEL": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        },
+        "LOG_DIR": {
+          "type": "string",
+          "minLength": 1
+        },
+        "LOG_FORMAT": {
+          "type": "string",
+          "minLength": 1
+        },
+        "MAX_LOG_FILES": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "MAX_LOG_FILE_SIZE_MB": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "LOG_ROTATION": {
+          "type": "string",
+          "enum": ["daily", "weekly", "size", "time"]
+        },
+        "ENABLE_CONSOLE_LOG": {
+          "type": "boolean"
+        },
+        "ENABLE_FILE_LOG": {
+          "type": "boolean"
+        },
+        "ENABLE_SYSLOG": {
+          "type": "boolean"
+        },
+        "SENSITIVE_DATA_MASK": {
+          "type": "boolean"
+        },
+        "LOG_RETENTION_DAYS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        },
+        "ENABLE_AUDIT_LOG": {
+          "type": "boolean"
+        },
+        "AUDIT_LOG_FILE": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["LOG_LEVEL", "LOG_DIR"],
+      "additionalProperties": false
+    },
+    "MONITORING": {
+      "type": "object",
+      "description": "Monitoring and alerting configuration",
+      "properties": {
+        "ENABLE_METRICS": {
+          "type": "boolean"
+        },
+        "METRICS_PROVIDER": {
+          "type": "string",
+          "enum": ["prometheus", "datadog", "newrelic", "cloudwatch"]
+        },
+        "METRICS_PORT": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "ENABLE_TRACING": {
+          "type": "boolean"
+        },
+        "TRACING_PROVIDER": {
+          "type": "string",
+          "enum": ["jaeger", "zipkin", "datadog", "newrelic"]
+        },
+        "TRACE_SAMPLE_RATE": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ENABLE_HEALTH_CHECK": {
+          "type": "boolean"
+        },
+        "HEALTH_CHECK_INTERVAL": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "ENABLE_ALERTS": {
+          "type": "boolean"
+        },
+        "ALERT_CHANNELS": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["email", "slack", "pagerduty", "webhook"]
+          },
+          "uniqueItems": true
+        },
+        "ALERT_THRESHOLDS": {
+          "type": "object",
+          "properties": {
+            "CPU_PERCENT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "MEMORY_PERCENT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "DISK_PERCENT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "ERROR_RATE": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "RESPONSE_TIME_MS": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["ENABLE_METRICS", "ENABLE_HEALTH_CHECK"],
+      "additionalProperties": false
+    },
+    "PARENTAL_CONTROLS": {
+      "type": "object",
+      "description": "Parental control settings",
+      "properties": {
+        "ENABLE_DASHBOARD": {
+          "type": "boolean"
+        },
+        "REQUIRE_PARENT_APPROVAL": {
+          "type": "boolean"
+        },
+        "DEFAULT_TIME_LIMITS": {
+          "type": "object",
+          "properties": {
+            "DAILY_MINUTES": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1440
+            },
+            "SESSION_MINUTES": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120
+            },
+            "BREAK_MINUTES": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            }
+          },
+          "required": ["DAILY_MINUTES", "SESSION_MINUTES", "BREAK_MINUTES"],
+          "additionalProperties": false
+        },
+        "CONTENT_FILTERS": {
+          "type": "object",
+          "properties": {
+            "EDUCATIONAL_ONLY": {
+              "type": "boolean"
+            },
+            "BLOCK_EXTERNAL_CONTENT": {
+              "type": "boolean"
+            },
+            "APPROVED_TOPICS": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "BLOCKED_TOPICS": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ACTIVITY_REPORTS": {
+          "type": "object",
+          "properties": {
+            "ENABLE_DAILY": {
+              "type": "boolean"
+            },
+            "ENABLE_WEEKLY": {
+              "type": "boolean"
+            },
+            "EMAIL_REPORTS": {
+              "type": "boolean"
+            },
+            "INCLUDE_TRANSCRIPTS": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "EMERGENCY_CONTACTS": {
+          "type": "object",
+          "properties": {
+            "ENABLE_PANIC_BUTTON": {
+              "type": "boolean"
+            },
+            "EMERGENCY_PHRASE": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 50
+            },
+            "NOTIFY_METHODS": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["email", "sms", "app", "call"]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["ENABLE_DASHBOARD"],
+      "additionalProperties": false
+    },
+    "PERFORMANCE_SETTINGS": {
+      "type": "object",
+      "description": "Performance optimization settings",
+      "properties": {
+        "CACHE_ENABLED": {
+          "type": "boolean"
+        },
+        "CACHE_BACKEND": {
+          "type": "string",
+          "enum": ["memory", "redis", "memcached"]
+        },
+        "CACHE_TTL_SECONDS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "CACHE_MAX_SIZE_MB": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000
+        },
+        "MAX_CONCURRENT_REQUESTS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "MAX_REQUESTS_PER_MINUTE": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "RATE_LIMIT_ENABLED": {
+          "type": "boolean"
+        },
+        "REQUEST_TIMEOUT_SECONDS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "ENABLE_CONNECTION_POOLING": {
+          "type": "boolean"
+        },
+        "CONNECTION_POOL_SIZE": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "ENABLE_ASYNC_PROCESSING": {
+          "type": "boolean"
+        },
+        "WORKER_THREADS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "ENABLE_PROFILING": {
+          "type": "boolean"
+        }
+      },
+      "required": ["CACHE_ENABLED"],
+      "additionalProperties": false
+    },
+    "PRIVACY_COMPLIANCE": {
+      "type": "object",
+      "description": "Privacy and compliance settings",
+      "properties": {
+        "GDPR_ENABLED": {
+          "type": "boolean"
+        },
+        "COPPA_ENABLED": {
+          "type": "boolean"
+        },
+        "CCPA_ENABLED": {
+          "type": "boolean"
+        },
+        "DATA_RETENTION_DAYS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3650
+        },
+        "REQUIRE_CONSENT": {
+          "type": "boolean"
+        },
+        "ANONYMIZE_DATA": {
+          "type": "boolean"
+        },
+        "ALLOW_DATA_EXPORT": {
+          "type": "boolean"
+        },
+        "ALLOW_DATA_DELETION": {
+          "type": "boolean"
+        },
+        "ENCRYPT_AT_REST": {
+          "type": "boolean"
+        },
+        "ENCRYPT_IN_TRANSIT": {
+          "type": "boolean"
+        },
+        "PII_DETECTION": {
+          "type": "boolean"
+        },
+        "PII_MASKING": {
+          "type": "boolean"
+        }
+      },
+      "required": ["GDPR_ENABLED", "COPPA_ENABLED"],
+      "additionalProperties": false
+    },
+    "SECURITY": {
+      "type": "object",
+      "description": "Security configuration",
+      "properties": {
+        "encryption_key": {
+          "type": "string",
+          "minLength": 8
+        },
+        "jwt_secret": {
+          "type": "string",
+          "minLength": 8
+        },
+        "token_expiry": {
+          "type": ["integer", "string"],
+          "description": "Seconds or ISO8601 duration",
+          "default": 3600
+        },
+        "refresh_token_expiry": {
+          "type": ["integer", "string"],
+          "description": "Seconds or ISO8601 duration",
+          "default": 2592000
+        },
+        "password_hash_rounds": {
+          "type": "integer",
+          "default": 12
+        }
+      },
+      "required": ["encryption_key", "jwt_secret"],
+      "additionalProperties": false
+    },
+    "SERVER": {
+      "type": "object",
+      "description": "Server configuration",
+      "properties": {
+        "FLASK_HOST": {
+          "type": "string",
+          "format": "ipv4",
+          "default": "0.0.0.0"
+        },
+        "FLASK_PORT": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "WEBSOCKET_PORT": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "ENABLE_CORS": {
+          "type": "boolean"
+        },
+        "CORS_ORIGINS": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "MAX_CONTENT_LENGTH_MB": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "REQUEST_TIMEOUT_SECONDS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "ENABLE_HTTPS": {
+          "type": "boolean"
+        },
+        "SSL_CERT_PATH": {
+          "type": ["string", "null"]
+        },
+        "SSL_KEY_PATH": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["FLASK_HOST", "FLASK_PORT", "WEBSOCKET_PORT"],
+      "additionalProperties": false
+    },
+    "STREAMING_SETTINGS": {
+      "type": "object",
+      "description": "WebSocket streaming configuration",
+      "properties": {
+        "ENABLE_WEBSOCKET": {
+          "type": "boolean"
+        },
+        "WEBSOCKET_PING_INTERVAL": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "WEBSOCKET_PING_TIMEOUT": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300
+        },
+        "MAX_BUFFER_SIZE": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 10000000
+        },
+        "STREAM_TIMEOUT_SECONDS": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 3600
+        },
+        "RECONNECT_ATTEMPTS": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "RECONNECT_DELAY_MS": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 30000
+        },
+        "ENABLE_COMPRESSION": {
+          "type": "boolean"
+        },
+        "COMPRESSION_LEVEL": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        }
+      },
+      "required": ["ENABLE_WEBSOCKET"],
+      "additionalProperties": false
+    },
+    "VOICE_SETTINGS": {
+      "type": "object",
+      "description": "Voice synthesis configuration",
+      "properties": {
+        "DEFAULT_ENGINE": {
+          "type": "string",
+          "enum": ["elevenlabs", "azure", "google", "gtts", "edge-tts"]
+        },
+        "DEFAULT_VOICE_ID": {
+          "type": "string"
+        },
+        "DEFAULT_LANGUAGE": {
+          "type": "string",
+          "pattern": "^[a-z]{2}-[A-Z]{2}$"
+        },
+        "VOICE_SPEED": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0
+        },
+        "VOICE_PITCH": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0
+        },
+        "VOICE_VOLUME": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ENABLE_VOICE_CLONING": {
+          "type": "boolean"
+        },
+        "VOICE_SAMPLE_RATE": {
+          "type": "integer",
+          "enum": [8000, 16000, 22050, 24000, 44100, 48000]
+        },
+        "VOICE_CHANNELS": {
+          "type": "integer",
+          "enum": [1, 2]
+        },
+        "ENABLE_EMOTION_SYNTHESIS": {
+          "type": "boolean"
+        },
+        "EMOTION_INTENSITY": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "SUPPORTED_LANGUAGES": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}-[A-Z]{2}$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "VOICE_CACHE_ENABLED": {
+          "type": "boolean"
+        },
+        "VOICE_CACHE_MAX_SIZE_MB": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000
+        },
+        "VOICE_CACHE_TTL_HOURS": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168
+        }
+      },
+      "required": ["DEFAULT_ENGINE", "DEFAULT_LANGUAGE", "SUPPORTED_LANGUAGES"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "DEVELOPMENT",
+    "PARENTAL_CONTROLS",
+    "PERFORMANCE_SETTINGS",
+    "APPLICATION",
+    "MONITORING",
+    "SECURITY",
+    "PRIVACY_COMPLIANCE",
+    "INTERACTION_LIMITS",
+    "CONTENT_MODERATION",
+    "API_KEYS",
+    "LLM_SETTINGS",
+    "INTEGRATIONS",
+    "DATABASE",
+    "BACKUP_RECOVERY",
+    "SERVER",
+    "VOICE_SETTINGS",
+    "LOGGING_CONFIG",
+    "AUDIO_PROCESSING",
+    "FEATURE_FLAGS",
+    "STREAMING_SETTINGS"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "ipv4": {
+      "type": "string",
+      "format": "ipv4"
+    },
+    "ipv6": {
+      "type": "string",
+      "format": "ipv6"
+    },
+    "hostname": {
+      "type": "string",
+      "format": "hostname"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    }
+  }
+}

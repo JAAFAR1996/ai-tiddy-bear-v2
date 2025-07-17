@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Security Configuration Schema",
+  "description": "Security configuration settings schema",
+  "type": "object",
+  "properties": {
+    "SECURITY": {
+      "type": "object",
+      "description": "Security configuration",
+      "properties": {
+        "encryption_key": {
+          "type": "string",
+          "minLength": 8
+        },
+        "jwt_secret": {
+          "type": "string",
+          "minLength": 8
+        },
+        "token_expiry": {
+          "type": ["integer", "string"],
+          "description": "Seconds or ISO8601 duration",
+          "default": 3600
+        },
+        "refresh_token_expiry": {
+          "type": ["integer", "string"],
+          "description": "Seconds or ISO8601 duration",
+          "default": 2592000
+        },
+        "password_hash_rounds": {
+          "type": "integer",
+          "default": 12
+        }
+      },
+      "required": ["encryption_key", "jwt_secret"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["SECURITY"],
+  "additionalProperties": false
+}

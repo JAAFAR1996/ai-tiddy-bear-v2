@@ -1,0 +1,59 @@
+# AI Teddy Bear - Core Production Dependencies
+# Version: 2.0.0
+# Python: >=3.11
+# Generated from pyproject.toml - DO NOT EDIT MANUALLY
+
+# Core Framework
+fastapi==0.115.5
+uvicorn[standard]==0.27.0
+pydantic==2.10.2
+pydantic-settings==2.1.0
+
+# Database & ORM
+sqlalchemy[asyncio]==2.0.25
+asyncpg==0.29.0
+alembic==1.13.1
+
+# Authentication & Security - Exact pinning for security-sensitive libraries
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+cryptography==43.0.1
+
+# Child Safety & COPPA Compliance
+slowapi~=0.1.9  # Rate limiting for child safety
+pydantic-extra-types~=2.1.0  # Enhanced validation types
+python-dateutil~=2.8.2  # COPPA age verification
+iso8601~=2.0.0  # Timezone handling for age verification
+msgpack~=1.0.7  # Secure data serialization
+orjson~=3.9.10  # Fast JSON processing for content filtering
+
+# AI Services
+openai==1.55.0
+
+# Caching & Storage
+redis==5.0.1
+hiredis==2.3.2
+
+# HTTP & External APIs
+httpx==0.26.0
+requests~=2.31.0 # Added for chaos engineering modules
+
+# Dependency Injection
+dependency-injector==4.41.0
+
+# Monitoring
+prometheus-client==0.19.0
+sentry-sdk[fastapi]==1.39.1
+
+# Data Validation
+email-validator==2.1.0
+
+# Environment Management
+python-dotenv==1.0.0
+
+# GraphQL Federation
+strawberry-graphql[fastapi]~=0.276.0 # Updated to a compatible and recent version to resolve installation issues.
+graphql-core~=3.2.3
+ariadne~=0.20.0
+graphene~=3.3

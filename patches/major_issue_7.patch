@@ -1,0 +1,45 @@
+--- a/src/infrastructure/middleware.py
++++ b/src/infrastructure/middleware.py
+@@ -92,16 +92,17 @@
+         app_settings: ApplicationSettings
+         is_production: Whether running in production
+ 
+     Returns:
+         List of allowed CORS origins
+ 
+     Raises:
+         ValueError: If insecure CORS configuration is detected
+     """
+ 
+     if is_production:
+-        configured_origins = app_settings.CORS_ORIGINS if app_settings.CORS_ORIGINS is not None else []
+-        if not configured_origins:
+-            logger.warning("CORS_ORIGINS is empty or not set. Using default production origins.")
+-            return [
+-                "https://aiteddybear.com",
+-                "https://www.aiteddybear.com",
+-                "https://app.aiteddybear.com",
+-                "https://api.aiteddybear.com",
+-                "https://admin.aiteddybear.com"
+-            ]
++        # In production, CORS_ORIGINS must be explicitly configured and secure.
++        # If not set, it defaults to an empty list, which will be caught by validation.
++        configured_origins = app_settings.CORS_ORIGINS if app_settings.CORS_ORIGINS is not None else []
++        if not configured_origins:
++            logger.warning("CORS_ORIGINS is empty or not set in production. This might lead to CORS issues. Ensure it's configured securely.")
+         return configured_origins
+     else:
+-        return [
++        # In development, allow common localhost origins for convenience.
++        return [
+             "http://localhost:3000",
+             "http://localhost:3001",
+             "http://localhost:8080",
+             "http://127.0.0.1:3000",
+-            "http://127.0.0.1:8080"
++            "http://127.0.0.1:8080",
++            "http://localhost", # For some development setups
++            "http://127.0.0.1" # For some development setups
+         ]
+ 
+ 

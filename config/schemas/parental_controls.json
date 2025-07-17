@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parental Controls Schema",
+  "description": "Parental control settings schema",
+  "type": "object",
+  "properties": {
+    "PARENTAL_CONTROLS": {
+      "type": "object",
+      "description": "Parental control settings",
+      "properties": {
+        "ENABLE_DASHBOARD": {
+          "type": "boolean"
+        },
+        "REQUIRE_PARENT_APPROVAL": {
+          "type": "boolean"
+        },
+        "DEFAULT_TIME_LIMITS": {
+          "type": "object",
+          "properties": {
+            "DAILY_MINUTES": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1440
+            },
+            "SESSION_MINUTES": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120
+            },
+            "BREAK_MINUTES": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            }
+          },
+          "required": ["DAILY_MINUTES", "SESSION_MINUTES", "BREAK_MINUTES"],
+          "additionalProperties": false
+        },
+        "CONTENT_FILTERS": {
+          "type": "object",
+          "properties": {
+            "EDUCATIONAL_ONLY": {
+              "type": "boolean"
+            },
+            "BLOCK_EXTERNAL_CONTENT": {
+              "type": "boolean"
+            },
+            "APPROVED_TOPICS": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "BLOCKED_TOPICS": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ACTIVITY_REPORTS": {
+          "type": "object",
+          "properties": {
+            "ENABLE_DAILY": {
+              "type": "boolean"
+            },
+            "ENABLE_WEEKLY": {
+              "type": "boolean"
+            },
+            "EMAIL_REPORTS": {
+              "type": "boolean"
+            },
+            "INCLUDE_TRANSCRIPTS": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "EMERGENCY_CONTACTS": {
+          "type": "object",
+          "properties": {
+            "ENABLE_PANIC_BUTTON": {
+              "type": "boolean"
+            },
+            "EMERGENCY_PHRASE": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 50
+            },
+            "NOTIFY_METHODS": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["email", "sms", "app", "call"]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["ENABLE_DASHBOARD"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["PARENTAL_CONTROLS"],
+  "additionalProperties": false
+}

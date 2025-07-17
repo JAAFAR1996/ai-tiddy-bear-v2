@@ -1,0 +1,86 @@
+--- a/src/infrastructure/config/env_security.py
++++ b/src/infrastructure/config/env_security.py
+@@ -200,39 +200,39 @@
+         return safe_dict
+ 
+     def _add_error(self, message: str, exc: Optional[Exception] = None) -> None:
+-        """Adds an error to the list and logs it, optionally with an exception."""
+-        self.errors.append(message)
+-        if exc:
+-            logger.error(message, exc_info=True)
+-        else:
+-            logger.error(message)
+-
+     def validate_production_security(self) -> List[str]:
+         """
+         Validate production security requirements.
+ 
+         """
+-        errors = []
++        self.errors = [] # Clear errors before validation
+ 
+         if self.get("ENVIRONMENT") != "production":
+-            return errors  # Skip for non-production
++            return []  # Skip for non-production
+ 
+         # Check required variables
+         for var in self.REQUIRED_PRODUCTION_VARS:
+             if not self.get(var):
+-                errors.append(f"Required production variable '{var}' is not set")
++                self._add_error(f"Required production variable '{var}' is not set")
+ 
+         # Check enforced values
+         for var, expected in self.PRODUCTION_ENFORCED_VALUES.items():
+             actual = self.get(var)
+             if actual != expected:
+-                errors.append(
++                self._add_error(
+                     f"Production variable '{var}' must be '{expected}', "
+                     f"got '{self.mask_value(var, actual or 'None')}'"
+                 )
+ 
+         # Check secret strength
+         secret_key = self.get("SECRET_KEY", "")
+         if len(secret_key) < 32:
+-            errors.append("SECRET_KEY must be at least 32 characters in production")
++            self._add_error("SECRET_KEY must be at least 32 characters in production")
+ 
+         # Enhanced secret validation
+         if secret_key and self._is_weak_secret(secret_key):
+-            errors.append("SECRET_KEY uses weak/common value. Use cryptographically secure random key.")
++            self._add_error("SECRET_KEY uses weak/common value. Use cryptographically secure random key.")
+ 
+         jwt_secret = self.get("JWT_SECRET_KEY", "")
+         if len(jwt_secret) < 32:
+-            errors.append("JWT_SECRET_KEY must be at least 32 characters in production")
++            self._add_error("JWT_SECRET_KEY must be at least 32 characters in production")
+ 
+         if jwt_secret and self._is_weak_secret(jwt_secret):
+-            errors.append("JWT_SECRET_KEY uses weak/common value. Use cryptographically secure random key.")
++            self._add_error("JWT_SECRET_KEY uses weak/common value. Use cryptographically secure random key.")
+ 
+         # Check database URL security
+         db_url = self.get("DATABASE_URL", "")
+         if not db_url.startswith("postgresql://"):
+-            errors.append("Production DATABASE_URL must use PostgreSQL")
++            self._add_error("Production DATABASE_URL must use PostgreSQL")
+         elif "localhost" in db_url or "127.0.0.1" in db_url:
+-            errors.append("Production DATABASE_URL should not use localhost")
++            self._add_error("Production DATABASE_URL should not use localhost")
+ 
+         # Validate OPENAI_API_KEY format
+         openai_key = self.get("OPENAI_API_KEY", "")
+         if openai_key and not openai_key.startswith("sk-"):
+-            errors.append("OPENAI_API_KEY format appears invalid (should start with 'sk-')")
++            self._add_error("OPENAI_API_KEY format appears invalid (should start with 'sk-')")
+ 
+         # Check for dangerous environment injection
+-        errors.extend(self._check_injection_attacks())
+-
+-        return errors
++        self.errors.extend(self._check_injection_attacks())
++
++        return self.errors
+ 
+     def _is_sensitive(self, key: str) -> bool:
+         """Check if variable name indicates sensitive data."""
