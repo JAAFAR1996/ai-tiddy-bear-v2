@@ -5,7 +5,6 @@ Testing contextual response generation and activity type determination.
 
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
-from dataclasses import dataclass
 
 from src.application.services.response_generator import (
     ResponseGenerator,
@@ -76,7 +75,9 @@ class TestResponseGenerator:
     def test_response_context_dataclass(self):
         """Test ResponseContext dataclass."""
         context = ResponseContext(
-            text="Test response", activity_type=ActivityType.STORY, emotion="happy"
+            text="Test response",
+            activity_type=ActivityType.STORY,
+            emotion="happy",
         )
 
         assert context.text == "Test response"
@@ -153,9 +154,7 @@ class TestResponseGenerator:
         # Arrange
         text = "I'm feeling sad"
         emotion = {"sentiment": "sadness", "score": 0.6}
-        mock_ai_service.generate_response.return_value = (
-            "I'm here to help you feel better. Would you like to talk about it?"
-        )
+        mock_ai_service.generate_response.return_value = "I'm here to help you feel better. Would you like to talk about it?"
         mock_ai_service.determine_activity_type.return_value = "COMFORT"
 
         # Act
@@ -186,7 +185,8 @@ class TestResponseGenerator:
         text = "How are you?"
         emotion = {"sentiment": "neutral", "score": 0.5}
         mock_ai_service.generate_response.side_effect = Exception(
-            "AI generation error")
+            "AI generation error"
+        )
 
         with patch.object(generator_with_ai, "logger") as mock_logger:
             # Act
@@ -197,7 +197,8 @@ class TestResponseGenerator:
             # Assert
             assert isinstance(result, ResponseContext)
             assert (
-                "I'm sorry, I couldn't generate a personalized response" in result.text
+                "I'm sorry, I couldn't generate a personalized response"
+                in result.text
             )
             assert result.activity_type == ActivityType.CONVERSATION
             assert result.emotion == "neutral"
@@ -226,7 +227,8 @@ class TestResponseGenerator:
             # Assert
             assert isinstance(result, ResponseContext)
             assert (
-                "I'm sorry, I couldn't generate a personalized response" in result.text
+                "I'm sorry, I couldn't generate a personalized response"
+                in result.text
             )
             assert result.activity_type == ActivityType.CONVERSATION
             assert result.emotion == "neutral"
@@ -290,7 +292,8 @@ class TestResponseGenerator:
 
     @pytest.mark.asyncio
     async def test_session_data_handling(
-            self, generator_with_ai, mock_ai_service):
+        self, generator_with_ai, mock_ai_service
+    ):
         """Test proper handling of session data."""
         text = "test input"
         emotion = {"sentiment": "happy", "score": 0.9}
@@ -356,7 +359,8 @@ class TestResponseGenerator:
         # Generate responses concurrently
         tasks = [
             generator_with_ai.generate_contextual_response(
-                text, emotion, mock_session)
+                text, emotion, mock_session
+            )
             for text, emotion in inputs
         ]
 
@@ -406,11 +410,15 @@ class TestResponseGenerator:
         emotion = {"sentiment": "neutral", "score": 0.5}
 
         # Test invalid activity type
-        mock_ai_service.determine_activity_type.return_value = "INVALID_ACTIVITY"
+        mock_ai_service.determine_activity_type.return_value = (
+            "INVALID_ACTIVITY"
+        )
         mock_ai_service.generate_response.return_value = "Some response"
 
         with pytest.raises(KeyError):
-            await generator_with_ai.determine_activity_type(text, emotion, mock_session)
+            await generator_with_ai.determine_activity_type(
+                text, emotion, mock_session
+            )
 
         # Test None response
         mock_ai_service.generate_response.return_value = None
@@ -458,7 +466,9 @@ class TestResponseGenerator:
         """Test conversation history handling in AI calls."""
         text = "Continue our conversation"
         emotion = {"sentiment": "engaged", "score": 0.8}
-        mock_ai_service.generate_response.return_value = "Continuing conversation..."
+        mock_ai_service.generate_response.return_value = (
+            "Continuing conversation..."
+        )
         mock_ai_service.determine_activity_type.return_value = "CONVERSATION"
 
         await generator_with_ai.generate_contextual_response(
@@ -514,7 +524,9 @@ class TestResponseGenerator:
             mock_ai_service.generate_response.side_effect = None
             mock_ai_service.generate_response.return_value = "Success response"
             mock_ai_service.determine_activity_type.side_effect = None
-            mock_ai_service.determine_activity_type.return_value = "CONVERSATION"
+            mock_ai_service.determine_activity_type.return_value = (
+                "CONVERSATION"
+            )
 
             # Second call should succeed
             result2 = await generator_with_ai.generate_contextual_response(

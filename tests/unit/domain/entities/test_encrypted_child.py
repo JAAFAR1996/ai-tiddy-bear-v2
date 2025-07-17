@@ -59,8 +59,14 @@ class TestEncryptedChild:
         assert child.data_retention_date is not None
         expected_retention = child.created_at + timedelta(days=90)
         # Allow small time difference for test execution
-        assert abs((child.data_retention_date -
-                    expected_retention).total_seconds()) < 1
+        assert (
+            abs(
+                (
+                    child.data_retention_date - expected_retention
+                ).total_seconds()
+            )
+            < 1
+        )
 
     @patch("src.domain.value_objects.encrypted_field.EncryptedField")
     def test_emergency_contacts_encryption(self, mock_encrypted_field):
@@ -149,8 +155,14 @@ class TestEncryptedChild:
         child.extend_retention(30)
 
         expected_retention = original_retention + timedelta(days=30)
-        assert abs((child.data_retention_date -
-                    expected_retention).total_seconds()) < 1
+        assert (
+            abs(
+                (
+                    child.data_retention_date - expected_retention
+                ).total_seconds()
+            )
+            < 1
+        )
 
     def test_coppa_protection_check(self):
         """Test COPPA protection status."""
@@ -260,7 +272,9 @@ class TestEncryptedChild:
         assert result["age"] == 5
         assert result["personality_traits"] == ["friendly", "curious"]
         assert result["learning_preferences"] == {
-            "visual": 0.8, "auditory": 0.2}
+            "visual": 0.8,
+            "auditory": 0.2,
+        }
         assert "emergency_contacts" not in result
         assert "medical_notes" not in result
 
@@ -294,8 +308,8 @@ class TestEncryptedChild:
     def test_special_needs_handling(self):
         """Test special needs field handling."""
         child = EncryptedChild(
-            name="Alice", age=5, special_needs=[
-                "ADHD", "Dyslexia"])
+            name="Alice", age=5, special_needs=["ADHD", "Dyslexia"]
+        )
 
         assert child.special_needs == ["ADHD", "Dyslexia"]
         assert len(child.special_needs) == 2

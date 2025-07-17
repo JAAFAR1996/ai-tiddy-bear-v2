@@ -35,7 +35,9 @@ class RateLimitStorage:
                         first_request=state_dict.get("first_request"),
                     )
             except Exception as e:
-                logger.warning(f"Failed to get rate limit state from Redis: {e}")
+                logger.warning(
+                    f"Failed to get rate limit state from Redis: {e}"
+                )
 
         # Fallback to local state
         if key not in self.local_state:
@@ -61,7 +63,9 @@ class RateLimitStorage:
                     ex=3600,  # Expire after 1 hour
                 )
             except Exception as e:
-                logger.warning(f"Failed to save rate limit state to Redis: {e}")
+                logger.warning(
+                    f"Failed to save rate limit state to Redis: {e}"
+                )
 
         # Always save to local state
         self.local_state[key] = state
@@ -72,8 +76,11 @@ class RateLimitStorage:
         expired_keys = [
             key
             for key, state in self.local_state.items()
-            if state.blocked_until and current_time > state.blocked_until + 3600
+            if state.blocked_until
+            and current_time > state.blocked_until + 3600
         ]
         for key in expired_keys:
             del self.local_state[key]
-        logger.info(f"Cleaned up {len(expired_keys)} expired rate limit entries.")
+        logger.info(
+            f"Cleaned up {len(expired_keys)} expired rate limit entries."
+        )

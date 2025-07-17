@@ -277,7 +277,9 @@ class COPPADataRetentionService:
             True if data should be deleted
 
         """
-        deletion_date = self.calculate_deletion_date(child_age, data_type, created_at)
+        deletion_date = self.calculate_deletion_date(
+            child_age, data_type, created_at
+        )
         return datetime.utcnow() >= deletion_date
 
     def get_retention_summary(self, child_age: int) -> dict[str, Any]:
@@ -302,7 +304,9 @@ class COPPADataRetentionService:
         summary = {
             "child_age": child_age,
             "age_group": age_group,
-            "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(child_age),
+            "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(
+                child_age
+            ),
             "policies": {},
         }
         for data_type, policy in policies.items():

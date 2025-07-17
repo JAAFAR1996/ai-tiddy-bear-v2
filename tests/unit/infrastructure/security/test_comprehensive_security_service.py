@@ -4,7 +4,7 @@ Testing placeholder comprehensive security service functionality.
 """
 
 import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 import logging
 
 from src.infrastructure.security.comprehensive_security_service import (
@@ -40,7 +40,9 @@ class TestComprehensiveSecurityService:
 
     def test_initialization_with_config(self, security_service_with_config):
         """Test security service initialization with provided config."""
-        assert security_service_with_config.config["encryption_enabled"] is True
+        assert (
+            security_service_with_config.config["encryption_enabled"] is True
+        )
         assert security_service_with_config.config["audit_logging"] is True
         assert security_service_with_config.config["rate_limiting"] is True
         assert security_service_with_config.config["child_safety_mode"] is True
@@ -82,7 +84,8 @@ class TestComprehensiveSecurityService:
 
     @pytest.mark.asyncio
     async def test_perform_security_check_multiple_calls(
-            self, security_service):
+        self, security_service
+    ):
         """Test multiple security check calls."""
         results = []
         for _ in range(5):
@@ -161,11 +164,14 @@ class TestComprehensiveSecurityService:
     def test_logging_configuration(self):
         """Test that logger is properly configured."""
         # Check that logger exists and is configured
-        from src.infrastructure.security.comprehensive_security_service import logger
+        from src.infrastructure.security.comprehensive_security_service import (
+            logger,
+        )
 
         assert isinstance(logger, logging.Logger)
         assert (
-            logger.name == "src.infrastructure.security.comprehensive_security_service"
+            logger.name
+            == "src.infrastructure.security.comprehensive_security_service"
         )
 
     def test_placeholder_nature_documentation(self, security_service):
@@ -215,7 +221,10 @@ class TestComprehensiveSecurityService:
         nested_config = {
             "security_settings": {
                 "encryption": {"algorithm": "AES-256", "key_rotation": True},
-                "authentication": {"multi_factor": True, "session_timeout": 3600},
+                "authentication": {
+                    "multi_factor": True,
+                    "session_timeout": 3600,
+                },
             },
             "audit_settings": {"log_level": "INFO", "retention_days": 365},
         }
@@ -224,20 +233,26 @@ class TestComprehensiveSecurityService:
 
         # Test that nested config is accessible
         assert (
-            service.config["security_settings"]["encryption"]["algorithm"] == "AES-256"
+            service.config["security_settings"]["encryption"]["algorithm"]
+            == "AES-256"
         )
         assert (
-            service.config["security_settings"]["authentication"]["multi_factor"]
+            service.config["security_settings"]["authentication"][
+                "multi_factor"
+            ]
             is True
         )
         assert service.config["audit_settings"]["log_level"] == "INFO"
 
         # Test that modifying the service config doesn't affect original
-        service.config["security_settings"]["encryption"]["algorithm"] = "AES-512"
+        service.config["security_settings"]["encryption"][
+            "algorithm"
+        ] = "AES-512"
         # Note: Since we pass the dict directly, this will modify the original
         # This test documents the current behavior
         assert (
-            nested_config["security_settings"]["encryption"]["algorithm"] == "AES-512"
+            nested_config["security_settings"]["encryption"]["algorithm"]
+            == "AES-512"
         )
 
     @pytest.mark.asyncio
@@ -305,7 +320,8 @@ class TestComprehensiveSecurityService:
 
     @pytest.mark.asyncio
     async def test_security_check_return_type_consistency(
-            self, security_service):
+        self, security_service
+    ):
         """Test that security check always returns consistent type."""
         # Test multiple calls to ensure return type is consistent
         for _ in range(20):
@@ -332,7 +348,10 @@ class TestComprehensiveSecurityService:
 
         assert len(service.config) == 2000  # 1000 flat + 1000 nested
         assert service.config["config_key_500"] == "config_value_500"
-        assert service.config["nested_config_500"]["sub_key_1"] == "sub_value_1_500"
+        assert (
+            service.config["nested_config_500"]["sub_key_1"]
+            == "sub_value_1_500"
+        )
 
     def test_service_future_compatibility(self, security_service):
         """Test service structure for future compatibility."""
@@ -349,8 +368,13 @@ class TestComprehensiveSecurityService:
 
         # Config should be accessible
         assert security_service.config["future_auth_method"] == "biometric"
-        assert security_service.config["future_encryption_level"] == "quantum_resistant"
-        assert security_service.config["future_compliance_standard"] == "COPPA_v2"
+        assert (
+            security_service.config["future_encryption_level"]
+            == "quantum_resistant"
+        )
+        assert (
+            security_service.config["future_compliance_standard"] == "COPPA_v2"
+        )
 
         # Service should still function
         import asyncio

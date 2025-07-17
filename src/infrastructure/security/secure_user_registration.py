@@ -4,7 +4,9 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from src.infrastructure.security.email_validator import validate_email_address
-from src.infrastructure.security.password_validator import validate_password_strength
+from src.infrastructure.security.password_validator import (
+    validate_password_strength,
+)
 from src.infrastructure.security.registration_models import (
     PasswordRequirements,
     RegistrationRequest,
@@ -20,10 +22,11 @@ logger = get_logger(__name__, component="security")
 # Production-only imports
 try:
     import bcrypt
-    from cryptography.fernet import Fernet
 except ImportError as e:
     logger.critical(f"CRITICAL ERROR: Security dependencies missing: {e}")
-    raise ImportError("Missing security dependencies: bcrypt, cryptography") from e
+    raise ImportError(
+        "Missing security dependencies: bcrypt, cryptography"
+    ) from e
 
 
 class SecureUserRegistration:
@@ -66,7 +69,9 @@ class SecureUserRegistration:
         # Check terms and conditions acceptance
         if not registration_data.terms_accepted:
             validation["eligible"] = False
-            validation["errors"].append("Terms and conditions must be accepted")
+            validation["errors"].append(
+                "Terms and conditions must be accepted"
+            )
 
         if not registration_data.privacy_accepted:
             validation["eligible"] = False
@@ -98,7 +103,9 @@ class SecureUserRegistration:
             # Simple phone number format check
             phone_pattern = re.compile(r"^\+?[\d\s\-\(\)]{10,15}$")
             if not phone_pattern.match(registration_data.phone_number):
-                validation["warnings"].append("Phone number format may be invalid")
+                validation["warnings"].append(
+                    "Phone number format may be invalid"
+                )
 
         return validation
 
@@ -151,7 +158,10 @@ class SecureUserRegistration:
                 }
 
             # 2. التحقق من تطابق كلمات المرور
-            if registration_data.password != registration_data.confirm_password:
+            if (
+                registration_data.password
+                != registration_data.confirm_password
+            ):
                 return {
                     "success": False,
                     "errors": ["Passwords do not match"],
@@ -178,7 +188,9 @@ class SecureUserRegistration:
                 }
 
             # 4. التحقق من أهلية الوالد
-            parent_validation = self.validate_parent_eligibility(registration_data)
+            parent_validation = self.validate_parent_eligibility(
+                registration_data
+            )
             if not parent_validation["eligible"]:
                 return {
                     "success": False,
@@ -216,7 +228,9 @@ class SecureUserRegistration:
                 "account_locked": False,
             }
 
-            logger.info(f"New parent user registered: {registration_data.email}")
+            logger.info(
+                f"New parent user registered: {registration_data.email}"
+            )
 
             return {
                 "success": True,
@@ -263,4 +277,7 @@ class SecureUserRegistration:
             }
         except Exception as e:
             logger.error(f"Error resending verification: {e}")
-            return {"success": False, "error": "Failed to resend verification email"}
+            return {
+                "success": False,
+                "error": "Failed to resend verification email",
+            }

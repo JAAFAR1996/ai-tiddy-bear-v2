@@ -1,3 +1,10 @@
+from typing import List, Dict, Any
+
+from src.domain.safety.models.conversation_context import ConversationContext
+from src.domain.safety.models.safety_analysis_result import SafetyAnalysisResult
+from src.domain.safety.models.risk_level import RiskLevel
+
+
 class AIBiasDetector:
     def __init__(self) -> None:
         self.bias_statistics = {
@@ -100,15 +107,19 @@ class AIBiasDetector:
         results = []
         for i, response in enumerate(responses):
             context = (
-                contexts[i] if i < len(contexts) else ConversationContext(child_age=0)
+                contexts[i]
+                if i < len(contexts)
+                else ConversationContext(child_age=0)
             )  # Default context if not provided
             results.append(await self.detect_bias(response, context))
         return results
 
-    def get_bias_statistics(self) -> dict:
+    def get_bias_statistics(self) -> Dict[str, Any]:
         return self.bias_statistics
 
-    async def generate_bias_report(self, results: List[SafetyAnalysisResult]) -> dict:
+    async def generate_bias_report(
+        self, results: List[SafetyAnalysisResult]
+    ) -> Dict[str, Any]:
         summary = {
             "total_responses_analyzed": len(results),
             "total_biased_responses": sum(1 for r in results if r.has_bias),

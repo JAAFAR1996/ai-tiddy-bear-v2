@@ -1,12 +1,15 @@
-"""from datetime import timedeltafrom typing import Any, Optional, Dict, Listimport jsonimport loggingfrom redis.exceptions import RedisErrorimport redis.asyncio as redisfrom .cache_config import CacheConfig, get_cache_keyfrom .strategies.invalidation_strategy import CacheInvalidationStrategy."""
-
 """Redis cache manager - main caching interface"""
 
+import json
+import logging
+from datetime import timedelta
+from typing import Any, Optional, Dict, List
+
 import redis.asyncio as redis
+from redis.exceptions import RedisError
 
 from src.infrastructure.logging_config import get_logger
-
-from .cache_config import CacheConfig
+from .cache_config import CacheConfig, get_cache_key
 from .strategies.invalidation_strategy import CacheInvalidationStrategy
 
 logger = get_logger(__name__, component="infrastructure")
@@ -17,9 +20,9 @@ class RedisCacheManager:
 
     def __init__(self, redis_url: str = "redis://localhost:6379/0") -> None:
         self.redis_url = redis_url
-        self.redis_client: redis.Redis | None = None
+        self.redis_client: Optional[redis.Redis] = None
         self.config = CacheConfig()
-        self.invalidation_strategy: CacheInvalidationStrategy | None = None
+        self.invalidation_strategy: Optional[CacheInvalidationStrategy] = None
         self._initialized = False
 
     async def initialize(self) -> None:
@@ -41,7 +44,9 @@ class RedisCacheManager:
             # Test connection
             await self.redis_client.ping()
             # Initialize invalidation strategy
-            self.invalidation_strategy = CacheInvalidationStrategy(self.redis_client)
+            self.invalidation_strategy = CacheInvalidationStrategy(
+                self.redis_client
+            )
             self._initialized = True
             logger.info("Redis cache manager initialized successfully")
         except Exception as e:
@@ -54,3 +59,8 @@ class RedisCacheManager:
             await self.redis_client.close()
             self._initialized = False
             logger.info("Redis connection closed")
+
+
+def get_cache_manager() -> RedisCacheManager:
+    """Get cache manager instance."""
+    return RedisCacheManager()

@@ -39,7 +39,9 @@ class ManageChildProfileUseCase:
         )
 
     async def get_child_profile(self, child_id: UUID) -> ChildData | None:
-        child_read_model = self.child_profile_read_model_store.get_by_id(child_id)
+        child_read_model = self.child_profile_read_model_store.get_by_id(
+            child_id
+        )
         if child_read_model:
             return ChildData(
                 id=child_read_model.id,

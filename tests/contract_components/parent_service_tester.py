@@ -35,7 +35,10 @@ async def test_parent_service_contracts(framework):
                 "parent_id": {"type": "string", "format": "uuid"},
                 "children": {"type": "array", "items": {"type": "object"}},
                 "conversation_summary": {"type": "object"},
-                "safety_alerts": {"type": "array", "items": {"type": "object"}},
+                "safety_alerts": {
+                    "type": "array",
+                    "items": {"type": "object"},
+                },
                 "learning_progress": {"type": "object"},
                 "last_updated": {"type": "string", "format": "date-time"},
             },
@@ -55,7 +58,8 @@ async def test_parent_service_contracts(framework):
         expected_response_keys=[
             "parent_id",
             "children",
-            "conversation_summary"],
+            "conversation_summary",
+        ],
     )
 
     result = await framework._execute_contract_test(test)

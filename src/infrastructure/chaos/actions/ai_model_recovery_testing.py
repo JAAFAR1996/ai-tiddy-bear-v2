@@ -1,11 +1,11 @@
-"""from typing import Any, Dict
-import asyncio
-import logging
-import httpx.
-"""
-
 """AI Model Recovery Testing Module
 AI System Chaos Actions for Testing AI Model Recovery After Failures"""
+
+import asyncio
+import logging
+from typing import Any, Dict
+
+import httpx
 
 from src.infrastructure.logging_config import get_logger
 
@@ -69,4 +69,8 @@ async def test_ai_model_recovery(
         }
     except Exception as e:
         logger.error(f"❌ AI model recovery test failed: {e}")
-        return {"action": "test_ai_model_recovery", "error": str(e), "passed": False}
+        return {
+            "action": "test_ai_model_recovery",
+            "error": str(e),
+            "passed": False,
+        }

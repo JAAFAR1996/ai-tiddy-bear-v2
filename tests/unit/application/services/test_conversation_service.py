@@ -6,11 +6,12 @@ Testing conversation history and interactions management.
 import pytest
 from uuid import UUID, uuid4
 from unittest.mock import Mock, AsyncMock, patch
-from typing import List
 
 from src.application.services.conversation_service import ConversationService
 from src.domain.entities.conversation import Conversation
-from src.domain.repositories.conversation_repository import ConversationRepository
+from src.domain.repositories.conversation_repository import (
+    ConversationRepository,
+)
 
 
 class TestConversationService:
@@ -61,15 +62,19 @@ class TestConversationService:
             mock_create.return_value = mock_conversation
 
             # Act
-            result = await service.start_new_conversation(child_id, initial_text)
+            result = await service.start_new_conversation(
+                child_id, initial_text
+            )
 
             # Assert
             assert result == mock_conversation
             mock_create.assert_called_once_with(child_id)
             mock_conversation.update_summary.assert_called_once_with(
-                initial_text)
+                initial_text
+            )
             mock_conversation_repo.save.assert_called_once_with(
-                mock_conversation)
+                mock_conversation
+            )
 
     @pytest.mark.asyncio
     async def test_start_new_conversation_empty_text(
@@ -87,12 +92,15 @@ class TestConversationService:
             mock_create.return_value = mock_conversation
 
             # Act
-            result = await service.start_new_conversation(child_id, initial_text)
+            result = await service.start_new_conversation(
+                child_id, initial_text
+            )
 
             # Assert
             assert result == mock_conversation
             mock_conversation.update_summary.assert_called_once_with(
-                initial_text)
+                initial_text
+            )
 
     @pytest.mark.asyncio
     async def test_start_new_conversation_repository_error(
@@ -124,7 +132,9 @@ class TestConversationService:
             Mock(spec=Conversation, id=uuid4()),
             Mock(spec=Conversation, id=uuid4()),
         ]
-        mock_conversation_repo.find_by_child_id.return_value = mock_conversations
+        mock_conversation_repo.find_by_child_id.return_value = (
+            mock_conversations
+        )
 
         # Act
         result = await service.get_conversation_history(child_id)
@@ -133,7 +143,8 @@ class TestConversationService:
         assert result == mock_conversations
         assert len(result) == 3
         mock_conversation_repo.find_by_child_id.assert_called_once_with(
-            child_id)
+            child_id
+        )
 
     @pytest.mark.asyncio
     async def test_get_conversation_history_empty(
@@ -149,7 +160,8 @@ class TestConversationService:
         # Assert
         assert result == []
         mock_conversation_repo.find_by_child_id.assert_called_once_with(
-            child_id)
+            child_id
+        )
 
     @pytest.mark.asyncio
     async def test_get_conversation_by_id_success(
@@ -166,7 +178,8 @@ class TestConversationService:
         # Assert
         assert result == mock_conversation
         mock_conversation_repo.get_by_id.assert_called_once_with(
-            conversation_id)
+            conversation_id
+        )
 
     @pytest.mark.asyncio
     async def test_get_conversation_by_id_not_found(
@@ -178,7 +191,8 @@ class TestConversationService:
 
         # Act & Assert
         with pytest.raises(
-            ValueError, match=f"Conversation with ID {conversation_id} not found"
+            ValueError,
+            match=f"Conversation with ID {conversation_id} not found",
         ):
             await service._get_conversation_by_id(conversation_id)
 
@@ -217,9 +231,12 @@ class TestConversationService:
 
         # Act & Assert
         with pytest.raises(
-            ValueError, match=f"Conversation with ID {conversation_id} not found"
+            ValueError,
+            match=f"Conversation with ID {conversation_id} not found",
         ):
-            await service.update_conversation_analysis(conversation_id, "happy", 0.8)
+            await service.update_conversation_analysis(
+                conversation_id, "happy", 0.8
+            )
 
     @pytest.mark.asyncio
     async def test_update_conversation_analysis_edge_scores(
@@ -263,7 +280,9 @@ class TestConversationService:
         mock_conversation_repo.get_by_id.return_value = mock_conversation
 
         # Act
-        result = await service.update_conversation_summary(conversation_id, summary)
+        result = await service.update_conversation_summary(
+            conversation_id, summary
+        )
 
         # Assert
         assert result == mock_conversation
@@ -283,7 +302,9 @@ class TestConversationService:
         mock_conversation_repo.get_by_id.return_value = mock_conversation
 
         # Act
-        result = await service.update_conversation_summary(conversation_id, summary)
+        result = await service.update_conversation_summary(
+            conversation_id, summary
+        )
 
         # Assert
         mock_conversation.update_summary.assert_called_once_with(summary)
@@ -307,7 +328,9 @@ class TestConversationService:
             mock_start_new.return_value = mock_conversation
 
             # Act
-            result = await service.add_interaction(child_id, user_input, ai_response)
+            result = await service.add_interaction(
+                child_id, user_input, ai_response
+            )
 
             # Assert
             assert result == mock_conversation
@@ -316,7 +339,8 @@ class TestConversationService:
                 user_input, ai_response
             )
             mock_conversation_repo.save.assert_called_once_with(
-                mock_conversation)
+                mock_conversation
+            )
 
     @pytest.mark.asyncio
     async def test_add_interaction_existing_conversation(
@@ -330,10 +354,13 @@ class TestConversationService:
         mock_conversation = Mock(spec=Conversation)
         mock_conversation.add_interaction = Mock()
         mock_conversation_repo.find_by_child_id.return_value = [
-            mock_conversation]
+            mock_conversation
+        ]
 
         # Act
-        result = await service.add_interaction(child_id, user_input, ai_response)
+        result = await service.add_interaction(
+            child_id, user_input, ai_response
+        )
 
         # Assert
         assert result == mock_conversation
@@ -360,10 +387,14 @@ class TestConversationService:
         for conv in mock_conversations:
             conv.add_interaction = Mock()
 
-        mock_conversation_repo.find_by_child_id.return_value = mock_conversations
+        mock_conversation_repo.find_by_child_id.return_value = (
+            mock_conversations
+        )
 
         # Act
-        result = await service.add_interaction(child_id, user_input, ai_response)
+        result = await service.add_interaction(
+            child_id, user_input, ai_response
+        )
 
         # Assert
         # Should use the first conversation
@@ -372,7 +403,8 @@ class TestConversationService:
             user_input, ai_response
         )
         mock_conversation_repo.save.assert_called_once_with(
-            mock_conversations[0])
+            mock_conversations[0]
+        )
 
     @pytest.mark.asyncio
     async def test_add_interaction_special_characters(
@@ -386,10 +418,13 @@ class TestConversationService:
         mock_conversation = Mock(spec=Conversation)
         mock_conversation.add_interaction = Mock()
         mock_conversation_repo.find_by_child_id.return_value = [
-            mock_conversation]
+            mock_conversation
+        ]
 
         # Act
-        result = await service.add_interaction(child_id, user_input, ai_response)
+        result = await service.add_interaction(
+            child_id, user_input, ai_response
+        )
 
         # Assert
         mock_conversation.add_interaction.assert_called_once_with(
@@ -408,10 +443,13 @@ class TestConversationService:
         mock_conversation = Mock(spec=Conversation)
         mock_conversation.add_interaction = Mock()
         mock_conversation_repo.find_by_child_id.return_value = [
-            mock_conversation]
+            mock_conversation
+        ]
 
         # Act
-        result = await service.add_interaction(child_id, user_input, ai_response)
+        result = await service.add_interaction(
+            child_id, user_input, ai_response
+        )
 
         # Assert
         mock_conversation.add_interaction.assert_called_once_with(
@@ -427,9 +465,11 @@ class TestConversationService:
         mock_conversation = Mock(spec=Conversation)
         mock_conversation.add_interaction = Mock()
         mock_conversation_repo.find_by_child_id.return_value = [
-            mock_conversation]
+            mock_conversation
+        ]
         mock_conversation_repo.save.side_effect = Exception(
-            "Database connection lost")
+            "Database connection lost"
+        )
 
         with pytest.raises(Exception, match="Database connection lost"):
             await service.add_interaction(child_id, "test", "response")
@@ -448,7 +488,9 @@ class TestConversationService:
             conv.add_interaction = Mock()
             mock_conversations.append(conv)
 
-        mock_conversation_repo.find_by_child_id.return_value = mock_conversations
+        mock_conversation_repo.find_by_child_id.return_value = (
+            mock_conversations
+        )
 
         # Act - simulate concurrent interactions
         tasks = []
@@ -485,4 +527,5 @@ class TestConversationService:
 
         assert result == []
         mock_conversation_repo.find_by_child_id.assert_called_once_with(
-            child_id_value)
+            child_id_value
+        )

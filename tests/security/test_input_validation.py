@@ -18,7 +18,10 @@ class TestChildModelValidation:
     def test_valid_child_creation(self):
         """Test valid child creation request."""
         request = ChildCreateRequest(
-            name="Alice", age=7, interests=["reading", "animals"], language="en"
+            name="Alice",
+            age=7,
+            interests=["reading", "animals"],
+            language="en",
         )
         assert request.name == "Alice"
         assert request.age == 7
@@ -33,7 +36,8 @@ class TestChildModelValidation:
         """Test that XSS patterns in names are blocked."""
         with pytest.raises(ValidationError, match="invalid characters"):
             ChildCreateRequest(
-                name="Alice<script>alert('xss')</script>", age=7)
+                name="Alice<script>alert('xss')</script>", age=7
+            )
 
     def test_dangerous_characters_blocked(self):
         """Test that dangerous characters are blocked."""
@@ -84,29 +88,37 @@ class TestChildModelValidation:
         assert len(request.interests) == 3
 
         # Too many interests
-        with pytest.raises(ValidationError, match="Maximum.*interests allowed"):
+        with pytest.raises(
+            ValidationError, match="Maximum.*interests allowed"
+        ):
             ChildCreateRequest(
-                name="Test", age=7, interests=[f"interest_{i}" for i in range(25)]
+                name="Test",
+                age=7,
+                interests=[f"interest_{i}" for i in range(25)],
             )
 
         # Invalid interest content
         with pytest.raises(ValidationError, match="invalid characters"):
             ChildCreateRequest(
-                name="Test", age=7, interests=["reading", "animals<script>", "music"]
+                name="Test",
+                age=7,
+                interests=["reading", "animals<script>", "music"],
             )
 
         # Too long interest
         with pytest.raises(ValidationError, match="too long"):
             ChildCreateRequest(
                 # Over 50 character limit
-                name="Test", age=7, interests=["a" * 60]
+                name="Test",
+                age=7,
+                interests=["a" * 60],
             )
 
         # Non-string interest
         with pytest.raises(ValidationError, match="must be strings"):
             ChildCreateRequest(
-                name="Test", age=7, interests=[
-                    "reading", 123, "music"])
+                name="Test", age=7, interests=["reading", 123, "music"]
+            )
 
     def test_language_validation(self):
         """Test language validation."""
@@ -127,7 +139,9 @@ class TestChildModelValidation:
     def test_interests_sanitization(self):
         """Test that interests are properly sanitized."""
         request = ChildCreateRequest(
-            name="Test", age=7, interests=["  reading  ", "", "  animals  ", "   "]
+            name="Test",
+            age=7,
+            interests=["  reading  ", "", "  animals  ", "   "],
         )
         # Empty interests should be filtered out, whitespace trimmed
         assert request.interests == ["reading", "animals"]
@@ -194,7 +208,8 @@ class TestGeneralValidation:
 
         with pytest.raises(ValueError, match="Maximum.*interests allowed"):
             validate_child_data(
-                {"interests": [f"interest_{i}" for i in range(25)]})
+                {"interests": [f"interest_{i}" for i in range(25)]}
+            )
 
         # Invalid language
         with pytest.raises(ValueError, match="must be one of"):
@@ -237,9 +252,8 @@ class TestSecurityEdgeCases:
 
         with pytest.raises(ValidationError):
             ChildCreateRequest(
-                name="Test",
-                age=7,
-                interests=malicious_interests)
+                name="Test", age=7, interests=malicious_interests
+            )
 
     def test_case_insensitive_sql_patterns(self):
         """Test that SQL injection patterns are caught regardless of case."""
@@ -259,7 +273,9 @@ class TestSecurityEdgeCases:
         """Test that preferences dict doesn't allow dangerous content."""
         # This would need additional validation in a real implementation
         request = ChildCreateRequest(
-            name="Test", age=7, preferences={"theme": "blue", "notifications": True}
+            name="Test",
+            age=7,
+            preferences={"theme": "blue", "notifications": True},
         )
         assert request.preferences["theme"] == "blue"
 

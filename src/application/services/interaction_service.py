@@ -16,7 +16,9 @@ from src.application.interfaces.safety_monitor import (
     SafetyMonitor,
 )
 from src.domain.exceptions import InvalidInputError, ResourceNotFoundError
-from src.domain.interfaces.child_profile_repository import IChildProfileRepository
+from src.domain.interfaces.child_profile_repository import (
+    IChildProfileRepository,
+)
 from src.domain.interfaces.sanitization_service import ISanitizationService
 from src.infrastructure.config.interaction_config import InteractionConfig
 from src.infrastructure.logging_config import get_logger
@@ -70,7 +72,9 @@ class InteractionService:
             self.logger.warning("Invalid child_id provided in process method.")
             raise InvalidInputError("Valid child_id is required")
         if not message or not isinstance(message, str):
-            self.logger.warning(f"Invalid message provided for child {child_id}.")
+            self.logger.warning(
+                f"Invalid message provided for child {child_id}."
+            )
             raise InvalidInputError("Valid message is required")
         if len(message) > self.config.max_message_length:
             self.logger.warning(
@@ -93,7 +97,9 @@ class InteractionService:
                     "timestamp": datetime.now(UTC).isoformat(),
                 }
         except (ResourceNotFoundError, InvalidInputError) as e:
-            self.logger.error(f"Age verification failed for child {child_id}: {e}")
+            self.logger.error(
+                f"Age verification failed for child {child_id}: {e}"
+            )
             return {
                 "success": False,
                 "error": f"Age verification failed: {e!s}",
@@ -107,7 +113,8 @@ class InteractionService:
         # Check for PII before further processing
         if await self.sanitization_service.detect_pii(cleaned_message):
             self.logger.warning(
-                f"PII detected in message for child {child_id}. Blocking interaction.",
+                f"PII detected in message for child {child_id}. "
+                "Blocking interaction.",
             )
             return {
                 "success": False,
@@ -120,18 +127,23 @@ class InteractionService:
         safety_result = await self._check_content_safety(cleaned_message)
         if not safety_result.is_safe:
             self.logger.warning(
-                f"Unsafe content detected for child {child_id}: {safety_result.overall_risk_level.value}",
+                f"Unsafe content detected for child {child_id}: "
+                f"{safety_result.overall_risk_level.value}",
             )
             return {
                 "success": False,
-                "error": f"Message contains inappropriate content: {safety_result.overall_risk_level.value}",
+                "error": (
+                    "Message contains inappropriate content: "
+                    f"{safety_result.overall_risk_level.value}"
+                ),
                 "safe": False,
                 "timestamp": datetime.now(UTC).isoformat(),
             }
 
         # Log successful interaction for COPPA compliance
         self.logger.info(
-            f"Safe interaction processed for child {child_id}. Message: {cleaned_message}",
+            f"Safe interaction processed for child {child_id}. "
+            f"Message: {cleaned_message}",
         )
 
         return {
@@ -154,11 +166,15 @@ class InteractionService:
 
         """
         self.logger.debug(f"Sanitizing message: {message[:50]}...")
-        sanitized_message = await self.sanitization_service.sanitize_text(message)
+        sanitized_message = await self.sanitization_service.sanitize_text(
+            message
+        )
         self.logger.info("Message sanitization complete.")
         return sanitized_message
 
-    async def _check_content_safety(self, message: str) -> SafetyAnalysisResult:
+    async def _check_content_safety(
+        self, message: str
+    ) -> SafetyAnalysisResult:
         """Checks the content of the message for safety and appropriateness using the injected safety monitor.
 
         Args:
@@ -168,10 +184,14 @@ class InteractionService:
             A SafetyAnalysisResult object.
 
         """
-        self.logger.debug(f"Checking content safety for message: {message[:50]}...")
+        self.logger.debug(
+            f"Checking content safety for message: {message[:50]}..."
+        )
         safety_result = await self.safety_monitor.analyze_content(message)
         self.logger.info(
-            f"Content safety check complete. Is safe: {safety_result.is_safe}, Risk level: {safety_result.overall_risk_level.value}",
+            "Content safety check complete. Is safe: "
+            f"{safety_result.is_safe}, Risk level: "
+            f"{safety_result.overall_risk_level.value}",
         )
         return safety_result
 
@@ -194,7 +214,8 @@ class InteractionService:
 
         if child_age is None:
             self.logger.warning(
-                f"Child age not found for child {child_id}. Cannot perform age check.",
+                f"Child age not found for child {child_id}. "
+                "Cannot perform age check.",
             )
             raise ResourceNotFoundError(
                 f"Child profile or age not found for child_id: {child_id}",
@@ -211,7 +232,8 @@ class InteractionService:
         )
         if not is_age_valid:
             self.logger.warning(
-                f"Child {child_id} (age {child_age}) is outside allowed age range ({self.config.min_child_age}-{self.config.max_child_age}).",
+                f"Child {child_id} (age {child_age}) is outside allowed age "
+                f"range ({self.config.min_child_age}-{self.config.max_child_age}).",
             )
         else:
             self.logger.info(

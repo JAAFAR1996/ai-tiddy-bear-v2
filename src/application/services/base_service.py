@@ -56,7 +56,9 @@ class BaseService(ABC):
         """
         self.logger.error(message, extra=kwargs)
 
-    def validate_input(self, data: dict[str, Any], required_fields: list[str]) -> bool:
+    def validate_input(
+        self, data: dict[str, Any], required_fields: list[str]
+    ) -> bool:
         """Validates that required fields are present in input data.
 
         Args:

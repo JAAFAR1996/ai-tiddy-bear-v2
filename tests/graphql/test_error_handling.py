@@ -21,10 +21,14 @@ def federation_config():
     return FederationConfig(
         services=[
             ServiceConfig(
-                name="child_service", url="http://localhost:8001", schema_path="/schema"
+                name="child_service",
+                url="http://localhost:8001",
+                schema_path="/schema",
             ),
             ServiceConfig(
-                name="ai_service", url="http://localhost:8002", schema_path="/schema"
+                name="ai_service",
+                url="http://localhost:8002",
+                schema_path="/schema",
             ),
         ],
         enable_authentication=True,
@@ -57,8 +61,9 @@ async def auth_service(auth_config):
     return await create_auth_service(auth_config)
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE,
-                    reason="Federation not available")
+@pytest.mark.skipif(
+    not FEDERATION_AVAILABLE, reason="Federation not available"
+)
 class TestErrorHandling:
     """Test error handling in federation."""
 

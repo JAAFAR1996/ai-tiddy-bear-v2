@@ -1,5 +1,4 @@
 from src.infrastructure.logging_config import get_logger
-import logging
 import asyncio
 import time
 from typing import List
@@ -58,7 +57,8 @@ class ConcurrentUserTest:
         self.results: List[dict] = []
 
     async def simulate_user_session(
-            self, session: aiohttp.ClientSession, user_id: int):
+        self, session: aiohttp.ClientSession, user_id: int
+    ):
         """Simulate a complete user session"""
         start_time = time.time()
         try:
@@ -66,7 +66,8 @@ class ConcurrentUserTest:
                 f"{self.base_url}/api/v1/auth/login",
                 json={
                     "email": f"user{user_id}@test.com",
-                    "password": "test-password"},
+                    "password": "test-password",
+                },
             ) as response:
                 if response.status != 200:
                     return {"user_id": user_id, "status": "login_failed"}
@@ -76,12 +77,15 @@ class ConcurrentUserTest:
                 f"{self.base_url}/api/v1/conversations/start",
                 json={
                     "child_id": f"child-{user_id}",
-                    "initial_message": "Hello"},
+                    "initial_message": "Hello",
+                },
                 headers=headers,
             ) as response:
                 if response.status != 200:
-                    return {"user_id": user_id,
-                            "status": "conversation_failed"}
+                    return {
+                        "user_id": user_id,
+                        "status": "conversation_failed",
+                    }
             for i in range(3):
                 async with session.post(
                     f"{self.base_url}/api/v1/conversations/active/messages",
@@ -104,9 +108,9 @@ class ConcurrentUserTest:
         """Run concurrent user test"""
         async with aiohttp.ClientSession() as session:
             tasks = [
-                self.simulate_user_session(
-                    session,
-                    i) for i in range(num_users)]
+                self.simulate_user_session(session, i)
+                for i in range(num_users)
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             successful = sum(
                 1

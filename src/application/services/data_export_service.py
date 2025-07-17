@@ -32,7 +32,9 @@ class DataExportService:
     def __init__(
         self,
         storage_path: str = "exports",
-        logger: logging.Logger = get_logger(__name__, component="data_export_service"),
+        logger: logging.Logger = get_logger(
+            __name__, component="data_export_service"
+        ),
     ) -> None:
         """Initializes the data export service.
 
@@ -49,7 +51,9 @@ class DataExportService:
             f"Data export service initialized with storage path: {storage_path}",
         )
 
-    def _sanitize_data_for_export(self, data: dict[str, Any]) -> dict[str, Any]:
+    def _sanitize_data_for_export(
+        self, data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Recursively sanitizes sensitive data fields before export to prevent PII exposure.
 
         Args:
@@ -113,7 +117,9 @@ class DataExportService:
             result.status = ExportStatus.COMPLETED
             result.file_path = exported_file_path
             result.completed_at = datetime.utcnow()
-            self.logger.info(f"Export {export_id} completed: {exported_file_path}")
+            self.logger.info(
+                f"Export {export_id} completed: {exported_file_path}"
+            )
         except Exception as e:
             result.status = ExportStatus.FAILED
             result.error_message = str(e)
@@ -172,13 +178,19 @@ class DataExportService:
         # In a real system, this would fetch data from various sources
         # (e.g., database, file storage) and format it.
         dummy_data = {
-            "child_profile": ChildProfile(child_id=request.child_id, name="Test Child"),
+            "child_profile": ChildProfile(
+                child_id=request.child_id, name="Test Child"
+            ),
             "conversations": [
                 ConversationData(timestamp=datetime.utcnow(), text="Hello"),
-                ConversationData(timestamp=datetime.utcnow(), text="How are you?"),
+                ConversationData(
+                    timestamp=datetime.utcnow(), text="How are you?"
+                ),
             ],
             "safety_events": [
-                SafetyEvent(timestamp=datetime.utcnow(), description="Minor flag"),
+                SafetyEvent(
+                    timestamp=datetime.utcnow(), description="Minor flag"
+                ),
             ],
             "usage_statistics": UsageStatistics(total_interactions=100),
         }

@@ -2,6 +2,8 @@
 All magic numbers and constant values in one place for easy maintenance.
 """
 
+from enum import Enum
+
 # Child Safety Constants
 MAX_CHILD_AGE = 13
 MIN_CHILD_AGE = 3
@@ -92,9 +94,6 @@ ERROR_RETRY_DELAY_SECONDS = 1
 CIRCUIT_BREAKER_FAILURE_THRESHOLD = 5
 
 # Event Store Constants
-from enum import Enum  # Import Enum for new constant
-
-
 class EventStoreType(Enum):
     KAFKA = "kafka"
     POSTGRES = "postgres"
@@ -166,7 +165,10 @@ All errors include:
 - [Support](mailto:support@aiteddybear.com)        """
 OPENAPI_SERVERS = [
     {"url": "https://api.aiteddybear.com/v1", "description": "Production"},
-    {"url": "https://staging-api.aiteddybear.com/v1", "description": "Staging"},
+    {
+        "url": "https://staging-api.aiteddybear.com/v1",
+        "description": "Staging",
+    },
     {"url": "http://localhost:8000/api/v1", "description": "Development"},
 ]
 OPENAPI_TAGS = [
@@ -228,19 +230,25 @@ OPENAPI_COMMON_RESPONSES = {
     "Unauthorized": {
         "description": "Unauthorized - Invalid or missing authentication",
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
+            "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+            },
         },
     },
     "Forbidden": {
         "description": "Forbidden - Insufficient permissions",
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
+            "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+            },
         },
     },
     "NotFound": {
         "description": "Not found - Resource does not exist",
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
+            "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+            },
         },
     },
     "TooManyRequests": {
@@ -260,7 +268,9 @@ OPENAPI_COMMON_RESPONSES = {
             },
         },
         "content": {
-            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
+            "application/json": {
+                "schema": {"$ref": "#/components/schemas/Error"}
+            },
         },
     },
 }

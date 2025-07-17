@@ -36,7 +36,9 @@ class DatabaseSettings(BaseApplicationSettings):
         """
         if os.getenv("ENVIRONMENT") == "production":
             if not v.startswith("postgresql"):
-                raise ValueError("PostgreSQL is required for production environments.")
+                raise ValueError(
+                    "PostgreSQL is required for production environments."
+                )
         elif not (v.startswith("sqlite") or v.startswith("postgresql")):
             raise ValueError(
                 "Only SQLite or PostgreSQL are allowed for development/testing.",

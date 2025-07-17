@@ -68,16 +68,22 @@ class MessageRequest(BaseModel):
 class ChildRegistrationRequest(BaseModel):
     """Request model for child registration with COPPA compliance."""
 
-    name: str = Field(..., min_length=1, max_length=100, description="Child's name")
+    name: str = Field(
+        ..., min_length=1, max_length=100, description="Child's name"
+    )
     age: int = Field(
         ...,
         ge=3,
         le=13,
         description="Child's age (3-13 for COPPA compliance)",
     )  # ✅
-    parent_email: EmailStr = Field(..., description="Parent's email for consent")
+    parent_email: EmailStr = Field(
+        ..., description="Parent's email for consent"
+    )
     language_preference: LanguageCode = Field(default=LanguageCode.ENGLISH)
-    date_of_birth: Optional[date] = Field(None, description="Optional birth date")
+    date_of_birth: Optional[date] = Field(
+        None, description="Optional birth date"
+    )
     personality_traits: List[str] = Field(default_factory=list, max_items=10)
     allowed_topics: List[str] = Field(default_factory=list, max_items=20)
     restricted_topics: List[str] = Field(default_factory=list, max_items=20)
@@ -90,7 +96,12 @@ class ChildRegistrationRequest(BaseModel):
         # Remove excessive whitespace
         name = " ".join(v.strip().split())
         # Basic safety check - no numbers or special characters
-        if not name.replace(" ", "").replace("-", "").replace("'", "").isalpha():
+        if (
+            not name.replace(" ", "")
+            .replace("-", "")
+            .replace("'", "")
+            .isalpha()
+        ):
             raise ValueError(
                 "Name should only contain letters, spaces, hyphens, and apostrophes",
             )
@@ -113,7 +124,9 @@ class ChildRegistrationRequest(BaseModel):
         if v and "age" in values:
             today = date.today()
             calculated_age = (
-                today.year - v.year - ((today.month, today.day) < (v.month, v.day))
+                today.year
+                - v.year
+                - ((today.month, today.day) < (v.month, v.day))
             )
             if abs(calculated_age - values["age"]) > 1:
                 raise ValueError("Birth date does not match provided age")
@@ -181,7 +194,9 @@ class ParentConsentRequest(BaseModel):
     parent_email: EmailStr = Field(..., description="Parent's email")
     child_id: UUID = Field(..., description="Child requiring consent")
     consent_type: str = Field(..., description="Type of consent requested")
-    verification_method: str = Field(..., description="Method for verification")
+    verification_method: str = Field(
+        ..., description="Method for verification"
+    )
     additional_info: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
     @validator("consent_type")
@@ -195,13 +210,21 @@ class ParentConsentRequest(BaseModel):
             "third_party_integration",
         ]
         if v not in valid_types:
-            raise ValueError(f"Invalid consent type. Must be one of: {valid_types}")
+            raise ValueError(
+                f"Invalid consent type. Must be one of: {valid_types}"
+            )
         return v
 
     @validator("verification_method")
     def validate_verification_method(self, v) -> str:
         """Validate verification method."""
-        valid_methods = ["email", "sms", "phone_call", "credit_card", "government_id"]
+        valid_methods = [
+            "email",
+            "sms",
+            "phone_call",
+            "credit_card",
+            "government_id",
+        ]
         if v not in valid_methods:
             raise ValueError(
                 f"Invalid verification method. Must be one of: {valid_methods}",
@@ -227,7 +250,9 @@ class PaginationRequest(BaseModel):
 
     page: int = Field(default=1, ge=1, description="Page number (1-based)")
     limit: int = Field(default=20, ge=1, le=100, description="Items per page")
-    sort_by: Optional[str] = Field(None, max_length=50, description="Sort field")
+    sort_by: Optional[str] = Field(
+        None, max_length=50, description="Sort field"
+    )
     sort_order: Optional[str] = Field(
         "asc",
         regex="^(asc|desc)$",
@@ -263,10 +288,23 @@ class FileUploadRequest(BaseModel):
         # Remove any path separators
         filename = os.path.basename(v)
         # Check for dangerous patterns
-        dangerous_patterns = ["..", "/", "\\", ":", "*", "?", '"', "<", ">", "|"]
+        dangerous_patterns = [
+            "..",
+            "/",
+            "\\",
+            ":",
+            "*",
+            "?",
+            '"',
+            "<",
+            ">",
+            "|",
+        ]
         for pattern in dangerous_patterns:
             if pattern in filename:
-                raise ValueError(f"Filename contains dangerous character: {pattern}")
+                raise ValueError(
+                    f"Filename contains dangerous character: {pattern}"
+                )
         return filename
 
     @validator("content_type")
@@ -308,7 +346,9 @@ class ChildSafetyResponse(BaseModel):
         le=1.0,
         description="Safety confidence score",
     )
-    reasons: Optional[List[str]] = Field(None, description="Safety assessment reasons")
+    reasons: Optional[List[str]] = Field(
+        None, description="Safety assessment reasons"
+    )
     recommended_action: Optional[str] = Field(
         None,
         description="Recommended action if unsafe",

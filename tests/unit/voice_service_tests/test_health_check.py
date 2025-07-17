@@ -74,7 +74,8 @@ class TestHealthCheck:
 
     @pytest.mark.asyncio
     async def test_health_check_returns_comprehensive_status(
-            self, voice_service):
+        self, voice_service
+    ):
         """Test health check returns comprehensive system status"""
         health = await voice_service.health_check()
 

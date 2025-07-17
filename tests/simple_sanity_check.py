@@ -127,7 +127,8 @@ def test_file_count():
     logger.info(f"  • ملفات الاختبار: {len(test_files)}")
     logger.info(f"  • السكريبتات: {len(script_files)}")
     logger.info(
-        f"  • الإجمالي: {len(py_files) + len(test_files) + len(script_files)}")
+        f"  • الإجمالي: {len(py_files) + len(test_files) + len(script_files)}"
+    )
     return True
 
 

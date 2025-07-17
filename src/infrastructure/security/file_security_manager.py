@@ -2,7 +2,7 @@ import hashlib
 import mimetypes
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from src.infrastructure.logging_config import get_logger
 
@@ -26,7 +26,9 @@ class SecurityManager:
             ".ps1",
         ]
 
-    def validate_audio_file(self, filename: str, file_content: bytes) -> dict[str, Any]:
+    def validate_audio_file(
+        self, filename: str, file_content: bytes
+    ) -> Dict[str, Any]:
         """Validate audio file for security and format compliance.
 
         Args:
@@ -36,13 +38,19 @@ class SecurityManager:
             Dict containing validation results
 
         """
-        result = {"is_valid": False, "errors": [], "warnings": [], "file_info": {}}
+        result = {
+            "is_valid": False,
+            "errors": [],
+            "warnings": [],
+            "file_info": {},
+        }
 
         try:
             # Check file size
             if len(file_content) > self.max_file_size:
                 result["errors"].append(
-                    f"File size exceeds maximum allowed size of {self.max_file_size} bytes",
+                    f"File size exceeds maximum allowed size of "
+                    f"{self.max_file_size} bytes",
                 )
                 return result
 
@@ -58,10 +66,13 @@ class SecurityManager:
                 )
 
             # Check file extension
-            file_extension = Path(sanitized_filename).suffix.lower().lstrip(".")
+            file_extension = (
+                Path(sanitized_filename).suffix.lower().lstrip(".")
+            )
             if file_extension not in self.allowed_audio_types:
                 result["errors"].append(
-                    f"File extension '{file_extension}' is not allowed. Allowed types: {', '.join(self.allowed_audio_types)}",
+                    f"File extension '{file_extension}' is not allowed. "
+                    f"Allowed types: {', '.join(self.allowed_audio_types)}",
                 )
                 return result
 
@@ -96,7 +107,9 @@ class SecurityManager:
                 "file_hash": hashlib.sha256(file_content).hexdigest(),
             }
 
-            logger.info(f"Audio file validation successful for {sanitized_filename}")
+            logger.info(
+                f"Audio file validation successful for {sanitized_filename}"
+            )
             return result
         except (ValueError, OSError, RuntimeError) as e:
             logger.error(f"Error validating audio file {filename}: {e}")
@@ -107,12 +120,14 @@ class SecurityManager:
         self,
         file_content: bytes,
         expected_type: str,
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Validate audio file using magic numbers/headers."""
         result = {"is_valid": False, "errors": []}
 
         if len(file_content) < 12:
-            result["errors"].append("File too small to contain valid audio header")
+            result["errors"].append(
+                "File too small to contain valid audio header"
+            )
             return result
 
         # Check magic numbers for different audio formats
@@ -174,7 +189,9 @@ class SecurityManager:
             b"\xcf\xfa\xed\xfe",  # Mach-O 64-bit
         ]
 
-        return any(header.startswith(exe_header) for exe_header in executable_headers)
+        return any(
+            header.startswith(exe_header) for exe_header in executable_headers
+        )
 
     def sanitize_filename(self, filename: str) -> str:
         """Sanitize filename for security.
@@ -207,7 +224,7 @@ class SecurityManager:
                 ext_part = sanitized[200:]
                 # Try to preserve extension
                 if "." in ext_part:
-                    ext = ext_part[ext_part.rfind(".") :]
+                    ext = ext_part[ext_part.rfind("."):]
                     sanitized = name_part + ext
                 else:
                     sanitized = name_part

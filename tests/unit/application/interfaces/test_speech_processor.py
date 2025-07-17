@@ -9,7 +9,6 @@ child-safe audio processing capabilities.
 import pytest
 import asyncio
 from typing import Protocol
-from unittest.mock import Mock, AsyncMock, patch
 
 from src.application.interfaces.speech_processor import SpeechProcessor
 
@@ -29,7 +28,9 @@ class MockSpeechProcessor:
         """Mock speech-to-text implementation."""
         self.speech_to_text_called = True
         self.last_speech_to_text_call = {
-            "audio_data": audio_data, "language": language}
+            "audio_data": audio_data,
+            "language": language,
+        }
 
         if self.should_raise_exception:
             raise Exception(self.exception_message)
@@ -37,7 +38,8 @@ class MockSpeechProcessor:
         # Return mock transcription based on audio data
         key = (len(audio_data), language)
         return self.speech_to_text_results.get(
-            key, f"Transcribed text in {language}")
+            key, f"Transcribed text in {language}"
+        )
 
     async def text_to_speech(self, text: str, voice_id: str) -> bytes:
         """Mock text-to-speech implementation."""
@@ -141,7 +143,8 @@ class TestSpeechProcessor:
             "child_voice_1",
             "child_voice_2",
             "adult_voice",
-            "narrator_voice"]
+            "narrator_voice",
+        ]
 
         for voice_id in voice_ids:
             processor.text_to_speech_results[(text, voice_id)] = (
@@ -211,9 +214,12 @@ class TestSpeechProcessor:
         audio_data = b"special_audio"
         language = "en-US"
 
-        special_text = "Hello! How are you? I'm fine. Let's play: 1, 2, 3... Go!"
-        processor.speech_to_text_results[(
-            len(audio_data), language)] = special_text
+        special_text = (
+            "Hello! How are you? I'm fine. Let's play: 1, 2, 3... Go!"
+        )
+        processor.speech_to_text_results[(len(audio_data), language)] = (
+            special_text
+        )
 
         result = await processor.speech_to_text(audio_data, language)
         assert result == special_text
@@ -255,10 +261,12 @@ class TestSpeechProcessor:
         text_1 = "Hello world"
         text_2 = "Goodbye world"
 
-        processor.speech_to_text_results[(
-            len(audio_data_1), "en-US")] = "Result 1"
-        processor.speech_to_text_results[(
-            len(audio_data_2), "es-ES")] = "Result 2"
+        processor.speech_to_text_results[(len(audio_data_1), "en-US")] = (
+            "Result 1"
+        )
+        processor.speech_to_text_results[(len(audio_data_2), "es-ES")] = (
+            "Result 2"
+        )
         processor.text_to_speech_results[(text_1, "voice1")] = b"audio1"
         processor.text_to_speech_results[(text_2, "voice2")] = b"audio2"
 

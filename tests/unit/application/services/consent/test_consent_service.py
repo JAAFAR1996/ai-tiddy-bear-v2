@@ -4,16 +4,13 @@ Testing core consent management functionality for COPPA compliance.
 """
 
 import pytest
-from unittest.mock import patch, Mock, AsyncMock
+from unittest.mock import patch
 from datetime import datetime, timedelta
 import asyncio
 
 from src.application.services.consent.consent_service import ConsentService
 from src.application.services.consent.consent_models import (
     ConsentRecord,
-    VerificationMethod,
-    VerificationStatus,
-    VerificationAttempt,
 )
 
 
@@ -86,7 +83,9 @@ class TestConsentService:
         child_id = "child_grant"
         feature = "personalization"
 
-        request_result = await service.request_consent(parent_id, child_id, feature)
+        request_result = await service.request_consent(
+            parent_id, child_id, feature
+        )
         consent_id = request_result["consent_id"]
 
         # Grant the consent
@@ -119,7 +118,9 @@ class TestConsentService:
         child_id = "child_revoke"
         feature = "data_collection"
 
-        request_result = await service.request_consent(parent_id, child_id, feature)
+        request_result = await service.request_consent(
+            parent_id, child_id, feature
+        )
         consent_id = request_result["consent_id"]
 
         await service.grant_consent(consent_id, "sms_verification")
@@ -149,7 +150,9 @@ class TestConsentService:
         child_id = "child_status"
         feature = "voice_analysis"
 
-        request_result = await service.request_consent(parent_id, child_id, feature)
+        request_result = await service.request_consent(
+            parent_id, child_id, feature
+        )
         consent_id = request_result["consent_id"]
 
         result = await service.check_consent_status(consent_id)
@@ -169,7 +172,9 @@ class TestConsentService:
         child_id = "child_granted"
         feature = "ai_interaction"
 
-        request_result = await service.request_consent(parent_id, child_id, feature)
+        request_result = await service.request_consent(
+            parent_id, child_id, feature
+        )
         consent_id = request_result["consent_id"]
 
         await service.grant_consent(consent_id, "digital_signature")
@@ -258,7 +263,9 @@ class TestConsentService:
         consent_type = "expired_consent"
 
         # Create expired consent
-        await service.request_consent(parent_id, child_id, consent_type, expiry_days=-1)
+        await service.request_consent(
+            parent_id, child_id, consent_type, expiry_days=-1
+        )
         consent_id = f"consent_{parent_id}_{child_id}_{consent_type}"
         await service.grant_consent(consent_id, "email_verification")
 
@@ -283,9 +290,12 @@ class TestConsentService:
         ) as mock_send:
             mock_send.return_value = {
                 "status": "success",
-                "attempt_id": "test_attempt"}
+                "attempt_id": "test_attempt",
+            }
 
-            result = await service.initiate_email_verification(consent_id, email)
+            result = await service.initiate_email_verification(
+                consent_id, email
+            )
 
             mock_send.assert_called_once_with(email, consent_id)
             assert result["status"] == "success"
@@ -302,7 +312,8 @@ class TestConsentService:
         ) as mock_send:
             mock_send.return_value = {
                 "status": "success",
-                "attempt_id": "sms_attempt"}
+                "attempt_id": "sms_attempt",
+            }
 
             result = await service.initiate_sms_verification(consent_id, phone)
 
@@ -316,13 +327,17 @@ class TestConsentService:
         attempt_id = "test_verification_attempt"
         verification_code = "123456"
 
-        with patch.object(service.verification_service, "verify_code") as mock_verify:
+        with patch.object(
+            service.verification_service, "verify_code"
+        ) as mock_verify:
             mock_verify.return_value = {
                 "status": "success",
                 "message": "Verification successful",
             }
 
-            result = await service.complete_verification(attempt_id, verification_code)
+            result = await service.complete_verification(
+                attempt_id, verification_code
+            )
 
             mock_verify.assert_called_once_with(attempt_id, verification_code)
             assert result["status"] == "success"
@@ -373,7 +388,9 @@ class TestConsentService:
         feature = "complete_workflow"
 
         # Step 1: Request consent
-        request_result = await service.request_consent(parent_id, child_id, feature)
+        request_result = await service.request_consent(
+            parent_id, child_id, feature
+        )
         consent_id = request_result["consent_id"]
 
         assert request_result["status"] == "pending"
@@ -412,7 +429,9 @@ class TestConsentService:
         feature = "revocation_test"
 
         # Create and grant consent
-        request_result = await service.request_consent(parent_id, child_id, feature)
+        request_result = await service.request_consent(
+            parent_id, child_id, feature
+        )
         consent_id = request_result["consent_id"]
         await service.grant_consent(consent_id, "credit_card_verification")
 
@@ -445,7 +464,9 @@ class TestConsentService:
 
         consent_ids = []
         for feature in features:
-            result = await service.request_consent(parent_id, child_id, feature)
+            result = await service.request_consent(
+                parent_id, child_id, feature
+            )
             consent_ids.append(result["consent_id"])
             await service.grant_consent(
                 result["consent_id"], "government_id_verification"
@@ -472,7 +493,8 @@ class TestConsentService:
         # Create multiple consent requests concurrently
         tasks = [
             service.request_consent(
-                parent_id, child_id, f"{feature}_concurrent")
+                parent_id, child_id, f"{feature}_concurrent"
+            )
             for feature in features
         ]
 

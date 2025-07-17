@@ -19,7 +19,12 @@ try:
     )
 except ImportError:
     # Fallback for mock environment
-    from .conftest import AudioFormat, STTProvider, VoiceServiceConfig, WhisperModel
+    from .conftest import (
+        AudioFormat,
+        STTProvider,
+        VoiceServiceConfig,
+        WhisperModel,
+    )
 
 
 class TestConfiguration:

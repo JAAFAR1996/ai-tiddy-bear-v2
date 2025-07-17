@@ -1,5 +1,3 @@
-"""Kafka Event Store Implementation for Event Sourcing."""
-
 from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -10,10 +8,9 @@ from aiokafka.errors import KafkaError
 
 from src.domain.repositories.event_store import EventStore
 from src.infrastructure.config.settings import Settings
+from src.infrastructure.logging_config import get_logger
 
 """Kafka Event Store Implementation for Event Sourcing."""
-
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="persistence")
 
@@ -114,7 +111,9 @@ class KafkaEventStore(EventStore):
                             "correlation_id",
                             str(uuid4()),
                         ),
-                        "causation_id": getattr(event, "causation_id", str(uuid4())),
+                        "causation_id": getattr(
+                            event, "causation_id", str(uuid4())
+                        ),
                     },
                 }
 
@@ -139,7 +138,9 @@ class KafkaEventStore(EventStore):
             )
             raise
         except Exception as e:
-            logger.error(f"Failed to save events for aggregate {aggregate_id}: {e}")
+            logger.error(
+                f"Failed to save events for aggregate {aggregate_id}: {e}"
+            )
             raise
 
     async def load_events(self, aggregate_id: UUID) -> list[Any]:
@@ -192,7 +193,9 @@ class KafkaEventStore(EventStore):
             )
             return events
         except Exception as e:
-            logger.error(f"Failed to load events for aggregate {aggregate_id}: {e}")
+            logger.error(
+                f"Failed to load events for aggregate {aggregate_id}: {e}"
+            )
             raise
 
     async def load_events_from_offset(
@@ -308,7 +311,9 @@ class KafkaEventStore(EventStore):
 
                 return ChildRegistered(**event_data)
             if event_type == "ChildProfileUpdated":
-                from src.domain.events.child_profile_updated import ChildProfileUpdated
+                from src.domain.events.child_profile_updated import (
+                    ChildProfileUpdated,
+                )
 
                 return ChildProfileUpdated(**event_data)
             logger.warning(f"Unknown event type: {event_type}")

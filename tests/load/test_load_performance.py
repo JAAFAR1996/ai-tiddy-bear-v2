@@ -65,7 +65,12 @@ class TeddyBearUser(HttpUser):
             "/api/v1/conversations/active/messages",
             json={
                 "text": random.choice(
-                    ["ما هذا؟", "احكي لي قصة", "What is this?", "Tell me a story"]
+                    [
+                        "ما هذا؟",
+                        "احكي لي قصة",
+                        "What is this?",
+                        "Tell me a story",
+                    ]
                 )
             },
             headers=self.headers,
@@ -82,5 +87,5 @@ class TeddyBearUser(HttpUser):
     def end_conversation(self):
         """Test ending conversations"""
         self.client.post(
-            "/api/v1/conversations/active/end",
-            headers=self.headers)
+            "/api/v1/conversations/active/end", headers=self.headers
+        )

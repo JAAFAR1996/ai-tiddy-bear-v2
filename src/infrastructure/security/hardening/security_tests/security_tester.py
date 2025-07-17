@@ -38,7 +38,10 @@ class SecurityTester:
         tests = [
             ("Code Injection", self.injection_tester.test_code_injection),
             ("SQL Injection", self.injection_tester.test_sql_injection),
-            ("XSS Vulnerabilities", self.injection_tester.test_xss_vulnerabilities),
+            (
+                "XSS Vulnerabilities",
+                self.injection_tester.test_xss_vulnerabilities,
+            ),
             ("Path Traversal", self.injection_tester.test_path_traversal),
             ("Authentication", self.auth_tester.test_authentication),
             ("Input Validation", self.auth_tester.test_input_validation),
@@ -57,7 +60,9 @@ class SecurityTester:
                 results["passed_tests"] += 1
             else:
                 results["failed_tests"] += 1
-            results["test_results"].append({"test_name": name, "result": result})
+            results["test_results"].append(
+                {"test_name": name, "result": result}
+            )
 
         logger.info("✅ Security tests completed.")
         return results

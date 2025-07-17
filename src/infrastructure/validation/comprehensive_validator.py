@@ -25,7 +25,9 @@ class ComprehensiveValidator:
         config = config or {}
 
         # Initialize sub-validators
-        self.child_safety = get_child_safety_validator(config.get("child_safety", {}))
+        self.child_safety = get_child_safety_validator(
+            config.get("child_safety", {})
+        )
         self.general_input = get_general_input_validator()
 
         # Validation configuration
@@ -77,17 +79,25 @@ class ComprehensiveValidator:
 
         # Validate parent email if provided
         if child_data.get("parent_email"):
-            email_result = self.general_input.validate_email(child_data["parent_email"])
+            email_result = self.general_input.validate_email(
+                child_data["parent_email"]
+            )
             if not email_result.valid:
                 errors.extend(
-                    [f"Parent email: {error}" for error in email_result.errors],
+                    [
+                        f"Parent email: {error}"
+                        for error in email_result.errors
+                    ],
                 )
             else:
                 child_data["parent_email"] = email_result.sanitized_value
 
         # Additional validations based on age
         if age_result.valid and age_result.metadata.get("coppa_applicable"):
-            if "parent_email" not in child_data or not child_data["parent_email"]:
+            if (
+                "parent_email" not in child_data
+                or not child_data["parent_email"]
+            ):
                 errors.append(
                     "Parent email is required for children under 13 (COPPA compliance)",
                 )
@@ -101,7 +111,9 @@ class ComprehensiveValidator:
             security_flags=security_flags,
         )
 
-    def validate_message_input(self, message_data: Dict[str, Any]) -> ValidationResult:
+    def validate_message_input(
+        self, message_data: Dict[str, Any]
+    ) -> ValidationResult:
         """Validate message input from child with comprehensive safety checks.
         Args: message_data: Dictionary containing message and context
         Returns: ValidationResult with validation results.
@@ -123,7 +135,9 @@ class ComprehensiveValidator:
             )
 
         # Validate message safety
-        message_result = self.child_safety.validate_child_message(message, child_age)
+        message_result = self.child_safety.validate_child_message(
+            message, child_age
+        )
         if not message_result.valid:
             errors.extend(message_result.errors)
             if message_result.security_flags:
@@ -133,7 +147,9 @@ class ComprehensiveValidator:
             message_data["message"] = message_result.sanitized_value
 
         # Additional text validation for security
-        text_result = self.general_input.validate_text_input(message, max_length=1000)
+        text_result = self.general_input.validate_text_input(
+            message, max_length=1000
+        )
         if not text_result.valid:
             errors.extend(text_result.errors)
             if text_result.security_flags:
@@ -149,7 +165,9 @@ class ComprehensiveValidator:
             metadata=metadata,
         )
 
-    def validate_file_upload(self, file_data: Dict[str, Any]) -> ValidationResult:
+    def validate_file_upload(
+        self, file_data: Dict[str, Any]
+    ) -> ValidationResult:
         """Validate file upload with security and safety checks.
         Args: file_data: Dictionary containing file information
         Returns: ValidationResult with validation results.
@@ -181,7 +199,9 @@ class ComprehensiveValidator:
 
         return file_result
 
-    def validate_parent_data(self, parent_data: Dict[str, Any]) -> ValidationResult:
+    def validate_parent_data(
+        self, parent_data: Dict[str, Any]
+    ) -> ValidationResult:
         """Validate parent / guardian data.
         Args: parent_data: Dictionary containing parent information
         Returns: ValidationResult with validation results.
@@ -191,9 +211,13 @@ class ComprehensiveValidator:
 
         # Validate email
         if parent_data.get("email"):
-            email_result = self.general_input.validate_email(parent_data["email"])
+            email_result = self.general_input.validate_email(
+                parent_data["email"]
+            )
             if not email_result.valid:
-                errors.extend([f"Email: {error}" for error in email_result.errors])
+                errors.extend(
+                    [f"Email: {error}" for error in email_result.errors]
+                )
             else:
                 sanitized_data["email"] = email_result.sanitized_value
 
@@ -201,7 +225,9 @@ class ComprehensiveValidator:
         if parent_data.get("name"):
             name_text = parent_data["name"]
             if len(name_text) < 2 or len(name_text) > 100:
-                errors.append("Parent name must be between 2 and 100 characters")
+                errors.append(
+                    "Parent name must be between 2 and 100 characters"
+                )
             else:
                 # Basic text validation
                 text_result = self.general_input.validate_text_input(
@@ -209,7 +235,9 @@ class ComprehensiveValidator:
                     max_length=100,
                 )
                 if not text_result.valid:
-                    errors.extend([f"Name: {error}" for error in text_result.errors])
+                    errors.extend(
+                        [f"Name: {error}" for error in text_result.errors]
+                    )
                 else:
                     sanitized_data["name"] = text_result.sanitized_value
 
@@ -237,13 +265,17 @@ class ComprehensiveValidator:
             )
 
         # Basic text validation
-        text_result = self.general_input.validate_text_input(query, max_length=200)
+        text_result = self.general_input.validate_text_input(
+            query, max_length=200
+        )
         if not text_result.valid:
             return text_result
 
         # Child safety validation if age provided
         if child_age is not None:
-            message_result = self.child_safety.validate_child_message(query, child_age)
+            message_result = self.child_safety.validate_child_message(
+                query, child_age
+            )
             if not message_result.valid:
                 return message_result
 
@@ -263,7 +295,9 @@ def get_comprehensive_validator(
 
 
 # Convenient validation functions
-def validate_child_registration(child_data: Dict[str, Any]) -> ValidationResult:
+def validate_child_registration(
+    child_data: Dict[str, Any],
+) -> ValidationResult:
     """Convenient function for child registration validation."""
     validator = get_comprehensive_validator()
     return validator.validate_child_registration(child_data)

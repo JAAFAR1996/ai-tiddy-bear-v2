@@ -32,8 +32,20 @@ class EmotionAnalyzer:
 
     def __init__(self) -> None:
         """Initialize emotion analyzer with child-safe emotion categories."""
-        self._positive_emotions = {"happy", "excited", "calm", "curious", "proud"}
-        self._negative_emotions = {"sad", "angry", "frustrated", "scared", "worried"}
+        self._positive_emotions = {
+            "happy",
+            "excited",
+            "calm",
+            "curious",
+            "proud",
+        }
+        self._negative_emotions = {
+            "sad",
+            "angry",
+            "frustrated",
+            "scared",
+            "worried",
+        }
         self._neutral_emotions = {"neutral", "focused", "thinking"}
 
     def analyze_text(self, text: str) -> EmotionResult:
@@ -51,11 +63,16 @@ class EmotionAnalyzer:
         text_lower = text.lower()
         # Enhanced emotion detection for children
         if any(
-            word in text_lower for word in ["happy", "joy", "excited", "fun", "yay"]
+            word in text_lower
+            for word in ["happy", "joy", "excited", "fun", "yay"]
         ):
-            return EmotionResult("happy", 0.9, {"happy": 0.9}, sentiment_score=0.8)
+            return EmotionResult(
+                "happy", 0.9, {"happy": 0.9}, sentiment_score=0.8
+            )
         if any(word in text_lower for word in ["sad", "cry", "upset", "down"]):
-            return EmotionResult("sad", 0.8, {"sad": 0.8}, sentiment_score=-0.6)
+            return EmotionResult(
+                "sad", 0.8, {"sad": 0.8}, sentiment_score=-0.6
+            )
         if any(word in text_lower for word in ["angry", "mad", "frustrated"]):
             return EmotionResult(
                 "frustrated",
@@ -80,7 +97,9 @@ class EmotionAnalyzer:
                 sentiment_score=0.3,
                 arousal_score=0.2,
             )
-        if any(word in text_lower for word in ["curious", "wonder", "question"]):
+        if any(
+            word in text_lower for word in ["curious", "wonder", "question"]
+        ):
             return EmotionResult(
                 "curious",
                 0.7,
@@ -96,7 +115,9 @@ class EmotionAnalyzer:
             arousal_score=0.3,
         )
 
-    def analyze_voice(self, audio_features: dict[str, Any] | None) -> EmotionResult:
+    def analyze_voice(
+        self, audio_features: dict[str, Any] | None
+    ) -> EmotionResult:
         """Analyze emotion from voice audio features.
 
         Args:
@@ -195,4 +216,7 @@ class EmotionAnalyzer:
         if emotion_result.sentiment_score < -0.7:
             return True
         # Very high arousal with negative sentiment may indicate agitation
-        return bool(emotion_result.arousal_score > 0.8 and emotion_result.sentiment_score < -0.3)
+        return bool(
+            emotion_result.arousal_score > 0.8
+            and emotion_result.sentiment_score < -0.3
+        )

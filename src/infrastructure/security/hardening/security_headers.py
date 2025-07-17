@@ -124,5 +124,8 @@ class SecurityHeadersMiddleware:
         if not self.config.permissions_policy:
             return ""
         return ", ".join(
-            [f"{key}={value}" for key, value in self.config.permissions_policy.items()],
+            [
+                f"{key}={value}"
+                for key, value in self.config.permissions_policy.items()
+            ],
         )

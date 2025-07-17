@@ -1,6 +1,6 @@
-"""from typing import Dict, Any."""
-
 """Cache configuration and constants"""
+
+from typing import Dict, Any
 
 
 class CacheConfig:

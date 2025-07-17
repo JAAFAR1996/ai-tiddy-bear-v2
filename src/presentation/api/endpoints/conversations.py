@@ -7,13 +7,19 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, field_validator
 
-from src.application.services.ai_orchestration_service import AIOrchestrationService
+from src.application.services.ai_orchestration_service import (
+    AIOrchestrationService,
+)
 from src.application.services.conversation_service import ConversationService
-from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
+from src.application.use_cases.manage_child_profile import (
+    ManageChildProfileUseCase,
+)
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.real_auth_service import ProductionAuthService
-from src.infrastructure.security.safety_monitor_service import SafetyMonitorService
+from src.infrastructure.security.safety_monitor_service import (
+    SafetyMonitorService,
+)
 
 logger = get_logger(__name__, component="api")
 
@@ -56,7 +62,9 @@ async def get_authenticated_user(
             "user_id": payload.get("sub"),
             "role": user_role,
             "permissions": payload.get("permissions", []),
-            "child_ids": payload.get("child_ids", []),  # Children this user can access
+            "child_ids": payload.get(
+                "child_ids", []
+            ),  # Children this user can access
         }
     except HTTPException:
         raise
@@ -81,7 +89,9 @@ class ConversationRequest(BaseModel):
         max_length=1000,
         description="Child's message",
     )
-    message_type: str = Field(default="text", pattern=r"^(text|audio|story_request)$")
+    message_type: str = Field(
+        default="text", pattern=r"^(text|audio|story_request)$"
+    )
     language: str = Field(default="en", pattern=r"^[a-z]{2}$")
 
     class Config:
@@ -92,7 +102,13 @@ class ConversationRequest(BaseModel):
     @field_validator("message")
     def validate_message_content(self, v):
         """Validate message content for child safety."""
-        forbidden_words = {"password", "credit card", "address", "phone", "email"}
+        forbidden_words = {
+            "password",
+            "credit card",
+            "address",
+            "phone",
+            "email",
+        }
         if any(word in v.lower() for word in forbidden_words):
             raise ValueError("Message contains inappropriate content")
         return v
@@ -133,7 +149,9 @@ async def create_conversation(
     manage_child_profile_use_case: ManageChildProfileUseCase = Depends(
         Provide[container.manage_child_profile_use_case],
     ),
-    safety_monitor: SafetyMonitorService = Depends(Provide[container.safety_monitor]),
+    safety_monitor: SafetyMonitorService = Depends(
+        Provide[container.safety_monitor]
+    ),
 ):
     """Create a new conversation with the child."""
     try:
@@ -226,7 +244,9 @@ async def get_conversation_history(
                 detail="Access denied to this child's profile",
             )
 
-        history = await conversation_service.get_conversation_history(child_id, limit)
+        history = await conversation_service.get_conversation_history(
+            child_id, limit
+        )
 
         return [
             ConversationHistory(
@@ -266,14 +286,18 @@ async def get_conversation(
     try:
         # Validate child access (assuming conversation_id implies child_id)
         # In a real app, you'd get child_id from the conversation record
-        conversation = await conversation_service.get_conversation(conversation_id)
+        conversation = await conversation_service.get_conversation(
+            conversation_id
+        )
         if not conversation:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Conversation not found",
             )
 
-        child = await manage_child_profile_use_case.get_child(conversation.child_id)
+        child = await manage_child_profile_use_case.get_child(
+            conversation.child_id
+        )
         if not child or child.parent_id != current_user.get("user_id"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -313,7 +337,9 @@ async def request_story(
     manage_child_profile_use_case: ManageChildProfileUseCase = Depends(
         Provide[container.manage_child_profile_use_case],
     ),
-    safety_monitor: SafetyMonitorService = Depends(Provide[container.safety_monitor]),
+    safety_monitor: SafetyMonitorService = Depends(
+        Provide[container.safety_monitor]
+    ),
 ):
     """Request a custom story for the child."""
     try:

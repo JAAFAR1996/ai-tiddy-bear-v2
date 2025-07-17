@@ -12,7 +12,11 @@ from src.domain.interfaces.logging_interface import (
     DomainLoggerInterface,
     NullDomainLogger,
 )
-from src.domain.models.consent_models import ConsentRecord, ConsentStatus, ConsentType
+from src.domain.models.consent_models import (
+    ConsentRecord,
+    ConsentStatus,
+    ConsentType,
+)
 from src.domain.services.coppa_age_validation import (
     AgeValidationResult,
     COPPAAgeValidator,
@@ -119,7 +123,9 @@ class ConsentService:
 
         """
         consent_record = self.consent_cache.get(child_id, {}).get(consent_type)
-        return consent_record and consent_record.status == ConsentStatus.GRANTED
+        return (
+            consent_record and consent_record.status == ConsentStatus.GRANTED
+        )
 
     def revoke_consent(
         self,
@@ -149,7 +155,9 @@ class ConsentService:
             return record
         return None
 
-    def get_consent_status(self, child_id: str) -> dict[ConsentType, ConsentStatus]:
+    def get_consent_status(
+        self, child_id: str
+    ) -> dict[ConsentType, ConsentStatus]:
         """Retrieves the current consent status for all consent types for a child.
 
         Args:

@@ -16,7 +16,9 @@ from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")
 
 # Prometheus metrics
-APP_UPTIME = Gauge("app_uptime_seconds", "Uptime of the application in seconds")
+APP_UPTIME = Gauge(
+    "app_uptime_seconds", "Uptime of the application in seconds"
+)
 UPTIME_TASK_INTERVAL_SECONDS = 5
 
 
@@ -99,7 +101,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("🧸 AI Teddy Bear System initialized successfully")
 
     # Start uptime monitoring task
-    app.state.uptime_task = asyncio.create_task(_update_app_uptime(time.time()))
+    app.state.uptime_task = asyncio.create_task(
+        _update_app_uptime(time.time())
+    )
 
     yield
 

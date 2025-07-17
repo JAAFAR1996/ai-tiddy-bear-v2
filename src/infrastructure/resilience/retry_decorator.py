@@ -1,15 +1,14 @@
-"""from dataclasses import dataclass
+from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Callable, Type, Tuple, Optional
 import asyncio
 import logging
 import random
-import time.
-"""
-
-"""Retry decorator with exponential backoff for external API calls."""
+import time
 
 from src.infrastructure.logging_config import get_logger
+
+"""Retry decorator with exponential backoff for external API calls."""
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -65,7 +64,9 @@ def retry_with_backoff(
                         raise
 
                     # Calculate delay with exponential backoff
-                    delay = min(base_delay * (exponential_base**attempt), max_delay)
+                    delay = min(
+                        base_delay * (exponential_base**attempt), max_delay
+                    )
 
                     # Add jitter to prevent thundering herd
                     if jitter:
@@ -96,7 +97,9 @@ def retry_with_backoff(
                         raise
 
                     # Calculate delay with exponential backoff
-                    delay = min(base_delay * (exponential_base**attempt), max_delay)
+                    delay = min(
+                        base_delay * (exponential_base**attempt), max_delay
+                    )
 
                     # Add jitter to prevent thundering herd
                     if jitter:
@@ -119,12 +122,18 @@ def retry_with_backoff(
     return decorator
 
 
-def retry_external_api(max_attempts: int = 3, base_delay: float = 1.0) -> Callable:
+def retry_external_api(
+    max_attempts: int = 3, base_delay: float = 1.0
+) -> Callable:
     """Simplified retry decorator specifically for external API calls.
     Retries on common network and API errors.
     """
     try:
-        from requests.exceptions import ConnectionError, RequestException, Timeout
+        from requests.exceptions import (
+            ConnectionError,
+            RequestException,
+            Timeout,
+        )
 
         retryable_exceptions = (
             RequestException,

@@ -68,7 +68,9 @@ class SafetyMonitorService:
             "emotional_safety_enabled": True,
         }
 
-        self.logger.info(f"Loaded {len(safety_rules)} safety rules from configuration")
+        self.logger.info(
+            f"Loaded {len(safety_rules)} safety rules from configuration"
+        )
         return safety_rules
 
     async def check_content(self, content: str) -> dict[str, Any]:
@@ -97,7 +99,8 @@ class SafetyMonitorService:
 
             # Determine if content is safe
             is_safe = (
-                safety_score >= self.settings.content_moderation.SAFETY_THRESHOLD
+                safety_score
+                >= self.settings.content_moderation.SAFETY_THRESHOLD
                 and len(flags) == 0
             )
 
@@ -151,7 +154,9 @@ class SafetyMonitorService:
                 safety_score -= 0.2
 
             # Check audio duration estimate (basic)
-            estimated_duration = len(audio_data) / (16000 * 2)  # Assuming 16kHz, 16-bit
+            estimated_duration = len(audio_data) / (
+                16000 * 2
+            )  # Assuming 16kHz, 16-bit
             if estimated_duration > 300:  # 5 minutes max
                 flags.append("Audio duration too long")
                 safety_score -= 0.1

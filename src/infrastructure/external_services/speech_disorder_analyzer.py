@@ -1,9 +1,8 @@
-"""from datetime import datetime
+from datetime import datetime
 from typing import Dict, Any, Optional, List
 import asyncio
 import logging
-from .speech_analysis_base import SpeechAnalysisConfig, create_response_template.
-"""
+from .speech_analysis_base import SpeechAnalysisConfig, create_response_template
 
 """Speech Disorder Analysis Engine
 Core disorder detection and analysis logic"""
@@ -19,7 +18,9 @@ class DisorderAnalyzer:
     def __init__(self, config: SpeechAnalysisConfig) -> None:
         self.config = config
 
-    async def analyze_for_disorders(self, features: Dict[str, Any]) -> Dict[str, Any]:
+    async def analyze_for_disorders(
+        self, features: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze extracted features for speech disorders."""
         analysis_result = create_response_template()
         try:
@@ -43,17 +44,21 @@ class DisorderAnalyzer:
                     analysis_result["disorders_detected"].append(
                         analysis["disorder_type"],
                     )
-                    analysis_result["confidence_scores"][analysis["disorder_type"]] = (
-                        analysis["confidence"]
-                    )
+                    analysis_result["confidence_scores"][
+                        analysis["disorder_type"]
+                    ] = analysis["confidence"]
                     analysis_result["recommendations"].extend(
                         analysis["recommendations"],
                     )
 
             # Determine overall severity
-            analysis_result["severity_level"] = self._calculate_severity(all_analyses)
-            analysis_result["professional_referral_needed"] = self._needs_referral(
-                all_analyses,
+            analysis_result["severity_level"] = self._calculate_severity(
+                all_analyses
+            )
+            analysis_result["professional_referral_needed"] = (
+                self._needs_referral(
+                    all_analyses,
+                )
             )
 
             return analysis_result
@@ -64,11 +69,17 @@ class DisorderAnalyzer:
                 "analysis_timestamp": datetime.now().isoformat(),
             }
 
-    async def _analyze_stuttering(self, features: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_stuttering(
+        self, features: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze for stuttering patterns."""
         # Mock stuttering detection logic
-        speech_rate = features.get("temporal_features", {}).get("speech_rate", 5.0)
-        silence_ratio = features.get("temporal_features", {}).get("silence_ratio", 0.1)
+        speech_rate = features.get("temporal_features", {}).get(
+            "speech_rate", 5.0
+        )
+        silence_ratio = features.get("temporal_features", {}).get(
+            "silence_ratio", 0.1
+        )
 
         # Simple heuristic: stuttering often correlates with irregular speech patterns
         stuttering_indicators = 0
@@ -84,7 +95,9 @@ class DisorderAnalyzer:
 
         detected = (
             confidence
-            > self.config.disorder_patterns["stuttering"]["confidence_threshold"]
+            > self.config.disorder_patterns["stuttering"][
+                "confidence_threshold"
+            ]
         )
 
         return {
@@ -103,7 +116,9 @@ class DisorderAnalyzer:
             ),
         }
 
-    async def _analyze_lisping(self, features: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_lisping(
+        self, features: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze for lisping patterns."""
         # Mock lisping detection
         spectral_centroid = features.get("spectral_features", {}).get(
@@ -115,7 +130,9 @@ class DisorderAnalyzer:
         confidence = 0.0
         detected = False
 
-        if spectral_centroid < 2000:  # Lower spectral centroid might indicate lisping
+        if (
+            spectral_centroid < 2000
+        ):  # Lower spectral centroid might indicate lisping
             confidence = 0.65
             detected = True
 
@@ -135,7 +152,9 @@ class DisorderAnalyzer:
             ),
         }
 
-    async def _analyze_articulation(self, features: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_articulation(
+        self, features: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze for articulation disorders."""
         # Mock articulation analysis
         zero_crossing_rate = features.get("spectral_features", {}).get(
@@ -168,7 +187,9 @@ class DisorderAnalyzer:
             ),
         }
 
-    async def _analyze_voice_disorder(self, features: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_voice_disorder(
+        self, features: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze for voice disorders."""
         # Mock voice disorder detection
         fundamental_frequency = features.get("prosodic_features", {}).get(
@@ -188,7 +209,9 @@ class DisorderAnalyzer:
 
         detected = (
             confidence
-            > self.config.disorder_patterns["voice_disorder"]["confidence_threshold"]
+            > self.config.disorder_patterns["voice_disorder"][  # type: ignore
+                "confidence_threshold"
+            ]
         )
 
         return {
@@ -229,7 +252,9 @@ class DisorderAnalyzer:
         if len(detected_disorders) >= 2:  # Multiple disorders
             return True
 
-        if any(a["confidence"] > 0.8 for a in detected_disorders):  # High confidence
+        if any(
+            a["confidence"] > 0.8 for a in detected_disorders
+        ):  # High confidence
             return True
 
         return False

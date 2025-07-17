@@ -100,7 +100,8 @@ async def _test_security_components(suite: TestSuite):
 async def run_unit_tests(framework):
     """تشغيل اختبارات الوحدة"""
     suite = TestSuite(
-        name="Unit Tests", description="اختبارات الوحدة مع pytest و fixtures متقدمة"
+        name="Unit Tests",
+        description="اختبارات الوحدة مع pytest و fixtures متقدمة",
     )
 
     # Test core domain entities

@@ -1,25 +1,26 @@
-"""from datetime import datetime
-from typing import Dict, Any, Optional, List
-import asyncio
-import logging
-from .session_models import AsyncSessionData, SessionStatus.
-"""
-
 """Session Storage Manager
 Handles persistent storage and retrieval of session data."""
 
+import asyncio
+import logging
+from datetime import datetime
+from typing import Dict, Any, Optional, List
+
+from .session_models import AsyncSessionData, SessionStatus
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="services")
 
 
 class SessionStorage:
-    """Manages session persistence with thread - safe operations and automatic cleanup of expired sessions."""
+    """Manages session persistence with thread-safe operations and automatic cleanup of expired sessions."""
 
     def __init__(self) -> None:
         """Initialize session storage with thread safety."""
         self.sessions: Dict[str, AsyncSessionData] = {}
-        self.child_sessions: Dict[str, List[str]] = {}  # child_id -> session_ids
+        self.child_sessions: Dict[str, List[str]] = (
+            {}
+        )  # child_id -> session_ids
         self._storage_lock = asyncio.Lock()
 
     async def store_session(self, session: AsyncSessionData) -> bool:
@@ -39,12 +40,19 @@ class SessionStorage:
                 if session.child_id not in self.child_sessions:
                     self.child_sessions[session.child_id] = []
 
-                if session.session_id not in self.child_sessions[session.child_id]:
-                    self.child_sessions[session.child_id].append(session.session_id)
+                if (
+                    session.session_id
+                    not in self.child_sessions[session.child_id]
+                ):
+                    self.child_sessions[session.child_id].append(
+                        session.session_id
+                    )
 
         return True
 
-    async def retrieve_session(self, session_id: str) -> Optional[AsyncSessionData]:
+    async def retrieve_session(
+        self, session_id: str
+    ) -> Optional[AsyncSessionData]:
         """Retrieve a session by ID.
 
         Args:
@@ -85,7 +93,9 @@ class SessionStorage:
 
         return True
 
-    async def get_child_sessions(self, child_id: str) -> List[AsyncSessionData]:
+    async def get_child_sessions(
+        self, child_id: str
+    ) -> List[AsyncSessionData]:
         """Get all sessions for a specific child.
 
         Args:
@@ -144,7 +154,7 @@ class SessionStorage:
             return len(self.sessions)
 
     async def get_active_session_count(self) -> int:
-        """Get number of active(non - expired) sessions.
+        """Get number of active (non-expired) sessions.
 
         Returns:
             Number of active sessions
@@ -154,7 +164,10 @@ class SessionStorage:
 
         async with self._storage_lock:
             for session in self.sessions.values():
-                if session.status == SessionStatus.ACTIVE and not session.is_expired():
+                if (
+                    session.status == SessionStatus.ACTIVE
+                    and not session.is_expired()
+                ):
                     active_count += 1
 
         return active_count

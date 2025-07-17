@@ -1,11 +1,10 @@
-"""from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
-from uuid import UUID.
-"""
-
-"""Security - related interfaces for the domain layer.
+"""Security-related interfaces for the domain layer.
 These interfaces define contracts for security services without
 creating dependencies on infrastructure implementations."""
+
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
+from uuid import UUID
 
 
 class IEncryptionService(ABC):
@@ -32,12 +31,16 @@ class ISecurityService(ABC):
     """Interface for security validation and monitoring."""
 
     @abstractmethod
-    async def validate_child_access(self, parent_id: UUID, child_id: UUID) -> bool:
+    async def validate_child_access(
+        self, parent_id: UUID, child_id: UUID
+    ) -> bool:
         """Validate that a parent has access to a child's data."""
 
     @abstractmethod
-    async def log_security_event(self, event_type: str, data: Dict[str, Any]) -> None:
-        """Log a security - related event for audit purposes."""
+    async def log_security_event(
+        self, event_type: str, data: Dict[str, Any]
+    ) -> None:
+        """Log a security-related event for audit purposes."""
 
     @abstractmethod
     async def validate_content_safety(self, content: str) -> Dict[str, Any]:

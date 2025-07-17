@@ -7,7 +7,7 @@ including MIME type validation, file size limits, error handling, and security.
 
 import pytest
 import io
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from fastapi import UploadFile, HTTPException, status
 
 from src.utils.file_validators import (
@@ -90,10 +90,14 @@ class TestFileValidators:
         with pytest.raises(HTTPException) as exc_info:
             validate_audio_file(large_mock_upload_file)
 
-        assert exc_info.value.status_code == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+        assert (
+            exc_info.value.status_code
+            == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+        )
         assert "File size exceeds the limit" in str(exc_info.value.detail)
         assert f"{MAX_FILE_SIZE / 1024 / 1024} MB" in str(
-            exc_info.value.detail)
+            exc_info.value.detail
+        )
 
     @patch("src.utils.file_validators.magic.from_buffer")
     @patch("src.utils.file_validators.logger")
@@ -110,7 +114,10 @@ class TestFileValidators:
         with pytest.raises(HTTPException) as exc_info:
             validate_audio_file(mock_upload_file)
 
-        assert exc_info.value.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        assert (
+            exc_info.value.status_code
+            == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        )
         assert f"Unsupported file type: {unsupported_mime}" in str(
             exc_info.value.detail
         )
@@ -146,13 +153,15 @@ class TestFileValidators:
                     validate_audio_file(mock_upload_file)
 
                 assert (
-                    exc_info.value.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+                    exc_info.value.status_code
+                    == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
                 )
                 mock_logger.warning.assert_called_once()
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_file_read_error(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test handling of file read errors."""
         # Arrange
         mock_upload_file.file.read.side_effect = IOError("File read error")
@@ -176,7 +185,8 @@ class TestFileValidators:
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_empty_file(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test validation with empty file content."""
         # Arrange
         mock_magic.return_value = "audio/wav"
@@ -192,7 +202,8 @@ class TestFileValidators:
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_file_seek_behavior(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test that file pointer is reset after reading."""
         # Arrange
         mock_magic.return_value = "audio/wav"
@@ -206,7 +217,8 @@ class TestFileValidators:
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_exact_size_limit(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test validation with file at exact size limit."""
         # Arrange
         mock_magic.return_value = "audio/wav"
@@ -220,7 +232,8 @@ class TestFileValidators:
         assert result is None  # Should pass at exact limit
 
     def test_validate_audio_file_boundary_size_over_limit(
-            self, mock_upload_file):
+        self, mock_upload_file
+    ):
         """Test validation with file just over size limit."""
         # Arrange
         mock_upload_file.size = MAX_FILE_SIZE + 1
@@ -229,11 +242,15 @@ class TestFileValidators:
         with pytest.raises(HTTPException) as exc_info:
             validate_audio_file(mock_upload_file)
 
-        assert exc_info.value.status_code == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+        assert (
+            exc_info.value.status_code
+            == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+        )
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_case_sensitivity(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test that MIME type checking is case sensitive."""
         # Arrange
         mock_magic.return_value = "Audio/WAV"  # Different case
@@ -243,11 +260,15 @@ class TestFileValidators:
         with pytest.raises(HTTPException) as exc_info:
             validate_audio_file(mock_upload_file)
 
-        assert exc_info.value.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        assert (
+            exc_info.value.status_code
+            == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        )
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_partial_mime_match(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test that partial MIME type matches are rejected."""
         # Arrange
         mock_magic.return_value = "audio/wav-extended"  # Partial match
@@ -257,14 +278,21 @@ class TestFileValidators:
         with pytest.raises(HTTPException) as exc_info:
             validate_audio_file(mock_upload_file)
 
-        assert exc_info.value.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        assert (
+            exc_info.value.status_code
+            == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        )
 
-    @pytest.mark.parametrize("file_size",
-                             [0, 1, 1024, 1024 * 1024, MAX_FILE_SIZE])
+    @pytest.mark.parametrize(
+        "file_size", [0, 1, 1024, 1024 * 1024, MAX_FILE_SIZE]
+    )
     def test_validate_audio_file_various_valid_sizes(
-            self, file_size, mock_upload_file):
+        self, file_size, mock_upload_file
+    ):
         """Test validation with various valid file sizes."""
-        with patch("src.utils.file_validators.magic.from_buffer") as mock_magic:
+        with patch(
+            "src.utils.file_validators.magic.from_buffer"
+        ) as mock_magic:
             # Arrange
             mock_magic.return_value = "audio/wav"
             mock_upload_file.size = file_size
@@ -304,7 +332,8 @@ class TestFileValidators:
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_none_filename(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test validation with None filename."""
         # Arrange
         mock_magic.return_value = "audio/wav"
@@ -335,7 +364,8 @@ class TestFileValidators:
 
     @patch("src.utils.file_validators.magic.from_buffer")
     def test_validate_audio_file_unicode_filename(
-            self, mock_magic, mock_upload_file):
+        self, mock_magic, mock_upload_file
+    ):
         """Test validation with unicode characters in filename."""
         # Arrange
         mock_magic.return_value = "audio/wav"
@@ -386,7 +416,8 @@ class TestFileValidators:
         )
 
     def test_validate_audio_file_error_message_format(
-            self, large_mock_upload_file):
+        self, large_mock_upload_file
+    ):
         """Test that error messages are properly formatted."""
         # Test size error message
         with pytest.raises(HTTPException) as exc_info:
@@ -420,14 +451,15 @@ class TestFileValidators:
     def test_validate_audio_file_thread_safety(self, mock_upload_file):
         """Test that the validation function is thread-safe."""
         import threading
-        import time
 
         results = []
         errors = []
 
         def validate_file():
             try:
-                with patch("src.utils.file_validators.magic.from_buffer") as mock_magic:
+                with patch(
+                    "src.utils.file_validators.magic.from_buffer"
+                ) as mock_magic:
                     mock_magic.return_value = "audio/wav"
                     mock_upload_file.file.read.return_value = b"fake content"
                     result = validate_audio_file(mock_upload_file)

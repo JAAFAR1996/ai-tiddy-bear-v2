@@ -1,4 +1,3 @@
-logger = logging.getLogger(__name__)
 import json
 import logging
 from datetime import datetime
@@ -16,21 +15,26 @@ from src.infrastructure.security.encryption_service import (
 
 logger = logging.getLogger(__name__)
 
-
 class ChildModel(Base):
     """All PII is encrypted at rest for COPPA compliance."""
 
     __tablename__ = "children"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     # Store encrypted data as Text for better compatibility
-    encrypted_name = Column(Text, nullable=False)  # Base64 encoded encrypted name
+    encrypted_name = Column(
+        Text, nullable=False
+    )  # Base64 encoded encrypted name
     encrypted_preferences = Column(
         Text,
         nullable=False,
     )  # Base64 encoded encrypted preferences
-    age = Column(Integer, nullable=False)  # Age can be stored as range for COPPA
+    age = Column(
+        Integer, nullable=False
+    )  # Age can be stored as range for COPPA
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     # Track encryption key version for rotation support
     encryption_key_version = Column(String(50), nullable=True)
 
@@ -43,7 +47,9 @@ class ChildModel(Base):
         """Decrypt and return child name with proper error handling."""
         if self.encrypted_name:
             try:
-                decrypted = self._encryption_service.decrypt(self.encrypted_name)
+                decrypted = self._encryption_service.decrypt(
+                    self.encrypted_name
+                )
                 return (
                     decrypted
                     if isinstance(decrypted, str)
@@ -76,7 +82,9 @@ class ChildModel(Base):
     @preferences.setter
     def preferences(self, value: dict[str, Any]) -> None:
         """Encrypt and set child preferences."""
-        self.encrypted_preferences = self._encryption_service.encrypt(json.dumps(value))
+        self.encrypted_preferences = self._encryption_service.encrypt(
+            json.dumps(value)
+        )
 
     @staticmethod
     def from_entity(entity: ChildProfile) -> "ChildModel":

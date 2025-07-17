@@ -1,14 +1,14 @@
-"""from .relationship_manager import RelationshipManager
+"""Parent-Child Verification Package
+Modular verification system for parent-child relationships with COPPA compliance."""
+
+from .relationship_manager import RelationshipManager
 from .verification_models import (
-from .verification_service import ParentChildVerificationService"""
-
-"""Parent - Child Verification Package
-Modular verification system for parent - child relationships with COPPA compliance."""
-
     RelationshipStatus,
     RelationshipType,
     VerificationRecord,
-    RelationshipRecord)
+    RelationshipRecord,
+)
+from .verification_service import ParentChildVerificationService
 
 __all__ = [
     "ParentChildVerificationService",

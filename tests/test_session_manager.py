@@ -1,6 +1,13 @@
-from infrastructure.session_manager.session_models import Session, SessionStatus
+from infrastructure.session_manager.session_models import (
+    Session,
+    SessionStatus,
+)
 from infrastructure.session_manager.session_manager import SessionManager
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy import text
 from datetime import datetime, timedelta
 import sys
@@ -220,7 +227,9 @@ async def test_cleanup_inactive_sessions(session_manager):
 
     # Update database directly to simulate old activity
     await session_manager.db.execute(
-        text("UPDATE sessions SET last_activity = :old_time WHERE id = :session_id"),
+        text(
+            "UPDATE sessions SET last_activity = :old_time WHERE id = :session_id"
+        ),
         {"old_time": old_time, "session_id": session_id},
     )
     await session_manager.db.commit()

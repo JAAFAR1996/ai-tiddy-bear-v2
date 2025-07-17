@@ -78,7 +78,9 @@ class KeyRotationService:
         with open(self.current_key_file, "w") as f:
             json.dump(new_key_data, f, indent=4)
         os.chmod(self.current_key_file, 0o600)  # Set strict permissions
-        logger.info(f"New key {new_key_data['key_id']} is now the current key.")
+        logger.info(
+            f"New key {new_key_data['key_id']} is now the current key."
+        )
 
     def get_current_key(self) -> dict[str, Any] | None:
         """Get the current active encryption key."""

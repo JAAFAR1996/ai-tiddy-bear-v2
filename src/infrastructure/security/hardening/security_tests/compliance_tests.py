@@ -41,7 +41,11 @@ class ComplianceTester(BaseSecurityTester):
             )
 
         # Check for age restrictions
-        age_patterns = [r"age\s*[<>=]\s*13", r"min_age\s*=\s*13", r"COPPA_AGE_LIMIT"]
+        age_patterns = [
+            r"age\s*[<>=]\s*13",
+            r"min_age\s*=\s*13",
+            r"COPPA_AGE_LIMIT",
+        ]
         has_age_restrictions = False
         for file_path in python_files:
             content = self.read_file_safely(file_path)

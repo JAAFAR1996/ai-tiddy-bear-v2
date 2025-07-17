@@ -169,11 +169,15 @@ class DatabaseInputValidator:
 
         # Additional validation for specific cases
         if field_name == "age" and table_name == "children" and value > 13:
-            raise ValueError("Child age cannot exceed 13 years (COPPA compliance)")
+            raise ValueError(
+                "Child age cannot exceed 13 years (COPPA compliance)"
+            )
 
         return value
 
-    def _validate_json_input(self, json_data: dict[str, Any]) -> dict[str, Any]:
+    def _validate_json_input(
+        self, json_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """التحقق من البيانات JSON المتداخلة."""
         validated_json = {}
 
@@ -189,12 +193,16 @@ class DatabaseInputValidator:
             if isinstance(value, dict):
                 validated_json[key] = self._validate_json_input(value)
             elif isinstance(value, str):
-                sanitization_result = self.sql_prevention.sanitize_input(value, "text")
+                sanitization_result = self.sql_prevention.sanitize_input(
+                    value, "text"
+                )
                 validated_json[key] = sanitization_result.sanitized_input
             elif isinstance(value, list):
                 validated_json[key] = [
                     (
-                        self.sql_prevention.sanitize_input(item, "text").sanitized_input
+                        self.sql_prevention.sanitize_input(
+                            item, "text"
+                        ).sanitized_input
                         if isinstance(item, str)
                         else item
                     )
@@ -212,7 +220,9 @@ class DatabaseInputValidator:
     ) -> QueryValidationResult:
         """التحقق من تنفيذ الاستعلام."""
         # Validate the query structure
-        validation_result = self.sql_prevention.validate_sql_query(query, params)
+        validation_result = self.sql_prevention.validate_sql_query(
+            query, params
+        )
 
         if not validation_result.safe:
             # Log critical security event
@@ -262,14 +272,21 @@ def database_input_validation(table_name: str):
             validator = DatabaseInputValidator()
 
             # Find data parameters in kwargs
-            for param_name in ["data", "user_data", "child_data", "update_data"]:
+            for param_name in [
+                "data",
+                "user_data",
+                "child_data",
+                "update_data",
+            ]:
                 if param_name in kwargs:
                     validated_data = validator.validate_input_data(
                         kwargs[param_name],
                         table_name,
                     )
                     kwargs[param_name] = validated_data
-                    logger.debug(f"Validated input data for table '{table_name}'")
+                    logger.debug(
+                        f"Validated input data for table '{table_name}'"
+                    )
 
             # Find query parameters
             if "query" in kwargs and "params" in kwargs:
@@ -316,13 +333,17 @@ def validate_database_operation(
 
     # Validate data if provided
     if data:
-        validated_operation["data"] = validator.validate_input_data(data, table_name)
+        validated_operation["data"] = validator.validate_input_data(
+            data, table_name
+        )
 
     # Validate WHERE conditions if provided
     if where_conditions:
-        validated_operation["where_conditions"] = validator.validate_input_data(
-            where_conditions,
-            table_name,
+        validated_operation["where_conditions"] = (
+            validator.validate_input_data(
+                where_conditions,
+                table_name,
+            )
         )
 
     # Log the operation
@@ -346,7 +367,9 @@ class SafeDatabaseSession:
     ) -> Any:
         """تنفيذ آمن للاستعلامات."""
         # Validate query before execution
-        validation_result = self.validator.validate_query_execution(query, params)
+        validation_result = self.validator.validate_query_execution(
+            query, params
+        )
         if not validation_result.safe:
             raise SecurityError("Query validation failed")
 

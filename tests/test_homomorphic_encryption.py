@@ -116,7 +116,6 @@ except ImportError:
 # Import the modules to test
 try:
     from infrastructure.security.homomorphic_encryption import (
-        HomomorphicEncryptionService,
         TENSEAL_AVAILABLE,
         EncryptedData,
         HEConfig,
@@ -175,8 +174,9 @@ class TestHomomorphicEncryption:
         assert he_service.emotion_processor is not None
 
     @pytest.mark.asyncio
-    @pytest.mark.skipif(not HE_IMPORTS_AVAILABLE,
-                        reason="TenSEAL not available")
+    @pytest.mark.skipif(
+        not HE_IMPORTS_AVAILABLE, reason="TenSEAL not available"
+    )
     async def test_encrypt_voice_features(self, he_service):
         """Test voice feature encryption."""
         if not HE_IMPORTS_AVAILABLE:
@@ -186,7 +186,9 @@ class TestHomomorphicEncryption:
         child_id = "test_child_456"
 
         he_service.audit_logger = AsyncMock()
-        encrypted_data = await he_service.encrypt_voice_features(features, child_id)
+        encrypted_data = await he_service.encrypt_voice_features(
+            features, child_id
+        )
 
         assert isinstance(encrypted_data, EncryptedData)
         assert encrypted_data.data_type == "voice_features"

@@ -9,11 +9,12 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from sqlalchemy.sql import func
 from src.infrastructure.persistence.repositories.conversation_repository import (
     ConversationRepository,
 )
-from src.infrastructure.persistence.models.conversation_model import ConversationModel
+from src.infrastructure.persistence.models.conversation_model import (
+    ConversationModel,
+)
 from src.infrastructure.persistence.database import Database
 from src.infrastructure.security.database_input_validator import SecurityError
 
@@ -52,15 +53,19 @@ class TestConversationRepositoryCreate:
         """Test successful conversation creation."""
         # Arrange
         mock_session = AsyncMock()
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.conversation_repository.validate_database_operation",
             return_value={"data": sample_conversation_data},
         ):
             # Act
-            conversation_id = await conversation_repository.create_conversation(
-                **sample_conversation_data
+            conversation_id = (
+                await conversation_repository.create_conversation(
+                    **sample_conversation_data
+                )
             )
 
             # Assert
@@ -107,7 +112,9 @@ class TestConversationRepositoryCreate:
         ):
             # Act & Assert
             with pytest.raises(ValueError, match="Invalid conversation data"):
-                await conversation_repository.create_conversation(**malicious_data)
+                await conversation_repository.create_conversation(
+                    **malicious_data
+                )
 
     @pytest.mark.asyncio
     async def test_create_conversation_database_error(
@@ -117,7 +124,9 @@ class TestConversationRepositoryCreate:
         # Arrange
         mock_session = AsyncMock()
         mock_session.commit.side_effect = Exception("Database connection lost")
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.conversation_repository.validate_database_operation",
@@ -159,7 +168,9 @@ class TestConversationRepositoryHistory:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await conversation_repository.get_conversation_history(
@@ -187,7 +198,9 @@ class TestConversationRepositoryHistory:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await conversation_repository.get_conversation_history(
@@ -207,16 +220,28 @@ class TestConversationRepositoryHistory:
         child_id = str(uuid4())
 
         # Test negative limit
-        with pytest.raises(ValueError, match="Limit must be between 1 and 100"):
-            await conversation_repository.get_conversation_history(child_id, limit=-1)
+        with pytest.raises(
+            ValueError, match="Limit must be between 1 and 100"
+        ):
+            await conversation_repository.get_conversation_history(
+                child_id, limit=-1
+            )
 
         # Test zero limit
-        with pytest.raises(ValueError, match="Limit must be between 1 and 100"):
-            await conversation_repository.get_conversation_history(child_id, limit=0)
+        with pytest.raises(
+            ValueError, match="Limit must be between 1 and 100"
+        ):
+            await conversation_repository.get_conversation_history(
+                child_id, limit=0
+            )
 
         # Test excessive limit
-        with pytest.raises(ValueError, match="Limit must be between 1 and 100"):
-            await conversation_repository.get_conversation_history(child_id, limit=101)
+        with pytest.raises(
+            ValueError, match="Limit must be between 1 and 100"
+        ):
+            await conversation_repository.get_conversation_history(
+                child_id, limit=101
+            )
 
     @pytest.mark.asyncio
     async def test_get_conversation_history_database_error(
@@ -228,7 +253,9 @@ class TestConversationRepositoryHistory:
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Query timeout")
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="Database error"):
@@ -252,10 +279,14 @@ class TestConversationRepositoryCount:
         mock_result.scalar.return_value = expected_count
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
-        count = await conversation_repository.get_conversation_count(child_id, hours=24)
+        count = await conversation_repository.get_conversation_count(
+            child_id, hours=24
+        )
 
         # Assert
         assert count == expected_count
@@ -274,10 +305,14 @@ class TestConversationRepositoryCount:
         mock_result.scalar.return_value = None  # No conversations
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
-        count = await conversation_repository.get_conversation_count(child_id, hours=24)
+        count = await conversation_repository.get_conversation_count(
+            child_id, hours=24
+        )
 
         # Assert
         assert count == 0
@@ -290,16 +325,28 @@ class TestConversationRepositoryCount:
         child_id = str(uuid4())
 
         # Test negative hours
-        with pytest.raises(ValueError, match="Hours must be between 1 and 168"):
-            await conversation_repository.get_conversation_count(child_id, hours=-1)
+        with pytest.raises(
+            ValueError, match="Hours must be between 1 and 168"
+        ):
+            await conversation_repository.get_conversation_count(
+                child_id, hours=-1
+            )
 
         # Test zero hours
-        with pytest.raises(ValueError, match="Hours must be between 1 and 168"):
-            await conversation_repository.get_conversation_count(child_id, hours=0)
+        with pytest.raises(
+            ValueError, match="Hours must be between 1 and 168"
+        ):
+            await conversation_repository.get_conversation_count(
+                child_id, hours=0
+            )
 
         # Test excessive hours (more than 1 week)
-        with pytest.raises(ValueError, match="Hours must be between 1 and 168"):
-            await conversation_repository.get_conversation_count(child_id, hours=169)
+        with pytest.raises(
+            ValueError, match="Hours must be between 1 and 168"
+        ):
+            await conversation_repository.get_conversation_count(
+                child_id, hours=169
+            )
 
     @pytest.mark.asyncio
     async def test_get_conversation_count_database_error(
@@ -311,11 +358,15 @@ class TestConversationRepositoryCount:
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database locked")
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="Database error"):
-            await conversation_repository.get_conversation_count(child_id, hours=24)
+            await conversation_repository.get_conversation_count(
+                child_id, hours=24
+            )
 
 
 class TestConversationRepositoryDeletion:
@@ -341,10 +392,14 @@ class TestConversationRepositoryDeletion:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
-        deleted_count = await conversation_repository.delete_old_conversations(days=90)
+        deleted_count = await conversation_repository.delete_old_conversations(
+            days=90
+        )
 
         # Assert
         assert deleted_count == 5
@@ -364,10 +419,14 @@ class TestConversationRepositoryDeletion:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
-        deleted_count = await conversation_repository.delete_old_conversations(days=90)
+        deleted_count = await conversation_repository.delete_old_conversations(
+            days=90
+        )
 
         # Assert
         assert deleted_count == 0
@@ -398,10 +457,14 @@ class TestConversationRepositoryDeletion:
             "Cannot delete: foreign key constraint"
         )
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act & Assert
-        with pytest.raises(RuntimeError, match="Failed to delete old conversations"):
+        with pytest.raises(
+            RuntimeError, match="Failed to delete old conversations"
+        ):
             await conversation_repository.delete_old_conversations(days=90)
 
 
@@ -422,14 +485,18 @@ class TestConversationRepositoryEdgeCases:
         }
 
         mock_session = AsyncMock()
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.conversation_repository.validate_database_operation",
             return_value={"data": data},
         ):
             # Act
-            conversation_id = await conversation_repository.create_conversation(**data)
+            conversation_id = (
+                await conversation_repository.create_conversation(**data)
+            )
 
             # Assert
             assert conversation_id is not None
@@ -457,7 +524,9 @@ class TestConversationRepositoryEdgeCases:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await conversation_repository.get_conversation_history(

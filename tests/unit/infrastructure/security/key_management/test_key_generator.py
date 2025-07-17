@@ -6,7 +6,9 @@ Comprehensive unit tests for KeyGenerator with algorithm coverage and child data
 
 import pytest
 from unittest.mock import patch
-from src.infrastructure.security.key_management.key_generator import KeyGenerator
+from src.infrastructure.security.key_management.key_generator import (
+    KeyGenerator,
+)
 from src.infrastructure.security.key_rotation_service import KeyType
 
 
@@ -23,7 +25,8 @@ class TestKeyGeneration:
         """Test AES-256 key generation."""
         # Act
         key_id, key_data = key_generator.generate_key(
-            KeyType.ENCRYPTION, "AES-256")
+            KeyType.ENCRYPTION, "AES-256"
+        )
 
         # Assert
         assert key_id is not None
@@ -35,7 +38,8 @@ class TestKeyGeneration:
         """Test AES-128 key generation."""
         # Act
         key_id, key_data = key_generator.generate_key(
-            KeyType.SESSION, "AES-128")
+            KeyType.SESSION, "AES-128"
+        )
 
         # Assert
         assert key_id is not None
@@ -47,7 +51,8 @@ class TestKeyGeneration:
         """Test ChaCha20 key generation."""
         # Act
         key_id, key_data = key_generator.generate_key(
-            KeyType.SIGNING, "ChaCha20")
+            KeyType.SIGNING, "ChaCha20"
+        )
 
         # Assert
         assert key_id is not None
@@ -59,7 +64,8 @@ class TestKeyGeneration:
         """Test that child data keys always use ChaCha20 for enhanced security."""
         # Act
         key_id, key_data = key_generator.generate_key(
-            KeyType.CHILD_DATA, "AES-256")
+            KeyType.CHILD_DATA, "AES-256"
+        )
 
         # Assert
         assert key_id is not None
@@ -92,7 +98,8 @@ class TestKeyGeneration:
         keys = []
         for _ in range(10):
             key_id, key_data = key_generator.generate_key(
-                KeyType.SESSION, "AES-256")
+                KeyType.SESSION, "AES-256"
+            )
             keys.append((key_id, key_data))
 
         # Check uniqueness
@@ -124,7 +131,8 @@ class TestKeyGeneratorEdgeCases:
 
         def generate_key():
             key_id, key_data = key_generator.generate_key(
-                KeyType.ENCRYPTION, "AES-256")
+                KeyType.ENCRYPTION, "AES-256"
+            )
             results.append((key_id, key_data))
 
         # Create multiple threads
@@ -148,22 +156,26 @@ class TestKeyGeneratorEdgeCases:
         # Test multiple generations of same algorithm
         for _ in range(5):
             _, key_data = key_generator.generate_key(
-                KeyType.ENCRYPTION, "AES-256")
+                KeyType.ENCRYPTION, "AES-256"
+            )
             assert len(key_data) == 32
 
         for _ in range(5):
             _, key_data = key_generator.generate_key(
-                KeyType.SESSION, "AES-128")
+                KeyType.SESSION, "AES-128"
+            )
             assert len(key_data) == 16
 
         for _ in range(5):
             _, key_data = key_generator.generate_key(
-                KeyType.SIGNING, "ChaCha20")
+                KeyType.SIGNING, "ChaCha20"
+            )
             assert len(key_data) == 32
 
     @patch("secrets.token_bytes")
     def test_key_generation_failure_handling(
-            self, mock_token_bytes, key_generator):
+        self, mock_token_bytes, key_generator
+    ):
         """Test handling of key generation failures."""
         # Mock failure
         mock_token_bytes.side_effect = Exception("Random generation failed")

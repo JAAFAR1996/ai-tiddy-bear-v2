@@ -5,11 +5,10 @@ from infrastructure.security.comprehensive_security_service import (
     SecurityThreat,
     create_comprehensive_security_service,
 )
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime, timedelta
 import tempfile
 import os
-import asyncio
 from pathlib import Path
 import sys
 
@@ -160,7 +159,9 @@ class TestComprehensiveSecurityService:
     @pytest.mark.asyncio
     async def test_multiple_threats_detection(self, security_service):
         """Test detection of multiple threat types in single content"""
-        malicious_content = "'; DROP TABLE users; <script>alert('xss')</script>"
+        malicious_content = (
+            "'; DROP TABLE users; <script>alert('xss')</script>"
+        )
         threat = await security_service.analyze_threat(malicious_content)
 
         assert threat.level == ThreatLevel.HIGH
@@ -182,7 +183,8 @@ class TestComprehensiveSecurityService:
 
     @pytest.mark.asyncio
     async def test_child_content_validation_unsafe_violence(
-            self, security_service):
+        self, security_service
+    ):
         """Test detection of violent content"""
         result = await security_service.validate_child_content(
             "The character uses a gun to fight the monster", child_age=7
@@ -194,8 +196,11 @@ class TestComprehensiveSecurityService:
 
         # Check that violence was detected
         violence_issue = next(
-            (issue for issue in result["issues"]
-             if issue["category"] == "violence"),
+            (
+                issue
+                for issue in result["issues"]
+                if issue["category"] == "violence"
+            ),
             None,
         )
         assert violence_issue is not None
@@ -203,11 +208,13 @@ class TestComprehensiveSecurityService:
 
     @pytest.mark.asyncio
     async def test_child_content_validation_age_appropriate(
-            self, security_service):
+        self, security_service
+    ):
         """Test age-appropriate content validation"""
         # Content too complex for young children
         result = await security_service.validate_child_content(
-            "This advanced quantum physics concept is quite complex", child_age=4
+            "This advanced quantum physics concept is quite complex",
+            child_age=4,
         )
 
         assert len(result["issues"]) > 0
@@ -241,9 +248,12 @@ class TestComprehensiveSecurityService:
 
     @pytest.mark.asyncio
     async def test_file_malware_scanning_nonexistent_file(
-            self, security_service):
+        self, security_service
+    ):
         """Test malware scanning of non-existent file"""
-        result = await security_service.scan_file_for_malware("/nonexistent/file.txt")
+        result = await security_service.scan_file_for_malware(
+            "/nonexistent/file.txt"
+        )
 
         assert result["safe"] is False
         assert "error" in result
@@ -406,7 +416,9 @@ class TestSecurityIntegration:
         service = create_comprehensive_security_service()
 
         # Simulate malicious request
-        malicious_content = "'; DROP TABLE children; <script>steal_data()</script>"
+        malicious_content = (
+            "'; DROP TABLE children; <script>steal_data()</script>"
+        )
         source_ip = "192.168.1.100"
 
         # Analyze threat

@@ -19,7 +19,9 @@ logger = get_logger(__name__, component="api")
 router = APIRouter(prefix="/api/v1/children", tags=["Children v1 DI"])
 
 
-@router.post("/", response_model=ChildResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ChildResponse, status_code=status.HTTP_201_CREATED
+)
 @inject
 async def create_child(
     request: ChildCreateRequest,
@@ -61,7 +63,9 @@ async def create_child(
             parent_id=current_parent.id,
             name=request.name,
             age=request.age,
-            preferences=request.preferences.dict() if request.preferences else {},
+            preferences=(
+                request.preferences.dict() if request.preferences else {}
+            ),
             interests=request.interests or [],
             language=request.language,
         )
@@ -109,7 +113,9 @@ async def list_children(
 ) -> List[ChildResponse]:
     """List all children for the current parent."""
     try:
-        children = await manage_child_use_case.get_children_by_parent(current_parent.id)
+        children = await manage_child_use_case.get_children_by_parent(
+            current_parent.id
+        )
 
         return [
             ChildResponse(
@@ -202,7 +208,9 @@ async def update_child(
 
         # Validate age if being updated
         if request.age and request.age != child.age:
-            age_validation = await coppa_service.validate_child_age(request.age)
+            age_validation = await coppa_service.validate_child_age(
+                request.age
+            )
             if not age_validation["compliant"]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -282,7 +290,9 @@ async def delete_child(
             )
 
         # Schedule COPPA-compliant data deletion
-        deletion_policy = await coppa_service.schedule_data_deletion(str(child_id))
+        deletion_policy = await coppa_service.schedule_data_deletion(
+            str(child_id)
+        )
 
         # Delete child profile
         await manage_child_use_case.delete_child(child_id)
@@ -340,7 +350,9 @@ async def get_child_safety_summary(
 
         # Get usage statistics
         daily_usage = await database_service.get_daily_usage(str(child_id))
-        usage_stats = await database_service.get_usage_statistics(str(child_id), days=7)
+        usage_stats = await database_service.get_usage_statistics(
+            str(child_id), days=7
+        )
 
         # Calculate safety metrics
         high_severity_count = sum(

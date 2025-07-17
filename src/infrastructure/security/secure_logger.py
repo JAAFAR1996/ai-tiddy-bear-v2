@@ -27,7 +27,8 @@ class SecureLogger:
             for pattern in self.config.redact_patterns
         ]
         self.mask_regex = [
-            re.compile(pattern, re.IGNORECASE) for pattern in self.config.mask_patterns
+            re.compile(pattern, re.IGNORECASE)
+            for pattern in self.config.mask_patterns
         ]
 
     def _sanitize_value(self, key: str, value: Any) -> str:
@@ -39,7 +40,9 @@ class SecureLogger:
         str_value = str(value)
 
         # Check if field is forbidden
-        if key_lower in [field.lower() for field in self.config.forbidden_fields]:
+        if key_lower in [
+            field.lower() for field in self.config.forbidden_fields
+        ]:
             return "[REDACTED]"
 
         # Check for redaction patterns

@@ -57,7 +57,9 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         if child_id and self.limiter_available:
             # Apply child safety rate limiting
             try:
-                await self.rate_limit_child_request(request, child_id, endpoint)
+                await self.rate_limit_child_request(
+                    request, child_id, endpoint
+                )
             except Exception:
                 # Return child-friendly error
                 return Response(
@@ -68,7 +70,9 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
                 )
 
         # Check general rate limit
-        if self.limiter_available and hasattr(self.rate_limiter, "check_rate_limit"):
+        if self.limiter_available and hasattr(
+            self.rate_limiter, "check_rate_limit"
+        ):
             # Use RateLimiter service
             allowed = await self.rate_limiter.check_rate_limit(
                 f"{client_ip}:{endpoint}",
@@ -87,7 +91,9 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
                         "Retry-After": str(rate_limit_result["retry_after"]),
                         "X-RateLimit-Limit": str(rate_limit_result["limit"]),
                         "X-RateLimit-Remaining": "0",
-                        "X-RateLimit-Reset": str(rate_limit_result["reset_time"]),
+                        "X-RateLimit-Reset": str(
+                            rate_limit_result["reset_time"]
+                        ),
                     },
                 )
 
@@ -96,7 +102,9 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
 
         # Add rate limiting headers
         if not self.limiter_available:
-            rate_limit_result = self._get_current_limit_status(client_ip, endpoint)
+            rate_limit_result = self._get_current_limit_status(
+                client_ip, endpoint
+            )
             self._add_rate_limit_headers(response, rate_limit_result)
 
         return response
@@ -121,7 +129,9 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
 
         return "default"
 
-    def _check_rate_limit(self, client_ip: str, endpoint: str) -> Dict[str, Any]:
+    def _check_rate_limit(
+        self, client_ip: str, endpoint: str
+    ) -> Dict[str, Any]:
         """Check if request is within rate limits.
         Args: client_ip: Client IP address
             endpoint: Endpoint being accessed
@@ -213,8 +223,12 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
     ) -> None:
         """Add rate limiting headers to response."""
         response.headers["X-RateLimit-Limit"] = str(rate_limit_result["limit"])
-        response.headers["X-RateLimit-Remaining"] = str(rate_limit_result["remaining"])
-        response.headers["X-RateLimit-Reset"] = str(rate_limit_result["reset_time"])
+        response.headers["X-RateLimit-Remaining"] = str(
+            rate_limit_result["remaining"]
+        )
+        response.headers["X-RateLimit-Reset"] = str(
+            rate_limit_result["reset_time"]
+        )
 
     def _extract_child_id(self, request: Request) -> Optional[str]:
         """Extract child ID from request if present."""
@@ -244,7 +258,9 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         """Create appropriate rate limit exceeded response."""
         # Check if this is a child-facing endpoint
         child_endpoints = ["/esp32", "/ai/generate", "/audio", "/voice"]
-        is_child_endpoint = any(endpoint.startswith(ep) for ep in child_endpoints)
+        is_child_endpoint = any(
+            endpoint.startswith(ep) for ep in child_endpoints
+        )
 
         if is_child_endpoint:
             return Response(

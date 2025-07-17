@@ -22,7 +22,9 @@ class BaseApplicationSettings(BaseSettings):
         pattern="^(development|staging|production|testing)$",
     )
     debug: bool = Field(default=False)
-    log_level: str = Field("INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+    log_level: str = Field(
+        "INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$"
+    )
 
     # ================================
     # Application Information

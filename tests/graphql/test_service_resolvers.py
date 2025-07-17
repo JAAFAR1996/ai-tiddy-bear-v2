@@ -13,8 +13,9 @@ except ImportError:
     FEDERATION_AVAILABLE = False
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE,
-                    reason="Federation not available")
+@pytest.mark.skipif(
+    not FEDERATION_AVAILABLE, reason="Federation not available"
+)
 class TestServiceResolvers:
     """Test service resolvers."""
 
@@ -51,6 +52,8 @@ class TestServiceResolvers:
     @pytest.mark.asyncio
     async def test_safety_service_resolvers(self):
         """Test safety service resolvers."""
-        safety_profile = await SafetyServiceResolvers.get_safety_profile("child-123")
+        safety_profile = await SafetyServiceResolvers.get_safety_profile(
+            "child-123"
+        )
         assert safety_profile is not None
         assert safety_profile.safety_score > 0

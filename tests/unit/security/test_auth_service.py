@@ -96,7 +96,8 @@ class TestAuthService:
         user_data = {
             "sub": "user123",
             "email": "test@example.com",
-            "role": "parent"}
+            "role": "parent",
+        }
 
         token = self.auth_service.create_access_token(user_data)
 
@@ -108,7 +109,8 @@ class TestAuthService:
         user_data = {
             "sub": "user123",
             "email": "test@example.com",
-            "role": "parent"}
+            "role": "parent",
+        }
 
         token = self.auth_service.create_access_token(user_data)
         decoded = self.auth_service.verify_token(token)

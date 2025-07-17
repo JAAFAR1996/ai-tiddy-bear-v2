@@ -1,7 +1,7 @@
 """Injection Security Tests"""
-import logging
+
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from src.infrastructure.logging_config import get_logger
 
@@ -17,12 +17,12 @@ class InjectionTester(BaseSecurityTester):
         """Test for code injection vulnerabilities"""
         issues = []
         dangerous_patterns = [
-            (r'\beval\s*\(', "eval() function found"),
-            (r'\bexec\s*\(', "exec() function found"),
-            (r'__import__\s*\(', "__import__() function found"),
-            (r'compile\s*\(', "compile() function found"),
-            (r'subprocess\.call\s*\(', "subprocess.call() without validation"),
-            (r'os\.system\s*\(', "os.system() without validation"),
+            (r"\beval\s*\(", "eval() function found"),
+            (r"\bexec\s*\(", "exec() function found"),
+            (r"__import__\s*\(", "__import__() function found"),
+            (r"compile\s*\(", "compile() function found"),
+            (r"subprocess\.call\s*\(", "subprocess.call() without validation"),
+            (r"os\.system\s*\(", "os.system() without validation"),
         ]
         python_files = self.scan_python_files()
         for file_path in python_files:
@@ -31,11 +31,13 @@ class InjectionTester(BaseSecurityTester):
                 continue
             for pattern, description in dangerous_patterns:
                 if re.search(pattern, content):
-                    issues.append({
-                        "file": str(file_path),
-                        "issue": description,
-                        "severity": "high"
-                    })
+                    issues.append(
+                        {
+                            "file": str(file_path),
+                            "issue": description,
+                            "severity": "high",
+                        }
+                    )
         recommendations = [
             "Replace eval() with ast.literal_eval() for safe evaluation",
             "Use parameterized queries instead of string formatting",
@@ -55,7 +57,10 @@ class InjectionTester(BaseSecurityTester):
             # Detect f-strings in execute calls containing SELECT (basic heuristic)
             (r"execute\s*\(.*f['\"].*SELECT.*", "f-string in SQL query"),
             # Detect %-formatting in execute calls containing SELECT
-            (r"execute\s*\(.*['\"].*SELECT.*%s.*", "%-formatting in SQL query"),
+            (
+                r"execute\s*\(.*['\"].*SELECT.*%s.*",
+                "%-formatting in SQL query",
+            ),
             # Detect .format() usage in execute calls containing SELECT
             (r"execute\s*\(.*['\"].*SELECT.*\{\}.*", ".format() in SQL query"),
         ]
@@ -66,11 +71,13 @@ class InjectionTester(BaseSecurityTester):
                 continue
             for pattern, description in sql_patterns:
                 if re.search(pattern, content, re.IGNORECASE):
-                    issues.append({
-                        "file": str(file_path),
-                        "issue": description,
-                        "severity": "critical"
-                    })
+                    issues.append(
+                        {
+                            "file": str(file_path),
+                            "issue": description,
+                            "severity": "critical",
+                        }
+                    )
         recommendations = [
             "Use parameterized queries with your database driver",
             "Use an ORM like SQLAlchemy to prevent SQL injection",
@@ -86,31 +93,43 @@ class InjectionTester(BaseSecurityTester):
         """Test for Cross-Site Scripting (XSS) vulnerabilities"""
         issues = []
         xss_patterns = [
-            (r'mark_safe\s*\(', "mark_safe() usage in Django/Jinja2"),
-            (r'dangerouslySetInnerHTML', "dangerouslySetInnerHTML usage in React (if applicable)"),
-            (r'innerHTML\s*=', "Direct assignment to innerHTML"),
+            (r"mark_safe\s*\(", "mark_safe() usage in Django/Jinja2"),
+            (
+                r"dangerouslySetInnerHTML",
+                "dangerouslySetInnerHTML usage in React (if applicable)",
+            ),
+            (r"innerHTML\s*=", "Direct assignment to innerHTML"),
         ]
         # Scan HTML/template files as well
-        template_files = list(self.base_path.rglob("*.html")) + list(self.base_path.rglob("*.jinja2"))
+        template_files = list(self.base_path.rglob("*.html")) + list(
+            self.base_path.rglob("*.jinja2")
+        )
         for file_path in template_files:
             content = self.read_file_safely(file_path)
             if not content:
                 continue
-            if "{{ content|safe }}" in content or "{{ content|escape|safe }}" in content:
-                issues.append({
-                    "file": str(file_path),
-                    "issue": "Unescaped variable with |safe filter",
-                    "severity": "high",
-                })
+            if (
+                "{{ content|safe }}" in content
+                or "{{ content|escape|safe }}" in content
+            ):
+                issues.append(
+                    {
+                        "file": str(file_path),
+                        "issue": "Unescaped variable with |safe filter",
+                        "severity": "high",
+                    }
+                )
 
             # Additionally check for unsafe patterns in templates
             for pattern, description in xss_patterns:
                 if re.search(pattern, content):
-                    issues.append({
-                        "file": str(file_path),
-                        "issue": description,
-                        "severity": "high",
-                    })
+                    issues.append(
+                        {
+                            "file": str(file_path),
+                            "issue": description,
+                            "severity": "high",
+                        }
+                    )
 
         recommendations = [
             "Use auto-escaping template engines (e.g., Jinja2, Django templates)",
@@ -127,8 +146,11 @@ class InjectionTester(BaseSecurityTester):
         """Test for path traversal vulnerabilities"""
         issues = []
         path_patterns = [
-            (r'os\.path\.join\s*\(.*request\.args.*', "Path joining with user input"),
-            (r'open\s*\(.*request\.args.*', "File open with user input"),
+            (
+                r"os\.path\.join\s*\(.*request\.args.*",
+                "Path joining with user input",
+            ),
+            (r"open\s*\(.*request\.args.*", "File open with user input"),
         ]
         python_files = self.scan_python_files()
         for file_path in python_files:
@@ -137,11 +159,13 @@ class InjectionTester(BaseSecurityTester):
                 continue
             for pattern, description in path_patterns:
                 if re.search(pattern, content):
-                    issues.append({
-                        "file": str(file_path),
-                        "issue": description,
-                        "severity": "high"
-                    })
+                    issues.append(
+                        {
+                            "file": str(file_path),
+                            "issue": description,
+                            "severity": "high",
+                        }
+                    )
 
         recommendations = [
             "Never use user-provided input directly in file paths",

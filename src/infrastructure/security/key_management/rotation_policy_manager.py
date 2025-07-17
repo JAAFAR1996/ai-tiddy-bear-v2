@@ -26,7 +26,9 @@ class RotationPolicyManager:
         """
         self.storage = storage
         self.max_key_usage = 1000000  # Maximum operations per key
-        self.child_data_max_age = timedelta(days=30)  # Rotate child data keys monthly
+        self.child_data_max_age = timedelta(
+            days=30
+        )  # Rotate child data keys monthly
 
     def check_rotation_needed(self, key_metadata: KeyMetadata) -> bool:
         """Check if a specific key needs rotation.
@@ -51,7 +53,11 @@ class RotationPolicyManager:
             return True
 
         # Special check for child data keys (more strict)
-        return bool(key_metadata.key_type == KeyType.CHILD_DATA and current_time - key_metadata.created_at >= self.child_data_max_age)
+        return bool(
+            key_metadata.key_type == KeyType.CHILD_DATA
+            and current_time - key_metadata.created_at
+            >= self.child_data_max_age
+        )
 
     def get_keys_needing_rotation(self) -> list[KeyMetadata]:
         """Get all keys that need rotation.
@@ -95,7 +101,11 @@ class RotationPolicyManager:
 
         """
         service_map = {
-            KeyType.ENCRYPTION: ["data_encryption", "file_storage", "backup_service"],
+            KeyType.ENCRYPTION: [
+                "data_encryption",
+                "file_storage",
+                "backup_service",
+            ],
             KeyType.SIGNING: ["api_gateway", "jwt_service", "audit_service"],
             KeyType.JWT: ["authentication", "session_management"],
             KeyType.SESSION: ["session_service", "cache_service"],

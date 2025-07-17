@@ -4,12 +4,10 @@ Testing comprehensive input validation and security threat detection middleware.
 """
 
 import pytest
-from unittest.mock import patch, Mock, AsyncMock, MagicMock
+from unittest.mock import patch, Mock, AsyncMock
 import json
 from datetime import datetime
-from typing import Dict, Any, List
-from fastapi import Request, Response, HTTPException, status
-from fastapi.testclient import TestClient
+from fastapi import Request, Response
 
 from src.infrastructure.security.input_validation.core import (
     SecurityThreat,
@@ -114,11 +112,8 @@ class TestInputValidationResult:
         """Test InputValidationResult with threats."""
         threats = [
             SecurityThreat(
-                "sql_injection",
-                "high",
-                "field1",
-                "value1",
-                "desc1"),
+                "sql_injection", "high", "field1", "value1", "desc1"
+            ),
             SecurityThreat("xss", "critical", "field2", "value2", "desc2"),
         ]
 
@@ -139,10 +134,18 @@ class TestInputValidationResult:
     def test_input_validation_result_critical_threat_detection(self):
         """Test critical threat detection."""
         critical_threat = SecurityThreat(
-            "command_injection", "critical", "cmd", "rm -rf /", "Critical threat"
+            "command_injection",
+            "critical",
+            "cmd",
+            "rm -rf /",
+            "Critical threat",
         )
         high_threat = SecurityThreat(
-            "path_traversal", "high", "path", "../../../etc/passwd", "High threat"
+            "path_traversal",
+            "high",
+            "path",
+            "../../../etc/passwd",
+            "High threat",
         )
 
         result = InputValidationResult(
@@ -169,7 +172,8 @@ class TestInputValidationResult:
     def test_input_validation_result_child_safety_issues(self):
         """Test child safety issue detection."""
         result = InputValidationResult(
-            is_valid=False, child_safety_violations=["profanity", "personal_info"]
+            is_valid=False,
+            child_safety_violations=["profanity", "personal_info"],
         )
 
         assert result.has_child_safety_issues is True
@@ -289,7 +293,9 @@ class TestComprehensiveInputValidator:
             "is_child_endpoint": True,
         }
 
-        result = await validator.validate_input("test input", "message", context)
+        result = await validator.validate_input(
+            "test input", "message", context
+        )
 
         assert result.is_valid is True
         assert len(result.threats) == 0
@@ -299,7 +305,9 @@ class TestComprehensiveInputValidator:
         """Test validation exception handling."""
         # Mock threat detection to raise exception
         with patch.object(
-            validator, "detect_sql_injection", side_effect=Exception("Detection error")
+            validator,
+            "detect_sql_injection",
+            side_effect=Exception("Detection error"),
         ):
             result = await validator.validate_input("test input", "field")
 
@@ -318,7 +326,9 @@ class TestComprehensiveInputValidator:
             validator, "detect_sql_injection", return_value=[mock_threat]
         ):
             with patch.object(validator, "detect_xss", return_value=[]):
-                with patch.object(validator, "detect_path_traversal", return_value=[]):
+                with patch.object(
+                    validator, "detect_path_traversal", return_value=[]
+                ):
                     with patch.object(
                         validator, "detect_command_injection", return_value=[]
                     ):
@@ -326,7 +336,9 @@ class TestComprehensiveInputValidator:
                             validator, "detect_ldap_injection", return_value=[]
                         ):
                             with patch.object(
-                                validator, "detect_template_injection", return_value=[]
+                                validator,
+                                "detect_template_injection",
+                                return_value=[],
                             ):
                                 with patch.object(
                                     validator,
@@ -334,15 +346,20 @@ class TestComprehensiveInputValidator:
                                     return_value=[],
                                 ):
                                     with patch.object(
-                                        validator, "detect_pii", return_value=[]
+                                        validator,
+                                        "detect_pii",
+                                        return_value=[],
                                     ):
                                         with patch.object(
                                             validator,
                                             "detect_encoding_attacks",
                                             return_value=[],
                                         ):
-                                            result = await validator.validate_input(
-                                                "'; DROP TABLE users; --", "query"
+                                            result = (
+                                                await validator.validate_input(
+                                                    "'; DROP TABLE users; --",
+                                                    "query",
+                                                )
                                             )
 
                                             assert result.is_valid is False
@@ -357,7 +374,9 @@ class TestComprehensiveInputValidator:
         """Test validation with child safety violations."""
         with patch.object(validator, "detect_sql_injection", return_value=[]):
             with patch.object(validator, "detect_xss", return_value=[]):
-                with patch.object(validator, "detect_path_traversal", return_value=[]):
+                with patch.object(
+                    validator, "detect_path_traversal", return_value=[]
+                ):
                     with patch.object(
                         validator, "detect_command_injection", return_value=[]
                     ):
@@ -365,7 +384,9 @@ class TestComprehensiveInputValidator:
                             validator, "detect_ldap_injection", return_value=[]
                         ):
                             with patch.object(
-                                validator, "detect_template_injection", return_value=[]
+                                validator,
+                                "detect_template_injection",
+                                return_value=[],
                             ):
                                 with patch.object(
                                     validator,
@@ -382,13 +403,19 @@ class TestComprehensiveInputValidator:
                                             "detect_encoding_attacks",
                                             return_value=[],
                                         ):
-                                            result = await validator.validate_input(
-                                                "inappropriate content", "message"
+                                            result = (
+                                                await validator.validate_input(
+                                                    "inappropriate content",
+                                                    "message",
+                                                )
                                             )
 
                                             assert result.is_valid is False
                                             assert (
-                                                len(result.child_safety_violations) == 2
+                                                len(
+                                                    result.child_safety_violations
+                                                )
+                                                == 2
                                             )
                                             assert (
                                                 "profanity"
@@ -406,13 +433,18 @@ class TestComprehensiveInputValidator:
             "command_injection", "critical", "field", "value", "Critical"
         )
         high_threat = SecurityThreat(
-            "sql_injection", "high", "field", "value", "High")
+            "sql_injection", "high", "field", "value", "High"
+        )
 
         # Test critical threat
         with patch.object(
-            validator, "detect_command_injection", return_value=[critical_threat]
+            validator,
+            "detect_command_injection",
+            return_value=[critical_threat],
         ):
-            with patch.object(validator, "detect_sql_injection", return_value=[]):
+            with patch.object(
+                validator, "detect_sql_injection", return_value=[]
+            ):
                 with patch.object(validator, "detect_xss", return_value=[]):
                     with patch.object(
                         validator, "detect_path_traversal", return_value=[]
@@ -421,7 +453,9 @@ class TestComprehensiveInputValidator:
                             validator, "detect_ldap_injection", return_value=[]
                         ):
                             with patch.object(
-                                validator, "detect_template_injection", return_value=[]
+                                validator,
+                                "detect_template_injection",
+                                return_value=[],
                             ):
                                 with patch.object(
                                     validator,
@@ -429,22 +463,31 @@ class TestComprehensiveInputValidator:
                                     return_value=[],
                                 ):
                                     with patch.object(
-                                        validator, "detect_pii", return_value=[]
+                                        validator,
+                                        "detect_pii",
+                                        return_value=[],
                                     ):
                                         with patch.object(
                                             validator,
                                             "detect_encoding_attacks",
                                             return_value=[],
                                         ):
-                                            result = await validator.validate_input(
-                                                "rm -rf /", "command"
+                                            result = (
+                                                await validator.validate_input(
+                                                    "rm -rf /", "command"
+                                                )
                                             )
 
                                             assert result.is_valid is False
-                                            assert result.has_critical_threats is True
+                                            assert (
+                                                result.has_critical_threats
+                                                is True
+                                            )
 
         # Test high threat
-        with patch.object(validator, "detect_command_injection", return_value=[]):
+        with patch.object(
+            validator, "detect_command_injection", return_value=[]
+        ):
             with patch.object(
                 validator, "detect_sql_injection", return_value=[high_threat]
             ):
@@ -456,7 +499,9 @@ class TestComprehensiveInputValidator:
                             validator, "detect_ldap_injection", return_value=[]
                         ):
                             with patch.object(
-                                validator, "detect_template_injection", return_value=[]
+                                validator,
+                                "detect_template_injection",
+                                return_value=[],
                             ):
                                 with patch.object(
                                     validator,
@@ -464,19 +509,27 @@ class TestComprehensiveInputValidator:
                                     return_value=[],
                                 ):
                                     with patch.object(
-                                        validator, "detect_pii", return_value=[]
+                                        validator,
+                                        "detect_pii",
+                                        return_value=[],
                                     ):
                                         with patch.object(
                                             validator,
                                             "detect_encoding_attacks",
                                             return_value=[],
                                         ):
-                                            result = await validator.validate_input(
-                                                "'; DROP TABLE users; --", "query"
+                                            result = (
+                                                await validator.validate_input(
+                                                    "'; DROP TABLE users; --",
+                                                    "query",
+                                                )
                                             )
 
                                             assert result.is_valid is False
-                                            assert result.has_critical_threats is False
+                                            assert (
+                                                result.has_critical_threats
+                                                is False
+                                            )
 
 
 class TestInputValidationMiddleware:
@@ -554,7 +607,8 @@ class TestInputValidationMiddleware:
 
     @pytest.mark.asyncio
     async def test_dispatch_skip_validation_endpoints(
-            self, middleware, mock_request):
+        self, middleware, mock_request
+    ):
         """Test that validation is skipped for certain endpoints."""
         mock_request.url.path = "/health"
 
@@ -630,7 +684,11 @@ class TestInputValidationMiddleware:
 
         # Mock validator to return critical threat
         critical_threat = SecurityThreat(
-            "sql_injection", "critical", "param", "malicious_value", "SQL injection"
+            "sql_injection",
+            "critical",
+            "param",
+            "malicious_value",
+            "SQL injection",
         )
         mock_validator.validate_input.return_value = InputValidationResult(
             is_valid=False, threats=[critical_threat]
@@ -711,13 +769,25 @@ class TestInputValidationMiddleware:
         # Mock validator to return multiple medium threats
         threats = [
             SecurityThreat(
-                "suspicious_pattern", "medium", "param", "value", "Suspicious pattern 1"
+                "suspicious_pattern",
+                "medium",
+                "param",
+                "value",
+                "Suspicious pattern 1",
             ),
             SecurityThreat(
-                "suspicious_pattern", "medium", "param", "value", "Suspicious pattern 2"
+                "suspicious_pattern",
+                "medium",
+                "param",
+                "value",
+                "Suspicious pattern 2",
             ),
             SecurityThreat(
-                "suspicious_pattern", "medium", "param", "value", "Suspicious pattern 3"
+                "suspicious_pattern",
+                "medium",
+                "param",
+                "value",
+                "Suspicious pattern 3",
             ),
         ]
         mock_validator.validate_input.return_value = InputValidationResult(
@@ -782,7 +852,8 @@ class TestInputValidationMiddleware:
         """Test JSON request body parsing."""
         mock_request.headers = {"content-type": "application/json"}
         mock_request.body = AsyncMock(
-            return_value=b'{"key": "value", "number": 42}')
+            return_value=b'{"key": "value", "number": 42}'
+        )
 
         body = await middleware._get_request_body(mock_request)
 
@@ -792,7 +863,8 @@ class TestInputValidationMiddleware:
     async def test_get_request_body_form_data(self, middleware, mock_request):
         """Test form data request body parsing."""
         mock_request.headers = {
-            "content-type": "application/x-www-form-urlencoded"}
+            "content-type": "application/x-www-form-urlencoded"
+        }
         mock_form = {"field1": "value1", "field2": "value2"}
         mock_request.form = AsyncMock(return_value=mock_form)
 
@@ -813,7 +885,8 @@ class TestInputValidationMiddleware:
 
     @pytest.mark.asyncio
     async def test_get_request_body_parse_error(
-            self, middleware, mock_request):
+        self, middleware, mock_request
+    ):
         """Test request body parsing error handling."""
         mock_request.headers = {"content-type": "application/json"}
         mock_request.body = AsyncMock(side_effect=Exception("Parse error"))
@@ -867,7 +940,9 @@ class TestInputValidationMiddleware:
         ]
         context = {"is_child_endpoint": False}
 
-        should_block = await middleware._should_block_request(threats, [], context)
+        should_block = await middleware._should_block_request(
+            threats, [], context
+        )
 
         assert should_block is True
 
@@ -903,49 +978,42 @@ class TestInputValidationMiddleware:
 
     @pytest.mark.asyncio
     async def test_should_block_request_strict_mode_high_threats(
-            self, middleware):
+        self, middleware
+    ):
         """Test that strict mode blocks high severity threats."""
         middleware.strict_mode = True
         threats = [
-            SecurityThreat(
-                "xss",
-                "high",
-                "field",
-                "value",
-                "High threat")]
+            SecurityThreat("xss", "high", "field", "value", "High threat")
+        ]
         context = {"is_child_endpoint": False}
 
-        should_block = await middleware._should_block_request(threats, [], context)
+        should_block = await middleware._should_block_request(
+            threats, [], context
+        )
 
         assert should_block is True
 
     @pytest.mark.asyncio
     async def test_should_block_request_multiple_medium_threats(
-            self, middleware):
+        self, middleware
+    ):
         """Test that multiple medium threats cause blocking."""
         threats = [
             SecurityThreat(
-                "suspicious1",
-                "medium",
-                "field",
-                "value",
-                "Medium 1"),
+                "suspicious1", "medium", "field", "value", "Medium 1"
+            ),
             SecurityThreat(
-                "suspicious2",
-                "medium",
-                "field",
-                "value",
-                "Medium 2"),
+                "suspicious2", "medium", "field", "value", "Medium 2"
+            ),
             SecurityThreat(
-                "suspicious3",
-                "medium",
-                "field",
-                "value",
-                "Medium 3"),
+                "suspicious3", "medium", "field", "value", "Medium 3"
+            ),
         ]
         context = {"is_child_endpoint": False}
 
-        should_block = await middleware._should_block_request(threats, [], context)
+        should_block = await middleware._should_block_request(
+            threats, [], context
+        )
 
         assert should_block is True
 
@@ -954,21 +1022,17 @@ class TestInputValidationMiddleware:
         """Test that few medium threats don't cause blocking."""
         threats = [
             SecurityThreat(
-                "suspicious1",
-                "medium",
-                "field",
-                "value",
-                "Medium 1"),
+                "suspicious1", "medium", "field", "value", "Medium 1"
+            ),
             SecurityThreat(
-                "suspicious2",
-                "medium",
-                "field",
-                "value",
-                "Medium 2"),
+                "suspicious2", "medium", "field", "value", "Medium 2"
+            ),
         ]
         context = {"is_child_endpoint": False}
 
-        should_block = await middleware._should_block_request(threats, [], context)
+        should_block = await middleware._should_block_request(
+            threats, [], context
+        )
 
         assert should_block is False
 
@@ -1021,11 +1085,15 @@ class TestInputValidationMiddleware:
 
         assert call_args["event_type"] == "input_validation_warning"
         assert call_args["severity"] == "warning"
-        assert "Request processed with security warnings" in call_args["description"]
+        assert (
+            "Request processed with security warnings"
+            in call_args["description"]
+        )
 
     @pytest.mark.asyncio
     async def test_create_security_error_response_child_safety(
-            self, middleware):
+        self, middleware
+    ):
         """Test security error response for child safety violations."""
         threats = []
         child_safety_violations = ["inappropriate_content"]
@@ -1043,7 +1111,8 @@ class TestInputValidationMiddleware:
 
     @pytest.mark.asyncio
     async def test_create_security_error_response_critical_threat(
-            self, middleware):
+        self, middleware
+    ):
         """Test security error response for critical threats."""
         threats = [
             SecurityThreat(
@@ -1063,18 +1132,16 @@ class TestInputValidationMiddleware:
         response_data = json.loads(response.body.decode())
         assert "security_threat_detected" in response_data.get("error", "")
         assert "potentially malicious content" in response_data.get(
-            "message", "")
+            "message", ""
+        )
 
     @pytest.mark.asyncio
     async def test_create_security_error_response_generic(self, middleware):
         """Test generic security error response."""
         threats = [
             SecurityThreat(
-                "suspicious_pattern",
-                "high",
-                "field",
-                "value",
-                "Suspicious")
+                "suspicious_pattern", "high", "field", "value", "Suspicious"
+            )
         ]
         child_safety_violations = []
         context = {"is_child_endpoint": False}
@@ -1091,11 +1158,13 @@ class TestInputValidationMiddleware:
 
     @pytest.mark.asyncio
     async def test_dispatch_middleware_error_handling(
-            self, middleware, mock_request):
+        self, middleware, mock_request
+    ):
         """Test middleware error handling."""
         # Mock validator to raise exception
         middleware.validator.validate_input.side_effect = Exception(
-            "Validation error")
+            "Validation error"
+        )
 
         async def mock_call_next(request):
             return Mock(spec=Response, headers={})
@@ -1144,7 +1213,8 @@ class TestGlobalValidator:
 
             assert result.is_valid is True
             mock_validator.validate_input.assert_called_once_with(
-                "test input", "field")
+                "test input", "field"
+            )
 
     @pytest.mark.asyncio
     async def test_validate_user_input_require_child_safe(self):
@@ -1220,7 +1290,9 @@ class TestBackwardsCompatibilityImports:
 
     def test_comprehensive_input_validator_import(self):
         """Test ComprehensiveInputValidator import."""
-        assert ImportedComprehensiveInputValidator is ComprehensiveInputValidator
+        assert (
+            ImportedComprehensiveInputValidator is ComprehensiveInputValidator
+        )
 
     def test_get_input_validator_import(self):
         """Test get_input_validator import."""
@@ -1304,7 +1376,9 @@ class TestInputValidationIntegration:
                 async def mock_call_next(request):
                     return Mock(spec=Response, headers={})
 
-                response = await middleware.dispatch(mock_request, mock_call_next)
+                response = await middleware.dispatch(
+                    mock_request, mock_call_next
+                )
 
                 assert response.headers.get("X-Input-Validation") == "passed"
                 assert mock_validator.validate_input.called
@@ -1330,7 +1404,8 @@ class TestInputValidationIntegration:
             )
             mock_validator.validate_input = AsyncMock(
                 return_value=InputValidationResult(
-                    False, threats=[critical_threat])
+                    False, threats=[critical_threat]
+                )
             )
             mock_get_validator.return_value = mock_validator
 
@@ -1349,7 +1424,8 @@ class TestInputValidationIntegration:
                 mock_request.url = Mock()
                 mock_request.url.path = "/api/test"
                 mock_request.query_params = {
-                    "param": "'; DROP TABLE users; --"}
+                    "param": "'; DROP TABLE users; --"
+                }
                 mock_request.headers = {"user-agent": "test-agent"}
                 mock_request.client = Mock()
                 mock_request.client.host = "127.0.0.1"
@@ -1357,7 +1433,9 @@ class TestInputValidationIntegration:
                 async def mock_call_next(request):
                     return Mock(spec=Response, headers={})
 
-                response = await middleware.dispatch(mock_request, mock_call_next)
+                response = await middleware.dispatch(
+                    mock_request, mock_call_next
+                )
 
                 assert response.status_code == 400
                 assert "X-Security-Block" in response.headers
@@ -1398,7 +1476,8 @@ class TestInputValidationIntegration:
                 mock_request.url = Mock()
                 mock_request.url.path = "/api/children/chat"
                 mock_request.query_params = {
-                    "message": "inappropriate content"}
+                    "message": "inappropriate content"
+                }
                 mock_request.headers = {"user-agent": "test-agent"}
                 mock_request.client = Mock()
                 mock_request.client.host = "127.0.0.1"
@@ -1406,7 +1485,9 @@ class TestInputValidationIntegration:
                 async def mock_call_next(request):
                     return Mock(spec=Response, headers={})
 
-                response = await middleware.dispatch(mock_request, mock_call_next)
+                response = await middleware.dispatch(
+                    mock_request, mock_call_next
+                )
 
                 assert response.status_code == 400
                 response_data = json.loads(response.body.decode())

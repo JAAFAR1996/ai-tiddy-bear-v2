@@ -168,7 +168,9 @@ class TestComprehensiveAuditIntegration:
             mock_audit_logger.reset_mock()
 
             await audit_integration.log_authentication_event(
-                event_type=auth_type, user_email="test@example.com", success=True
+                event_type=auth_type,
+                user_email="test@example.com",
+                success=True,
             )
 
             # Should handle all types gracefully
@@ -195,7 +197,10 @@ class TestComprehensiveAuditIntegration:
         call_kwargs = mock_audit_logger.log_event.call_args[1]
         assert call_kwargs["category"].value == "authorization"
         assert call_kwargs["severity"].value == "info"
-        assert "Access read on child_profile: granted" in call_kwargs["description"]
+        assert (
+            "Access read on child_profile: granted"
+            in call_kwargs["description"]
+        )
         assert call_kwargs["context"].user_id == "parent_123"
         assert call_kwargs["context"].child_id == "child_456"
         assert call_kwargs["details"]["granted"] is True
@@ -275,7 +280,8 @@ class TestComprehensiveAuditIntegration:
             "read",
             "update",
             "delete",
-            "unknown_operation"]
+            "unknown_operation",
+        ]
 
         for operation in operations:
             mock_audit_logger.reset_mock()
@@ -452,7 +458,8 @@ class TestComprehensiveAuditIntegration:
             "startup",
             "shutdown",
             "config_change",
-            "unknown_system_event"]
+            "unknown_system_event",
+        ]
 
         for event_type in system_events:
             mock_audit_logger.reset_mock()
@@ -511,7 +518,8 @@ class TestComprehensiveAuditIntegration:
 
     @pytest.mark.asyncio
     async def test_audit_authentication_convenience_function(
-            self, mock_audit_logger):
+        self, mock_audit_logger
+    ):
         """Test audit_authentication convenience function."""
         # Clear global instance to ensure clean test
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
@@ -529,7 +537,8 @@ class TestComprehensiveAuditIntegration:
 
     @pytest.mark.asyncio
     async def test_audit_authorization_convenience_function(
-            self, mock_audit_logger):
+        self, mock_audit_logger
+    ):
         """Test audit_authorization convenience function."""
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
 
@@ -564,7 +573,8 @@ class TestComprehensiveAuditIntegration:
 
     @pytest.mark.asyncio
     async def test_audit_coppa_event_convenience_function(
-            self, mock_audit_logger):
+        self, mock_audit_logger
+    ):
         """Test audit_coppa_event convenience function."""
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
 
@@ -585,7 +595,8 @@ class TestComprehensiveAuditIntegration:
 
     @pytest.mark.asyncio
     async def test_audit_security_event_convenience_function(
-            self, mock_audit_logger):
+        self, mock_audit_logger
+    ):
         """Test audit_security_event convenience function."""
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
 
@@ -650,7 +661,11 @@ class TestComprehensiveAuditIntegration:
             (
                 "authz",
                 audit_integration.log_authorization_event(
-                    "workflow_user", "child_profile", "read", True, "workflow_child"
+                    "workflow_user",
+                    "child_profile",
+                    "read",
+                    True,
+                    "workflow_child",
                 ),
             ),
             # 3. User reads child data

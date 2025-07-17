@@ -1,13 +1,9 @@
-"""from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, Any, List, Optional, Set
 import logging
 import secrets
-import uuid.
-"""
-
-"""Comprehensive Parent - Child Access Control Service
-This service ensures that parents can only access data for their own children, implementing COPPA - compliant access controls with comprehensive audit logging."""
+import uuid
 
 from src.infrastructure.logging_config import get_logger
 
@@ -15,7 +11,7 @@ logger = get_logger(__name__, component="security")
 
 
 class AccessLevel(Enum):
-    """Access levels for parent - child relationships."""
+    """Access levels for parent-child relationships."""
 
     FULL_PARENT = "full_parent"  # Primary parent/guardian
     SHARED_PARENT = "shared_parent"  # Secondary parent (divorced, etc.)
@@ -40,15 +36,7 @@ class AccessAction(Enum):
 
 
 class AccessControlService:
-    """COPPA - compliant parent - child access control with comprehensive auditing.
-    Features:
-    - Strict parent - child relationship validation
-    - Multiple access levels(primary parent, shared custody, etc.)
-    - Comprehensive audit logging
-    - Time - limited access tokens
-    - Emergency access controls
-    - Parental consent verification.
-    """
+    """COPPA-compliant parent-child access control with comprehensive auditing."""
 
     def __init__(self) -> None:
         """Initialize access control service."""
@@ -102,7 +90,7 @@ class AccessControlService:
         legal_document_id: Optional[str] = None,
         expiry_date: Optional[datetime] = None,
     ) -> Dict[str, Any]:
-        """Register a parent - child relationship with proper verification."""
+        """Register a parent-child relationship with proper verification."""
         relationship_id = f"rel_{uuid.uuid4().hex[:16]}"
         relationship = {
             "relationship_id": relationship_id,
@@ -137,7 +125,8 @@ class AccessControlService:
             "relationship_id": relationship_id,
             "access_level": access_level.value,
             "permissions": [
-                action.value for action in self.access_permissions[access_level]
+                action.value
+                for action in self.access_permissions[access_level]
             ],
             "expires_at": relationship["expires_at"],
         }
@@ -229,14 +218,18 @@ class AccessControlService:
                 },
             )
 
-            logger.info(f"Access granted: {parent_id} -> {child_id} for {action.value}")
+            logger.info(
+                f"Access granted: {parent_id} -> {child_id} for {action.value}"
+            )
 
             return {
                 "access_granted": True,
                 "access_token": access_token,
                 "access_level": access_level.value,
                 "relationship_id": relationship["relationship_id"],
-                "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat(),
+                "expires_at": (
+                    datetime.utcnow() + timedelta(hours=1)
+                ).isoformat(),
                 "permitted_actions": [act.value for act in allowed_actions],
             }
         except Exception as e:
@@ -258,7 +251,7 @@ class AccessControlService:
         parent_id: str,
         child_id: str,
     ) -> Optional[Dict[str, Any]]:
-        """Find active parent - child relationship."""
+        """Find active parent-child relationship."""
         if parent_id not in self.parent_child_relationships:
             return None
 
@@ -278,7 +271,7 @@ class AccessControlService:
         action: AccessAction,
         relationship: Dict[str, Any],
     ) -> str:
-        """Generate time - limited access token."""
+        """Generate time-limited access token."""
         token_id = secrets.token_urlsafe(32)
         token_data = {
             "token_id": token_id,
@@ -318,7 +311,10 @@ class AccessControlService:
         ):
             return {"valid": False, "reason": "Token mismatch"}
 
-        if action in [AccessAction.DELETE_PROFILE, AccessAction.DELETE_CONVERSATIONS]:
+        if action in [
+            AccessAction.DELETE_PROFILE,
+            AccessAction.DELETE_CONVERSATIONS,
+        ]:
             if token["used"]:
                 return {"valid": False, "reason": "Token already used"}
             token["used"] = True
@@ -394,7 +390,9 @@ class AccessControlService:
             details={"failure_reason": reason},
         )
 
-    async def get_parent_children(self, parent_id: str) -> List[Dict[str, Any]]:
+    async def get_parent_children(
+        self, parent_id: str
+    ) -> List[Dict[str, Any]]:
         """Get all children accessible by a parent."""
         if parent_id not in self.parent_child_relationships:
             return []

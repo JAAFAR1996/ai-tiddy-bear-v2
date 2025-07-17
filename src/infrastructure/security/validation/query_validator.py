@@ -2,33 +2,38 @@
 🔒 SQL Query Validation Service
 Advanced SQL injection prevention and query safety
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
-import logging
 import re
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="security")
+
 
 @dataclass
 class QueryValidationResult:
     """Result of SQL query validation"""
+
     safe: bool
     errors: List[str]
     warnings: List[str]
     sanitized_query: Optional[str] = None
     threat_level: str = "low"  # low, medium, high, critical
 
+
 class SQLQueryValidator:
     """
     Enterprise - grade SQL injection prevention
-    Features: 
-    - Advanced SQL injection pattern detection 
-    - NoSQL injection prevention 
-    - Parameterized query validation 
-    - Query structure analysis 
+    Features:
+    - Advanced SQL injection pattern detection
+    - NoSQL injection prevention
+    - Parameterized query validation
+    - Query structure analysis
     - Threat level assessment
     """
+
     def __init__(self) -> None:
         # Critical SQL injection patterns
         self.critical_patterns = [
@@ -41,17 +46,17 @@ class SQLQueryValidator:
             r"(\b(EXEC|exec|EXECUTE|execute))",
             r"(\b(TRUNCATE|truncate))",
         ]
-        
+
         # High-risk patterns
         self.high_risk_patterns = [
             r"(/\*.*?\*/)",  # SQL comments
-            r"(--\s*.*)",    # SQL line comments
+            r"(--\s*.*)",  # SQL line comments
             r"(;\s*(DROP|DELETE|UPDATE|INSERT|CREATE|ALTER))",  # Chained commands
             r"(\b(OR|or)\s+\w+\s*(=|!=|<>)\s*\w+)",  # OR conditions
             r"(1\s*(=|!=)\s*1)",  # Always true/false
             r"(''\s*(=|!=)\s*'')",  # Empty string comparisons
         ]
-        
+
         # NoSQL injection patterns
         self.nosql_patterns = [
             r"(\$ne|\$eq|\$gt|\$lt|\$gte|\$lte)",
@@ -61,127 +66,176 @@ class SQLQueryValidator:
             r"(function\s*\()",
             r"(ObjectId\s*\()",
         ]
-        
+
         # Safe table whitelist for child safety app
         self.safe_tables = [
-            'parents', 'children', 'conversations', 'messages',
-            'safety_events', 'consents', 'audit_logs'
+            "parents",
+            "children",
+            "conversations",
+            "messages",
+            "safety_events",
+            "consents",
+            "audit_logs",
         ]
-        
+
         logger.info("SQL Query Validator initialized")
 
-    def validate_query_parameters(self, params: Dict[str, Any]) -> QueryValidationResult:
+    def validate_query_parameters(
+        self, params: Dict[str, Any]
+    ) -> QueryValidationResult:
         """Validate query parameters for SQL injection"""
         validation = QueryValidationResult(
-            safe=True,
-            errors=[],
-            warnings=[],
-            threat_level="low"
+            safe=True, errors=[], warnings=[], threat_level="low"
         )
-        
+
         for key, value in params.items():
             if value is None:
                 continue
-            
+
             str_value = str(value)
-            
+
             # Check critical patterns
             for pattern in self.critical_patterns:
                 if re.search(pattern, str_value, re.IGNORECASE):
                     validation.safe = False
-                    validation.errors.append(f"Critical SQL injection pattern in '{key}': {pattern}")
+                    validation.errors.append(
+                        f"Critical SQL injection pattern in '{key}': {pattern}"
+                    )
                     validation.threat_level = "critical"
-                    logger.error(f"Critical SQL injection attempt: {key}={str_value[:100]}")
-            
+                    logger.error(
+                        f"Critical SQL injection attempt: {key}={str_value[:100]}"
+                    )
+
             # Check high-risk patterns
             for pattern in self.high_risk_patterns:
                 if re.search(pattern, str_value, re.IGNORECASE):
                     validation.safe = False
-                    validation.errors.append(f"High-risk SQL pattern in '{key}': {pattern}")
-                    validation.threat_level = "high" if validation.threat_level != "critical" else "critical"
-                    logger.warning(f"High-risk SQL pattern detected: {key}={str_value[:100]}")
-            
+                    validation.errors.append(
+                        f"High-risk SQL pattern in '{key}': {pattern}"
+                    )
+                    validation.threat_level = (
+                        "high"
+                        if validation.threat_level != "critical"
+                        else "critical"
+                    )
+                    logger.warning(
+                        f"High-risk SQL pattern detected: {key}={str_value[:100]}"
+                    )
+
             # Check NoSQL patterns
             for pattern in self.nosql_patterns:
                 if re.search(pattern, str_value, re.IGNORECASE):
                     validation.safe = False
-                    validation.errors.append(f"NoSQL injection pattern in '{key}': {pattern}")
+                    validation.errors.append(
+                        f"NoSQL injection pattern in '{key}': {pattern}"
+                    )
                     if validation.threat_level == "low":
                         validation.threat_level = "medium"
-                    logger.warning(f"NoSQL injection attempt: {key}={str_value[:100]}")
-        
+                    logger.warning(
+                        f"NoSQL injection attempt: {key}={str_value[:100]}"
+                    )
+
         return validation
 
     def validate_table_name(self, table_name: str) -> bool:
         """Validate table name against whitelist"""
         # Must be alphanumeric with underscores
-        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
+        if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", table_name):
             logger.warning(f"Invalid table name format: {table_name}")
             return False
-        
+
         # Must be in whitelist
         if table_name not in self.safe_tables:
             logger.warning(f"Table name not in safe whitelist: {table_name}")
             return False
-        
+
         return True
 
     def validate_column_name(self, column_name: str) -> bool:
         """Validate column name format"""
-        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', column_name):
+        if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", column_name):
             logger.warning(f"Invalid column name format: {column_name}")
             return False
-        
+
         # Check for SQL reserved words
         sql_reserved = [
-            'SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE', 'DROP',
-            'CREATE', 'ALTER', 'UNION', 'EXEC', 'EXECUTE', 'DECLARE', 'CAST'
+            "SELECT",
+            "FROM",
+            "WHERE",
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "DROP",
+            "CREATE",
+            "ALTER",
+            "UNION",
+            "EXEC",
+            "EXECUTE",
+            "DECLARE",
+            "CAST",
         ]
         if column_name.upper() in sql_reserved:
             logger.warning(f"Column name is SQL reserved word: {column_name}")
             return False
-        
+
         return True
 
-    def create_safe_where_clause(self, conditions: Dict[str, Any]) -> Tuple[str, List[Any]]:
+    def create_safe_where_clause(
+        self, conditions: Dict[str, Any]
+    ) -> Tuple[str, List[Any]]:
         """Create safe parameterized WHERE clause"""
         where_parts = []
         params = []
-        
+
         for column, value in conditions.items():
             # Validate column name
             if not self.validate_column_name(column):
                 raise ValueError(f"Invalid column name: {column}")
-            
+
             # Validate value safety
             if isinstance(value, str):
-                param_validation = self.validate_query_parameters({column: value})
+                param_validation = self.validate_query_parameters(
+                    {column: value}
+                )
                 if not param_validation.safe:
-                    raise ValueError(f"Unsafe value for column {column}: {param_validation.errors}")
-            
+                    raise ValueError(
+                        f"Unsafe value for column {column}: {param_validation.errors}"
+                    )
+
             where_parts.append(f"{column} = ?")
             params.append(value)
-        
+
         where_clause = " AND ".join(where_parts) if where_parts else "1=1"
         return where_clause, params
 
-    def log_security_event(self, event_type: str, details: Dict[str, Any], severity: str = "medium") -> None:
+    def log_security_event(
+        self,
+        event_type: str,
+        details: Dict[str, Any],
+        severity: str = "medium",
+    ) -> None:
         """Log security event for monitoring"""
         security_event = {
             "timestamp": datetime.utcnow().isoformat(),
             "event_type": event_type,
             "severity": severity,
             "details": details,
-            "source": "sql_query_validator"
+            "source": "sql_query_validator",
         }
-        
+
         if severity in ["high", "critical"]:
-            logger.error(f"Security Event ({severity}): {event_type} - {details}")
+            logger.error(
+                f"Security Event ({severity}): {event_type} - {details}"
+            )
         else:
-            logger.warning(f"Security Event ({severity}): {event_type} - {details}")
+            logger.warning(
+                f"Security Event ({severity}): {event_type} - {details}"
+            )
+
 
 # Global instance
 _query_validator: Optional[SQLQueryValidator] = None
+
 
 def get_query_validator() -> SQLQueryValidator:
     """Get global query validator instance"""

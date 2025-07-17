@@ -93,7 +93,9 @@ async def error_handler_middleware(request: Request, call_next) -> Response:
         )
 
 
-def handle_exception(exc: Exception, error_id: str, path: str) -> ErrorResponse:
+def handle_exception(
+    exc: Exception, error_id: str, path: str
+) -> ErrorResponse:
     """Handle specific exception types and return appropriate error responses."""
     # Validation errors (422)
     if isinstance(exc, RequestValidationError):
@@ -162,7 +164,9 @@ def handle_exception(exc: Exception, error_id: str, path: str) -> ErrorResponse:
     if isinstance(exc, ValueError):
         return ErrorResponse(
             error_id=error_id,
-            message=str(exc) if len(str(exc)) < 100 else "Invalid input provided",
+            message=(
+                str(exc) if len(str(exc)) < 100 else "Invalid input provided"
+            ),
             status_code=status.HTTP_400_BAD_REQUEST,
             path=path,
         )
@@ -193,14 +197,18 @@ def handle_exception(exc: Exception, error_id: str, path: str) -> ErrorResponse:
     # Default: Internal server error (500)
     # In production, never expose internal error details
     message = (
-        "An unexpected error occurred" if not settings.application.DEBUG else str(exc)
+        "An unexpected error occurred"
+        if not settings.application.DEBUG
+        else str(exc)
     )
     return ErrorResponse(
         error_id=error_id,
         message=message,
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         details=(
-            {"exception": type(exc).__name__} if settings.application.DEBUG else None
+            {"exception": type(exc).__name__}
+            if settings.application.DEBUG
+            else None
         ),
         path=path,
     )

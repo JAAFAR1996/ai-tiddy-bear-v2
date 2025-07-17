@@ -21,7 +21,9 @@ class SecureLogger:
 
     def __init__(self, name: str) -> None:
         self._logger = get_logger(name, component="security")
-        self._salt = "teddy_bear_secure_log_2025"  # Static salt for consistent hashing
+        self._salt = (
+            "teddy_bear_secure_log_2025"  # Static salt for consistent hashing
+        )
 
     def _sanitize_child_id(self, child_id: str) -> str:
         """Convert child_id to a safe hash for logging."""
@@ -95,7 +97,9 @@ class SecureLogger:
             r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\b": lambda m: self._sanitize_email(
                 m.group(0),
             ),
-            r"\\+?[\\d\\s\\-\\(\\)]{10,}": lambda m: self._sanitize_phone(m.group(0)),
+            r"\\+?[\\d\\s\\-\\(\\)]{10,}": lambda m: self._sanitize_phone(
+                m.group(0)
+            ),
             r"\bchild_[a-zA-Z0-9\\-_]{8,}": lambda m: self._sanitize_child_id(
                 m.group(0),
             ),
@@ -163,12 +167,16 @@ def log_child_activity(
     logger = get_secure_logger("child_activity")
     safe_child_id = logger._sanitize_child_id(child_id)
     if details:
-        logger.info(f"Child activity: {safe_child_id} - {activity} - {details}")
+        logger.info(
+            f"Child activity: {safe_child_id} - {activity} - {details}"
+        )
     else:
         logger.info(f"Child activity: {safe_child_id} - {activity}")
 
 
-def log_parent_action(parent_id: str, action: str, child_id: str | None = None) -> None:
+def log_parent_action(
+    parent_id: str, action: str, child_id: str | None = None
+) -> None:
     """Log parent action with automatic ID sanitization."""
     logger = get_secure_logger("parent_activity")
     safe_parent_id = logger._sanitize_parent_id(parent_id)
@@ -195,10 +203,14 @@ def log_safety_event(
             f"Safety event: {safe_child_id} - {event_type} ({severity}) - {details}",
         )
     else:
-        logger.warning(f"Safety event: {safe_child_id} - {event_type} ({severity})")
+        logger.warning(
+            f"Safety event: {safe_child_id} - {event_type} ({severity})"
+        )
 
 
-def log_coppa_event(child_id: str, event_type: str, consent_status: str) -> None:
+def log_coppa_event(
+    child_id: str, event_type: str, consent_status: str
+) -> None:
     """Log COPPA compliance event with sanitization
     COPPA CONDITIONAL: Only logs when COPPA compliance is enabled.
     """
@@ -231,14 +243,18 @@ def secure_log_call(func: Callable) -> Callable:
             else:
                 sanitized_args.append(str(arg)[:50])  # Truncate long args
 
-        logger.debug(f"Function call: {func.__name__}({', '.join(sanitized_args)})")
+        logger.debug(
+            f"Function call: {func.__name__}({', '.join(sanitized_args)})"
+        )
 
         try:
             result = func(*args, **kwargs)
             logger.debug(f"Function success: {func.__name__}")
             return result
         except Exception as e:
-            logger.error(f"Function error: {func.__name__} - {type(e).__name__}")
+            logger.error(
+                f"Function error: {func.__name__} - {type(e).__name__}"
+            )
             raise
 
     return wrapper
@@ -329,4 +345,6 @@ if __name__ == "__main__":
     logger.info(f"Testing email logging: {test_email}")
     logger.info(f"Testing phone logging: {test_phone}")
 
-    logger.info("✅ Secure logging tests completed - check logs for sanitized output")
+    logger.info(
+        "✅ Secure logging tests completed - check logs for sanitized output"
+    )

@@ -1,8 +1,7 @@
-"""from datetime import datetime
+from datetime import datetime
 from typing import Dict, List, Optional, Any
 import logging
-from .chatgpt_client import ChatGPTClient.
-"""
+from .chatgpt_client import ChatGPTClient
 
 """ChatGPT service with COPPA compliance management"""
 
@@ -86,8 +85,13 @@ class ChatGPTService:
         child_profile: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Generate personalized story for child."""
-        story_prompt = f"Tell me a short, fun story about {theme} suitable for a {child_profile.get('age', 6)}-year-old"
-        return await self.chat_with_child(child_id, story_prompt, child_profile)
+        story_prompt = (
+            f"Tell me a short, fun story about {theme} suitable for a "
+            f"{child_profile.get('age', 6)}-year-old"
+        )
+        return await self.chat_with_child(
+            child_id, story_prompt, child_profile
+        )
 
     async def answer_question(
         self,
@@ -96,8 +100,13 @@ class ChatGPTService:
         child_profile: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Answer child's questions in an educational way."""
-        educational_prompt = f"Please explain this in a simple, educational way for a {child_profile.get('age', 6)} - year - old: {question}"
-        return await self.chat_with_child(child_id, educational_prompt, child_profile)
+        educational_prompt = (
+            f"Please explain this in a simple, educational way for a "
+            f"{child_profile.get('age', 6)}-year-old: {question}"
+        )
+        return await self.chat_with_child(
+            child_id, educational_prompt, child_profile
+        )
 
     async def get_conversation_history(
         self,

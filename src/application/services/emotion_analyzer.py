@@ -63,12 +63,18 @@ class EmotionAnalyzer:
             # Placeholder for actual text emotion analysis logic
             self.logger.debug(f"Analyzing text for emotions: {text[:50]}...")
             if "happy" in text.lower():
-                return EmotionResult("happiness", 0.9, {"happiness": 0.9}, 0.5, 0.8)
+                return EmotionResult(
+                    "happiness", 0.9, {"happiness": 0.9}, 0.5, 0.8
+                )
             if "sad" in text.lower():
-                return EmotionResult("sadness", 0.8, {"sadness": 0.8}, -0.5, -0.7)
+                return EmotionResult(
+                    "sadness", 0.8, {"sadness": 0.8}, -0.5, -0.7
+                )
             return EmotionResult("neutral", 0.5, {}, 0.0, 0.0)
         except Exception as e:
-            self.logger.error(f"Error during text emotion analysis: {e}", exc_info=True)
+            self.logger.error(
+                f"Error during text emotion analysis: {e}", exc_info=True
+            )
             return EmotionResult("error", 0.0, {}, 0.0, 0.0)
 
     async def analyze_multimodal(

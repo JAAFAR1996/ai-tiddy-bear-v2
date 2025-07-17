@@ -64,18 +64,30 @@ class ComprehensiveInputValidator(ThreatDetectors):
                 text_data = str(data)
 
             # Check for security threats
-            threats.extend(await self.detect_sql_injection(text_data, field_name))
+            threats.extend(
+                await self.detect_sql_injection(text_data, field_name)
+            )
             threats.extend(await self.detect_xss(text_data, field_name))
-            threats.extend(await self.detect_path_traversal(text_data, field_name))
-            threats.extend(await self.detect_command_injection(text_data, field_name))
-            threats.extend(await self.detect_ldap_injection(text_data, field_name))
-            threats.extend(await self.detect_template_injection(text_data, field_name))
+            threats.extend(
+                await self.detect_path_traversal(text_data, field_name)
+            )
+            threats.extend(
+                await self.detect_command_injection(text_data, field_name)
+            )
+            threats.extend(
+                await self.detect_ldap_injection(text_data, field_name)
+            )
+            threats.extend(
+                await self.detect_template_injection(text_data, field_name)
+            )
 
             # Check for child safety issues
             child_safety_violations.extend(
                 await self.detect_inappropriate_content(text_data, field_name),
             )
-            child_safety_violations.extend(await self.detect_pii(text_data, field_name))
+            child_safety_violations.extend(
+                await self.detect_pii(text_data, field_name)
+            )
 
             # Validate input size
             if len(text_data) > 100000:  # 100KB limit
@@ -90,7 +102,9 @@ class ComprehensiveInputValidator(ThreatDetectors):
                 )
 
             # Check for encoding attacks
-            threats.extend(await self.detect_encoding_attacks(text_data, field_name))
+            threats.extend(
+                await self.detect_encoding_attacks(text_data, field_name)
+            )
 
             # Determine if input is valid
             critical_threats = [t for t in threats if t.severity == "critical"]
@@ -146,4 +160,6 @@ async def validate_user_input(
 
 async def validate_child_message(message: str) -> InputValidationResult:
     """Validate message content for child safety."""
-    return await validate_user_input(message, "message", require_child_safe=True)
+    return await validate_user_input(
+        message, "message", require_child_safe=True
+    )

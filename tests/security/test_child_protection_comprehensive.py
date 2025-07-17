@@ -83,7 +83,9 @@ except ImportError:
 Codacy compliance: Provide local mocks for missing services/exceptions if import fails
 """
 try:
-    from application.services.content_filter_service import ContentFilterService
+    from application.services.content_filter_service import (
+        ContentFilterService,
+    )
 except ImportError:
 
     class ContentFilterService:
@@ -174,7 +176,11 @@ except ImportError:
 
     class SafetyService:
         async def check_message(self, child_id, message):
-            return {"action": "ALLOW", "alert_parent": False, "severity": "LOW"}
+            return {
+                "action": "ALLOW",
+                "alert_parent": False,
+                "severity": "LOW",
+            }
 
         async def ai_moderation_check(self, message, child_age):
             return {"passed": True}
@@ -231,7 +237,6 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
     async def cleanup_services(self):
         """Cleanup test services"""
         # Clean up any test data
-        pass
 
     async def cleanup(self):
         """Cleanup after each test"""
@@ -263,7 +268,8 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             child_age=child.age,
             context={
                 "interaction_type": "voice_chat",
-                "timestamp": datetime.utcnow()},
+                "timestamp": datetime.utcnow(),
+            },
         )
 
         # Assert
@@ -424,7 +430,10 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             )
 
             # Layer 3: AI moderation (if passed previous checks)
-            if content_result["is_safe"] and safety_result["action"] != "BLOCK":
+            if (
+                content_result["is_safe"]
+                and safety_result["action"] != "BLOCK"
+            ):
                 ai_result = await self.safety_system.ai_moderation_check(
                     message=message, child_age=child.age
                 )
@@ -460,7 +469,10 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
         age_content_map = {
             5: ["Let's count animals!", "What color is the sky?"],
             7: ["Let's learn multiplication!", "How do plants grow?"],
-            10: ["Let's explore the solar system!", "What causes earthquakes?"],
+            10: [
+                "Let's explore the solar system!",
+                "What causes earthquakes?",
+            ],
         }
 
         for age, appropriate_content in age_content_map.items():

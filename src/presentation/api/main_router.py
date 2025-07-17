@@ -17,7 +17,9 @@ logger = get_logger(__name__, component="api")
 # Import all endpoint routers
 from src.presentation.api.endpoints.auth import router as auth_router
 from src.presentation.api.endpoints.children import router as children_router
-from src.presentation.api.endpoints.conversations import router as conversations_router
+from src.presentation.api.endpoints.conversations import (
+    router as conversations_router,
+)
 
 # Create main API router
 api_router = APIRouter(prefix="/api/v1")

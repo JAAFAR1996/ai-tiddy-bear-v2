@@ -73,7 +73,9 @@ async def login(
     request: LoginRequest,
     client_ip: str = Depends(get_client_ip),
     auth_service: ProductionAuthService = Depends(container.auth_service),
-    rate_limiter_service: RateLimiterService = Depends(container.rate_limiter_service),
+    rate_limiter_service: RateLimiterService = Depends(
+        container.rate_limiter_service
+    ),
 ):
     """User login with rate limiting protection
     Authenticate user credentials and return JWT tokens with comprehensive security measures.
@@ -96,7 +98,9 @@ async def login(
             },
         )
 
-    user = await auth_service.authenticate_user(request.email, request.password)
+    user = await auth_service.authenticate_user(
+        request.email, request.password
+    )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -125,7 +129,9 @@ async def register(
     request: RegisterRequest,
     client_ip: str = Depends(get_client_ip),
     auth_service: ProductionAuthService = Depends(container.auth_service),
-    rate_limiter_service: RateLimiterService = Depends(container.rate_limiter_service),
+    rate_limiter_service: RateLimiterService = Depends(
+        container.rate_limiter_service
+    ),
 ):
     """Register a new user."""
     # Rate limiting for registration (stricter than login)
@@ -191,7 +197,9 @@ async def refresh_token(
     request: RefreshTokenRequest,
     client_ip: str = Depends(get_client_ip),
     auth_service: ProductionAuthService = Depends(container.auth_service),
-    rate_limiter_service: RateLimiterService = Depends(container.rate_limiter_service),
+    rate_limiter_service: RateLimiterService = Depends(
+        container.rate_limiter_service
+    ),
 ):
     """Refresh access token."""
     # Rate limiting for token refresh (10 attempts per hour per IP)

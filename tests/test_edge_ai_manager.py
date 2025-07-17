@@ -218,12 +218,15 @@ class TestEdgeAIManager:
         await edge_ai_manager.initialize()
 
         # Test with high energy audio (should trigger wake word)
-        high_energy_audio = np.random.uniform(-0.5,
-                                              0.5, 16000).astype(np.float32)
+        high_energy_audio = np.random.uniform(-0.5, 0.5, 16000).astype(
+            np.float32
+        )
         (
             detected,
             confidence,
-        ) = await edge_ai_manager.wake_word_detector.detect_wake_word(high_energy_audio)
+        ) = await edge_ai_manager.wake_word_detector.detect_wake_word(
+            high_energy_audio
+        )
 
         assert isinstance(detected, bool)
         assert 0.0 <= confidence <= 1.0
@@ -250,8 +253,10 @@ class TestEdgeAIManager:
         )
 
         # Analyze emotion
-        emotion_result = await edge_ai_manager.emotion_analyzer.analyze_emotion(
-            mock_features
+        emotion_result = (
+            await edge_ai_manager.emotion_analyzer.analyze_emotion(
+                mock_features
+            )
         )
 
         assert isinstance(emotion_result, EdgeEmotionResult)
@@ -307,8 +312,10 @@ class TestEdgeAIManager:
         assert 0.0 <= safety_result.safety_score <= 1.0
 
         # Test with potentially unsafe text
-        unsafe_safety_result = await edge_ai_manager.safety_checker.check_safety(
-            mock_features, "I hate this stupid thing"
+        unsafe_safety_result = (
+            await edge_ai_manager.safety_checker.check_safety(
+                mock_features, "I hate this stupid thing"
+            )
         )
 
         assert isinstance(unsafe_safety_result, EdgeSafetyResult)
@@ -345,12 +352,18 @@ class TestEdgeAIManager:
         # Test low memory device optimization
         low_mem_specs = {"memory_mb": 128, "cpu_cores": 1}
         edge_ai_manager.optimize_for_device(low_mem_specs)
-        assert edge_ai_manager.config.processing_mode == EdgeProcessingMode.POWER_SAVE
+        assert (
+            edge_ai_manager.config.processing_mode
+            == EdgeProcessingMode.POWER_SAVE
+        )
 
         # Test high memory device optimization
         high_mem_specs = {"memory_mb": 1024, "cpu_cores": 4}
         edge_ai_manager.optimize_for_device(high_mem_specs)
-        assert edge_ai_manager.config.processing_mode == EdgeProcessingMode.BALANCED
+        assert (
+            edge_ai_manager.config.processing_mode
+            == EdgeProcessingMode.BALANCED
+        )
 
     @pytest.mark.asyncio
     async def test_processing_modes(self, edge_ai_manager):
@@ -362,11 +375,15 @@ class TestEdgeAIManager:
         audio_data = np.random.uniform(-1, 1, 16000).astype(np.float32)
 
         # Test ultra low latency mode
-        edge_ai_manager.config.processing_mode = EdgeProcessingMode.ULTRA_LOW_LATENCY
+        edge_ai_manager.config.processing_mode = (
+            EdgeProcessingMode.ULTRA_LOW_LATENCY
+        )
         result_fast = await edge_ai_manager.process_on_edge(audio_data)
 
         # Test high accuracy mode
-        edge_ai_manager.config.processing_mode = EdgeProcessingMode.HIGH_ACCURACY
+        edge_ai_manager.config.processing_mode = (
+            EdgeProcessingMode.HIGH_ACCURACY
+        )
         result_accurate = await edge_ai_manager.process_on_edge(audio_data)
 
         # Both should work but potentially with different processing times
@@ -407,7 +424,9 @@ class TestEdgeProcessingModes:
         if not EDGE_AI_IMPORTS_AVAILABLE:
             pytest.skip(f"Edge AI imports not available: {import_error}")
 
-        assert EdgeProcessingMode.ULTRA_LOW_LATENCY.value == "ultra_low_latency"
+        assert (
+            EdgeProcessingMode.ULTRA_LOW_LATENCY.value == "ultra_low_latency"
+        )
         assert EdgeProcessingMode.BALANCED.value == "balanced"
         assert EdgeProcessingMode.HIGH_ACCURACY.value == "high_accuracy"
         assert EdgeProcessingMode.POWER_SAVE.value == "power_save"
@@ -505,7 +524,8 @@ class TestPerformanceOptimization:
             pytest.skip(f"Edge AI imports not available: {import_error}")
 
         config = EdgeModelConfig(
-            processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY)
+            processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY
+        )
         manager = EdgeAIManager(config)
         await manager.initialize()
 

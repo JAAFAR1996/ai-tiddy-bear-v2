@@ -4,7 +4,6 @@ Testing COPPA-compliant consent management data structures.
 """
 
 import pytest
-from datetime import datetime
 from dataclasses import asdict
 
 from src.application.services.consent.consent_models import (
@@ -22,9 +21,15 @@ class TestVerificationMethod:
         """Test VerificationMethod enum values."""
         assert VerificationMethod.EMAIL_VERIFICATION == "email_verification"
         assert VerificationMethod.SMS_VERIFICATION == "sms_verification"
-        assert VerificationMethod.CREDIT_CARD_VERIFICATION == "credit_card_verification"
+        assert (
+            VerificationMethod.CREDIT_CARD_VERIFICATION
+            == "credit_card_verification"
+        )
         assert VerificationMethod.DIGITAL_SIGNATURE == "digital_signature"
-        assert VerificationMethod.VIDEO_CALL_VERIFICATION == "video_call_verification"
+        assert (
+            VerificationMethod.VIDEO_CALL_VERIFICATION
+            == "video_call_verification"
+        )
         assert (
             VerificationMethod.GOVERNMENT_ID_VERIFICATION
             == "government_id_verification"
@@ -50,7 +55,9 @@ class TestVerificationMethod:
             str(VerificationMethod.EMAIL_VERIFICATION)
             == "VerificationMethod.EMAIL_VERIFICATION"
         )
-        assert VerificationMethod.EMAIL_VERIFICATION.value == "email_verification"
+        assert (
+            VerificationMethod.EMAIL_VERIFICATION.value == "email_verification"
+        )
 
 
 class TestVerificationStatus:
@@ -175,7 +182,10 @@ class TestConsentRecord:
         # Test dataclass conversion to dict
         record_dict = asdict(sample_consent_record)
         assert isinstance(record_dict, dict)
-        assert record_dict["consent_id"] == "consent_parent123_child456_feature_audio"
+        assert (
+            record_dict["consent_id"]
+            == "consent_parent123_child456_feature_audio"
+        )
         assert record_dict["parent_id"] == "parent123"
 
     def test_consent_record_equality(self):
@@ -214,7 +224,8 @@ class TestConsentRecord:
         assert record1 != record3
 
     def test_consent_record_coppa_compliance_fields(
-            self, sample_consent_record):
+        self, sample_consent_record
+    ):
         """Test that ConsentRecord includes COPPA-required fields."""
         # COPPA requires tracking of consent details
         assert hasattr(sample_consent_record, "parent_id")
@@ -350,17 +361,21 @@ class TestVerificationAttempt:
         assert attempt.completed_at is not None
 
     def test_verification_attempt_dataclass_behavior(
-            self, sample_verification_attempt):
+        self, sample_verification_attempt
+    ):
         """Test dataclass behavior of VerificationAttempt."""
         # Test field access
         assert sample_verification_attempt.attempt_id == "attempt_123"
         assert (
-            sample_verification_attempt.method == VerificationMethod.EMAIL_VERIFICATION
+            sample_verification_attempt.method
+            == VerificationMethod.EMAIL_VERIFICATION
         )
 
         # Test field modification
         sample_verification_attempt.status = VerificationStatus.VERIFIED
-        assert sample_verification_attempt.status == VerificationStatus.VERIFIED
+        assert (
+            sample_verification_attempt.status == VerificationStatus.VERIFIED
+        )
 
         # Test dataclass conversion to dict
         attempt_dict = asdict(sample_verification_attempt)

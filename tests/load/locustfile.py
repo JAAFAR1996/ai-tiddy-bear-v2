@@ -39,7 +39,12 @@ class AITeddyBearLoadTest(HttpUser):
             json={
                 "child_id": self.child_id,
                 "initial_message": random.choice(
-                    ["مرحبا صديقي", "Hello friend", "كيف حالك؟", "How are you?"]
+                    [
+                        "مرحبا صديقي",
+                        "Hello friend",
+                        "كيف حالك؟",
+                        "How are you?",
+                    ]
                 ),
             },
             headers=self.headers,

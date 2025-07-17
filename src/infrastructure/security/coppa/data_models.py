@@ -15,15 +15,21 @@ class ChildData(BaseModel):
     """Production child data model with comprehensive validation."""
 
     child_id: str = Field(..., description="Unique child identifier")
-    name: str = Field(..., min_length=1, max_length=50, description="Child's name")
+    name: str = Field(
+        ..., min_length=1, max_length=50, description="Child's name"
+    )
     age: int = Field(..., ge=1, le=13, description="Child's age (COPPA limit)")
     date_of_birth: datetime | None = Field(
         None,
         description="Date of birth for precise age calculation",
     )
     parent_id: str = Field(..., description="Parent/guardian identifier")
-    parent_consent: bool = Field(default=False, description="Parental consent status")
-    consent_date: datetime | None = Field(None, description="Date consent was given")
+    parent_consent: bool = Field(
+        default=False, description="Parental consent status"
+    )
+    consent_date: datetime | None = Field(
+        None, description="Date consent was given"
+    )
     consent_type: str = Field(
         default="explicit",
         description="Type of consent obtained",
@@ -60,7 +66,9 @@ class ChildData(BaseModel):
     )
 
     # Privacy and security settings
-    privacy_level: str = Field(default="strict", description="Privacy protection level")
+    privacy_level: str = Field(
+        default="strict", description="Privacy protection level"
+    )
     location_tracking: bool = Field(
         default=False,
         description="Location tracking permission",
@@ -87,12 +95,16 @@ class ChildData(BaseModel):
         if v < MINIMUM_CHILD_AGE:
             raise ValueError(f"Age must be at least {MINIMUM_CHILD_AGE} years")
         if v > COPPA_AGE_THRESHOLD:
-            raise ValueError(f"COPPA applies to children under {COPPA_AGE_THRESHOLD}")
+            raise ValueError(
+                f"COPPA applies to children under {COPPA_AGE_THRESHOLD}"
+            )
         return v
 
     @field_validator("consent_date")
     @classmethod
-    def validate_consent_date(cls, v: datetime | None, info) -> datetime | None:
+    def validate_consent_date(
+        cls, v: datetime | None, info
+    ) -> datetime | None:
         """Validate consent date is not in the future."""
         if v and v > datetime.utcnow():
             raise ValueError("Consent date cannot be in the future")
@@ -122,7 +134,9 @@ class ParentConsent(BaseModel):
         ...,
         description="How consent was verified (email, sms, etc.)",
     )
-    ip_address: str = Field(..., description="IP address where consent was given")
+    ip_address: str = Field(
+        ..., description="IP address where consent was given"
+    )
     user_agent: str = Field(..., description="Browser/device user agent")
 
     # Timing
@@ -130,8 +144,12 @@ class ParentConsent(BaseModel):
         default_factory=datetime.utcnow,
         description="When consent was granted",
     )
-    expires_at: datetime | None = Field(None, description="When consent expires")
-    revoked_at: datetime | None = Field(None, description="When consent was revoked")
+    expires_at: datetime | None = Field(
+        None, description="When consent expires"
+    )
+    revoked_at: datetime | None = Field(
+        None, description="When consent was revoked"
+    )
 
     # Audit trail
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -174,7 +192,9 @@ class AuditLogEntry(BaseModel):
         ...,
         description="Type of event (data_access, consent_change, etc.)",
     )
-    event_description: str = Field(..., description="Detailed description of the event")
+    event_description: str = Field(
+        ..., description="Detailed description of the event"
+    )
 
     # Actor information
     actor_type: str = Field(
@@ -191,7 +211,9 @@ class AuditLogEntry(BaseModel):
     target_id: str = Field(..., description="ID of the affected resource")
 
     # Context
-    ip_address: str | None = Field(None, description="IP address of the request")
+    ip_address: str | None = Field(
+        None, description="IP address of the request"
+    )
     user_agent: str | None = Field(None, description="User agent string")
     session_id: str | None = Field(None, description="Session identifier")
 
@@ -216,7 +238,9 @@ class DataDeletionRequest(BaseModel):
     """Data deletion request for COPPA compliance."""
 
     request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    child_id: str = Field(..., description="Child whose data should be deleted")
+    child_id: str = Field(
+        ..., description="Child whose data should be deleted"
+    )
     parent_id: str = Field(..., description="Parent requesting deletion")
 
     # Request details
@@ -242,7 +266,9 @@ class DataDeletionRequest(BaseModel):
     )
 
     # Status tracking
-    status: str = Field(default="pending", description="Status of deletion request")
+    status: str = Field(
+        default="pending", description="Status of deletion request"
+    )
     verification_required: bool = Field(
         default=True,
         description="Whether parent verification is required",
@@ -257,7 +283,9 @@ class DataDeletionRequest(BaseModel):
         None,
         description="System component that processed the request",
     )
-    processing_notes: str | None = Field(None, description="Notes about the processing")
+    processing_notes: str | None = Field(
+        None, description="Notes about the processing"
+    )
 
 
 # Export all models

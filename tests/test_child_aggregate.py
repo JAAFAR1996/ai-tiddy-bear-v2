@@ -17,7 +17,11 @@ class ChildAggregate:
     """Child aggregate for testing"""
 
     def __init__(
-        self, name: str, age: int, parent_id: str, language_preference: str = "en"
+        self,
+        name: str,
+        age: int,
+        parent_id: str,
+        language_preference: str = "en",
     ):
         self.id = str(uuid.uuid4())
         self.name = name
@@ -38,7 +42,11 @@ class ChildAggregate:
 
         self.active_sessions.append(session_id)
         self._domain_events.append(
-            {"type": "SessionStarted", "child_id": self.id, "session_id": session_id}
+            {
+                "type": "SessionStarted",
+                "child_id": self.id,
+                "session_id": session_id,
+            }
         )
 
 
@@ -48,7 +56,10 @@ class TestChildAggregate:
     def test_child_creation(self):
         """Test creating a child profile"""
         child = ChildAggregate(
-            name="Ahmed", age=7, parent_id="parent-123", language_preference="ar"
+            name="Ahmed",
+            age=7,
+            parent_id="parent-123",
+            language_preference="ar",
         )
 
         assert child.name == "Ahmed"

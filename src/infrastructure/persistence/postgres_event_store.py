@@ -11,9 +11,7 @@ from sqlalchemy.orm import declarative_base
 
 from src.domain.repositories.event_store import EventStore
 from src.infrastructure.persistence.database import Database
-
-"""PostgreSQL Event Store Implementation for Event Sourcing."""
-from src.infrastructure.logging_config import get_logger
+from src.infrastructure.logging_config import get_logger  # <-- نقلناه للأعلى
 
 logger = get_logger(__name__, component="persistence")
 Base = declarative_base()
@@ -25,10 +23,14 @@ class EventModel(Base):
     __tablename__ = "domain_events"
 
     # Primary key
-    event_id: str = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    event_id: str = Column(
+        PGUUID(as_uuid=True), primary_key=True, default=uuid4
+    )
 
     # Event metadata
-    aggregate_id: str = Column(PGUUID(as_uuid=True), nullable=False, index=True)
+    aggregate_id: str = Column(
+        PGUUID(as_uuid=True), nullable=False, index=True
+    )
     aggregate_type: str = Column(String(100), nullable=False, index=True)
     event_type: str = Column(String(100), nullable=False, index=True)
     event_version: int = Column(Integer, nullable=False, default=1)
@@ -41,7 +43,9 @@ class EventModel(Base):
     event_metadata: dict[str, Any] | None = Column(JSONB, nullable=True)
 
     # Timestamps
-    created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: datetime = Column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
 
     # Indexes for performance
     __table_args__ = (
@@ -101,7 +105,9 @@ class PostgresEventStore(EventStore):
                 .order_by(EventModel.sequence_number.asc())
             )
             if after_version is not None:
-                query = query.filter(EventModel.sequence_number > after_version)
+                query = query.filter(
+                    EventModel.sequence_number > after_version
+                )
 
             result = await session.execute(query)
             events = result.scalars().all()

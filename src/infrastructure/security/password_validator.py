@@ -1,7 +1,9 @@
 import re
 from typing import Any
 
-from src.infrastructure.security.registration_models import PasswordRequirements
+from src.infrastructure.security.registration_models import (
+    PasswordRequirements,
+)
 
 
 def validate_password_strength(
@@ -49,7 +51,9 @@ def validate_password_strength(
     # فحص الأرقام
     if req.require_numbers and not re.search(r"\d", password):
         validation["valid"] = False
-        validation["errors"].append("Password must contain at least one number")
+        validation["errors"].append(
+            "Password must contain at least one number"
+        )
     elif re.search(r"\d", password):
         validation["strength_score"] += 15
 
@@ -77,14 +81,18 @@ def validate_password_strength(
 
     # فحص التكرار
     if len(set(password)) < len(password) * 0.6:
-        validation["warnings"].append("Password has too many repeated characters")
+        validation["warnings"].append(
+            "Password has too many repeated characters"
+        )
         validation["strength_score"] -= 10
 
     # فحص التسلسل
     sequences = ["123", "abc", "qwe", "asd", "zxc"]
     for seq in sequences:
         if seq in password_lower:
-            validation["warnings"].append("Avoid sequential characters in password")
+            validation["warnings"].append(
+                "Avoid sequential characters in password"
+            )
             validation["strength_score"] -= 5
 
     # فحص المعلومات الشخصية

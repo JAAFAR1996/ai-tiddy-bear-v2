@@ -22,7 +22,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.settings = get_settings()
         self.headers_builder = create_headers_builder()
-        self.is_production = self.settings.application.ENVIRONMENT == "production"
+        self.is_production = (
+            self.settings.application.ENVIRONMENT == "production"
+        )
 
     async def dispatch(
         self,
@@ -44,7 +46,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             self._add_security_headers(error_response, request)
             return error_response
 
-    def _add_security_headers(self, response: Response, request: Request) -> None:
+    def _add_security_headers(
+        self, response: Response, request: Request
+    ) -> None:
         """Add all required security headers."""
         # Get headers from builder
         headers = self.headers_builder.build_headers(request)

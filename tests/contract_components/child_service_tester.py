@@ -34,7 +34,13 @@ async def test_child_service_contracts(framework):
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
             },
-            "required": ["id", "name", "age", "preferences", "safety_settings"],
+            "required": [
+                "id",
+                "name",
+                "age",
+                "preferences",
+                "safety_settings",
+            ],
         },
     )
 

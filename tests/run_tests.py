@@ -36,8 +36,17 @@ TEST_SUITES = {
         "coverage": True,
         "min_coverage": 95,
     },
-    "performance": {"name": "Performance Tests", "markers": "slow", "coverage": False},
-    "all": {"name": "All Tests", "markers": None, "coverage": True, "min_coverage": 80},
+    "performance": {
+        "name": "Performance Tests",
+        "markers": "slow",
+        "coverage": False,
+    },
+    "all": {
+        "name": "All Tests",
+        "markers": None,
+        "coverage": True,
+        "min_coverage": 80,
+    },
 }
 
 
@@ -110,7 +119,10 @@ class TestRunner:
         return result.returncode
 
     def run_specific_tests(
-        self, test_paths: List[str], verbose: bool = False, coverage: bool = True
+        self,
+        test_paths: List[str],
+        verbose: bool = False,
+        coverage: bool = True,
     ) -> int:
         """Run specific test files or patterns"""
         cmd = ["python", "-m", "pytest"]
@@ -139,7 +151,8 @@ class TestRunner:
         # Run bandit security linter
         print("\n🔍 Running Bandit security linter...")
         bandit_result = subprocess.run(
-            ["python", "-m", "bandit", "-r", "src", "-ll"], cwd=self.project_root
+            ["python", "-m", "bandit", "-r", "src", "-ll"],
+            cwd=self.project_root,
         ).returncode
 
         # Check for hardcoded secrets
@@ -265,28 +278,21 @@ def main():
         help="Test suite to run",
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Verbose output")
+        "-v", "--verbose", action="store_true", help="Verbose output"
+    )
     parser.add_argument(
-        "-q",
-        "--quiet",
-        action="store_true",
-        help="Quiet output")
+        "-q", "--quiet", action="store_true", help="Quiet output"
+    )
     parser.add_argument(
         "-x", "--failfast", action="store_true", help="Stop on first failure"
     )
     parser.add_argument(
-        "-n",
-        "--parallel",
-        type=int,
-        help="Number of parallel workers")
+        "-n", "--parallel", type=int, help="Number of parallel workers"
+    )
     parser.add_argument("-k", "--keyword", help="Run tests matching keyword")
     parser.add_argument(
-        "--no-coverage",
-        action="store_true",
-        help="Disable coverage")
+        "--no-coverage", action="store_true", help="Disable coverage"
+    )
 
     args = parser.parse_args()
 

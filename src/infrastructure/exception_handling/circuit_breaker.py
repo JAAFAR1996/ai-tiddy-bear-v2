@@ -40,10 +40,15 @@ class CircuitBreaker:
             if self.state == CircuitBreakerState.OPEN:
                 # Use asyncio.sleep(0) to yield control and prevent blocking
                 await asyncio.sleep(0)  # Yield control to event loop
-                if time.monotonic() - self.last_failure_time > self.recovery_timeout:
+                if (
+                    time.monotonic() - self.last_failure_time
+                    > self.recovery_timeout
+                ):
                     self.state = CircuitBreakerState.HALF_OPEN
                 else:
-                    raise CircuitBreakerOpen(f"Circuit breaker {self.name} is open")
+                    raise CircuitBreakerOpen(
+                        f"Circuit breaker {self.name} is open"
+                    )
 
             try:
                 result = await func(*args, **kwargs)

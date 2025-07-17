@@ -18,7 +18,9 @@ async def check_database_connection(
     engine = None
     for i in range(retries):
         try:
-            logger.info(f"Attempt {i + 1}/{retries}: Connecting to database...")
+            logger.info(
+                f"Attempt {i + 1}/{retries}: Connecting to database..."
+            )
             engine = create_async_engine(database_url)
             async with engine.connect() as connection:
                 await connection.execute(text("SELECT 1"))

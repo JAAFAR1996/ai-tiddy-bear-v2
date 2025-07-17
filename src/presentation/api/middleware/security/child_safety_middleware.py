@@ -45,7 +45,8 @@ class ChildSafetyMiddleware(BaseHTTPMiddleware):
         """
         # Check if this is a child-related endpoint
         if any(
-            request.url.path.startswith(endpoint) for endpoint in self.child_endpoints
+            request.url.path.startswith(endpoint)
+            for endpoint in self.child_endpoints
         ):
             # Validate child safety requirements
             safety_check = await self._validate_child_safety(request)
@@ -53,7 +54,9 @@ class ChildSafetyMiddleware(BaseHTTPMiddleware):
                 return Response(
                     content=safety_check["error"],
                     status_code=safety_check["status_code"],
-                    headers={"X-Child-Safety-Violation": safety_check["reason"]},
+                    headers={
+                        "X-Child-Safety-Violation": safety_check["reason"]
+                    },
                 )
 
         # Process request
@@ -187,9 +190,16 @@ class ChildSafetyMiddleware(BaseHTTPMiddleware):
                 return True
 
         # Check for suspicious query parameters
-        suspicious_params = ["bypass_safety", "skip_moderation", "admin_mode", "debug"]
+        suspicious_params = [
+            "bypass_safety",
+            "skip_moderation",
+            "admin_mode",
+            "debug",
+        ]
 
-        return any(param in request.query_params for param in suspicious_params)
+        return any(
+            param in request.query_params for param in suspicious_params
+        )
 
     def _validate_session_duration(self, request: Request) -> Dict[str, Any]:
         """Validate session duration for child safety.
@@ -221,7 +231,9 @@ class ChildSafetyMiddleware(BaseHTTPMiddleware):
 
         return {"valid": True}
 
-    def _add_safety_tracking(self, response: Response, request: Request) -> None:
+    def _add_safety_tracking(
+        self, response: Response, request: Request
+    ) -> None:
         """Add child safety tracking headers to response.
 
         Args:
@@ -240,7 +252,8 @@ class ChildSafetyMiddleware(BaseHTTPMiddleware):
 
         # Add session tracking if child endpoint
         if any(
-            request.url.path.startswith(endpoint) for endpoint in self.child_endpoints
+            request.url.path.startswith(endpoint)
+            for endpoint in self.child_endpoints
         ):
             response.headers["X-Child-Endpoint"] = "true"
             response.headers["X-COPPA-Mode"] = "strict"

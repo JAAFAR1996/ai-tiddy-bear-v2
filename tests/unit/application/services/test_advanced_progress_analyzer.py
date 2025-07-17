@@ -6,7 +6,6 @@ Testing learning progress analysis and reporting for children.
 import pytest
 from datetime import datetime
 from freezegun import freeze_time
-from typing import List, Dict, Any
 
 from src.application.services.advanced_progress_analyzer import (
     AdvancedProgressAnalyzer,
@@ -144,7 +143,11 @@ class TestAdvancedProgressAnalyzer:
         # Verify structure is correct
         assert isinstance(metrics, ProgressMetrics)
         assert metrics.skill_level in [
-            "beginner", "intermediate", "advanced", "expert"]
+            "beginner",
+            "intermediate",
+            "advanced",
+            "expert",
+        ]
         assert 0 <= metrics.improvement_rate <= 1  # Reasonable range
         assert len(metrics.strengths) > 0
         assert len(metrics.areas_for_improvement) > 0
@@ -291,7 +294,8 @@ class TestAdvancedProgressAnalyzer:
 
         # Test with invalid interaction format
         metrics = analyzer.analyze_progress(
-            child_id, [None, {}, {"invalid": "data"}])
+            child_id, [None, {}, {"invalid": "data"}]
+        )
         assert isinstance(metrics, ProgressMetrics)
 
     @pytest.mark.parametrize(
@@ -317,6 +321,8 @@ class TestAdvancedProgressAnalyzer:
 
         # Current mock returns 0.15, which should be reasonable for any level
         assert (
-            expected_rate_range[0] <= metrics.improvement_rate <= expected_rate_range[1]
+            expected_rate_range[0]
+            <= metrics.improvement_rate
+            <= expected_rate_range[1]
             or metrics.improvement_rate == 0.15
         )

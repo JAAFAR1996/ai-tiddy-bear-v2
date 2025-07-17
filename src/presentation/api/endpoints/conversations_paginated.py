@@ -17,8 +17,7 @@ logger = get_logger(__name__, component="api")
 
 # Import FastAPI dependencies
 try:
-    from fastapi import APIRouter, Depends, HTTPException, Query, status
-    from fastapi.responses import JSONResponse
+    from fastapi import APIRouter, HTTPException, Query, status
 
     FASTAPI_AVAILABLE = True
 except ImportError:
@@ -37,7 +36,9 @@ except ImportError:
 
 
 # Mock conversation data for demonstration
-def create_mock_conversations(child_id: str, count: int = 100) -> list[dict[str, Any]]:
+def create_mock_conversations(
+    child_id: str, count: int = 100
+) -> list[dict[str, Any]]:
     """Create mock conversation data for pagination testing."""
     conversations = []
     for i in range(count):
@@ -50,7 +51,9 @@ def create_mock_conversations(child_id: str, count: int = 100) -> list[dict[str,
                 "child_message": f"Hello teddy! This is message {i + 1}",
                 "ai_response": f"Hello! I'm happy to talk with you. This is response {i + 1}",
                 "safety_flags": ["appropriate_content"] if i % 10 == 0 else [],
-                "emotion_detected": ["happy", "curious", "excited", "calm"][i % 4],
+                "emotion_detected": ["happy", "curious", "excited", "calm"][
+                    i % 4
+                ],
                 "session_duration_minutes": (i % 30) + 5,
                 "created_at": conversation_time.isoformat(),
                 "updated_at": conversation_time.isoformat(),
@@ -87,8 +90,10 @@ class ConversationPaginationService:
                 )
 
             # Create child-safe pagination
-            safe_pagination = self.pagination_service.create_child_safe_pagination(
-                pagination_request,
+            safe_pagination = (
+                self.pagination_service.create_child_safe_pagination(
+                    pagination_request,
+                )
             )
 
             # Get conversations (mock data for now)
@@ -109,7 +114,9 @@ class ConversationPaginationService:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error getting conversations for child {child_id}: {e}")
+            logger.error(
+                f"Error getting conversations for child {child_id}: {e}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to get conversations: {e!s}",
@@ -142,8 +149,10 @@ class ConversationPaginationService:
             ]
 
             # Apply pagination
-            safe_pagination = self.pagination_service.create_child_safe_pagination(
-                pagination_request,
+            safe_pagination = (
+                self.pagination_service.create_child_safe_pagination(
+                    pagination_request,
+                )
             )
             result = self.pagination_service.paginate_list(
                 recent_conversations,
@@ -183,8 +192,10 @@ class ConversationPaginationService:
             conversations = self.mock_data[child_id]
 
             # Apply pagination with search
-            safe_pagination = self.pagination_service.create_child_safe_pagination(
-                pagination_request,
+            safe_pagination = (
+                self.pagination_service.create_child_safe_pagination(
+                    pagination_request,
+                )
             )
             result = self.pagination_service.paginate_list(
                 conversations,
@@ -196,16 +207,22 @@ class ConversationPaginationService:
             )
             return result
         except Exception as e:
-            logger.error(f"Error searching conversations for child {child_id}: {e}")
+            logger.error(
+                f"Error searching conversations for child {child_id}: {e}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to search conversations: {e!s}",
             )
 
-    async def _validate_parent_access(self, parent_id: str, child_id: str) -> bool:
+    async def _validate_parent_access(
+        self, parent_id: str, child_id: str
+    ) -> bool:
         """Validate that parent has access to child's data."""
         # Mock validation - in production this would check the database
-        logger.info(f"Validating parent {parent_id} access to child {child_id}")
+        logger.info(
+            f"Validating parent {parent_id} access to child {child_id}"
+        )
         return True  # Mock approval
 
 
@@ -213,7 +230,9 @@ class ConversationPaginationService:
 conversation_pagination_service = ConversationPaginationService()
 
 # Create router
-router = APIRouter(prefix="/api/v1/conversations", tags=["Conversations Paginated"])
+router = APIRouter(
+    prefix="/api/v1/conversations", tags=["Conversations Paginated"]
+)
 
 if FASTAPI_AVAILABLE:
 
@@ -223,7 +242,9 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query(None, description="Sort field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query(
+            "desc", regex="^(asc|desc)$", description="Sort order"
+        ),
         search: str | None = Query(None, description="Search term"),
         parent_id: str | None = Query(
             None,
@@ -261,7 +282,9 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query("timestamp", description="Sort field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query(
+            "desc", regex="^(asc|desc)$", description="Sort order"
+        ),
     ):
         """Get conversation history for specified number of days."""
         # Create pagination request
@@ -273,10 +296,12 @@ if FASTAPI_AVAILABLE:
         )
 
         # Get conversation history
-        result = await conversation_pagination_service.get_conversation_history(
-            child_id=child_id,
-            days_back=days_back,
-            pagination_request=pagination_request,
+        result = (
+            await conversation_pagination_service.get_conversation_history(
+                child_id=child_id,
+                days_back=days_back,
+                pagination_request=pagination_request,
+            )
         )
 
         return result.to_dict()
@@ -293,7 +318,9 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query("timestamp", description="Sort field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query(
+            "desc", regex="^(asc|desc)$", description="Sort order"
+        ),
     ):
         """Search conversations with pagination."""
         # Create pagination request
@@ -316,4 +343,8 @@ if FASTAPI_AVAILABLE:
 
 
 # Export for use in main application
-__all__ = ["ConversationPaginationService", "conversation_pagination_service", "router"]
+__all__ = [
+    "ConversationPaginationService",
+    "conversation_pagination_service",
+    "router",
+]

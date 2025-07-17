@@ -1,14 +1,14 @@
-"""from datetime import datetime
-from typing import Any, Dict, List
-import asyncio
-import logging
-import time
-import httpx.
-"""
-
 """Recovery and Restoration Actions
 SRE Team Implementation - Task 15
 Recovery actions for restoring system state after chaos experiments"""
+
+import asyncio
+import logging
+import time
+from datetime import datetime
+from typing import Any, Dict, List
+
+import httpx
 
 from src.infrastructure.logging_config import get_logger
 
@@ -33,7 +33,9 @@ class RecoveryActions:
         }
 
 
-async def restore_all_systems(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def restore_all_systems(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
     """Restore all systems to normal operation."""
     recovery = RecoveryActions()
     restoration_results = {}
@@ -69,7 +71,9 @@ async def restore_all_systems(configuration: Dict[str, Any] = None) -> Dict[str,
         logger.info("⏳ Waiting for services to stabilize...")
         await asyncio.sleep(10)
 
-        verification_results = await verify_system_health(recovery.service_endpoints)
+        verification_results = await verify_system_health(
+            recovery.service_endpoints
+        )
         all_restored = all(restoration_results.values())
         all_healthy = all(verification_results.values())
         success = all_restored and all_healthy
@@ -87,11 +91,17 @@ async def restore_all_systems(configuration: Dict[str, Any] = None) -> Dict[str,
         }
     except Exception as e:
         logger.error(f"❌ System restoration failed: {e}")
-        return {"action": "restore_all_systems", "error": str(e), "success": False}
+        return {
+            "action": "restore_all_systems",
+            "error": str(e),
+            "success": False,
+        }
 
 
-async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
-    """Clear all chaos - related state and configurations."""
+async def clear_chaos_state(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
+    """Clear all chaos-related state and configurations."""
     recovery = RecoveryActions()
     clear_results = {}
     logger.info("🧹 Clearing chaos state")
@@ -110,10 +120,13 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
                         },
                         timeout=15,
                     )
-                    clear_results[service_name] = clear_response.status_code in [
-                        200,
-                        202,
-                    ]
+                    clear_results[service_name] = (
+                        clear_response.status_code
+                        in [
+                            200,
+                            202,
+                        ]
+                    )
                 except Exception as e:
                     clear_results[service_name] = False
                     logger.error(
@@ -129,7 +142,11 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
         }
     except Exception as e:
         logger.error(f"❌ Chaos state clearing failed: {e}")
-        return {"action": "clear_chaos_state", "error": str(e), "success": False}
+        return {
+            "action": "clear_chaos_state",
+            "error": str(e),
+            "success": False,
+        }
 
 
 async def restore_network_policies(
@@ -152,7 +169,9 @@ async def restore_network_policies(
                 success_count += 1
                 await asyncio.sleep(1)
             except Exception as e:
-                logger.error(f"❌ Network policy restoration failed: {command} - {e}")
+                logger.error(
+                    f"❌ Network policy restoration failed: {command} - {e}"
+                )
 
         success = success_count == len(network_commands)
         return {
@@ -163,7 +182,11 @@ async def restore_network_policies(
         }
     except Exception as e:
         logger.error(f"❌ Network policy restoration failed: {e}")
-        return {"action": "restore_network_policies", "error": str(e), "success": False}
+        return {
+            "action": "restore_network_policies",
+            "error": str(e),
+            "success": False,
+        }
 
 
 async def _restart_service(
@@ -202,7 +225,9 @@ async def _identify_failed_services(recovery: RecoveryActions) -> List[str]:
     ]
 
     if failed_services:
-        logger.info(f"Found {len(failed_services)} failed services: {failed_services}")
+        logger.info(
+            f"Found {len(failed_services)} failed services: {failed_services}"
+        )
     else:
         logger.info("✅ No failed services found.")
 
@@ -252,7 +277,11 @@ async def restart_failed_services(
         }
     except Exception as e:
         logger.error(f"❌ Service restart orchestration failed: {e}")
-        return {"action": "restart_failed_services", "error": str(e), "success": False}
+        return {
+            "action": "restart_failed_services",
+            "error": str(e),
+            "success": False,
+        }
 
 
 async def validate_system_recovery(
@@ -302,15 +331,21 @@ async def validate_system_recovery(
         }
 
 
-async def verify_system_health(service_endpoints: Dict[str, str]) -> Dict[str, bool]:
+async def verify_system_health(
+    service_endpoints: Dict[str, str],
+) -> Dict[str, bool]:
     """Verify health of all services."""
     health_results = {}
 
     async with httpx.AsyncClient() as client:
         for service_name, base_url in service_endpoints.items():
             try:
-                health_response = await client.get(f"{base_url}/health", timeout=10)
-                health_results[service_name] = health_response.status_code == 200
+                health_response = await client.get(
+                    f"{base_url}/health", timeout=10
+                )
+                health_results[service_name] = (
+                    health_response.status_code == 200
+                )
             except Exception as e:
                 health_results[service_name] = False
                 logger.error(f"Health check failed for {service_name}: {e}")
@@ -356,7 +391,9 @@ async def test_critical_functionality() -> Dict[str, bool]:
                 json={"test_type": "basic"},
                 timeout=10,
             )
-            tests["child_service_functionality"] = child_test.status_code == 200
+            tests["child_service_functionality"] = (
+                child_test.status_code == 200
+            )
 
             ai_test = await client.post(
                 "https://ai-service:8000/chat",
@@ -370,7 +407,9 @@ async def test_critical_functionality() -> Dict[str, bool]:
                 json={"content": "test content"},
                 timeout=10,
             )
-            tests["safety_service_functionality"] = safety_test.status_code == 200
+            tests["safety_service_functionality"] = (
+                safety_test.status_code == 200
+            )
     except Exception as e:
         logger.error(f"Functionality test error: {e}")
 

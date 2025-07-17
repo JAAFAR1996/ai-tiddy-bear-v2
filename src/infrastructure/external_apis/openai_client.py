@@ -1,4 +1,8 @@
+from uuid import UUID
+from typing import List
 from src.infrastructure.logging_config import get_logger
+from src.application.interfaces.ai_provider import AIProvider
+from src.domain.value_objects.child_preferences import ChildPreferences
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -11,9 +15,6 @@ except ImportError as e:
     )
     logger.critical("Install required dependencies: pip install openai")
     raise ImportError("Missing required dependency: openai")
-
-from src.application.interfaces.ai_provider import AIProvider
-from src.domain.value_objects.child_preferences import ChildPreferences
 
 
 class OpenAIClient(AIProvider):
@@ -30,7 +31,13 @@ class OpenAIClient(AIProvider):
         messages = [
             {
                 "role": "system",
-                "content": f"You are an AI Teddy Bear. Respond in {child_preferences.language}. The child's favorite topics are {', '.join(child_preferences.favorite_topics)}. Their learning level is {child_preferences.learning_level}. Be friendly, age-appropriate, and adapt to their preferences.",
+                "content": (
+                    f"You are an AI Teddy Bear. Respond in "
+                    f"{child_preferences.language}. The child's favorite topics are "
+                    f"{', '.join(child_preferences.favorite_topics)}. "
+                    f"Their learning level is {child_preferences.learning_level}. "
+                    "Be friendly, age-appropriate, and adapt to their preferences."
+                ),
             },
         ]
         # Add conversation history
@@ -53,7 +60,10 @@ class OpenAIClient(AIProvider):
             messages=[
                 {
                     "role": "system",
-                    "content": "Analyze the sentiment of the following text and return a score between -1.0 (negative) and 1.0 (positive).",
+                    "content": (
+                        "Analyze the sentiment of the following text and return "
+                        "a score between -1.0 (negative) and 1.0 (positive)."
+                    ),
                 },
                 {"role": "user", "content": text},
             ],
@@ -71,7 +81,10 @@ class OpenAIClient(AIProvider):
             messages=[
                 {
                     "role": "system",
-                    "content": "Analyze the emotion of the following text and return a single word emotion (e.g., happy, sad, angry, neutral).",
+                    "content": (
+                        "Analyze the emotion of the following text and return a single "
+                        "word emotion (e.g., happy, sad, angry, neutral)."
+                    ),
                 },
                 {"role": "user", "content": text},
             ],

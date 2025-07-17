@@ -17,7 +17,9 @@ class IncidentService:
         """Initializes the incident service."""
         self.incidents: list[dict[str, Any]] = []
 
-    async def report_incident(self, incident_details: dict[str, Any]) -> dict[str, Any]:
+    async def report_incident(
+        self, incident_details: dict[str, Any]
+    ) -> dict[str, Any]:
         """Reports a new incident.
 
         Args:

@@ -85,8 +85,9 @@ class TestPerformance:
         start_time = time.time()
 
         # Simulate 1000 concurrent users
-        tasks = [self._simulate_user_request()
-                 for _ in range(100)]  # Reduced for demo
+        tasks = [
+            self._simulate_user_request() for _ in range(100)
+        ]  # Reduced for demo
         results = await asyncio.gather(*tasks)
 
         end_time = time.time()

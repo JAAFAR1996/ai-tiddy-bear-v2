@@ -2,7 +2,6 @@ from domain.value_objects.safety_level import SafetyLevel
 from domain.value_objects.language import Language
 from domain.value_objects.child_preferences import ChildPreferences
 from domain.value_objects.age_group import AgeGroup
-from enum import Enum
 import sys
 from pathlib import Path
 
@@ -147,7 +146,9 @@ class TestAgeGroup:
         assert "basic_colors" in toddler_content
         assert "animal_sounds" in toddler_content
 
-        school_age_content = AgeGroup.SCHOOL_AGE.get_appropriate_content_types()
+        school_age_content = (
+            AgeGroup.SCHOOL_AGE.get_appropriate_content_types()
+        )
         assert "educational_games" in school_age_content
         assert "reading_comprehension" in school_age_content
         assert "science_facts" in school_age_content
@@ -416,7 +417,8 @@ class TestChildPreferences:
             "music",
             "art",
             "science",
-            "sports"]
+            "sports",
+        ]
         for interest in valid_interests:
             preferences.add_interest(interest)
 

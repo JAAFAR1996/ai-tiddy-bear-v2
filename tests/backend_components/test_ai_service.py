@@ -125,7 +125,10 @@ class TestAIService:
 
         # Test
         story = await ai_service.generate_story(
-            theme="animals", age=5, interests=["adventure", "friendship"], language="ar"
+            theme="animals",
+            age=5,
+            interests=["adventure", "friendship"],
+            language="ar",
         )
 
         # Assert

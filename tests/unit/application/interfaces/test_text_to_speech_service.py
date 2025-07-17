@@ -9,7 +9,6 @@ child-safe audio generation capabilities.
 import pytest
 import asyncio
 from abc import ABC
-from unittest.mock import Mock, AsyncMock, patch
 
 from src.application.interfaces.text_to_speech_service import TextToSpeechService
 

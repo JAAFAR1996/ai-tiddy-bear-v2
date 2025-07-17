@@ -12,7 +12,9 @@ from pydantic import BaseModel, Field
 class AppSettings(BaseModel):
     """Application-wide settings."""
 
-    APP_NAME: str = Field("AI Teddy Bear", description="Name of the application")
+    APP_NAME: str = Field(
+        "AI Teddy Bear", description="Name of the application"
+    )
     APP_VERSION: str = Field("2.0.0", description="Version of the application")
     ENVIRONMENT: str = Field(
         "production",
@@ -26,10 +28,16 @@ class AppSettings(BaseModel):
 class ServerSettings(BaseModel):
     """Server configuration settings."""
 
-    SERVER_HOST: str = Field("0.0.0.0", description="Host for the FastAPI server")
+    SERVER_HOST: str = Field(
+        "0.0.0.0", description="Host for the FastAPI server"
+    )
     SERVER_PORT: int = Field(8000, description="Port for the FastAPI server")
-    WEBSOCKET_PORT: int = Field(8765, description="Port for WebSocket connections")
-    ENABLE_CORS: bool = Field(True, description="Enable Cross-Origin Resource Sharing")
+    WEBSOCKET_PORT: int = Field(
+        8765, description="Port for WebSocket connections"
+    )
+    ENABLE_CORS: bool = Field(
+        True, description="Enable Cross-Origin Resource Sharing"
+    )
     CORS_ORIGINS: list[str] = Field(
         default_factory=lambda: [
             "https://app.aiteddybear.com",
@@ -45,8 +53,12 @@ class ServerSettings(BaseModel):
         60,
         description="Default request timeout in seconds",
     )
-    ENABLE_HTTPS: bool = Field(False, description="Enable HTTPS for the server")
-    SSL_CERT_PATH: str | None = Field(None, description="Path to SSL certificate file")
+    ENABLE_HTTPS: bool = Field(
+        False, description="Enable HTTPS for the server"
+    )
+    SSL_CERT_PATH: str | None = Field(
+        None, description="Path to SSL certificate file"
+    )
     SSL_KEY_PATH: str | None = Field(None, description="Path to SSL key file")
 
 
@@ -75,7 +87,9 @@ class DatabaseSettings(BaseModel):
         le=3600,
         description="Database connection pool recycle time in seconds",
     )
-    DATABASE_ECHO: bool = Field(False, description="Enable SQLAlchemy echo mode")
+    DATABASE_ECHO: bool = Field(
+        False, description="Enable SQLAlchemy echo mode"
+    )
     DATABASE_SSL_MODE: str = Field(
         "require",
         description="SSL mode for database connection",
@@ -85,7 +99,9 @@ class DatabaseSettings(BaseModel):
 class SecuritySettings(BaseModel):
     """Security-related settings."""
 
-    SECRET_KEY: str = Field(..., description="Secret key for cryptographic operations")
+    SECRET_KEY: str = Field(
+        ..., description="Secret key for cryptographic operations"
+    )
     ALGORITHM: str = Field("HS256", description="Hashing algorithm for JWT")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
         30,
@@ -99,7 +115,9 @@ class SecuritySettings(BaseModel):
         "bcrypt",
         description="Algorithm for password hashing",
     )
-    RATE_LIMIT_ENABLED: bool = Field(True, description="Enable API rate limiting")
+    RATE_LIMIT_ENABLED: bool = Field(
+        True, description="Enable API rate limiting"
+    )
     RATE_LIMIT_PER_MINUTE: int = Field(
         100,
         description="Max requests per minute per IP",
@@ -116,23 +134,33 @@ class LoggingSettings(BaseModel):
         "10 MB",
         description="Log file rotation size or frequency",
     )
-    LOG_RETENTION: int = Field(7, description="Number of days to retain log files")
+    LOG_RETENTION: int = Field(
+        7, description="Number of days to retain log files"
+    )
 
 
 class ExternalServicesSettings(BaseModel):
     """Settings for external services integrations."""
 
     OPENAI_API_KEY: str | None = Field(None, description="OpenAI API Key")
-    OPENAI_ORG_ID: str | None = Field(None, description="OpenAI Organization ID")
+    OPENAI_ORG_ID: str | None = Field(
+        None, description="OpenAI Organization ID"
+    )
     STRIPE_API_KEY: str | None = Field(None, description="Stripe API Key")
-    SENTRY_DSN: str | None = Field(None, description="Sentry DSN for error tracking")
+    SENTRY_DSN: str | None = Field(
+        None, description="Sentry DSN for error tracking"
+    )
 
 
 class COPPAComplianceSettings(BaseModel):
     """Settings related to COPPA compliance."""
 
-    COPPA_ENABLED: bool = Field(True, description="Enable COPPA compliance features")
-    MIN_CHILD_AGE: int = Field(13, description="Minimum age for COPPA compliance")
+    COPPA_ENABLED: bool = Field(
+        True, description="Enable COPPA compliance features"
+    )
+    MIN_CHILD_AGE: int = Field(
+        13, description="Minimum age for COPPA compliance"
+    )
     DATA_RETENTION_DAYS: int = Field(
         90,
         description="Data retention period in days for child data",
@@ -150,4 +178,6 @@ class FeatureFlagsSettings(BaseModel):
         False,
         description="Enable new experimental feature",
     )
-    A_B_TESTING_ACTIVE: bool = Field(False, description="Activate A/B testing mode")
+    A_B_TESTING_ACTIVE: bool = Field(
+        False, description="Activate A/B testing mode"
+    )

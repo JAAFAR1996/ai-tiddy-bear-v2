@@ -1,7 +1,6 @@
 from infrastructure.security.real_auth_service import AuthService
 from infrastructure.ai.real_ai_service import AIService
 from concurrent.futures import ThreadPoolExecutor
-import asyncio
 import time
 import sys
 from pathlib import Path
@@ -106,7 +105,8 @@ class TestPerformance:
 
         def generate_response():
             return self.ai_service.generate_response(
-                "Hello", 6, {"language": "en"})
+                "Hello", 6, {"language": "en"}
+            )
 
         start_time = time.time()
 
@@ -149,7 +149,8 @@ class TestPerformance:
         user_data = {
             "sub": "user123",
             "email": "test@example.com",
-            "role": "parent"}
+            "role": "parent",
+        }
 
         start_time = time.time()
 
@@ -193,7 +194,9 @@ class TestPerformance:
     @pytest.mark.performance
     async def test_database_performance(self):
         """اختبار أداء قاعدة البيانات"""
-        from infrastructure.persistence.real_database_service import database_service
+        from infrastructure.persistence.real_database_service import (
+            database_service,
+        )
 
         await database_service.init_db()
 

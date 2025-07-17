@@ -3,32 +3,22 @@ Pytest Configuration and Fixtures
 
 """
 
-from src.infrastructure.security.unified_security_service import (
-    UnifiedSecurityService,
-    SecurityConfig,
-)
-from src.infrastructure.di.simplified_container import (
-    SimplifiedContainer,
-    reset_container,
-)
 from src.infrastructure.di.container import Container
-from src.infrastructure.persistence.real_database_service import DatabaseService
+from src.infrastructure.persistence.real_database_service import (
+    DatabaseService,
+)
 from src.infrastructure.config.settings import Settings
 import pytest
 import asyncio
 import os
 import sys
-from typing import AsyncGenerator, Generator
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 from datetime import datetime
 
 sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            "..")))
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)
 
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 os.environ["ASYNC_DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
@@ -63,8 +53,8 @@ def test_settings():
         JWT_ALGORITHM="HS256",
         JWT_EXPIRATION_HOURS=24,
         DATABASE_URL=os.getenv(
-            "TEST_DATABASE_URL",
-            "sqlite+aiosqlite:///:memory:"),
+            "TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:"
+        ),
         REDIS_URL=os.getenv("TEST_REDIS_URL", "redis://localhost:6379/15"),
         OPENAI_API_KEY=os.getenv(
             "TEST_OPENAI_API_KEY", "sk-test-key-not-real-for-testing-only"
@@ -218,7 +208,9 @@ def sample_child():
 def auth_headers(sample_parent):
     """Create authentication headers with dynamic secure key."""
     import secrets
-    from src.infrastructure.security.real_auth_service import ProductionAuthService
+    from src.infrastructure.security.real_auth_service import (
+        ProductionAuthService,
+    )
 
     auth_service = ProductionAuthService()
     # Generate secure test key dynamically - never hardcode
@@ -252,7 +244,8 @@ def mock_coppa_service():
     )
 
     service.encrypt_child_data = AsyncMock(
-        side_effect=lambda data: f"encrypted_{data}")
+        side_effect=lambda data: f"encrypted_{data}"
+    )
 
     service.decrypt_child_data = AsyncMock(
         side_effect=lambda data: data.replace("encrypted_", "")
@@ -294,15 +287,16 @@ pytest_plugins = []
 def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
-        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+        "markers",
+        "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     )
     config.addinivalue_line(
-        "markers",
-        "integration: marks tests as integration tests")
+        "markers", "integration: marks tests as integration tests"
+    )
     config.addinivalue_line("markers", "e2e: marks tests as end-to-end tests")
     config.addinivalue_line(
-        "markers",
-        "security: marks tests as security-related")
+        "markers", "security: marks tests as security-related"
+    )
     config.addinivalue_line("markers", "unit: Unit tests")
     config.addinivalue_line("markers", "child_safety: Child safety tests")
 

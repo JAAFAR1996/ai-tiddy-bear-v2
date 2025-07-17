@@ -6,7 +6,6 @@ Uses GPT-4 to generate comprehensive, intelligent test cases
 focusing on child safety, security, and edge cases.
 """
 
-import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -139,7 +138,9 @@ class AITestGenerator:
             tests.extend(safety_tests)
 
             # Generate performance tests
-            performance_tests = await self._generate_performance_tests(analysis)
+            performance_tests = await self._generate_performance_tests(
+                analysis
+            )
             tests.extend(performance_tests)
 
             # Validate and fix generated tests
@@ -147,7 +148,9 @@ class AITestGenerator:
 
             # Save tests if output directory specified
             if output_dir:
-                await self._save_tests(validated_tests, output_dir, module_path)
+                await self._save_tests(
+                    validated_tests, output_dir, module_path
+                )
 
             logger.info(f"Generated {len(validated_tests)} validated tests")
             return validated_tests
@@ -241,7 +244,8 @@ Generate at least 10 test methods.
         return []  # Simplified for now
 
     async def _validate_tests(
-            self, tests: List[GeneratedTest]) -> List[GeneratedTest]:
+        self, tests: List[GeneratedTest]
+    ) -> List[GeneratedTest]:
         """Validate generated tests"""
         return tests  # Simplified for now
 

@@ -6,7 +6,10 @@ from redis.asyncio import Redis
 from src.domain.interfaces.accessibility_profile_repository import (
     IAccessibilityProfileRepository,
 )
-from src.domain.value_objects.accessibility import AccessibilityProfile, SpecialNeedType
+from src.domain.value_objects.accessibility import (
+    AccessibilityProfile,
+    SpecialNeedType,
+)
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="redis_accessibility_repository")
@@ -49,7 +52,9 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
                         1.0,
                     ),
                     volume_level=profile_data_dict.get("volume_level", 0.8),
-                    subtitles_enabled=profile_data_dict.get("subtitles_enabled", False),
+                    subtitles_enabled=profile_data_dict.get(
+                        "subtitles_enabled", False
+                    ),
                     additional_settings=profile_data_dict.get(
                         "additional_settings",
                         {},

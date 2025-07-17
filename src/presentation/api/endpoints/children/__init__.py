@@ -2,7 +2,7 @@
 
 # Third-party imports
 try:
-    from fastapi import APIRouter, Depends, HTTPException, status
+    from fastapi import APIRouter, HTTPException, status
 
     FASTAPI_AVAILABLE = True
 except ImportError:
@@ -10,10 +10,7 @@ except ImportError:
 
 # Local imports
 from .compliance import (
-    ComplianceValidator,
     COPPAIntegration,
-    DataRetentionManager,
-    ParentalConsentManager,
     handle_compliant_child_deletion,
     request_parental_consent,
     validate_child_creation_compliance,
@@ -25,14 +22,9 @@ from .models import (
     ChildResponse,
     ChildSafetySummary,
     ChildUpdateRequest,
-    create_mock_child_response,
-    create_mock_children_list,
-    validate_child_data,
 )
 from .operations import (
-    ChildDataTransformer,
     ChildOperations,
-    ChildValidationService,
     create_child,
     delete_child,
     get_child,

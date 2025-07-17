@@ -6,20 +6,15 @@ Real database tests using in-memory SQLite for fast, reliable testing.
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
 from uuid import uuid4
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from src.infrastructure.persistence.database import Database
 from src.infrastructure.persistence.database_service_orchestrator import (
     DatabaseServiceOrchestrator,
 )
 from src.infrastructure.persistence.models.base_model import Base
-from src.infrastructure.persistence.models.user_model import UserModel
-from src.infrastructure.persistence.models.child_model import ChildModel
-from src.infrastructure.persistence.models.conversation_model import ConversationModel
 
 
 @pytest.fixture(scope="function")
@@ -232,7 +227,8 @@ class TestConversationOperationsIntegration:
 
     @pytest.mark.asyncio
     async def test_conversation_storage_and_retrieval(
-            self, db_service, test_user):
+        self, db_service, test_user
+    ):
         """Test storing and retrieving conversations."""
         # Create child first
         child_id = await db_service.create_child(
@@ -248,7 +244,9 @@ class TestConversationOperationsIntegration:
 
         conv_ids = []
         for message, response in conversations:
-            conv_id = await db_service.save_conversation(child_id, message, response)
+            conv_id = await db_service.save_conversation(
+                child_id, message, response
+            )
             conv_ids.append(conv_id)
             # Add small delay to ensure different timestamps
             await asyncio.sleep(0.01)
@@ -336,7 +334,9 @@ class TestSafetyOperationsIntegration:
         ]
 
         for score, reason in scores:
-            success = await db_service.update_safety_score(child_id, score, reason)
+            success = await db_service.update_safety_score(
+                child_id, score, reason
+            )
             assert success is True
 
     @pytest.mark.asyncio
@@ -417,7 +417,6 @@ class TestTransactionIntegration:
         """Test that transactions rollback on error."""
         # This test would need direct database access
         # to properly test transaction behavior
-        pass
 
     @pytest.mark.asyncio
     async def test_concurrent_operations(self, db_service):

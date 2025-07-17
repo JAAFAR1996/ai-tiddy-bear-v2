@@ -145,11 +145,14 @@ async def test_contract_framework():
 
         print("📋 نتائج اختبارات العقد:")
         print(
-            f"إجمالي الاختبارات: {results['overall_results']['total_tests']}")
+            f"إجمالي الاختبارات: {results['overall_results']['total_tests']}"
+        )
         print(
-            f"الاختبارات الناجحة: {results['overall_results']['passed_tests']}")
+            f"الاختبارات الناجحة: {results['overall_results']['passed_tests']}"
+        )
         print(
-            f"معدل النجاح: {results['overall_results']['success_rate']:.1f}%")
+            f"معدل النجاح: {results['overall_results']['success_rate']:.1f}%"
+        )
 
         print("\n📋 التوصيات:")
         for rec in results["recommendations"]:

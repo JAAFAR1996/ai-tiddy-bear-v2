@@ -55,8 +55,12 @@ class DatabaseConfig:
         elif parsed_url.scheme.startswith("sqlite"):
             engine_type = "sqlite"
         else:
-            raise ValueError(f"Unsupported database scheme: {parsed_url.scheme}")
-        return cls._create_for_environment(database_url, engine_type, environment)
+            raise ValueError(
+                f"Unsupported database scheme: {parsed_url.scheme}"
+            )
+        return cls._create_for_environment(
+            database_url, engine_type, environment
+        )
 
     @classmethod
     def _create_for_environment(
@@ -126,7 +130,9 @@ class DatabaseConfig:
         )
 
     @classmethod
-    def _testing_config(cls, database_url: str, engine_type: str) -> "DatabaseConfig":
+    def _testing_config(
+        cls, database_url: str, engine_type: str
+    ) -> "DatabaseConfig":
         """Testing configuration."""
         return cls(
             database_url=database_url,
@@ -189,7 +195,10 @@ class DatabaseConfig:
             # SQLite specific settings
             if self.environment == "production":
                 raise RuntimeError("SQLite not allowed in production")
-            base_kwargs["connect_args"] = {"check_same_thread": False, "timeout": 20}
+            base_kwargs["connect_args"] = {
+                "check_same_thread": False,
+                "timeout": 20,
+            }
         return base_kwargs
 
     def validate_production_requirements(self) -> bool:
@@ -207,22 +216,31 @@ class DatabaseConfig:
             validation_errors.append("SSL is required in production")
         # COPPA compliance
         if not self.enforce_coppa_constraints:
-            validation_errors.append("COPPA constraints must be enforced in production")
+            validation_errors.append(
+                "COPPA constraints must be enforced in production"
+            )
         if not self.require_encryption_at_rest:
-            validation_errors.append("Encryption at rest is required in production")
+            validation_errors.append(
+                "Encryption at rest is required in production"
+            )
         if not self.audit_all_operations:
-            validation_errors.append("Operation auditing is required in production")
+            validation_errors.append(
+                "Operation auditing is required in production"
+            )
         # Connection security
         if not self.validate_connection:
-            validation_errors.append("Connection validation is required in production")
+            validation_errors.append(
+                "Connection validation is required in production"
+            )
         # Performance requirements
         if self.pool_size < 10:
             validation_errors.append(
                 "Production requires at least 10 connection pool size",
             )
         if validation_errors:
-            error_message = "Production database validation failed:\n" + "\n".join(
-                f"- {error}" for error in validation_errors
+            error_message = (
+                "Production database validation failed:\n"
+                + "\n".join(f"- {error}" for error in validation_errors)
             )
             raise RuntimeError(error_message)
         return True

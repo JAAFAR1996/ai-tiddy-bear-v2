@@ -41,7 +41,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         self.request_count = 0
         self.total_processing_time = 0.0
 
-        logger.info(f"Security headers middleware initialized for {self.environment}")
+        logger.info(
+            f"Security headers middleware initialized for {self.environment}"
+        )
 
     async def dispatch(
         self,
@@ -84,7 +86,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             self._apply_basic_security_headers(error_response)
             return error_response
 
-    def _apply_security_headers(self, request: Request, response: Response) -> None:
+    def _apply_security_headers(
+        self, request: Request, response: Response
+    ) -> None:
         """Apply all security headers to the response."""
         try:
             # Build headers based on request context
@@ -163,7 +167,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 f"avg {avg_time * 1000:.2f}ms per request",
             )
 
-    def _log_validation_results(self, validation_results: Dict[str, list]) -> None:
+    def _log_validation_results(
+        self, validation_results: Dict[str, list]
+    ) -> None:
         """Log configuration validation results."""
         for error in validation_results["errors"]:
             logger.error(f"Security config error: {error}")

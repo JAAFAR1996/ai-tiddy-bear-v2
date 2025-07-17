@@ -12,8 +12,9 @@ except ImportError:
     FEDERATION_AVAILABLE = False
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE,
-                    reason="Federation not available")
+@pytest.mark.skipif(
+    not FEDERATION_AVAILABLE, reason="Federation not available"
+)
 class TestFederationConfig:
     """Test federation configuration."""
 
@@ -29,13 +30,13 @@ class TestFederationConfig:
     def test_custom_config(self):
         """Test custom configuration."""
         services = [
-            ServiceConfig(
-                "test_service",
-                "http://test:8000",
-                "/schema")]
+            ServiceConfig("test_service", "http://test:8000", "/schema")
+        ]
 
         config = FederationConfig(
-            services=services, enable_authentication=False, rate_limit_requests=200
+            services=services,
+            enable_authentication=False,
+            rate_limit_requests=200,
         )
 
         assert len(config.services) == 1

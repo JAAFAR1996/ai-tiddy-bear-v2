@@ -14,7 +14,9 @@ logger = get_logger(__name__, component="dummy_notification_clients")
 class DummyEmailClient(IEmailClient):
     """Dummy implementation of IEmailClient for simulation purposes."""
 
-    async def send_email(self, recipient: str, subject: str, body: str) -> bool:
+    async def send_email(
+        self, recipient: str, subject: str, body: str
+    ) -> bool:
         self.logger.info(
             f"[DUMMY EMAIL] Sending email to {recipient} with subject: {subject}",
         )
@@ -27,7 +29,9 @@ class DummyEmailClient(IEmailClient):
 class DummySMSClient(ISMSClient):
     """Dummy implementation of ISMSClient for simulation purposes."""
 
-    async def send_sms(self, recipient_phone_number: str, message: str) -> bool:
+    async def send_sms(
+        self, recipient_phone_number: str, message: str
+    ) -> bool:
         self.logger.info(
             f"[DUMMY SMS] Sending SMS to {recipient_phone_number}: {message}",
         )
@@ -47,7 +51,8 @@ class DummyInAppNotifier(IInAppNotifier):
         metadata: dict[str, Any],
     ) -> bool:
         self.logger.info(
-            f"[DUMMY IN-APP] Sending in-app notification to {recipient_user_id}: {message} (Metadata: {metadata})",
+            f"[DUMMY IN-APP] Sending in-app notification to {recipient_user_id}: "
+            f"{message} (Metadata: {metadata})",
         )
         return True
 
@@ -66,7 +71,8 @@ class DummyPushNotifier(IPushNotifier):
         metadata: dict[str, Any],
     ) -> bool:
         self.logger.info(
-            f"[DUMMY PUSH] Sending push notification to device {device_token} - Title: {title}, Body: {body} (Metadata: {metadata})",
+            f"[DUMMY PUSH] Sending push notification to device {device_token} - "
+            f"Title: {title}, Body: {body} (Metadata: {metadata})",
         )
         return True
 

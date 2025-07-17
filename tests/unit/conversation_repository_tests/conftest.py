@@ -61,7 +61,10 @@ def sample_conversation_data():
         "llm_provider": "openai",
         "model_version": "gpt-4",
         "context_summary": "Educational conversation about basic math and science concepts",
-        "metadata": {"user_agent": "TeddyBear/1.0", "ip_address": "192.168.1.1"},
+        "metadata": {
+            "user_agent": "TeddyBear/1.0",
+            "ip_address": "192.168.1.1",
+        },
         "total_messages": 12,
         "child_messages": 6,
         "assistant_messages": 6,

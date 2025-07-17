@@ -22,7 +22,6 @@ except ImportError as e:
     SPEECH_RECOGNITION_AVAILABLE = False
 
 try:
-    import audioop
     import wave
 
     AUDIO_PROCESSING_AVAILABLE = True
@@ -36,7 +35,9 @@ class TranscriptionService:
     Supports multiple transcription engines with fallback mechanisms.
     """
 
-    def __init__(self, model_size: str = "base", language_default: str = "ar") -> None:
+    def __init__(
+        self, model_size: str = "base", language_default: str = "ar"
+    ) -> None:
         self.model_size = model_size
         self.language_default = language_default
         self.max_audio_duration = 300  # 5 minutes max for safety
@@ -73,7 +74,9 @@ class TranscriptionService:
                 self.google_recognizer.dynamic_energy_threshold = True
                 logger.info("Speech recognition engines initialized")
             except Exception as e:
-                logger.error(f"Failed to initialize transcription engines: {e}")
+                logger.error(
+                    f"Failed to initialize transcription engines: {e}"
+                )
         else:
             logger.warning(
                 "Speech recognition not available - transcription will use mock responses",
@@ -110,13 +113,17 @@ class TranscriptionService:
         start_time = time.time()
         try:
             # Create temporary file for audio processing
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(
+                suffix=".wav", delete=False
+            ) as temp_file:
                 temp_file.write(audio_data)
                 temp_audio_path = temp_file.name
             # Validate audio format and duration
             audio_info = await self._validate_audio_file(temp_audio_path)
             if not audio_info["valid"]:
-                raise ValueError(f"Invalid audio format: {audio_info['error']}")
+                raise ValueError(
+                    f"Invalid audio format: {audio_info['error']}"
+                )
             # Perform transcription using best available method
             transcription_result = await self._perform_transcription(
                 temp_audio_path,
@@ -274,7 +281,9 @@ class TranscriptionService:
         for pattern in self.unsafe_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
-                warnings.append(f"Potentially unsafe content detected: {pattern}")
+                warnings.append(
+                    f"Potentially unsafe content detected: {pattern}"
+                )
                 # Replace with safe alternative
                 text = re.sub(pattern, "[FILTERED]", text, flags=re.IGNORECASE)
         # Additional safety checks
@@ -286,7 +295,9 @@ class TranscriptionService:
             text = text[:1000] + "..."
         # Log safety issues if any
         if warnings and child_id:
-            logger.warning(f"Safety issues detected for child {child_id}: {warnings}")
+            logger.warning(
+                f"Safety issues detected for child {child_id}: {warnings}"
+            )
         return {"text": text, "safe": len(warnings) == 0, "warnings": warnings}
 
     async def get_supported_languages(self) -> list[str]:

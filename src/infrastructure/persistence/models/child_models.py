@@ -6,7 +6,14 @@ Enterprise-grade models for child profiles with COPPA compliance
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+)
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -39,11 +46,15 @@ class ChildModel(Base):
     # Basic information (encrypted)
     name_encrypted: Mapped[str] = mapped_column(String(500), nullable=False)
     age: Mapped[int] = mapped_column(Integer, nullable=False)
-    age_group: Mapped[ChildAge] = mapped_column(SQLEnum(ChildAge), nullable=False)
+    age_group: Mapped[ChildAge] = mapped_column(
+        SQLEnum(ChildAge), nullable=False
+    )
 
     # Preferences and interests
     interests: Mapped[list] = mapped_column(ARRAY(String), default=list)
-    language: Mapped[str] = mapped_column(String(10), default="en", nullable=False)
+    language: Mapped[str] = mapped_column(
+        String(10), default="en", nullable=False
+    )
     personality_traits: Mapped[dict] = mapped_column(JSONB, default=dict)
     learning_goals: Mapped[dict] = mapped_column(JSONB, default=dict)
 
@@ -56,8 +67,12 @@ class ChildModel(Base):
     content_filters: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     # Usage tracking
-    total_interactions: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    last_interaction: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    total_interactions: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False
+    )
+    last_interaction: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     # Audit fields
     created_at: Mapped[datetime] = mapped_column(

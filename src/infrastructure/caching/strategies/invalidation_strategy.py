@@ -21,11 +21,15 @@ class CacheInvalidationStrategy:
         try:
             # Use SCAN to find keys (better than KEYS for production)
             keys_to_delete = []
-            async for key in self.redis_client.scan_iter(match=pattern, count=100):
+            async for key in self.redis_client.scan_iter(
+                match=pattern, count=100
+            ):
                 keys_to_delete.append(key)
             if keys_to_delete:
                 deleted = await self.redis_client.delete(*keys_to_delete)
-                logger.info(f"Invalidated {deleted} keys matching pattern: {pattern}")
+                logger.info(
+                    f"Invalidated {deleted} keys matching pattern: {pattern}"
+                )
                 return deleted
             return 0
         except Exception as e:
@@ -36,13 +40,17 @@ class CacheInvalidationStrategy:
         """Invalidate cache based on event type."""
         patterns = self.config.INVALIDATION_PATTERNS.get(event_type, [])
         if not patterns:
-            logger.warning(f"No invalidation patterns defined for event: {event_type}")
+            logger.warning(
+                f"No invalidation patterns defined for event: {event_type}"
+            )
             return 0
         total_deleted = 0
         for pattern in patterns:
             deleted = await self.invalidate_pattern(pattern)
             total_deleted += deleted
-        logger.info(f"Invalidated {total_deleted} keys for event: {event_type}")
+        logger.info(
+            f"Invalidated {total_deleted} keys for event: {event_type}"
+        )
         return total_deleted
 
     async def invalidate_child_data(self, child_id: str) -> int:

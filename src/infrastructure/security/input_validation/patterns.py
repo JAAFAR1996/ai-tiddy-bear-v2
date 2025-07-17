@@ -29,7 +29,9 @@ class SecurityPatterns:
 
         # XSS patterns
         self.xss_patterns = [
-            re.compile(r"<script[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL),
+            re.compile(
+                r"<script[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL
+            ),
             re.compile(r"javascript:", re.IGNORECASE),
             re.compile(r"on\w+\s*=", re.IGNORECASE),
             re.compile(r"<iframe[^>]*>", re.IGNORECASE),
@@ -58,7 +60,9 @@ class SecurityPatterns:
                 re.IGNORECASE,
             ),
             re.compile(r"\\x[0-9a-fA-F]{2}", re.IGNORECASE),
-            re.compile(r"%(0[0-9a-fA-F]|[2-9a-fA-F][0-9a-fA-F])", re.IGNORECASE),
+            re.compile(
+                r"%(0[0-9a-fA-F]|[2-9a-fA-F][0-9a-fA-F])", re.IGNORECASE
+            ),
         ]
 
         # LDAP injection patterns
@@ -84,18 +88,26 @@ class SecurityPatterns:
                 r"\b(violence|blood|kill|death|murder|weapon|gun|knife)\b",
                 re.IGNORECASE,
             ),
-            re.compile(r"\b(drug|alcohol|cigarette|smoke|beer|wine)\b", re.IGNORECASE),
+            re.compile(
+                r"\b(drug|alcohol|cigarette|smoke|beer|wine)\b", re.IGNORECASE
+            ),
             re.compile(r"\b(sex|sexual|porn|naked|nude)\b", re.IGNORECASE),
             re.compile(r"\b(hate|racist|discrimination)\b", re.IGNORECASE),
-            re.compile(r"\b(scary|horror|nightmare|terrifying)\b", re.IGNORECASE),
+            re.compile(
+                r"\b(scary|horror|nightmare|terrifying)\b", re.IGNORECASE
+            ),
         ]
 
         # Personal information patterns (PII)
         self.pii_patterns = [
             re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),  # SSN
-            re.compile(r"\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b"),  # Credit card
+            re.compile(
+                r"\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b"
+            ),  # Credit card
             re.compile(r"\b\d{3}[\s-]?\d{3}[\s-]?\d{4}\b"),  # Phone number
-            re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),  # Email
+            re.compile(
+                r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+            ),  # Email
             re.compile(
                 r"\b\d{1,5}\s+([A-Za-z]+\s+){1,3}(Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Boulevard|Blvd)\b",
                 re.IGNORECASE,

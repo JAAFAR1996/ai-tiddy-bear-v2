@@ -46,7 +46,9 @@ class EncryptionService:
             # Get primary encryption key
             primary_key = os.getenv("COPPA_ENCRYPTION_KEY")
             if not primary_key:
-                logger.critical("COPPA_ENCRYPTION_KEY not found in environment")
+                logger.critical(
+                    "COPPA_ENCRYPTION_KEY not found in environment"
+                )
                 raise EncryptionKeyError(
                     "COPPA_ENCRYPTION_KEY environment variable is required. "
                     'Generate with: python -c "from cryptography.fernet import Fernet; '
@@ -66,7 +68,9 @@ class EncryptionService:
                 logger.warning("Encryption key rotation is recommended")
         except Exception as e:
             logger.critical(f"Failed to initialize encryption service: {e!s}")
-            raise EncryptionKeyError(f"Encryption initialization failed: {e!s}")
+            raise EncryptionKeyError(
+                f"Encryption initialization failed: {e!s}"
+            )
 
     def _validate_encryption_key(self, key: str) -> None:
         """Validate encryption key meets security requirements."""
@@ -95,7 +99,9 @@ class EncryptionService:
     def _derive_key(self, master_key: str) -> bytes:
         """Derive encryption key using PBKDF2."""
         # Use application-specific salt
-        salt = os.getenv("PBKDF2_SALT", secrets.token_bytes(16).hex()).encode("utf-8")
+        salt = os.getenv("PBKDF2_SALT", secrets.token_bytes(16).hex()).encode(
+            "utf-8"
+        )
         if os.getenv("PBKDF2_SALT") is None:
             logger.warning(
                 "PBKDF2_SALT not found in environment, using randomly generated salt.",
@@ -106,7 +112,9 @@ class EncryptionService:
             salt=salt,
             iterations=100000,  # OWASP recommended minimum
         )
-        key_bytes = master_key.encode() if isinstance(master_key, str) else master_key
+        key_bytes = (
+            master_key.encode() if isinstance(master_key, str) else master_key
+        )
         derived_key = base64.urlsafe_b64encode(kdf.derive(key_bytes))
         return derived_key
 
@@ -185,7 +193,9 @@ class EncryptionService:
         # Return base64-encoded result
         return base64.b64encode(encrypted).decode("utf-8")
 
-    def decrypt(self, encrypted_data: str | bytes) -> str | bytes | dict[str, Any]:
+    def decrypt(
+        self, encrypted_data: str | bytes
+    ) -> str | bytes | dict[str, Any]:
         """Decrypt data with support for key rotation.
         Handles multiple key versions for smooth rotation.
         """
@@ -263,7 +273,9 @@ class EncryptionService:
         return {
             "version": self._key_version,
             "created_at": (
-                self._key_created_at.isoformat() if self._key_created_at else None
+                self._key_created_at.isoformat()
+                if self._key_created_at
+                else None
             ),
             "rotation_needed": self._is_key_rotation_needed(),
             "algorithm": "Fernet-PBKDF2",

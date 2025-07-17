@@ -20,10 +20,14 @@ def federation_config():
     return FederationConfig(
         services=[
             ServiceConfig(
-                name="child_service", url="http://localhost:8001", schema_path="/schema"
+                name="child_service",
+                url="http://localhost:8001",
+                schema_path="/schema",
             ),
             ServiceConfig(
-                name="ai_service", url="http://localhost:8002", schema_path="/schema"
+                name="ai_service",
+                url="http://localhost:8002",
+                schema_path="/schema",
             ),
         ],
         enable_authentication=True,
@@ -50,8 +54,9 @@ async def federation_gateway(federation_config):
     await gateway.cleanup()
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE,
-                    reason="Federation not available")
+@pytest.mark.skipif(
+    not FEDERATION_AVAILABLE, reason="Federation not available"
+)
 class TestGraphQLFederationGateway:
     """Test GraphQL Federation Gateway."""
 
@@ -62,7 +67,9 @@ class TestGraphQLFederationGateway:
 
         # Mock dependencies
         gateway.http_client = AsyncMock()
-        gateway.http_client.get.return_value.__aenter__.return_value.status_code = 200
+        gateway.http_client.get.return_value.__aenter__.return_value.status_code = (
+            200
+        )
 
         result = await gateway.initialize()
         assert result is True
@@ -91,7 +98,9 @@ class TestGraphQLFederationGateway:
         assert "child_service" in services
 
         # Test AI service detection
-        query = 'query { child(id: "123") { aiProfile { personalityTraits } } }'
+        query = (
+            'query { child(id: "123") { aiProfile { personalityTraits } } }'
+        )
         services = federation_gateway._analyze_query_services(query)
         assert "ai_service" in services
 

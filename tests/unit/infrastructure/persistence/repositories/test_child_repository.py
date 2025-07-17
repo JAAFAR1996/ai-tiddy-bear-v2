@@ -9,8 +9,9 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from sqlalchemy.exc import IntegrityError
-from src.infrastructure.persistence.repositories.child_repository import ChildRepository
+from src.infrastructure.persistence.repositories.child_repository import (
+    ChildRepository,
+)
 from src.infrastructure.persistence.models.child_model import ChildModel
 from src.infrastructure.persistence.database import Database
 from src.infrastructure.security.database_input_validator import SecurityError
@@ -61,20 +62,28 @@ class TestChildRepositoryCreate:
 
     @pytest.mark.asyncio
     async def test_create_child_success(
-        self, child_repository, mock_database, mock_consent_manager, sample_child_data
+        self,
+        child_repository,
+        mock_database,
+        mock_consent_manager,
+        sample_child_data,
     ):
         """Test successful child profile creation with parental consent."""
         # Arrange
         parent_id = str(uuid4())
         mock_session = AsyncMock()
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
             return_value={"data": sample_child_data},
         ):
             # Act
-            child_id = await child_repository.create_child(parent_id, sample_child_data)
+            child_id = await child_repository.create_child(
+                parent_id, sample_child_data
+            )
 
             # Assert
             assert child_id is not None
@@ -93,7 +102,9 @@ class TestChildRepositoryCreate:
         mock_consent_manager.has_consent.return_value = False
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Parent has not provided COPPA consent"):
+        with pytest.raises(
+            ValueError, match="Parent has not provided COPPA consent"
+        ):
             await child_repository.create_child(parent_id, sample_child_data)
 
     @pytest.mark.asyncio
@@ -141,7 +152,9 @@ class TestChildRepositoryCreate:
         parent_id = str(uuid4())
         mock_session = AsyncMock()
         mock_session.commit.side_effect = Exception("Database connection lost")
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
@@ -149,7 +162,9 @@ class TestChildRepositoryCreate:
         ):
             # Act & Assert
             with pytest.raises(RuntimeError, match="Database error"):
-                await child_repository.create_child(parent_id, sample_child_data)
+                await child_repository.create_child(
+                    parent_id, sample_child_data
+                )
 
 
 class TestChildRepositoryRead:
@@ -175,7 +190,9 @@ class TestChildRepositoryRead:
         mock_result.scalar_one_or_none.return_value = mock_child
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await child_repository.get_child(child_id)
@@ -197,7 +214,9 @@ class TestChildRepositoryRead:
         mock_result.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await child_repository.get_child(str(uuid4()))
@@ -232,7 +251,9 @@ class TestChildRepositoryRead:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await child_repository.get_children_by_parent(parent_id)
@@ -245,7 +266,8 @@ class TestChildRepositoryRead:
 
     @pytest.mark.asyncio
     async def test_get_children_by_parent_empty(
-            self, child_repository, mock_database):
+        self, child_repository, mock_database
+    ):
         """Test retrieving children for parent with no children."""
         # Arrange
         parent_id = str(uuid4())
@@ -257,7 +279,9 @@ class TestChildRepositoryRead:
         mock_result.scalars.return_value = mock_scalars
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await child_repository.get_children_by_parent(parent_id)
@@ -276,7 +300,10 @@ class TestChildRepositoryUpdate:
         child_id = str(uuid4())
         updates = {
             "age": 9,
-            "preferences": {"favorite_color": "green", "favorite_animal": "tiger"},
+            "preferences": {
+                "favorite_color": "green",
+                "favorite_animal": "tiger",
+            },
         }
 
         mock_session = AsyncMock()
@@ -284,7 +311,9 @@ class TestChildRepositoryUpdate:
         mock_result.rowcount = 1
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
@@ -312,7 +341,9 @@ class TestChildRepositoryUpdate:
         mock_result.rowcount = 1
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
@@ -327,7 +358,8 @@ class TestChildRepositoryUpdate:
 
     @pytest.mark.asyncio
     async def test_update_child_not_found(
-            self, child_repository, mock_database):
+        self, child_repository, mock_database
+    ):
         """Test updating non-existent child profile."""
         # Arrange
         child_id = str(uuid4())
@@ -338,7 +370,9 @@ class TestChildRepositoryUpdate:
         mock_result.rowcount = 0
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
@@ -358,7 +392,8 @@ class TestChildRepositoryUpdate:
         # Arrange
         child_id = str(uuid4())
         updates = {
-            "name": "'; UPDATE children SET parent_id = '123' WHERE 1=1; --"}
+            "name": "'; UPDATE children SET parent_id = '123' WHERE 1=1; --"
+        }
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
@@ -384,13 +419,17 @@ class TestChildRepositoryEdgeCases:
         data_age_0["age"] = 0
 
         mock_session = AsyncMock()
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
             return_value={"data": data_age_0},
         ):
-            child_id = await child_repository.create_child(parent_id, data_age_0)
+            child_id = await child_repository.create_child(
+                parent_id, data_age_0
+            )
             assert child_id is not None
 
     @pytest.mark.asyncio
@@ -404,17 +443,22 @@ class TestChildRepositoryEdgeCases:
         child_data = {
             "name": "TestChild",
             "age": 8,
-            "preferences": large_preferences}
+            "preferences": large_preferences,
+        }
 
         mock_session = AsyncMock()
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.child_repository.validate_database_operation",
             return_value={"data": child_data},
         ):
             # Act
-            child_id = await child_repository.create_child(parent_id, child_data)
+            child_id = await child_repository.create_child(
+                parent_id, child_data
+            )
 
             # Assert
             assert child_id is not None
@@ -429,7 +473,9 @@ class TestChildRepositoryEdgeCases:
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Connection timeout")
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="Database error"):

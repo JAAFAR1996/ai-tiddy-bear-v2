@@ -1,8 +1,12 @@
-"""from dataclasses import asdictfrom datetime import datetime, timedeltafrom typing import Any, Dict, List, Optional, Unionimport asyncioimport jsonimport loggingimport redis.asyncio as redis."""
+"""Production Redis Caching Implementation
+High-performance caching layer with comprehensive features"""
 
-"""Production Redis Caching ImplementationHigh - performance caching layer with comprehensive features"""
+import asyncio
 import json
-from typing import Any
+import logging
+from dataclasses import asdict
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Union
 
 import redis.asyncio as redis
 
@@ -12,14 +16,14 @@ logger = get_logger(__name__, component="infrastructure")
 
 
 class RedisCache:
-    """Production - ready Redis caching implementation
+    """Production-ready Redis caching implementation
     Comprehensive caching strategy to solve performance issues.
     """
 
     def __init__(self, redis_url: str, default_ttl: int = 3600) -> None:
         self.redis_url = redis_url
         self.default_ttl = default_ttl
-        self.redis_client: redis.Redis | None = None
+        self.redis_client: Optional[redis.Redis] = None
 
     async def initialize(self) -> None:
         """Initialize Redis connection."""
@@ -39,7 +43,7 @@ class RedisCache:
             logger.error(f"Failed to initialize Redis cache: {e}")
             raise RuntimeError(f"Cache initialization failed: {e}") from e
 
-    async def get(self, key: str) -> Any | None:
+    async def get(self, key: str) -> Optional[Any]:
         """Get value from cache."""
         try:
             if not self.redis_client:
@@ -52,7 +56,7 @@ class RedisCache:
             logger.warning(f"Cache get failed for key '{key}': {e}")
             return None
 
-    async def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
+    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """Set value in cache with TTL."""
         try:
             if not self.redis_client:

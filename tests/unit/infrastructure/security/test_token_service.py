@@ -4,9 +4,8 @@ Testing JWT token creation, verification, and management for child safety.
 """
 
 import pytest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
 
 from src.infrastructure.security.token_service import TokenService
 
@@ -40,12 +39,20 @@ class TestTokenService:
     @pytest.fixture
     def sample_user_data(self):
         """Sample user data for token creation."""
-        return {"id": "user_123", "email": "test@example.com", "role": "parent"}
+        return {
+            "id": "user_123",
+            "email": "test@example.com",
+            "role": "parent",
+        }
 
     @pytest.fixture
     def sample_child_user_data(self):
         """Sample child user data for token creation."""
-        return {"id": "child_456", "email": "child@example.com", "role": "child"}
+        return {
+            "id": "child_456",
+            "email": "child@example.com",
+            "role": "child",
+        }
 
     def test_token_service_initialization(self, token_service, mock_settings):
         """Test TokenService initialization."""
@@ -70,7 +77,8 @@ class TestTokenService:
         ):
             with patch("src.infrastructure.security.token_service.Depends"):
                 with pytest.raises(
-                    ValueError, match="SECRET_KEY must be at least 32 characters long"
+                    ValueError,
+                    match="SECRET_KEY must be at least 32 characters long",
                 ):
                     TokenService(mock_settings)
 
@@ -84,7 +92,8 @@ class TestTokenService:
         ):
             with patch("src.infrastructure.security.token_service.Depends"):
                 with pytest.raises(
-                    ValueError, match="SECRET_KEY must be at least 32 characters long"
+                    ValueError,
+                    match="SECRET_KEY must be at least 32 characters long",
                 ):
                     TokenService(mock_settings)
 
@@ -98,12 +107,14 @@ class TestTokenService:
         ):
             with patch("src.infrastructure.security.token_service.Depends"):
                 with pytest.raises(
-                    ValueError, match="SECRET_KEY must be at least 32 characters long"
+                    ValueError,
+                    match="SECRET_KEY must be at least 32 characters long",
                 ):
                     TokenService(mock_settings)
 
     def test_create_access_token_valid_user(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test creating access token with valid user data."""
         with patch(
             "src.infrastructure.security.token_service.jwt.encode"
@@ -146,7 +157,8 @@ class TestTokenService:
             assert payload["sub"] == sample_child_user_data["id"]
 
     def test_create_access_token_expiration_time(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test access token expiration time calculation."""
         with patch(
             "src.infrastructure.security.token_service.jwt.encode"
@@ -183,7 +195,8 @@ class TestTokenService:
             token_service.create_access_token(invalid_user_data)
 
     def test_create_access_token_jwt_error(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test creating access token with JWT encoding error."""
         with patch(
             "src.infrastructure.security.token_service.jwt.encode"
@@ -192,11 +205,14 @@ class TestTokenService:
 
             mock_encode.side_effect = JWTError("JWT encoding failed")
 
-            with pytest.raises(ValueError, match="Failed to create access token"):
+            with pytest.raises(
+                ValueError, match="Failed to create access token"
+            ):
                 token_service.create_access_token(sample_user_data)
 
     def test_create_refresh_token_valid_user(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test creating refresh token with valid user data."""
         with patch(
             "src.infrastructure.security.token_service.jwt.encode"
@@ -277,7 +293,8 @@ class TestTokenService:
             token_service.create_refresh_token(invalid_user_data)
 
     def test_create_refresh_token_jwt_error(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test creating refresh token with JWT encoding error."""
         with patch(
             "src.infrastructure.security.token_service.jwt.encode"
@@ -286,7 +303,9 @@ class TestTokenService:
 
             mock_encode.side_effect = JWTError("JWT encoding failed")
 
-            with pytest.raises(ValueError, match="Failed to create refresh token"):
+            with pytest.raises(
+                ValueError, match="Failed to create refresh token"
+            ):
                 token_service.create_refresh_token(sample_user_data)
 
     @pytest.mark.asyncio
@@ -367,7 +386,8 @@ class TestTokenService:
             from jose import jwt
 
             mock_decode.side_effect = jwt.ExpiredSignatureError(
-                "Token has expired")
+                "Token has expired"
+            )
 
             result = await token_service.verify_token("expired_token")
 
@@ -424,9 +444,12 @@ class TestTokenService:
         assert hasattr(logger, "debug")
 
     def test_token_service_logging_calls(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test TokenService logging calls."""
-        with patch("src.infrastructure.security.token_service.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.token_service.logger"
+        ) as mock_logger:
             # Test error logging for invalid user data
             with pytest.raises(ValueError):
                 token_service.create_access_token({"invalid": "data"})
@@ -449,7 +472,9 @@ class TestTokenService:
     @pytest.mark.asyncio
     async def test_token_service_verify_logging(self, token_service):
         """Test TokenService verify token logging."""
-        with patch("src.infrastructure.security.token_service.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.token_service.logger"
+        ) as mock_logger:
             # Test debug logging for expired token
             with patch(
                 "src.infrastructure.security.token_service.jwt.decode"
@@ -457,7 +482,8 @@ class TestTokenService:
                 from jose import jwt
 
                 mock_decode.side_effect = jwt.ExpiredSignatureError(
-                    "Token expired")
+                    "Token expired"
+                )
 
                 result = await token_service.verify_token("expired_token")
 
@@ -510,7 +536,11 @@ class TestTokenServiceIntegration:
     @pytest.fixture
     def sample_user_data(self):
         """Sample user data for token creation."""
-        return {"id": "user_123", "email": "test@example.com", "role": "parent"}
+        return {
+            "id": "user_123",
+            "email": "test@example.com",
+            "role": "parent",
+        }
 
     def test_token_creation_and_verification_flow(
         self, token_service, sample_user_data
@@ -533,7 +563,8 @@ class TestTokenServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_token_roundtrip_verification(
-            self, token_service, sample_user_data):
+        self, token_service, sample_user_data
+    ):
         """Test token roundtrip (create and verify)."""
         # Create token
         access_token = token_service.create_access_token(sample_user_data)
@@ -562,7 +593,9 @@ class TestTokenServiceIntegration:
         assert verified_payload["sub"] == sample_user_data["id"]
         assert verified_payload["email"] == sample_user_data["email"]
         assert verified_payload["type"] == "refresh"
-        assert "role" not in verified_payload  # Refresh tokens don't include role
+        assert (
+            "role" not in verified_payload
+        )  # Refresh tokens don't include role
 
     def test_multiple_users_token_creation(self, token_service):
         """Test token creation for multiple users."""
@@ -591,7 +624,9 @@ class TestTokenServiceIntegration:
                 "src.infrastructure.security.token_service.get_settings",
                 return_value=mock_settings,
             ):
-                with patch("src.infrastructure.security.token_service.Depends"):
+                with patch(
+                    "src.infrastructure.security.token_service.Depends"
+                ):
                     service = TokenService(mock_settings)
                     assert service.algorithm == algorithm
 
@@ -608,7 +643,9 @@ class TestTokenServiceIntegration:
                 "src.infrastructure.security.token_service.get_settings",
                 return_value=mock_settings,
             ):
-                with patch("src.infrastructure.security.token_service.Depends"):
+                with patch(
+                    "src.infrastructure.security.token_service.Depends"
+                ):
                     service = TokenService(mock_settings)
                     assert service.access_token_expire_minutes == exp_time
 
@@ -628,7 +665,8 @@ class TestTokenServiceIntegration:
         # Create tokens for child
         child_access_token = token_service.create_access_token(child_user_data)
         child_refresh_token = token_service.create_refresh_token(
-            child_user_data)
+            child_user_data
+        )
 
         assert child_access_token is not None
         assert child_refresh_token is not None
@@ -648,10 +686,14 @@ class TestTokenServiceIntegration:
         ]
 
         for error_case in error_cases:
-            with pytest.raises(ValueError, match="Failed to create access token"):
+            with pytest.raises(
+                ValueError, match="Failed to create access token"
+            ):
                 token_service.create_access_token(error_case)
 
-            with pytest.raises(ValueError, match="Failed to create refresh token"):
+            with pytest.raises(
+                ValueError, match="Failed to create refresh token"
+            ):
                 token_service.create_refresh_token(error_case)
 
     def test_token_service_security_best_practices(
@@ -702,7 +744,8 @@ class TestTokenServiceIntegration:
         tasks = []
         for _ in range(10):
             task = asyncio.create_task(
-                token_service.verify_token(access_token))
+                token_service.verify_token(access_token)
+            )
             tasks.append(task)
 
         results = await asyncio.gather(*tasks)
@@ -710,5 +753,6 @@ class TestTokenServiceIntegration:
         # All results should be the same
         assert len(results) == 10
         assert all(result is not None for result in results)
-        assert all(result["sub"] == sample_user_data["id"]
-                   for result in results)
+        assert all(
+            result["sub"] == sample_user_data["id"] for result in results
+        )

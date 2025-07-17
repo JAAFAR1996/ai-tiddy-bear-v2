@@ -79,7 +79,9 @@ def enforce_production_safety() -> None:
         env_set_secure("SECURE_COOKIES", "True")
         env_set_secure("FORCE_HTTPS", "True")
 
-        logger.warning("Production environment detected - enforcing security settings:")
+        logger.warning(
+            "Production environment detected - enforcing security settings:"
+        )
         logger.warning("  - DEBUG: False (forced)")
         logger.warning("  - CONTENT_MODERATION_ENABLED: True (forced)")
         logger.warning("  - COPPA_COMPLIANCE_MODE: True (forced)")

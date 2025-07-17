@@ -6,7 +6,9 @@ Testing federated learning operations functionality.
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
 
-from src.application.services.federated_learning_service import FederatedLearningService
+from src.application.services.federated_learning_service import (
+    FederatedLearningService,
+)
 from src.application.interfaces.read_model_interfaces import IEventBus
 
 
@@ -77,7 +79,8 @@ class TestFederatedLearningService:
             assert model["bias"] == 0.05
 
             mock_logger.info.assert_called_once_with(
-                "Initializing global model...")
+                "Initializing global model..."
+            )
 
     @pytest.mark.asyncio
     async def test_process_local_model_update_success(self, service):
@@ -97,16 +100,19 @@ class TestFederatedLearningService:
 
             # Assert
             mock_logger.info.assert_called()
-            log_calls = [call[0][0]
-                         for call in mock_logger.info.call_args_list]
+            log_calls = [
+                call[0][0] for call in mock_logger.info.call_args_list
+            ]
             assert any(
-                "Received local model update" in log for log in log_calls)
+                "Received local model update" in log for log in log_calls
+            )
             assert any("Aggregating model update" in log for log in log_calls)
 
             # Check that global model was updated
             for i, original_weight in enumerate(original_weights):
                 expected_weight = (
-                    original_weight + local_update["weights"][i]) / 2
+                    original_weight + local_update["weights"][i]
+                ) / 2
                 assert service.global_model["weights"][i] == expected_weight
 
             expected_bias = (original_bias + local_update["bias"]) / 2
@@ -137,7 +143,9 @@ class TestFederatedLearningService:
 
         local_update = {"weights": [0.3, 0.4, 0.5], "bias": 0.15}
 
-        with patch("src.application.services.federated_learning_service.logger"):
+        with patch(
+            "src.application.services.federated_learning_service.logger"
+        ):
             service._aggregate_model_update(local_update)
 
         # Check simple averaging: (global + local) / 2
@@ -165,7 +173,9 @@ class TestFederatedLearningService:
             # Reset to known state
             service.global_model = {"weights": [0.1, 0.2, 0.3], "bias": 0.05}
 
-            with patch("src.application.services.federated_learning_service.logger"):
+            with patch(
+                "src.application.services.federated_learning_service.logger"
+            ):
                 service._aggregate_model_update(update)
 
             # Verify aggregation completed without errors
@@ -189,7 +199,9 @@ class TestFederatedLearningService:
         # Process some updates
         local_update = {"weights": [0.2, 0.3, 0.4], "bias": 0.1}
 
-        with patch("src.application.services.federated_learning_service.logger"):
+        with patch(
+            "src.application.services.federated_learning_service.logger"
+        ):
             service._aggregate_model_update(local_update)
 
         model = service.get_global_model()
@@ -242,12 +254,17 @@ class TestFederatedLearningService:
             # Check logging calls
             assert mock_logger.info.call_count >= 2
 
-            log_messages = [call[0][0]
-                            for call in mock_logger.info.call_args_list]
+            log_messages = [
+                call[0][0] for call in mock_logger.info.call_args_list
+            ]
 
             # Should log receiving the update
             receive_log = next(
-                (msg for msg in log_messages if "Received local model update" in msg),
+                (
+                    msg
+                    for msg in log_messages
+                    if "Received local model update" in msg
+                ),
                 None,
             )
             assert receive_log is not None
@@ -255,7 +272,12 @@ class TestFederatedLearningService:
 
             # Should log aggregating the update
             aggregate_log = next(
-                (msg for msg in log_messages if "Aggregating model update" in msg), None
+                (
+                    msg
+                    for msg in log_messages
+                    if "Aggregating model update" in msg
+                ),
+                None,
             )
             assert aggregate_log is not None
 
@@ -307,7 +329,9 @@ class TestFederatedLearningService:
         ]
 
         for update in updates:
-            with patch("src.application.services.federated_learning_service.logger"):
+            with patch(
+                "src.application.services.federated_learning_service.logger"
+            ):
                 service._aggregate_model_update(update)
 
         # Model should have changed from initial state
@@ -334,7 +358,9 @@ class TestFederatedLearningService:
         update = {"weights": [0.2, 0.3, 0.4], "bias": 0.1}
 
         for device_id in device_ids:
-            with patch("src.application.services.federated_learning_service.logger"):
+            with patch(
+                "src.application.services.federated_learning_service.logger"
+            ):
                 await service.process_local_model_update(device_id, update)
 
             # Should process without errors regardless of device ID format
@@ -347,7 +373,9 @@ class TestFederatedLearningService:
         # Apply known update
         local_update = {"weights": [3.0, 4.0, 5.0], "bias": 1.5}
 
-        with patch("src.application.services.federated_learning_service.logger"):
+        with patch(
+            "src.application.services.federated_learning_service.logger"
+        ):
             service._aggregate_model_update(local_update)
 
         # Check mathematical correctness of simple averaging
@@ -379,9 +407,12 @@ class TestFederatedLearningService:
         service2 = FederatedLearningService()
 
         # Modify first service
-        with patch("src.application.services.federated_learning_service.logger"):
+        with patch(
+            "src.application.services.federated_learning_service.logger"
+        ):
             service1._aggregate_model_update(
-                {"weights": [1.0, 1.0, 1.0], "bias": 1.0})
+                {"weights": [1.0, 1.0, 1.0], "bias": 1.0}
+            )
 
         # Second service should be unaffected
         model1 = service1.get_global_model()

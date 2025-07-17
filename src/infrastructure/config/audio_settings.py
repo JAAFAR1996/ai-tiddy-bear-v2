@@ -14,7 +14,9 @@ from src.infrastructure.config.base_settings import BaseApplicationSettings
 class AudioSettings(BaseApplicationSettings):
     """Configuration settings for audio processing."""
 
-    MAX_AUDIO_DURATION_SECONDS: int = Field(30, env="MAX_AUDIO_DURATION_SECONDS")
+    MAX_AUDIO_DURATION_SECONDS: int = Field(
+        30, env="MAX_AUDIO_DURATION_SECONDS"
+    )
     MAX_FILE_SIZE_MB: int = Field(10, env="MAX_FILE_SIZE_MB")
     SUPPORTED_AUDIO_FORMATS: str = Field(
         "audio/wav,audio/mpeg,audio/mp3",

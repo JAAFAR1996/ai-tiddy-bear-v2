@@ -8,7 +8,7 @@ AI-driven recommendations for child-specific interactions.
 
 import pytest
 import logging
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import Mock, patch
 from uuid import UUID, uuid4
 from datetime import datetime
 from typing import Dict, Any, List
@@ -16,11 +16,10 @@ from typing import Dict, Any, List
 from src.application.services.advanced_personalization_service import (
     AdvancedPersonalizationService,
 )
-from src.domain.value_objects.personality import ChildPersonality, PersonalityType
-from src.domain.interfaces.personality_profile_repository import (
-    IPersonalityProfileRepository,
+from src.domain.value_objects.personality import (
+    ChildPersonality,
+    PersonalityType,
 )
-from src.application.interfaces.ai_provider import AIProvider
 
 
 class MockPersonalityProfileRepository:
@@ -41,7 +40,8 @@ class MockPersonalityProfileRepository:
         self.profiles[profile.child_id] = profile
 
     async def get_profile_by_child_id(
-            self, child_id: UUID) -> ChildPersonality | None:
+        self, child_id: UUID
+    ) -> ChildPersonality | None:
         """Mock get_profile_by_child_id implementation."""
         self.get_profile_by_child_id_called = True
         if self.should_raise_exception:
@@ -80,7 +80,10 @@ class MockAIProvider:
         return self.personality_analysis_result
 
     async def generate_personalized_content(
-        self, child_id: UUID, profile_dict: Dict[str, Any], context: Dict[str, Any]
+        self,
+        child_id: UUID,
+        profile_dict: Dict[str, Any],
+        context: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Mock generate_personalized_content implementation."""
         self.generate_personalized_content_called = True
@@ -164,7 +167,8 @@ class TestAdvancedPersonalizationService:
             "src.application.services.advanced_personalization_service.logger"
         ) as mock_default_logger:
             service = AdvancedPersonalizationService(
-                mock_repository, mock_ai_provider)
+                mock_repository, mock_ai_provider
+            )
             assert service.logger is mock_default_logger
 
     @pytest.mark.asyncio
@@ -245,7 +249,9 @@ class TestAdvancedPersonalizationService:
         """Test fallback behavior when AI analysis fails."""
         # Arrange
         personalization_service.ai_provider.should_raise_exception = True
-        personalization_service.ai_provider.exception_message = "AI service unavailable"
+        personalization_service.ai_provider.exception_message = (
+            "AI service unavailable"
+        )
 
         # Act
         result = await personalization_service.create_personality_profile(
@@ -259,7 +265,10 @@ class TestAdvancedPersonalizationService:
         assert result.interests == ["general"]
         assert result.learning_style == "mixed"
         assert result.metadata["error"] == "AI service unavailable"
-        assert result.metadata["fallback_reason"] == "AI personality analysis failed"
+        assert (
+            result.metadata["fallback_reason"]
+            == "AI personality analysis failed"
+        )
 
         # Verify error was logged
         personalization_service.logger.error.assert_called()
@@ -287,19 +296,25 @@ class TestAdvancedPersonalizationService:
     ):
         """Test successful retrieval of existing personality profile."""
         # Arrange - Create profile first
-        created_profile = await personalization_service.create_personality_profile(
-            sample_child_id, sample_interactions
+        created_profile = (
+            await personalization_service.create_personality_profile(
+                sample_child_id, sample_interactions
+            )
         )
 
         # Act
-        result = await personalization_service.get_personality_profile(sample_child_id)
+        result = await personalization_service.get_personality_profile(
+            sample_child_id
+        )
 
         # Assert
         assert result is not None
         assert isinstance(result, ChildPersonality)
         assert result.child_id == sample_child_id
         assert result.personality_type == created_profile.personality_type
-        assert personalization_service.repository.get_profile_by_child_id_called
+        assert (
+            personalization_service.repository.get_profile_by_child_id_called
+        )
 
     @pytest.mark.asyncio
     async def test_get_personality_profile_not_found(
@@ -307,11 +322,15 @@ class TestAdvancedPersonalizationService:
     ):
         """Test retrieval of non-existent personality profile."""
         # Act
-        result = await personalization_service.get_personality_profile(sample_child_id)
+        result = await personalization_service.get_personality_profile(
+            sample_child_id
+        )
 
         # Assert
         assert result is None
-        assert personalization_service.repository.get_profile_by_child_id_called
+        assert (
+            personalization_service.repository.get_profile_by_child_id_called
+        )
 
     @pytest.mark.asyncio
     async def test_get_personality_profile_logging_found(
@@ -337,7 +356,10 @@ class TestAdvancedPersonalizationService:
 
         personalization_service.logger.info.assert_called_once()
         info_call = personalization_service.logger.info.call_args[0][0]
-        assert f"Personality profile found for child: {sample_child_id}" in info_call
+        assert (
+            f"Personality profile found for child: {sample_child_id}"
+            in info_call
+        )
 
     @pytest.mark.asyncio
     async def test_get_personality_profile_logging_not_found(
@@ -358,7 +380,8 @@ class TestAdvancedPersonalizationService:
         personalization_service.logger.info.assert_called_once()
         info_call = personalization_service.logger.info.call_args[0][0]
         assert (
-            f"Personality profile not found for child: {sample_child_id}" in info_call
+            f"Personality profile not found for child: {sample_child_id}"
+            in info_call
         )
 
     @pytest.mark.asyncio
@@ -372,7 +395,9 @@ class TestAdvancedPersonalizationService:
         )
 
         # Act
-        result = await personalization_service.get_personalized_content(sample_child_id)
+        result = await personalization_service.get_personalized_content(
+            sample_child_id
+        )
 
         # Assert
         assert result is not None
@@ -382,7 +407,9 @@ class TestAdvancedPersonalizationService:
         assert result["difficulty_level"] == "medium"
 
         # Verify AI provider was called
-        assert personalization_service.ai_provider.generate_personalized_content_called
+        assert (
+            personalization_service.ai_provider.generate_personalized_content_called
+        )
 
     @pytest.mark.asyncio
     async def test_get_personalized_content_no_profile(
@@ -390,7 +417,9 @@ class TestAdvancedPersonalizationService:
     ):
         """Test personalized content generation when no profile exists."""
         # Act
-        result = await personalization_service.get_personalized_content(sample_child_id)
+        result = await personalization_service.get_personalized_content(
+            sample_child_id
+        )
 
         # Assert
         assert result is None
@@ -398,7 +427,10 @@ class TestAdvancedPersonalizationService:
         # Verify logging
         personalization_service.logger.info.assert_called_once()
         info_call = personalization_service.logger.info.call_args[0][0]
-        assert f"No personality profile found for child {sample_child_id}" in info_call
+        assert (
+            f"No personality profile found for child {sample_child_id}"
+            in info_call
+        )
 
     @pytest.mark.asyncio
     async def test_get_personalized_content_ai_error_fallback(
@@ -415,7 +447,9 @@ class TestAdvancedPersonalizationService:
         )
 
         # Act
-        result = await personalization_service.get_personalized_content(sample_child_id)
+        result = await personalization_service.get_personalized_content(
+            sample_child_id
+        )
 
         # Assert
         assert result is not None
@@ -499,7 +533,9 @@ class TestAdvancedPersonalizationService:
         """Test fallback behavior when AI analysis fails."""
         # Arrange
         personalization_service.ai_provider.should_raise_exception = True
-        personalization_service.ai_provider.exception_message = "AI analysis failed"
+        personalization_service.ai_provider.exception_message = (
+            "AI analysis failed"
+        )
 
         # Act
         result = await personalization_service._analyze_interactions(
@@ -513,7 +549,10 @@ class TestAdvancedPersonalizationService:
         assert result.learning_style == "mixed"
         assert result.interaction_preferences == {}
         assert result.metadata["error"] == "AI analysis failed"
-        assert result.metadata["fallback_reason"] == "AI personality analysis failed"
+        assert (
+            result.metadata["fallback_reason"]
+            == "AI personality analysis failed"
+        )
 
     @pytest.mark.asyncio
     async def test_personality_type_mapping(
@@ -551,8 +590,10 @@ class TestAdvancedPersonalizationService:
     ):
         """Test complete workflow of creating profile and getting content."""
         # Create profile
-        created_profile = await personalization_service.create_personality_profile(
-            sample_child_id, sample_interactions
+        created_profile = (
+            await personalization_service.create_personality_profile(
+                sample_child_id, sample_interactions
+            )
         )
 
         # Get personalized content
@@ -603,15 +644,20 @@ class TestAdvancedPersonalizationService:
         assert profile_1.personality_type != profile_2.personality_type
 
         # Verify retrieval
-        retrieved_1 = await personalization_service.get_personality_profile(child_id_1)
-        retrieved_2 = await personalization_service.get_personality_profile(child_id_2)
+        retrieved_1 = await personalization_service.get_personality_profile(
+            child_id_1
+        )
+        retrieved_2 = await personalization_service.get_personality_profile(
+            child_id_2
+        )
 
         assert retrieved_1.child_id == child_id_1
         assert retrieved_2.child_id == child_id_2
 
     @pytest.mark.asyncio
     async def test_concurrent_profile_operations(
-            self, personalization_service):
+        self, personalization_service
+    ):
         """Test concurrent profile creation and retrieval."""
         import asyncio
 
@@ -625,7 +671,8 @@ class TestAdvancedPersonalizationService:
         # Act - Create profiles concurrently
         create_tasks = [
             personalization_service.create_personality_profile(
-                child_id, interactions)
+                child_id, interactions
+            )
             for child_id, interactions in zip(child_ids, interactions_list)
         ]
         created_profiles = await asyncio.gather(*create_tasks)
@@ -682,7 +729,9 @@ class TestAdvancedPersonalizationService:
     ):
         """Test that metadata is preserved throughout the process."""
         # Arrange
-        personalization_service.ai_provider.personality_analysis_result["metadata"] = {
+        personalization_service.ai_provider.personality_analysis_result[
+            "metadata"
+        ] = {
             "confidence": 0.95,
             "analysis_version": "1.0",
             "custom_field": "test_value",
@@ -713,10 +762,14 @@ class TestAdvancedPersonalizationService:
             "src.application.services.advanced_personalization_service.datetime"
         ) as mock_datetime:
             mock_datetime.now.return_value = datetime(2024, 1, 1, 12, 0, 0)
-            await personalization_service.get_personalized_content(sample_child_id)
+            await personalization_service.get_personalized_content(
+                sample_child_id
+            )
 
         # Assert
-        assert personalization_service.ai_provider.generate_personalized_content_called
+        assert (
+            personalization_service.ai_provider.generate_personalized_content_called
+        )
         # The context should include current_time
 
     @pytest.mark.asyncio
@@ -743,7 +796,9 @@ class TestAdvancedPersonalizationService:
 
         # Assert
         assert profile1.personality_type == PersonalityType.OTHER  # Fallback
-        assert profile2.personality_type == PersonalityType.CURIOUS  # Normal operation
+        assert (
+            profile2.personality_type == PersonalityType.CURIOUS
+        )  # Normal operation
 
     def test_personality_type_enum_coverage(self):
         """Test that PersonalityType enum has expected values."""
@@ -804,7 +859,8 @@ class TestAdvancedPersonalizationService:
         assert personality.metadata == {}
 
     def test_service_dependencies_injection(
-            self, mock_repository, mock_ai_provider):
+        self, mock_repository, mock_ai_provider
+    ):
         """Test that service properly accepts dependency injection."""
         # Different logger
         custom_logger = Mock(spec=logging.Logger)

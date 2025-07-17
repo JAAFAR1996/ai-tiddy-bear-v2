@@ -6,7 +6,6 @@ Ensures parental consent is properly enforced across all child data collection p
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
-from datetime import datetime
 
 from src.presentation.api.middleware.consent_verification import (
     ConsentVerificationRoute,
@@ -37,7 +36,8 @@ class TestConsentVerificationRoute:
         request.client.host = "127.0.0.1"
         request.state.user = {
             "user_id": "parent_123",
-            "email": "parent@test.com"}
+            "email": "parent@test.com",
+        }
         return request
 
     @pytest.mark.asyncio
@@ -82,7 +82,8 @@ class TestConsentVerificationRoute:
         """Test successful consent verification"""
         # Mock consent manager to return True for all consent types
         mock_consent_manager.verify_parental_consent = AsyncMock(
-            return_value=True)
+            return_value=True
+        )
 
         route = ConsentVerificationRoute(
             path="/children/{child_id}",
@@ -194,7 +195,8 @@ class TestConsentVerificationMiddleware:
         scope = {
             "type": "http",
             "path": "/api/v1/process-audio",
-            "method": "POST"}
+            "method": "POST",
+        }
 
         receive = AsyncMock()
         send = AsyncMock()
@@ -209,7 +211,9 @@ class TestConsentVerificationMiddleware:
 
             # Mock route extraction
             with patch.object(
-                ConsentVerificationRoute, "_extract_child_id", return_value="child_123"
+                ConsentVerificationRoute,
+                "_extract_child_id",
+                return_value="child_123",
             ) as mock_extract:
                 with patch.object(
                     ConsentVerificationRoute, "_verify_consent"
@@ -232,7 +236,9 @@ class TestRequireConsentDecorator:
 
         assert hasattr(test_function, "_consent_types")
         assert test_function._consent_types == [
-            "data_collection", "voice_recording"]
+            "data_collection",
+            "voice_recording",
+        ]
 
     def test_decorator_with_single_consent(self):
         """Test decorator with single consent type"""
@@ -273,7 +279,8 @@ class TestConsentIntegration:
         request.client.host = "127.0.0.1"
         request.state.user = {
             "user_id": "parent_123",
-            "email": "parent@test.com"}
+            "email": "parent@test.com",
+        }
 
         # 4. Test the workflow
         with patch(

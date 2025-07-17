@@ -10,8 +10,9 @@ import sys
 
 
 class MockConversationStarted:
-    def __init__(self, conversation_id, child_id,
-                 initial_message, metadata=None):
+    def __init__(
+        self, conversation_id, child_id, initial_message, metadata=None
+    ):
         self.conversation_id = conversation_id
         self.child_id = child_id
         self.initial_message = initial_message
@@ -166,7 +167,10 @@ class TestChildRegistered:
         }
 
         event = ChildRegistered.create(
-            child_id=child_id, name="María", age=8, preferences=complex_preferences
+            child_id=child_id,
+            name="María",
+            age=8,
+            preferences=complex_preferences,
         )
 
         assert event.preferences["language"] == "es"
@@ -189,7 +193,10 @@ class TestChildRegistered:
         """Test ChildRegistered string representation."""
         child_id = uuid4()
         event = ChildRegistered.create(
-            child_id=child_id, name="Test Child", age=6, preferences={"language": "en"}
+            child_id=child_id,
+            name="Test Child",
+            age=6,
+            preferences={"language": "en"},
         )
 
         str_repr = str(event)
@@ -209,7 +216,10 @@ class TestChildProfileUpdated:
         new_preferences = {"language": "fr", "updated": True}
 
         event = ChildProfileUpdated.create(
-            child_id=child_id, name=new_name, age=new_age, preferences=new_preferences
+            child_id=child_id,
+            name=new_name,
+            age=new_age,
+            preferences=new_preferences,
         )
 
         assert event.child_id == child_id
@@ -239,7 +249,10 @@ class TestChildProfileUpdated:
         }
 
         event = ChildProfileUpdated.create(
-            child_id=child_id, name=None, age=None, preferences=updated_preferences
+            child_id=child_id,
+            name=None,
+            age=None,
+            preferences=updated_preferences,
         )
 
         assert event.preferences == updated_preferences
@@ -423,7 +436,11 @@ class TestEventTimestamps:
         before = datetime.utcnow()
 
         event = ChildRegistered(
-            aggregate_id=child_id, child_id=child_id, name="Test", age=5, preferences={}
+            aggregate_id=child_id,
+            child_id=child_id,
+            name="Test",
+            age=5,
+            preferences={},
         )
 
         after = datetime.utcnow()
@@ -438,7 +455,11 @@ class TestEventVersioning:
         """Test that events have default version 1."""
         child_id = uuid4()
         event = ChildRegistered(
-            aggregate_id=child_id, child_id=child_id, name="Test", age=5, preferences={}
+            aggregate_id=child_id,
+            child_id=child_id,
+            name="Test",
+            age=5,
+            preferences={},
         )
 
         assert event.version == 1

@@ -14,14 +14,20 @@ except ImportError as e:
     logging.getLogger(__name__).critical(
         "Install required dependencies: pip install fastapi pydantic",
     )
-    raise ImportError(f"Missing required dependencies for health endpoints: {e}") from e
+    raise ImportError(
+        f"Missing required dependencies for health endpoints: {e}"
+    ) from e
 
 # Local imports - optional infrastructure
 try:
     from infrastructure.config.settings import get_settings
-    from infrastructure.monitoring.performance_monitor import get_performance_monitor
+    from infrastructure.monitoring.performance_monitor import (
+        get_performance_monitor,
+    )
 except ImportError as e:
-    logging.getLogger(__name__).error(f"Health check infrastructure import error: {e}")
+    logging.getLogger(__name__).error(
+        f"Health check infrastructure import error: {e}"
+    )
     # Continue without optional monitoring features
 
 logger = logging.getLogger(__name__)
@@ -123,13 +129,18 @@ async def readiness_check() -> dict[str, Any]:
         db_check = await check_database()
         redis_check = await check_redis()
 
-        ready = db_check.status == "healthy" and redis_check.status == "healthy"
+        ready = (
+            db_check.status == "healthy" and redis_check.status == "healthy"
+        )
 
         if ready:
             return {
                 "status": "ready",
                 "timestamp": datetime.now().isoformat(),
-                "checks": {"database": db_check.status, "redis": redis_check.status},
+                "checks": {
+                    "database": db_check.status,
+                    "redis": redis_check.status,
+                },
             }
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

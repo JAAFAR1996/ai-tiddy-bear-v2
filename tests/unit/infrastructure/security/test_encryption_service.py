@@ -4,17 +4,12 @@ Testing enterprise-grade encryption service with key rotation support.
 """
 
 import pytest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 import os
 import base64
 import json
-import secrets
 from datetime import datetime, timedelta
-from cryptography.fernet import Fernet, InvalidToken
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import math
-from collections import Counter
+from cryptography.fernet import Fernet
 
 from src.infrastructure.security.encryption_service import (
     EncryptionService,
@@ -98,25 +93,31 @@ class TestEncryptionService:
                 EncryptionService()
 
     def test_validate_encryption_key_valid(
-            self, encryption_service, valid_fernet_key):
+        self, encryption_service, valid_fernet_key
+    ):
         """Test validation of valid encryption key."""
         # Should not raise any exception
         encryption_service._validate_encryption_key(valid_fernet_key)
 
     def test_validate_encryption_key_invalid_format(self, encryption_service):
         """Test validation fails for invalid key format."""
-        with pytest.raises(EncryptionKeyError, match="Invalid encryption key format"):
+        with pytest.raises(
+            EncryptionKeyError, match="Invalid encryption key format"
+        ):
             encryption_service._validate_encryption_key("invalid_key")
 
     def test_validate_encryption_key_wrong_length(self, encryption_service):
         """Test validation fails for wrong key length."""
         short_key = base64.urlsafe_b64encode(b"short").decode()
 
-        with pytest.raises(EncryptionKeyError, match="Invalid encryption key format"):
+        with pytest.raises(
+            EncryptionKeyError, match="Invalid encryption key format"
+        ):
             encryption_service._validate_encryption_key(short_key)
 
     def test_validate_encryption_key_test_encryption_failure(
-            self, encryption_service):
+        self, encryption_service
+    ):
         """Test validation fails when test encryption fails."""
         # Create a key that looks valid but fails validation
         with patch("cryptography.fernet.Fernet") as mock_fernet:
@@ -141,7 +142,8 @@ class TestEncryptionService:
             assert len(derived_key) == 44  # Base64 encoded 32-byte key
 
     def test_derive_key_without_salt(
-            self, encryption_service, valid_fernet_key):
+        self, encryption_service, valid_fernet_key
+    ):
         """Test key derivation without provided salt (generates random)."""
         with patch.dict(os.environ, {}, clear=True):
             with patch("secrets.token_bytes") as mock_token:
@@ -153,7 +155,8 @@ class TestEncryptionService:
                 mock_token.assert_called_once_with(16)
 
     def test_derive_key_pbkdf2_parameters(
-            self, encryption_service, valid_fernet_key):
+        self, encryption_service, valid_fernet_key
+    ):
         """Test key derivation uses correct PBKDF2 parameters."""
         with patch(
             "cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC"
@@ -198,7 +201,9 @@ class TestEncryptionService:
 
     def test_get_key_creation_date_invalid_format(self, encryption_service):
         """Test getting key creation date with invalid format."""
-        with patch.dict(os.environ, {"ENCRYPTION_KEY_CREATED_AT": "invalid_date"}):
+        with patch.dict(
+            os.environ, {"ENCRYPTION_KEY_CREATED_AT": "invalid_date"}
+        ):
             with patch(
                 "src.infrastructure.security.encryption_service.datetime"
             ) as mock_dt:
@@ -242,7 +247,8 @@ class TestEncryptionService:
         assert encryption_service._is_key_rotation_needed() is False
 
     def test_is_key_rotation_needed_boundary_condition(
-            self, encryption_service):
+        self, encryption_service
+    ):
         """Test key rotation boundary condition (exactly 90 days)."""
         # Key created exactly 90 days ago
         boundary_date = datetime.utcnow() - timedelta(days=90)
@@ -336,7 +342,9 @@ class TestEncryptionService:
     def test_encrypt_fernet_exception(self, encryption_service):
         """Test encryption handles Fernet exceptions."""
         with patch.object(
-            encryption_service._fernet, "encrypt", side_effect=Exception("Fernet error")
+            encryption_service._fernet,
+            "encrypt",
+            side_effect=Exception("Fernet error"),
         ):
             with pytest.raises(
                 EncryptionKeyError, match="Encryption initialization failed"
@@ -366,8 +374,8 @@ class TestEncryptionService:
         test_data = {
             "key": "value",
             "number": 42,
-            "nested": {
-                "inner": "value"}}
+            "nested": {"inner": "value"},
+        }
 
         encrypted = encryption_service.encrypt(test_data)
         decrypted = encryption_service.decrypt(encrypted)
@@ -409,7 +417,8 @@ class TestEncryptionService:
         invalid_data = base64.b64encode(b"invalid_encrypted_data").decode()
 
         with pytest.raises(
-            EncryptionKeyError, match="Decryption failed - data may be corrupted"
+            EncryptionKeyError,
+            match="Decryption failed - data may be corrupted",
         ):
             encryption_service.decrypt(invalid_data)
 
@@ -514,7 +523,9 @@ class TestEncryptionService:
         """Test key rotation fails with invalid key."""
         original_version = encryption_service._key_version
 
-        with pytest.raises(EncryptionKeyError, match="Invalid encryption key format"):
+        with pytest.raises(
+            EncryptionKeyError, match="Invalid encryption key format"
+        ):
             encryption_service.rotate_key("invalid_key")
 
         # Verify rollback
@@ -552,9 +563,13 @@ class TestEncryptionService:
 
         # Mock failure during rotation
         with patch.object(
-            encryption_service, "_derive_key", side_effect=Exception("Derive error")
+            encryption_service,
+            "_derive_key",
+            side_effect=Exception("Derive error"),
         ):
-            with pytest.raises(EncryptionKeyError, match="Key rotation failed"):
+            with pytest.raises(
+                EncryptionKeyError, match="Key rotation failed"
+            ):
                 encryption_service.rotate_key(Fernet.generate_key().decode())
 
         # Verify rollback
@@ -638,7 +653,6 @@ class TestEncryptionService:
     def test_concurrent_encryption_operations(self, encryption_service):
         """Test concurrent encryption operations."""
         import threading
-        import time
 
         results = []
         errors = []
@@ -870,7 +884,10 @@ class TestEncryptionServiceIntegration:
             "name": "Test Child",
             "age": 8,
             "interactions": ["hello", "how are you?"],
-            "preferences": {"favorite_color": "blue", "games": ["puzzle", "story"]},
+            "preferences": {
+                "favorite_color": "blue",
+                "games": ["puzzle", "story"],
+            },
         }
 
         # Encrypt child data
@@ -998,7 +1015,13 @@ class TestEncryptionServiceIntegration:
         child_data_types = [
             {"voice_recording": "base64_audio_data_here"},
             {"chat_history": ["Hello", "How are you?", "Tell me a story"]},
-            {"personal_info": {"name": "Child", "age": 7, "school": "Elementary"}},
+            {
+                "personal_info": {
+                    "name": "Child",
+                    "age": 7,
+                    "school": "Elementary",
+                }
+            },
             {"behavioral_data": {"mood": "happy", "activity": "playing"}},
             {"biometric_data": {"voice_print": "encrypted_voice_pattern"}},
         ]

@@ -41,7 +41,9 @@ async def get_authenticated_user(
             "user_id": payload.get("sub"),
             "role": user_role,
             "permissions": payload.get("permissions", []),
-            "child_ids": payload.get("child_ids", []),  # Children this user can access
+            "child_ids": payload.get(
+                "child_ids", []
+            ),  # Children this user can access
         }
     except HTTPException:
         raise

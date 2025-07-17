@@ -42,7 +42,9 @@ class ChildSafetyHandler:
         # Additional child safety measures could be implemented here
         # (e.g., notify parents, escalate to safety team, etc.)
 
-    def should_block_key(self, config: RateLimitConfig, state: RateLimitState) -> bool:
+    def should_block_key(
+        self, config: RateLimitConfig, state: RateLimitState
+    ) -> bool:
         """Determine if a key should be blocked based on child safety behavior."""
         # Always block if it's a child safety config
         if config.child_safe_mode:

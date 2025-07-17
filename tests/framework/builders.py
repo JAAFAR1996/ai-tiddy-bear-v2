@@ -106,7 +106,9 @@ class TestDataBuilder:
     ) -> TestParent:
         """Create a test parent"""
         parent = TestParent(
-            name=name or self.faker.name(), email=email or self.faker.email(), **kwargs
+            name=name or self.faker.name(),
+            email=email or self.faker.email(),
+            **kwargs,
         )
 
         # Create children if requested
@@ -154,7 +156,10 @@ class TestDataBuilder:
         return interaction
 
     def create_device(
-        self, device_id: Optional[str] = None, child_id: Optional[str] = None, **kwargs
+        self,
+        device_id: Optional[str] = None,
+        child_id: Optional[str] = None,
+        **kwargs,
     ) -> Dict[str, Any]:
         """Create a test device"""
         device = {
@@ -169,8 +174,9 @@ class TestDataBuilder:
         self._created_entities["devices"].append(device)
         return device
 
-    def create_batch(self, entity_type: str, count: int,
-                     **kwargs) -> List[Any]:
+    def create_batch(
+        self, entity_type: str, count: int, **kwargs
+    ) -> List[Any]:
         """Create multiple entities of the same type"""
         creators = {
             "child": self.create_child,
@@ -214,7 +220,9 @@ class MockFactory:
         mock = AsyncMock()
         mock.generate_response.return_value = default_response
         mock.check_content_safety.return_value = {
-            "is_safe": True, "confidence": 0.95}
+            "is_safe": True,
+            "confidence": 0.95,
+        }
         mock.get_model_info.return_value = {
             "model": "gpt-4",
             "version": "2024-01",

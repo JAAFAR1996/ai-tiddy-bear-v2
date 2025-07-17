@@ -1,13 +1,13 @@
-"""from typing import Any, Dict, List
+"""Load Testing Module
+AI System Chaos Actions for Testing Load and Overload Scenarios"""
+
 import asyncio
 import logging
 import random
 import time
-import httpx.
-"""
+from typing import Any, Dict, List
 
-"""Load Testing Module
-AI System Chaos Actions for Testing Load and Overload Scenarios"""
+import httpx
 
 from src.infrastructure.logging_config import get_logger
 
@@ -40,7 +40,9 @@ async def _send_load_test_request(
         return {"success": False, "timeout": False, "response_time": 0.0}
 
 
-def _prepare_overload_test_config(configuration: Dict[str, Any]) -> Dict[str, Any]:
+def _prepare_overload_test_config(
+    configuration: Dict[str, Any],
+) -> Dict[str, Any]:
     """Prepare configuration for overload test."""
     concurrent_requests = configuration.get("concurrent_requests", 50)
     total_requests = configuration.get("total_requests", 200)
@@ -56,7 +58,9 @@ def _prepare_overload_test_config(configuration: Dict[str, Any]) -> Dict[str, An
 async def _execute_overload_tests(prompts: List[str]) -> List[Dict[str, Any]]:
     """Execute overload tests concurrently."""
     async with httpx.AsyncClient() as session:
-        tasks = [_send_load_test_request(session, prompt) for prompt in prompts]
+        tasks = [
+            _send_load_test_request(session, prompt) for prompt in prompts
+        ]
         return await asyncio.gather(*tasks)
 
 
@@ -68,9 +72,13 @@ def _calculate_overload_metrics(
     successful_requests = sum(1 for r in results if r["success"])
     timeout_count = sum(1 for r in results if r["timeout"])
     average_response_time = (
-        sum(r["response_time"] for r in results) / len(results) if results else 0
+        sum(r["response_time"] for r in results) / len(results)
+        if results
+        else 0
     )
-    success_rate = successful_requests / total_requests if total_requests > 0 else 0
+    success_rate = (
+        successful_requests / total_requests if total_requests > 0 else 0
+    )
     passed = success_rate >= 0.95 and timeout_count < (total_requests * 0.05)
 
     logger.info(
@@ -98,7 +106,9 @@ async def simulate_ai_service_overload(
     try:
         config = _prepare_overload_test_config(configuration)
         results = await _execute_overload_tests(config["prompts"])
-        metrics = _calculate_overload_metrics(results, config["total_requests"])
+        metrics = _calculate_overload_metrics(
+            results, config["total_requests"]
+        )
         return {"action": "simulate_ai_service_overload", **metrics}
     except Exception as e:
         logger.error(f"❌ AI service overload simulation failed: {e}")

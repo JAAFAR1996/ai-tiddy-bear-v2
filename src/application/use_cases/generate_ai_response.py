@@ -1,4 +1,11 @@
+from typing import List, Optional
+from uuid import UUID
+
 from src.application.exceptions import ConsentError
+from src.application.interfaces.consent_manager import IConsentManager
+from src.application.services.ai_orchestration_service import AIOrchestrationService
+from src.application.services.audio_processing_service import AudioProcessingService
+from src.domain.models.ai_response import AIResponse
 
 
 class GenerateAIResponseUseCase:
@@ -24,7 +31,7 @@ class GenerateAIResponseUseCase:
         conversation_history: List[str],
         current_input: str,
         voice_id: str,
-        parent_id: str | None = None,  # ✅ Added parent_id for consent verification
+        parent_id: Optional[str] = None,  # ✅ Added parent_id for consent verification
     ) -> AIResponse:
         # ✅ Verify parental consent before processing child data (FIXED: No Service Locator)
         if parent_id and self._consent_manager:
@@ -62,9 +69,11 @@ class GenerateAIResponseUseCase:
             voice_id,
         )
 
-        audio_output = await self.audio_processing_service.generate_audio_response(
-            ai_response_dto.response_text,
-            voice_id,
+        audio_output = (
+            await self.audio_processing_service.generate_audio_response(
+                ai_response_dto.response_text,
+                voice_id,
+            )
         )
 
         ai_response_dto.audio_response = audio_output

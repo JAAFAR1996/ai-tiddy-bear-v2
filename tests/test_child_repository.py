@@ -1,4 +1,6 @@
-from infrastructure.persistence.child_sqlite_repository import ChildSQLiteRepository
+from infrastructure.persistence.child_sqlite_repository import (
+    ChildSQLiteRepository,
+)
 from domain.entities.child import Child
 from unittest.mock import Mock
 from datetime import date, datetime, timedelta
@@ -113,7 +115,11 @@ def sample_child_data():
         "date_of_birth": date(2015, 5, 15),
         "gender": "female",
         "personality_traits": ["curious", "creative", "energetic"],
-        "learning_preferences": {"visual": 0.8, "auditory": 0.6, "kinesthetic": 0.4},
+        "learning_preferences": {
+            "visual": 0.8,
+            "auditory": 0.6,
+            "kinesthetic": 0.4,
+        },
         "communication_style": "playful",
         "max_daily_interaction_time": 3600,
         "total_interaction_time": 1200,
@@ -122,7 +128,10 @@ def sample_child_data():
         "restricted_topics": ["violence", "adult_content"],
         "language_preference": "en",
         "cultural_background": "american",
-        "parental_controls": {"bedtime_mode": True, "content_filter": "strict"},
+        "parental_controls": {
+            "bedtime_mode": True,
+            "content_filter": "strict",
+        },
         "emergency_contacts": [
             {"name": "Mom", "phone": "+1234567890", "relation": "parent"},
             {"name": "Dad", "phone": "+1234567891", "relation": "parent"},
@@ -168,7 +177,10 @@ class TestChildRepositoryBasicOperations:
         assert retrieved_child is not None
         assert retrieved_child.id == created_child.id
         assert retrieved_child.name == sample_child.name
-        assert retrieved_child.personality_traits == sample_child.personality_traits
+        assert (
+            retrieved_child.personality_traits
+            == sample_child.personality_traits
+        )
 
     @pytest.mark.asyncio
     async def test_update_child(self, child_repository, sample_child):
@@ -240,17 +252,20 @@ class TestChildRepositorySearchAndFiltering:
                 name="Young",
                 age=5,
                 personality_traits=[],
-                learning_preferences={}),
+                learning_preferences={},
+            ),
             Child(
                 name="Middle",
                 age=8,
                 personality_traits=[],
-                learning_preferences={}),
+                learning_preferences={},
+            ),
             Child(
                 name="Older",
                 age=12,
                 personality_traits=[],
-                learning_preferences={}),
+                learning_preferences={},
+            ),
         ]
         for child in children:
             await child_repository.create(child)
@@ -286,18 +301,23 @@ class TestChildRepositoryBusinessLogic:
         await child_repository.create(old_interaction_child)
         await child_repository.create(special_needs_child)
         #  Act
-        attention_needed = await child_repository.get_children_needing_attention()
+        attention_needed = (
+            await child_repository.get_children_needing_attention()
+        )
         #  Assert
         assert len(attention_needed) >= 2
 
     @pytest.mark.asyncio
     async def test_get_engagement_insights(
-            self, child_repository, sample_child):
+        self, child_repository, sample_child
+    ):
         """Test generating engagement insights"""
         #  Arrange
         created_child = await child_repository.create(sample_child)
         #  Act
-        insights = await child_repository.get_engagement_insights(created_child.id)
+        insights = await child_repository.get_engagement_insights(
+            created_child.id
+        )
         #  Assert
         assert insights is not None
         assert "child_id" in insights

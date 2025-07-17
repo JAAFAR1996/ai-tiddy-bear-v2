@@ -8,7 +8,9 @@ class DummySanitizationService(ISanitizationService):
     """Dummy implementation of ISanitizationService for simulation purposes."""
 
     async def sanitize_text(self, text: str) -> str:
-        self.logger.info(f"[DUMMY SANITIZATION] Sanitizing text: {text[:50]}...")
+        self.logger.info(
+            f"[DUMMY SANITIZATION] Sanitizing text: {text[:50]}..."
+        )
         # Simple sanitization: remove leading/trailing whitespace and replace
         # multiple spaces
         sanitized_text = " ".join(text.strip().split())
@@ -18,15 +20,21 @@ class DummySanitizationService(ISanitizationService):
         return sanitized_text
 
     async def detect_pii(self, text: str) -> bool:
-        self.logger.info(f"[DUMMY SANITIZATION] Detecting PII in text: {text[:50]}...")
+        self.logger.info(
+            f"[DUMMY SANITIZATION] Detecting PII in text: {text[:50]}..."
+        )
         # Dummy PII detection: simple check for common patterns like email or
         # phone number formats
-        if "@" in text or (any(char.isdigit() for char in text) and len(text) > 7):
+        if "@" in text or (
+            any(char.isdigit() for char in text) and len(text) > 7
+        ):
             self.logger.warning(
                 "[DUMMY SANITIZATION] Possible PII detected. Returning True.",
             )
             return True
-        self.logger.debug("[DUMMY SANITIZATION] No PII detected. Returning False.")
+        self.logger.debug(
+            "[DUMMY SANITIZATION] No PII detected. Returning False."
+        )
         return False
 
     def __init__(self) -> None:

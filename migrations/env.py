@@ -9,11 +9,11 @@ import asyncio
 import os
 import sys
 from logging.config import fileConfig
-from typing import Any, Dict
+from typing import Any
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import create_async_engine
 
 # Add the src directory to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -37,9 +37,9 @@ def get_database_url() -> str:
     """Get database URL from environment or settings."""
     # Priority: Environment variable > Config file > Settings
     db_url = (
-        os.environ.get("DATABASE_URL") or
-        config.get_main_option("sqlalchemy.url") or
-        settings.DATABASE_URL
+        os.environ.get("DATABASE_URL")
+        or config.get_main_option("sqlalchemy.url")
+        or settings.DATABASE_URL
     )
 
     if not db_url:
@@ -50,7 +50,8 @@ def get_database_url() -> str:
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     elif not db_url.startswith("postgresql+asyncpg://"):
         raise ValueError(
-            "Database URL must use PostgreSQL with asyncpg driver")
+            "Database URL must use PostgreSQL with asyncpg driver"
+        )
 
     return db_url
 
@@ -95,8 +96,12 @@ def include_object(object, name, type_, reflected, compare_to) -> bool:
     # Always include child safety and audit tables
     if type_ == "table":
         child_safety_tables = {
-            "children", "audit_logs", "safety_events", "parental_consents",
-            "data_retention_policies", "coppa_records"
+            "children",
+            "audit_logs",
+            "safety_events",
+            "parental_consents",
+            "data_retention_policies",
+            "coppa_records",
         }
         if name in child_safety_tables:
             return True
@@ -111,7 +116,7 @@ def process_revision_directives(context, revision, directives) -> None:
 
     Adds metadata to migration files for audit purposes.
     """
-    if getattr(config.cmd_opts, 'autogenerate', False):
+    if getattr(config.cmd_opts, "autogenerate", False):
         script = directives[0]
         if script.upgrade_ops.is_empty():
             directives[:] = []
@@ -134,7 +139,7 @@ def do_run_migrations(connection) -> None:
         # Child safety: Ensure foreign key constraints are respected
         render_item=render_item,
         # COPPA compliance: Version table naming
-        version_table='alembic_version_coppa',
+        version_table="alembic_version_coppa",
     )
 
     with context.begin_transaction():
@@ -147,9 +152,9 @@ def render_item(type_, obj, autogen_context) -> Any:
     """
     if type_ == "server_default":
         # Ensure default values are appropriate for child data
-        if hasattr(obj, 'arg') and obj.arg:
+        if hasattr(obj, "arg") and obj.arg:
             # Add safety checks for default values
-            if 'child' in str(obj.arg).lower():
+            if "child" in str(obj.arg).lower():
                 # Add comment for child-related defaults
                 return f"# Child safety default: {obj.arg}"
 
@@ -186,12 +191,8 @@ async def run_async_migrations() -> None:
 
     async with connectable.connect() as connection:
         # Set up COPPA compliance session variables
-        await connection.execute(
-            "SET session_replication_role = 'origin'"
-        )
-        await connection.execute(
-            "SET row_security = on"
-        )
+        await connection.execute("SET session_replication_role = 'origin'")
+        await connection.execute("SET row_security = on")
         await connection.execute(
             "SET application_name = 'ai_teddy_migrations'"
         )

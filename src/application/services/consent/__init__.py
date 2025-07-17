@@ -8,7 +8,8 @@ from .consent_models import (
     VerificationMethod,
     VerificationStatus,
     ConsentRecord,
-    VerificationAttempt)
+    VerificationAttempt,
+)
 from .consent_service import ConsentService
 from .verification_service import VerificationService
 
@@ -18,5 +19,5 @@ __all__ = [
     "VerificationMethod",
     "VerificationStatus",
     "ConsentRecord",
-    "VerificationAttempt"
+    "VerificationAttempt",
 ]

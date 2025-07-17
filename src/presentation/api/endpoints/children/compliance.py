@@ -33,19 +33,26 @@ class COPPAIntegration:
         """Verify COPPA compliance when creating a child profile."""
         # COPPA CONDITIONAL: Check if COPPA compliance is enabled
         if not self.settings.privacy.COPPA_ENABLED:
-            logger.info("COPPA compliance disabled - bypassing consent validation")
+            logger.info(
+                "COPPA compliance disabled - bypassing consent validation"
+            )
             return "coppa_disabled_mock_consent"
 
         # Check if parental consent is actually required
         if not self.coppa.requires_parental_consent(request.age):
-            logger.info(f"Child age {request.age} does not require parental consent")
+            logger.info(
+                f"Child age {request.age} does not require parental consent"
+            )
             return "no_consent_required"
 
         try:
             # Check age validation
             if self.coppa.verify_age(request.age):
                 # Request parental consent
-                data_types = [DataType.PREFERENCES, DataType.VOICE_INTERACTIONS]
+                data_types = [
+                    DataType.PREFERENCES,
+                    DataType.VOICE_INTERACTIONS,
+                ]
 
                 # إضافة نوع البيانات الشخصية إذا كان هناك معلومات شخصية
                 if request.interests or request.preferences:
@@ -169,7 +176,9 @@ class ParentalConsentManager:
             data_type_enums = []
             for data_type in data_types:
                 if hasattr(DataType, data_type.upper()):
-                    data_type_enums.append(getattr(DataType, data_type.upper()))
+                    data_type_enums.append(
+                        getattr(DataType, data_type.upper())
+                    )
 
             consent_id = self.coppa.request_parental_consent(
                 child_id,
@@ -196,9 +205,15 @@ class ParentalConsentManager:
             }
         except Exception as e:
             logger.error(f"Error checking consent status: {e}")
-            return {"consent_id": consent_id, "status": "error", "error": str(e)}
+            return {
+                "consent_id": consent_id,
+                "status": "error",
+                "error": str(e),
+            }
 
-    async def revoke_consent(self, consent_id: str, parent_id: str) -> Dict[str, Any]:
+    async def revoke_consent(
+        self, consent_id: str, parent_id: str
+    ) -> Dict[str, Any]:
         """إلغاء الموافقة الأبوية."""
         try:
             # إلغاء الموافقة
@@ -225,7 +240,9 @@ class DataRetentionManager:
     ) -> None:
         self.coppa = coppa_compliance_service
 
-    async def check_data_retention_limits(self, child_id: str) -> Dict[str, Any]:
+    async def check_data_retention_limits(
+        self, child_id: str
+    ) -> Dict[str, Any]:
         """التحقق من حدود الاحتفاظ بالبيانات."""
         try:
             # التحقق من حدود الاحتفاظ
@@ -238,7 +255,11 @@ class DataRetentionManager:
             }
         except Exception as e:
             logger.error(f"Error checking data retention limits: {e}")
-            return {"child_id": child_id, "retention_compliant": False, "error": str(e)}
+            return {
+                "child_id": child_id,
+                "retention_compliant": False,
+                "error": str(e),
+            }
 
     async def schedule_data_cleanup(
         self,
@@ -367,7 +388,9 @@ async def validate_data_access_permission(
     """التحقق من صلاحية الوصول للبيانات
     COPPA CONDITIONAL: Always allows access when COPPA compliance is disabled.
     """
-    return await coppa_integration.validate_data_access(child_id, parent_id, data_type)
+    return await coppa_integration.validate_data_access(
+        child_id, parent_id, data_type
+    )
 
 
 @inject

@@ -38,7 +38,9 @@ if not DATABASE_URL:
 
 # منع استخدام SQLite في نظام الطوارئ الحرج
 if DATABASE_URL.startswith("sqlite"):
-    logger.critical("SQLite detected in emergency response system - SECURITY VIOLATION")
+    logger.critical(
+        "SQLite detected in emergency response system - SECURITY VIOLATION"
+    )
     raise RuntimeError(
         "CRITICAL: SQLite is not allowed for emergency response systems. "
         "Use PostgreSQL for data integrity and COPPA compliance.",
@@ -56,13 +58,7 @@ endpoints = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """إدارة دورة حياة التطبيق."""
-    global \
-        redis_client, \
-        db_session, \
-        emergency_service, \
-        monitor_service, \
-        notification_service, \
-        endpoints
+    global redis_client, db_session, emergency_service, monitor_service, notification_service, endpoints
     logger.info("🚨 Starting Emergency Response System...")
     try:
         # إعداد Redis
@@ -127,7 +123,9 @@ def create_app() -> FastAPI:
     # تسجيل المسارات
     @app.post("/webhook/alerts")
     async def webhook_alerts(request, payload, background_tasks):
-        return await endpoints.webhook_alerts(request, payload, background_tasks)
+        return await endpoints.webhook_alerts(
+            request, payload, background_tasks
+        )
 
     @app.get("/health")
     async def health_check():

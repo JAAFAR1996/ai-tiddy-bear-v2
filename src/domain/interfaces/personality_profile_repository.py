@@ -10,7 +10,9 @@ class IPersonalityProfileRepository(ABC):
     """Abstract interface for personality profile persistence operations."""
 
     @abstractmethod
-    async def get_profile_by_child_id(self, child_id: UUID) -> ChildPersonality | None:
+    async def get_profile_by_child_id(
+        self, child_id: UUID
+    ) -> ChildPersonality | None:
         """Retrieves a personality profile for a given child ID."""
 
     @abstractmethod

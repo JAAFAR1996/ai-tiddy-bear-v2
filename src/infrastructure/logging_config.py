@@ -1,4 +1,4 @@
-"""Centralized Logging Configuration".
+"""Centralized Logging Configuration.
 
 This module configures application-wide logging with consistent standards and security.
 It ensures sensitive data is not logged and appropriate verbosity is maintained.
@@ -12,7 +12,7 @@ import re  # Used only in ChildSafetyFilter._redact
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Dict
 
 from src.common.constants import (  # Import the new constant
     SENSITIVE_LOG_INTERACTION_KEYS,
@@ -45,8 +45,8 @@ LOGGING_LEVELS = {
 
 def configure_logging(
     environment: str = "production",
-    log_level: str | None = None,
-    log_file: str | None = None,
+    log_level: Optional[str] = None,
+    log_file: Optional[str] = None,
 ) -> None:
     """Configures application-wide logging with consistent standards and security.
     Ensures sensitive data is not logged and appropriate verbosity is maintained.
@@ -61,7 +61,9 @@ def configure_logging(
     if log_level:
         base_level = getattr(logging, log_level.upper(), logging.INFO)
     else:
-        base_level = logging.DEBUG if environment == "development" else logging.INFO
+        base_level = (
+            logging.DEBUG if environment == "development" else logging.INFO
+        )
 
     # Configure root logger
     root_logger = logging.getLogger()
@@ -95,7 +97,9 @@ def configure_logging(
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
         max_bytes = int(os.getenv("LOG_MAX_BYTES", "10485760"))  # 10MB default
-        backup_count = int(os.getenv("LOG_BACKUP_COUNT", "5"))  # Keep 5 backups
+        backup_count = int(
+            os.getenv("LOG_BACKUP_COUNT", "5")
+        )  # Keep 5 backups
         file_handler = logging.handlers.RotatingFileHandler(
             log_file,
             maxBytes=max_bytes,
@@ -141,7 +145,7 @@ def configure_logging(
     logger.info(f"Logging configured for {environment} environment.")
 
 
-def get_logger(name: str, component: str | None = None) -> logging.Logger:
+def get_logger(name: str, component: Optional[str] = None) -> logging.Logger:
     """Retrieves a logger instance with a specific name and optional component tag.
 
     This function ensures that loggers are consistently named and can be
@@ -166,27 +170,35 @@ def get_logger(name: str, component: str | None = None) -> logging.Logger:
 
 def log_security_event(
     event_type: str,
-    details: dict[str, Any],
+    details: Dict[str, Any],
     severity: str = "WARNING",
 ) -> None:
     """Logs security-related events with a consistent format.
 
     Args:
-        event_type (str): A string identifying the type of security event (e.g., "LOGIN_FAILED", "UNAUTHORIZED_ACCESS").
-        details (Dict[str, Any]): A dictionary containing relevant details about the event. Sensitive data should be pre-redacted.
-        severity (str): The severity level of the event (e.g., "INFO", "WARNING", "ERROR", "CRITICAL"). Defaults to "WARNING".
+        event_type (str): A string identifying the type of security event 
+                         (e.g., "LOGIN_FAILED", "UNAUTHORIZED_ACCESS").
+        details (Dict[str, Any]): A dictionary containing relevant details about the event. 
+                                 Sensitive data should be pre-redacted.
+        severity (str): The severity level of the event 
+                       (e.g., "INFO", "WARNING", "ERROR", "CRITICAL"). 
+                       Defaults to "WARNING".
 
     """
     security_logger = logging.getLogger("src.security")
     # Ensure minimum WARNING level for security events
-    level = max(logging.WARNING, getattr(logging, severity.upper(), logging.WARNING))
+    level = max(
+        logging.WARNING, getattr(logging, severity.upper(), logging.WARNING)
+    )
     # Format security event
     event_data = {
         "event_type": event_type,
         "timestamp": datetime.now(UTC).isoformat(),
         "details": details,
     }
-    security_logger.log(level, f"SECURITY EVENT: {event_type}", extra=event_data)
+    security_logger.log(
+        level, f"SECURITY EVENT: {event_type}", extra=event_data
+    )
 
 
 class ChildSafetyFilter(logging.Filter):
@@ -271,7 +283,7 @@ def log_child_interaction(
     interaction_type: str,
     child_id: str,
     safe: bool,
-    details: dict[str, Any] | None = None,
+    details: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Logs child interactions with enhanced privacy protection using BLAKE2b hashing.
     This function ensures that child IDs are hashed before logging to protect privacy,
@@ -281,7 +293,8 @@ def log_child_interaction(
         interaction_type (str): The type of interaction (e.g., "AI_RESPONSE", "AUDIO_INPUT").
         child_id (str): The unique identifier of the child. This will be hashed before logging.
         safe (bool): Indicates whether the interaction was deemed safe by content filters.
-        details (Optional[Dict[str, Any]]): Additional details about the interaction, which will be sanitized.
+        details (Optional[Dict[str, Any]]): Additional details about the interaction, 
+                                           which will be sanitized.
 
     """
     child_logger = logging.getLogger("src.child_safety")
@@ -299,11 +312,15 @@ def log_child_interaction(
     if details:
         # Filter out sensitive keys using the centralized constant
         sanitized_details = {
-            k: v for k, v in details.items() if k not in SENSITIVE_LOG_INTERACTION_KEYS
+            k: v
+            for k, v in details.items()
+            if k not in SENSITIVE_LOG_INTERACTION_KEYS
         }
         log_data["metrics"] = sanitized_details
     level = logging.INFO if safe else logging.WARNING
-    child_logger.log(level, f"Child interaction: {interaction_type}", extra=log_data)
+    child_logger.log(
+        level, f"Child interaction: {interaction_type}", extra=log_data
+    )
 
 
 # Export convenience functions

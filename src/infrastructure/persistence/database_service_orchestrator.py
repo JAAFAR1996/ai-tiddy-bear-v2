@@ -7,15 +7,21 @@ from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database import Database
-from src.infrastructure.persistence.repositories.child_repository import ChildRepository
+from src.infrastructure.persistence.repositories.child_repository import (
+    ChildRepository,
+)
 from src.infrastructure.persistence.repositories.conversation_repository import (
     ConversationRepository,
 )
 from src.infrastructure.persistence.repositories.safety_repository import (
     SafetyRepository,
 )
-from src.infrastructure.persistence.repositories.usage_repository import UsageRepository
-from src.infrastructure.persistence.repositories.user_repository import UserRepository
+from src.infrastructure.persistence.repositories.usage_repository import (
+    UsageRepository,
+)
+from src.infrastructure.persistence.repositories.user_repository import (
+    UserRepository,
+)
 from src.infrastructure.security.sql_injection_prevention import (
     get_sql_injection_prevention,
 )
@@ -46,10 +52,14 @@ class DatabaseServiceOrchestrator:
         self.safety = SafetyRepository(database)
         self.usage = UsageRepository(database)
 
-        logger.info("DatabaseServiceOrchestrator initialized with all repositories")
+        logger.info(
+            "DatabaseServiceOrchestrator initialized with all repositories"
+        )
 
     # User operations
-    async def create_user(self, email: str, hashed_password: str, role: str) -> str:
+    async def create_user(
+        self, email: str, hashed_password: str, role: str
+    ) -> str:
         """Create a new user."""
         return await self.users.create_user(email, hashed_password, role)
 
@@ -62,7 +72,9 @@ class DatabaseServiceOrchestrator:
         return await self.users.update_user(user_id, updates)
 
     # Child operations
-    async def create_child(self, parent_id: str, child_data: dict[str, Any]) -> str:
+    async def create_child(
+        self, parent_id: str, child_data: dict[str, Any]
+    ) -> str:
         """Create a new child profile."""
         return await self.children.create_child(parent_id, child_data)
 
@@ -70,11 +82,15 @@ class DatabaseServiceOrchestrator:
         """Get child profile."""
         return await self.children.get_child(child_id)
 
-    async def get_children_by_parent(self, parent_id: str) -> list[dict[str, Any]]:
+    async def get_children_by_parent(
+        self, parent_id: str
+    ) -> list[dict[str, Any]]:
         """Get all children for a parent."""
         return await self.children.get_children_by_parent(parent_id)
 
-    async def update_child(self, child_id: str, updates: dict[str, Any]) -> bool:
+    async def update_child(
+        self, child_id: str, updates: dict[str, Any]
+    ) -> bool:
         """Update child profile."""
         return await self.children.update_child(child_id, updates)
 
@@ -86,7 +102,9 @@ class DatabaseServiceOrchestrator:
         response: str,
     ) -> str:
         """Save a conversation."""
-        return await self.conversations.create_conversation(child_id, message, response)
+        return await self.conversations.create_conversation(
+            child_id, message, response
+        )
 
     async def get_conversation_history(
         self,
@@ -94,9 +112,13 @@ class DatabaseServiceOrchestrator:
         limit: int = 10,
     ) -> list[dict[str, Any]]:
         """Get conversation history."""
-        return await self.conversations.get_conversation_history(child_id, limit)
+        return await self.conversations.get_conversation_history(
+            child_id, limit
+        )
 
-    async def get_interaction_count(self, child_id: str, hours: int = 24) -> int:
+    async def get_interaction_count(
+        self, child_id: str, hours: int = 24
+    ) -> int:
         """Get interaction count for rate limiting."""
         return await self.conversations.get_conversation_count(child_id, hours)
 
@@ -123,7 +145,9 @@ class DatabaseServiceOrchestrator:
         reason: str,
     ) -> bool:
         """Update safety score."""
-        return await self.safety.update_safety_score(child_id, new_score, reason)
+        return await self.safety.update_safety_score(
+            child_id, new_score, reason
+        )
 
     async def get_safety_events(
         self,
@@ -173,7 +197,9 @@ class DatabaseServiceOrchestrator:
             "conversations_deleted": await self.conversations.delete_old_conversations(
                 days,
             ),
-            "usage_records_deleted": await self.usage.cleanup_old_usage_data(days),
+            "usage_records_deleted": await self.usage.cleanup_old_usage_data(
+                days
+            ),
         }
         logger.info(f"Data cleanup completed: {stats}")
         return stats

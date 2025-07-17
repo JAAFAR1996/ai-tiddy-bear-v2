@@ -8,9 +8,10 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock
 from freezegun import freeze_time
 
-from src.domain.services.data_retention_service import COPPADataRetentionService
+from src.domain.services.data_retention_service import (
+    COPPADataRetentionService,
+)
 from src.domain.models.data_retention_models import DataType, RetentionPolicy
-from src.domain.services.coppa_age_validation import AgeValidationResult
 
 
 class TestCOPPADataRetentionService:
@@ -87,7 +88,9 @@ class TestCOPPADataRetentionService:
         conv_policy = adult_policies[DataType.CONVERSATION_DATA]
         assert conv_policy.retention_days == 365
         assert conv_policy.auto_delete is True
-        assert conv_policy.requires_consent is False  # No parental consent needed
+        assert (
+            conv_policy.requires_consent is False
+        )  # No parental consent needed
 
         # Check analytics data policy
         analytics_policy = adult_policies[DataType.ANALYTICS_DATA]
@@ -99,7 +102,8 @@ class TestCOPPADataRetentionService:
     def test_get_retention_policy_valid_child(self, retention_service):
         """Test getting retention policy for valid child."""
         policy = retention_service.get_retention_policy(
-            8, DataType.CONVERSATION_DATA)
+            8, DataType.CONVERSATION_DATA
+        )
 
         assert policy is not None
         assert policy.retention_days == 30
@@ -109,7 +113,8 @@ class TestCOPPADataRetentionService:
     def test_get_retention_policy_valid_teen(self, retention_service):
         """Test getting retention policy for valid teen."""
         policy = retention_service.get_retention_policy(
-            15, DataType.CONVERSATION_DATA)
+            15, DataType.CONVERSATION_DATA
+        )
 
         assert policy is not None
         assert policy.retention_days == 90
@@ -119,7 +124,8 @@ class TestCOPPADataRetentionService:
     def test_get_retention_policy_valid_adult(self, retention_service):
         """Test getting retention policy for valid adult."""
         policy = retention_service.get_retention_policy(
-            25, DataType.CONVERSATION_DATA)
+            25, DataType.CONVERSATION_DATA
+        )
 
         assert policy is not None
         assert policy.retention_days == 365
@@ -129,7 +135,8 @@ class TestCOPPADataRetentionService:
     def test_get_retention_policy_invalid_age(self, retention_service):
         """Test getting retention policy for invalid age (uses most restrictive)."""
         policy = retention_service.get_retention_policy(
-            -1, DataType.CONVERSATION_DATA)
+            -1, DataType.CONVERSATION_DATA
+        )
 
         assert policy is not None
         # Should use child policy as most restrictive
@@ -285,7 +292,8 @@ class TestCOPPADataRetentionService:
 
     # Test validate_retention_compliance
     def test_validate_retention_compliance_child_compliant(
-            self, retention_service):
+        self, retention_service
+    ):
         """Test compliance validation for compliant child policies."""
         result = retention_service.validate_retention_compliance(10)
 
@@ -312,7 +320,8 @@ class TestCOPPADataRetentionService:
 
     # Test _get_compliance_recommendations
     def test_get_compliance_recommendations_coppa_child(
-            self, retention_service):
+        self, retention_service
+    ):
         """Test compliance recommendations for COPPA-applicable child."""
         recommendations = retention_service._get_compliance_recommendations(10)
 

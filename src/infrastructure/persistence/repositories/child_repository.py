@@ -38,7 +38,9 @@ class ChildRepository:
         logger.info("ChildRepository initialized with COPPA compliance")
 
     @database_input_validation("children")
-    async def create_child(self, parent_id: str, child_data: dict[str, Any]) -> str:
+    async def create_child(
+        self, parent_id: str, child_data: dict[str, Any]
+    ) -> str:
         """Create a new child profile with COPPA compliance.
 
         Args:

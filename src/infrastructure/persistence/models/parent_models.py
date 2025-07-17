@@ -39,8 +39,12 @@ class ParentModel(Base):
     phone: Mapped[str | None] = mapped_column(String(20))
 
     # Account status
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    is_verified: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
 
     # Security tracking
     failed_login_attempts: Mapped[int] = mapped_column(
@@ -48,8 +52,12 @@ class ParentModel(Base):
         default=0,
         nullable=False,
     )
-    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+    last_login: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     # Audit fields
     created_at: Mapped[datetime] = mapped_column(
@@ -65,7 +73,9 @@ class ParentModel(Base):
     )
 
     # COPPA compliance
-    age_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    age_verified: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
 
     # Preferences
     preferences: Mapped[dict] = mapped_column(JSONB, default=dict)

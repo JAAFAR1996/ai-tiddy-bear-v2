@@ -96,7 +96,9 @@ class TestSafetyAndModeration:
             "alternative_response": "دعنا نتحدث عن شيء آخر لطيف!",
         }
 
-        unsafe_result = await safety_service.check_content_safety("محتوى غير مناسب")
+        unsafe_result = await safety_service.check_content_safety(
+            "محتوى غير مناسب"
+        )
         assert unsafe_result["safe"] is False
         assert unsafe_result["action"] == "block"
         assert unsafe_result["alternative_response"] is not None

@@ -22,7 +22,9 @@ from src.domain.safety.models import (
     ToxicityResult,
 )
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.monitoring.performance_monitor import PerformanceMonitor
+from src.infrastructure.monitoring.performance_monitor import (
+    PerformanceMonitor,
+)
 
 logger = get_logger(__name__, component="services")
 
@@ -50,7 +52,9 @@ class SafetyService:
         # self.metrics dictionary removed as metrics are now handled by
         # PerformanceMonitor.
 
-    def _analyze_harmful_content(self, content: str, result: SafetyAnalysisResult):
+    def _analyze_harmful_content(
+        self, content: str, result: SafetyAnalysisResult
+    ):
         """Analyzes content for harmful keywords with comprehensive error handling.
 
         Args:
@@ -60,17 +64,23 @@ class SafetyService:
         """
         try:
             if not content or not isinstance(content, str):
-                logger.warning("Invalid content provided for harmful content analysis")
+                logger.warning(
+                    "Invalid content provided for harmful content analysis"
+                )
                 return
             # Validate result object
             if not result or not isinstance(result, SafetyAnalysisResult):
                 logger.error("Invalid SafetyAnalysisResult object provided")
-                raise ValueError("Valid SafetyAnalysisResult required for analysis")
+                raise ValueError(
+                    "Valid SafetyAnalysisResult required for analysis"
+                )
 
             harmful_keywords = self.config.keyword_blacklist
             content_lower = content.lower()
             detected_keywords = [
-                keyword for keyword in harmful_keywords if keyword in content_lower
+                keyword
+                for keyword in harmful_keywords
+                if keyword in content_lower
             ]
 
             if detected_keywords:
@@ -83,7 +93,9 @@ class SafetyService:
                         description=f"Detected harmful keywords: {detected_keywords}",
                     ),
                 )
-                logger.warning(f"Harmful content detected: {detected_keywords}")
+                logger.warning(
+                    f"Harmful content detected: {detected_keywords}"
+                )
             else:
                 result.is_safe = True
                 result.risk_level = RiskLevel.NONE
@@ -118,7 +130,9 @@ class SafetyService:
                 ),
             )
 
-    async def _analyze_toxicity(self, content: str, result: SafetyAnalysisResult):
+    async def _analyze_toxicity(
+        self, content: str, result: SafetyAnalysisResult
+    ):
         """Analyzes content for toxicity levels using the AI provider.
 
         Args:
@@ -139,9 +153,13 @@ class SafetyService:
                         description=f"Toxicity score: {toxicity_score}",
                     ),
                 )
-                self.logger.warning(f"Toxicity detected: score={toxicity_score}")
+                self.logger.warning(
+                    f"Toxicity detected: score={toxicity_score}"
+                )
         except Exception as e:
-            self.logger.error(f"Error during toxicity analysis: {e}", exc_info=True)
+            self.logger.error(
+                f"Error during toxicity analysis: {e}", exc_info=True
+            )
             result.is_safe = False
             result.risk_level = RiskLevel.CRITICAL
             result.modifications.append(
@@ -173,7 +191,9 @@ class SafetyService:
                 emotions={},
             )  # Populate emotions based on real API response
             result.emotional_impact = emotional_impact
-            self.logger.debug(f"Emotional impact analysis complete: {sentiment_label}")
+            self.logger.debug(
+                f"Emotional impact analysis complete: {sentiment_label}"
+            )
         except Exception as e:
             self.logger.error(
                 f"Error during emotional impact analysis: {e}",
@@ -203,8 +223,10 @@ class SafetyService:
 
         """
         try:
-            educational_value_data = await self.ai_provider.evaluate_educational_value(
-                content,
+            educational_value_data = (
+                await self.ai_provider.evaluate_educational_value(
+                    content,
+                )
             )
             educational_value = EducationalValue(
                 score=educational_value_data.get("score", 0.0),
@@ -248,12 +270,16 @@ class SafetyService:
             context_result = await self.ai_provider.analyze_context(context)
             context_analysis = ContextAnalysis(
                 is_personal_info=context_result.get("is_personal_info", False),
-                is_sensitive_topic=context_result.get("is_sensitive_topic", False),
+                is_sensitive_topic=context_result.get(
+                    "is_sensitive_topic", False
+                ),
             )
             result.context_analysis = context_analysis
             self.logger.debug(f"Context analysis complete: {context_analysis}")
         except Exception as e:
-            self.logger.error(f"Error during context analysis: {e}", exc_info=True)
+            self.logger.error(
+                f"Error during context analysis: {e}", exc_info=True
+            )
             result.context_analysis = ContextAnalysis(
                 context_safe=False,
             )  # Indicate error state

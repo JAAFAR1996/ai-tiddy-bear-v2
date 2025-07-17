@@ -1,12 +1,11 @@
-"""from dataclasses import dataclass, field
+"""Session Data Models
+Defines core data structures for async session management."""
+
+import uuid
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, Any, Optional
-import uuid.
-"""
-
-"""Session Data Models
-Defines core data structures for async session management."""
 
 
 class SessionStatus(str, Enum):
@@ -24,7 +23,7 @@ class AsyncSessionData:
     - Automatic expiration tracking
     - Activity monitoring
     - Child safety score tracking
-    - COPPA - compliant data handling.
+    - COPPA-compliant data handling.
     """
 
     session_id: str = field(default_factory=lambda: str(uuid.uuid4()))

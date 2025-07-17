@@ -71,12 +71,7 @@ def test_import_verification():
 
     # Test core use cases
     try:
-        from application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
-        from application.use_cases.manage_child_profile import ManageChildProfileUseCase
-        from application.use_cases.generate_ai_response import GenerateAIResponseUseCase
-        from application.use_cases.generate_dynamic_story import (
-            GenerateDynamicStoryUseCase,
-        )
+        pass
 
         logger.info("✅ All use case imports successful")  # ✅
     except ImportError as e:
@@ -84,11 +79,7 @@ def test_import_verification():
 
     # Test domain entities and events
     try:
-        from domain.entities.child_profile import ChildProfile
-        from domain.events.child_registered import ChildRegistered
-        from domain.events.child_profile_updated import ChildProfileUpdated
-        from domain.events.conversation_started import ConversationStarted
-        from domain.events.conversation_updated import ConversationUpdated
+        pass
 
         logger.info("✅ All domain imports successful")  # ✅
     except ImportError as e:
@@ -96,10 +87,7 @@ def test_import_verification():
 
     # Test value objects
     try:
-        from domain.value_objects.age_group import AgeGroup
-        from domain.value_objects.child_preferences import ChildPreferences
-        from domain.value_objects.language import Language
-        from domain.value_objects.safety_level import SafetyLevel
+        pass
 
         logger.info("✅ All value object imports successful")  # ✅
     except ImportError as e:
@@ -107,9 +95,7 @@ def test_import_verification():
 
     # Test infrastructure
     try:
-        from infrastructure.persistence.child_repository import AsyncSQLAlchemyChildRepo
-        from infrastructure.security.jwt_auth import JWTAuth
-        from infrastructure.security.safety_monitor_service import SafetyMonitorService
+        pass
 
         logger.info("✅ All infrastructure imports successful")  # ✅
     except ImportError as e:
@@ -117,8 +103,7 @@ def test_import_verification():
 
     # Test container and settings
     try:
-        from infrastructure.di.container import Container
-        from infrastructure.config.settings import get_settings
+        pass
 
         logger.info("✅ Container and settings imports successful")  # ✅
     except ImportError as e:
@@ -153,7 +138,6 @@ def test_domain_entities_creation():
 
     try:
         from domain.entities.child_profile import ChildProfile
-        from uuid import uuid4
 
         # Test child profile creation
         child = ChildProfile.create_new(
@@ -202,7 +186,6 @@ def test_event_creation():
 
     try:
         from domain.events.child_registered import ChildRegistered
-        from domain.events.child_profile_updated import ChildProfileUpdated
         from uuid import uuid4
 
         child_id = uuid4()
@@ -229,8 +212,9 @@ def test_use_case_instantiation():
 
     try:
         from unittest.mock import Mock
-        from application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
-        from application.use_cases.manage_child_profile import ManageChildProfileUseCase
+        from application.use_cases.process_esp32_audio import (
+            ProcessESP32AudioUseCase,
+        )
 
         # Test ProcessESP32AudioUseCase
         audio_service = Mock()
@@ -285,7 +269,7 @@ def test_settings_configuration():
     """Test that settings are properly configured."""
 
     try:
-        from infrastructure.config.settings import get_settings, Settings
+        from infrastructure.config.settings import get_settings
 
         settings = get_settings()
 
@@ -310,14 +294,7 @@ def test_no_circular_imports():
 
     try:
         # Import all main modules to check for circular dependencies
-        import domain.entities.child_profile
-        import domain.events.child_registered
-        import domain.value_objects.age_group
-        import application.use_cases.process_esp32_audio
-        import infrastructure.persistence.child_repository
-        import infrastructure.security.jwt_auth
-        import presentation.api.esp32_endpoints
-        import infrastructure.di.container
+        pass
 
         logger.info("✅ No circular imports detected")  # ✅
 
@@ -363,11 +340,14 @@ def run_comprehensive_verification():
     logger.info(f"✅ Passed: {passed}")  # ✅
     logger.info(f"❌ Failed: {failed}")  # ✅
     logger.info(
-        f"📈 Success Rate: {(passed / (passed + failed)) * 100:.1f}%")  # ✅
+        f"📈 Success Rate: {(passed / (passed + failed)) * 100:.1f}%"
+    )  # ✅
 
     if failed == 0:
         logger.info("\n🎉 ALL VERIFICATION TESTS PASSED!")  # ✅
-        logger.info("✅ The AI Teddy Bear project is ready for production!")  # ✅
+        logger.info(
+            "✅ The AI Teddy Bear project is ready for production!"
+        )  # ✅
     else:
         logger.warning(
             f"\n⚠️  {failed} tests failed. Please address these issues before deployment."

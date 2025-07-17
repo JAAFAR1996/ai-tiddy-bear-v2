@@ -1,13 +1,11 @@
-"""
+"""COPPA-Compliant Schema Validation for AI Teddy Bear
+Comprehensive data validation with child privacy protection"""
+
+import logging
+import re
 from datetime import datetime, date
 from enum import Enum
 from typing import Any, Dict, Union, List, Optional
-import logging
-import re
-"""
-
-"""COPPA - Compliant Schema Validation for AI Teddy Bear
-Comprehensive data validation with child privacy protection"""
 
 
 class COPPAViolationType(Enum):
@@ -57,9 +55,14 @@ def validate_against_schema(data: Any, schema: Dict[str, Any], context: Dict[str
         _validate_child_safety(data, schema, context, result)
         # Data retention validations
         _validate_data_retention(data, schema, context, result)
+        
         if result.errors:
+            result.is_valid = False
+            
         if result.coppa_violations:
             violations_list = [v.value for v in result.coppa_violations]
+            logging.warning(f"COPPA violations detected: {violations_list}")
+            
         return result
     except Exception as e:
         result.add_error(f"Validation system error: {e}")

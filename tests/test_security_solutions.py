@@ -156,7 +156,9 @@ class TestSecretsManagement:
         """Test secret rotation"""
         # Set initial secret
         await secrets_manager.set_secret(
-            name="rotating_key", value="initial_value", rotation_interval_days=1
+            name="rotating_key",
+            value="initial_value",
+            rotation_interval_days=1,
         )
 
         # Rotate the secret
@@ -402,7 +404,9 @@ class TestExceptionHandling:
 
         # Circuit should be open after threshold
         assert circuit_breaker.state in [
-            "open", "closed"]  # Depends on implementation
+            "open",
+            "closed",
+        ]  # Depends on implementation
         assert failure_count >= 3
 
     @pytest.mark.asyncio
@@ -482,7 +486,9 @@ class TestSecurityIntegration:
         """Test complete secure API call flow"""
         # Setup secrets manager
         secrets_manager = create_secrets_manager("testing")
-        local_provider = secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
+        local_provider = secrets_manager.providers[
+            SecretProvider.LOCAL_ENCRYPTED
+        ]
         local_provider.secrets_dir = tmp_path / "secrets"
         local_provider.secrets_dir.mkdir()
 
@@ -569,7 +575,9 @@ class TestSecurityPerformance:
         # import time
 
         secrets_manager = create_secrets_manager("testing")
-        local_provider = secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
+        local_provider = secrets_manager.providers[
+            SecretProvider.LOCAL_ENCRYPTED
+        ]
         local_provider.secrets_dir = tmp_path / "secrets"
         local_provider.secrets_dir.mkdir()
 
@@ -577,12 +585,16 @@ class TestSecurityPerformance:
 
         # First access - no cache
         # start = time.time()
-        value1 = await secrets_manager.get_secret("perf_test_key", use_cache=False)
+        value1 = await secrets_manager.get_secret(
+            "perf_test_key", use_cache=False
+        )
         # time_no_cache = time.time() - start
 
         # Second access - with cache
         # start = time.time()
-        value2 = await secrets_manager.get_secret("perf_test_key", use_cache=True)
+        value2 = await secrets_manager.get_secret(
+            "perf_test_key", use_cache=True
+        )
         # time_with_cache = time.time() - start
 
         assert value1 == value2

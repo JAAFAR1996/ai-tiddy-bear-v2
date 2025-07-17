@@ -10,8 +10,9 @@ except ImportError:
     FEDERATION_AVAILABLE = False
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE,
-                    reason="Federation not available")
+@pytest.mark.skipif(
+    not FEDERATION_AVAILABLE, reason="Federation not available"
+)
 class TestServiceConfig:
     """Test service configuration."""
 

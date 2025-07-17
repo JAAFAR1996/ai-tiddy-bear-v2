@@ -82,7 +82,9 @@ class ChildSafetyLoggingMiddleware(BaseHTTPMiddleware):
             "query_params": dict(request.query_params),
             "user_agent": request.headers.get("User-Agent", "Unknown"),
             "client_ip": self._get_client_ip(request),
-            "child_id_hash": self._hash_child_id(child_id) if child_id else None,
+            "child_id_hash": (
+                self._hash_child_id(child_id) if child_id else None
+            ),
             "device_id": device_id,
             "content_length": request.headers.get("Content-Length"),
             "is_child_request": "/esp32/" in request.url.path,

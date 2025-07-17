@@ -45,8 +45,11 @@ class DynamicStoryService:
         prompt = (
             f"Generate a {length} story for a {child_age}-year-old named {child_name}. "
             f"The story should be about {theme}. "
-            f"Incorporate the child's favorite topics: {', '.join(child_preferences.favorite_topics)}. "
-            f"The story should be in {child_preferences.language} and suitable for their learning level {child_preferences.learning_level}."
+            f"Incorporate the child's favorite topics: "
+            f"{', '.join(child_preferences.favorite_topics)}. "
+            f"The story should be in {child_preferences.language} and "
+            f"suitable for their learning level "
+            f"{child_preferences.learning_level}."
         )
         # Use a dummy child_id and conversation_history for story generation, as it's not a direct conversation
         # The AIProvider interface expects these, but they might not be strictly relevant for story generation.

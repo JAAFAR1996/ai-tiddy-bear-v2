@@ -128,9 +128,9 @@ async def test_cleanup_on_init_failure(monkeypatch):
     )
     # Patch db_engine to raise
     monkeypatch.setattr(
-        container, "db_engine", lambda: (
-            _ for _ in ()).throw(
-            Exception("DB init fail"))
+        container,
+        "db_engine",
+        lambda: (_ for _ in ()).throw(Exception("DB init fail")),
     )
     with pytest.raises(Exception):
         await container.init_resources()

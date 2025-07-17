@@ -1,17 +1,17 @@
-"""from datetime import datetime, timedelta
+"""Relationship Manager
+Manages parent-child relationships with proper verification and audit trails."""
+
+import logging
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from uuid import uuid4
-import logging
-from .verification_models import ("""
 
-"""Relationship Manager
-Manages parent - child relationships with proper verification and audit trails."""
-
+from .verification_models import (
     RelationshipRecord,
     RelationshipStatus,
     RelationshipType,
-    VerificationRecord)
-
+    VerificationRecord,
+)
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="services")
@@ -35,7 +35,7 @@ class RelationshipManager:
         verification_evidence: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
-        Create a new parent - child relationship record.
+        Create a new parent-child relationship record.
         Args: 
             parent_id: Parent identifier
             child_id: Child identifier
@@ -162,7 +162,7 @@ class RelationshipManager:
     
     def get_child_parents(self, child_id: str) -> List[str]:
         """
-        Get all parents / guardians associated with a child.
+        Get all parents/guardians associated with a child.
         Args: 
             child_id: Child identifier
         Returns: 

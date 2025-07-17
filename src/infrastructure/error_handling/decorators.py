@@ -1,9 +1,7 @@
-from typing import Callable, Type, Any, Tuple, Union, Optional
+from typing import Callable, Type, Any, Tuple, Optional
 import functools
-import logging
 import asyncio
 
-from .error_handlers import async_error_handler
 from .error_types import BaseApplicationError, ExternalServiceError
 from src.infrastructure.logging_config import get_logger
 
@@ -113,15 +111,20 @@ def retry_on_error(
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except Exception as other_error:
-                    logger.error(f"Unexpected error in {func.__name__}: {other_error}")
+                    logger.error(
+                        f"Unexpected error in {func.__name__}: {other_error}"
+                    )
                     raise
 
-            logger.error(f"All {max_retries} retries failed for {func.__name__}")
+            logger.error(
+                f"All {max_retries} retries failed for {func.__name__}"
+            )
             raise last_error
 
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
             import time
+
             last_error = None
             current_delay = delay
 
@@ -140,10 +143,14 @@ def retry_on_error(
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except Exception as other_error:
-                    logger.error(f"Unexpected error in {func.__name__}: {other_error}")
+                    logger.error(
+                        f"Unexpected error in {func.__name__}: {other_error}"
+                    )
                     raise
 
-            logger.error(f"All {max_retries} retries failed for {func.__name__}")
+            logger.error(
+                f"All {max_retries} retries failed for {func.__name__}"
+            )
             raise last_error
 
         if asyncio.iscoroutinefunction(func):
@@ -170,7 +177,9 @@ def safe_execution(
                 return await func(*args, **kwargs)
             except Exception as e:
                 if log_errors:
-                    logger.error(f"Error in {func.__name__}: {e}", exc_info=True)
+                    logger.error(
+                        f"Error in {func.__name__}: {e}", exc_info=True
+                    )
                 if reraise:
                     raise
                 return fallback_value
@@ -181,7 +190,9 @@ def safe_execution(
                 return func(*args, **kwargs)
             except Exception as e:
                 if log_errors:
-                    logger.error(f"Error in {func.__name__}: {e}", exc_info=True)
+                    logger.error(
+                        f"Error in {func.__name__}: {e}", exc_info=True
+                    )
                 if reraise:
                     raise
                 return fallback_value
@@ -224,4 +235,9 @@ def validate_result(
     return decorator
 
 
-__all__ = ["handle_errors", "retry_on_error", "safe_execution", "validate_result"]
+__all__ = [
+    "handle_errors",
+    "retry_on_error",
+    "safe_execution",
+    "validate_result",
+]

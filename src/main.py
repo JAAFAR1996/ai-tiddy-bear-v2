@@ -21,7 +21,9 @@ from src.domain.exceptions.base import (  # Moved to central exceptions module
 )
 
 # Local imports
-from src.infrastructure.config.production_check import enforce_production_safety
+from src.infrastructure.config.production_check import (
+    enforce_production_safety,
+)
 from src.infrastructure.config.startup_validator import validate_startup
 from src.infrastructure.di.container import container
 from src.infrastructure.di.di_components.wiring_config import FullWiringConfig
@@ -32,16 +34,6 @@ from src.presentation.routing import setup_routing
 
 # Load environment variables (only once at the top-level)
 load_dotenv()
-
-# Define project root and custom exceptions
-# project_root is now managed via container.settings() to avoid global variable issues and ensure deterministic path resolution.
-# class StartupValidationException(Exception):
-#     """Custom exception for security-related issues.
-#     This exception is raised when a security-sensitive configuration
-#     or operation fails validation, indicating a potential vulnerability
-#     or misconfiguration that could compromise the system.
-#     """
-#     pass
 
 logger = get_logger(__name__, component="application")
 
@@ -59,18 +51,21 @@ async def lifespan(app: FastAPI):
         logger.info("FastAPILimiter initialized with Redis.")
     except Exception as e:
         logger.critical(
-            f"Failed to initialize FastAPILimiter or connect to Redis: {e}",
+            "Failed to initialize FastAPILimiter or connect to Redis: " f"{e}",
             exc_info=True,
         )
         raise RuntimeError(
-            "Failed to initialize FastAPILimiter due to Redis connection issue",
+            "Failed to initialize FastAPILimiter due to Redis connection "
+            "issue",
         ) from e
 
     # Yield control to the application startup
     yield
 
     # Perform cleanup actions on shutdown
-    logger.info("Application shutdown event triggered. Closing Redis connection.")
+    logger.info(
+        "Application shutdown event triggered. Closing Redis connection."
+    )
     if redis_client:
         await redis_client.close()
         logger.info("Redis client closed.")
@@ -78,9 +73,6 @@ async def lifespan(app: FastAPI):
 
 def _setup_app_configurations() -> None:
     """Helper function to set up core application configurations."""
-    # Environment variables are loaded globally, no need to re-load
-    # load_dotenv()
-
     # Enforce production safety checks early
     enforce_production_safety()
 
@@ -96,8 +88,13 @@ def _validate_system_startup() -> None:
         startup_validator_instance = container.startup_validator()
         validate_startup(startup_validator_instance)
     except RuntimeError as e:
-        logger.critical("System validation failed during app creation", exc_info=True)
-        raise StartupValidationException("Application startup validation failed") from e
+        logger.critical(
+            "System validation failed during app creation",
+            exc_info=True,
+        )
+        raise StartupValidationException(
+            "Application startup validation failed"
+        ) from e
 
 
 def _setup_app_middlewares_and_routes(fast_app: FastAPI) -> None:
@@ -112,7 +109,8 @@ def _mount_static_files(fast_app: FastAPI, project_root: Path) -> None:
     environment = container.settings().app.ENVIRONMENT
     if environment == "production":
         logger.info(
-            "Skipping static file serving in production environment. Use Nginx or a CDN.",
+            "Skipping static file serving in production environment. "
+            "Use Nginx or a CDN.",
         )
         return
 
@@ -121,20 +119,25 @@ def _mount_static_files(fast_app: FastAPI, project_root: Path) -> None:
 
     if not static_dir.is_dir():
         logger.warning(
-            f"Static files directory not found at '{static_dir}'. Static file serving will be disabled.",
+            f"Static files directory not found at '{static_dir}'. "
+            "Static file serving will be disabled.",
         )
     else:
         try:
             static_dir.relative_to(project_root)
         except ValueError:
             logger.critical(
-                f"SECURITY ALERT: Invalid STATIC_FILES_DIR. Path traversal attempt detected."
-                f"Directory '{static_dir}' is outside of project root '{project_root}'.",
+                "SECURITY ALERT: Invalid STATIC_FILES_DIR. Path traversal "
+                f"attempt detected. Directory '{static_dir}' is outside "
+                f"of project root '{project_root}'.",
             )
             raise ValueError(
-                "Invalid static files directory configuration: Path traversal detected.",
+                "Invalid static files directory configuration: Path traversal "
+                "detected.",
             )
-        fast_app.mount("/static", StaticFiles(directory=static_dir), name="static")
+        fast_app.mount(
+            "/static", StaticFiles(directory=static_dir), name="static"
+        )
         logger.info(f"Static files mounted from: {static_dir}")
 
 
@@ -178,27 +181,44 @@ if __name__ == "__main__":
     server_settings = container.settings().server
     is_development = container.settings().app.ENVIRONMENT == "development"
     host = server_settings.HOST if not is_development else "127.0.0.1"
-    port = server_settings.PORT if not is_development else server_settings.DEFAULT_PORT
+    port = (
+        server_settings.PORT
+        if not is_development
+        else server_settings.DEFAULT_PORT
+    )
 
     # Ensure SSL is configured for production or offloaded
     ssl_keyfile = os.getenv("SSL_KEYFILE")
     ssl_certfile = os.getenv("SSL_CERTFILE")
-    ssl_offloaded = os.getenv("SSL_OFFLOADED", "false").lower() in ("true", "1", "yes")
+    ssl_offloaded = os.getenv("SSL_OFFLOADED", "false").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
     uvicorn_ssl_args = {}
-    if not is_development and not (ssl_keyfile and ssl_certfile) and not ssl_offloaded:
+    if (
+        not is_development
+        and not (ssl_keyfile and ssl_certfile)
+        and not ssl_offloaded
+    ):
         logger.critical(
-            "SECURITY ERROR: Production deployment requires SSL certificates or SSL offloading. "
-            "Set SSL_KEYFILE and SSL_CERTFILE environment variables for Uvicorn SSL, "
-            "or set SSL_OFFLOADED=true if an external proxy handles SSL.",
+            "SECURITY ERROR: Production deployment requires SSL certificates "
+            "or SSL offloading. Set SSL_KEYFILE and SSL_CERTFILE environment "
+            "variables for Uvicorn SSL, or set SSL_OFFLOADED=true if an "
+            "external proxy handles SSL.",
         )
-        raise RuntimeError("SSL configuration required for production deployment")
+        raise RuntimeError(
+            "SSL configuration required for production deployment"
+        )
     elif ssl_keyfile and ssl_certfile and not ssl_offloaded:
         uvicorn_ssl_args["ssl_keyfile"] = ssl_keyfile
         uvicorn_ssl_args["ssl_certfile"] = ssl_certfile
         logger.info("SSL configured for uvicorn.")
     elif ssl_offloaded:
-        logger.info("SSL is handled by an upstream proxy (SSL_OFFLOADED=true).")
+        logger.info(
+            "SSL is handled by an upstream proxy (SSL_OFFLOADED=true)."
+        )
     else:
         logger.info("SSL not configured for uvicorn (development mode).")
 
@@ -216,15 +236,22 @@ if __name__ == "__main__":
             server_settings.UVICORN_DEV_WORKERS
             if is_development
             else int(
-                os.getenv("WORKERS", str(server_settings.UVICORN_PROD_WORKERS_DEFAULT)),
+                os.getenv(
+                    "WORKERS",
+                    str(server_settings.UVICORN_PROD_WORKERS_DEFAULT),
+                ),
             )
         ),
         backlog=server_settings.UVICORN_BACKLOG,
         keepalive_timeout=server_settings.UVICORN_KEEPALIVE_TIMEOUT,
         max_requests=(
-            server_settings.UVICORN_MAX_REQUESTS if not is_development else None
+            server_settings.UVICORN_MAX_REQUESTS
+            if not is_development
+            else None
         ),
         max_requests_jitter=(
-            server_settings.UVICORN_MAX_REQUESTS_JITTER if not is_development else None
+            server_settings.UVICORN_MAX_REQUESTS_JITTER
+            if not is_development
+            else None
         ),
     )

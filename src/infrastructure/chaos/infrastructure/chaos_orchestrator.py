@@ -1,24 +1,24 @@
-"""from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
-import asyncio
-import logging
-import time
-from concurrent.futures import ThreadPoolExecutor
-import requests
-from .chaos_injector import ChaosInjector
-from .chaos_monitor import ChaosMonitor
-from .chaos_reporter import ChaosReporter.
-"""
-
 """Chaos Engineering Orchestrator
 SRE Team Implementation - Task 15
 Advanced chaos orchestration and experiment management for AI Teddy Bear System"""
 
-logging.basicConfig(level=logging.INFO)
-from src.infrastructure.logging_config import get_logger
+import asyncio
+import logging
+import time
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
+import requests
+
+from src.infrastructure.logging_config import get_logger
+from .chaos_injector import ChaosInjector
+from .chaos_monitor import ChaosMonitor
+from .chaos_reporter import ChaosReporter
+
+logging.basicConfig(level=logging.INFO)
 logger = get_logger(__name__, component="chaos")
 
 
@@ -216,14 +216,16 @@ class ChaosOrchestrator:
             await self._post_experiment_verification(metrics)
 
             metrics.end_time = datetime.now()
-            self.active_experiments[experiment_id]["status"] = (
-                ExperimentStatus.COMPLETED
-            )
+            self.active_experiments[experiment_id][
+                "status"
+            ] = ExperimentStatus.COMPLETED
             logger.info(f"✅ Chaos experiment completed: {experiment_id}")
         except Exception as e:
             logger.error(f"❌ Chaos experiment failed: {experiment_id} - {e}")
             metrics.end_time = datetime.now()
-            self.active_experiments[experiment_id]["status"] = ExperimentStatus.FAILED
+            self.active_experiments[experiment_id][
+                "status"
+            ] = ExperimentStatus.FAILED
             await self._emergency_rollback(experiment_id)
         finally:
             self.experiment_history.append(metrics)
@@ -250,7 +252,10 @@ class ChaosOrchestrator:
         for target in targets:
             if target in self.chaos_targets:
                 for failure_type in failure_types:
-                    if failure_type in self.chaos_targets[target].failure_types:
+                    if (
+                        failure_type
+                        in self.chaos_targets[target].failure_types
+                    ):
                         task = asyncio.create_task(
                             self.injector.inject_failure(
                                 target,
@@ -292,12 +297,16 @@ class ChaosOrchestrator:
         critical_services = ["safety-service", "child-service"]
         for service in critical_services:
             try:
-                response = requests.get(f"http://{service}:8000/health", timeout=5)
+                response = requests.get(
+                    f"http://{service}:8000/health", timeout=5
+                )
                 if response.status_code != 200:
                     logger.error(f"❌ Critical service {service} is unhealthy")
                     return False
             except Exception as e:
-                logger.error(f"❌ Cannot reach critical service {service}: {e}")
+                logger.error(
+                    f"❌ Cannot reach critical service {service}: {e}"
+                )
                 return False
 
         if len(self.active_experiments) > 3:
@@ -312,7 +321,10 @@ class ChaosOrchestrator:
         try:
             response = requests.get(f"http://{target}:8000/health", timeout=5)
             return response.status_code == 200
-        except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
+        except (
+            requests.exceptions.RequestException,
+            requests.exceptions.Timeout,
+        ) as e:
             logger.warning(f"Safety check failed for {target}: {e}")
             return False
 
@@ -320,10 +332,16 @@ class ChaosOrchestrator:
         """Verify system state after experiment."""
         logger.info("🔍 Performing post-experiment verification...")
 
-        safety_services = ["safety-service", "content-filter", "parental-controls"]
+        safety_services = [
+            "safety-service",
+            "content-filter",
+            "parental-controls",
+        ]
         for service in safety_services:
             try:
-                response = requests.get(f"http://{service}:8000/health", timeout=10)
+                response = requests.get(
+                    f"http://{service}:8000/health", timeout=10
+                )
                 if response.status_code != 200:
                     logger.warning(f"⚠️ {service} not healthy after experiment")
                     metrics.safety_violations += 1
@@ -335,7 +353,9 @@ class ChaosOrchestrator:
 
     async def _emergency_rollback(self, experiment_id: str):
         """Emergency rollback of all chaos actions."""
-        logger.critical(f"🚨 EMERGENCY ROLLBACK for experiment {experiment_id}")
+        logger.critical(
+            f"🚨 EMERGENCY ROLLBACK for experiment {experiment_id}"
+        )
         try:
             logger.info("✅ Emergency rollback completed")
         except Exception as e:

@@ -9,7 +9,9 @@ from .patterns import SecurityPatterns.
 class ThreatDetectors(SecurityPatterns):
     """Security threat detection methods."""
 
-    async def detect_sql_injection(self, text: str, field: str) -> List[SecurityThreat]:
+    async def detect_sql_injection(
+        self, text: str, field: str
+    ) -> List[SecurityThreat]:
         """Detect SQL injection attempts."""
         threats = []
         for pattern in self.sql_patterns:
@@ -132,13 +134,17 @@ class ThreatDetectors(SecurityPatterns):
                 )
         return threats
 
-    async def detect_inappropriate_content(self, text: str, field: str) -> List[str]:
+    async def detect_inappropriate_content(
+        self, text: str, field: str
+    ) -> List[str]:
         """Detect inappropriate content for children."""
         violations = []
         for pattern in self.inappropriate_patterns:
             matches = pattern.findall(text)
             for match in matches:
-                violations.append(f"Inappropriate content detected in {field}: {match}")
+                violations.append(
+                    f"Inappropriate content detected in {field}: {match}"
+                )
         return violations
 
     async def detect_pii(self, text: str, field: str) -> List[str]:
@@ -147,7 +153,9 @@ class ThreatDetectors(SecurityPatterns):
         for pattern in self.pii_patterns:
             matches = pattern.findall(text)
             for match in matches:
-                violations.append(f"PII detected in {field}: {type(match).__name__}")
+                violations.append(
+                    f"PII detected in {field}: {type(match).__name__}"
+                )
         return violations
 
     async def detect_encoding_attacks(

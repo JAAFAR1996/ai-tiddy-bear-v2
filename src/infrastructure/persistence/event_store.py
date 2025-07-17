@@ -1,16 +1,12 @@
-"""from datetime import datetime
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from uuid import uuid4
 import asyncio
 import json
 import logging
-from src.domain.events.base_event import DomainEvent
-from src.infrastructure.persistence.database import get_database.
-"""
 
-"""Real Event Store Implementation for Domain Events
-Enterprise-grade event sourcing with proper persistence and replay capabilities
-"""
+from src.domain.events.base_event import DomainEvent
+from src.infrastructure.persistence.database import get_database
 
 from src.infrastructure.logging_config import get_logger
 
@@ -46,7 +42,7 @@ class EventStore:
                 (event_id, event_type, aggregate_id, aggregate_version,
                  event_data, occurred_at, created_at)
                 VALUES
-                (: event_id, : event_type, : aggregate_id, : aggregate_version, : event_data, : occurred_at, : created_at)
+                (:event_id, :event_type, :aggregate_id, :aggregate_version, :event_data, :occurred_at, :created_at)
                 """
                 await session.execute(
                     query,
@@ -80,13 +76,16 @@ class EventStore:
                 query = """
                 SELECT event_type, event_data, occurred_at, aggregate_version
                 FROM domain_events
-                WHERE aggregate_id = : aggregate_id
-                AND aggregate_version > : from_version
+                WHERE aggregate_id = :aggregate_id
+                AND aggregate_version > :from_version
                 ORDER BY aggregate_version ASC
                 """
                 result = await session.execute(
                     query,
-                    {"aggregate_id": aggregate_id, "from_version": from_version},
+                    {
+                        "aggregate_id": aggregate_id,
+                        "from_version": from_version,
+                    },
                 )
 
                 events = []
@@ -123,18 +122,22 @@ class EventStore:
                     SELECT event_id, aggregate_id, aggregate_version, event_type,
                            event_data, occurred_at, created_at, metadata
                     FROM domain_events
-                    WHERE event_type = : event_type
+                    WHERE event_type = :event_type
                     ORDER BY created_at ASC
-                    LIMIT : limit OFFSET : offset
+                    LIMIT :limit OFFSET :offset
                     """
-                    params = {"event_type": event_type, "limit": 1000, "offset": 0}
+                    params = {
+                        "event_type": event_type,
+                        "limit": 1000,
+                        "offset": 0,
+                    }
                 else:
                     query = """
                     SELECT event_id, aggregate_id, aggregate_version, event_type,
                            event_data, occurred_at, created_at, metadata
                     FROM domain_events
                     ORDER BY created_at ASC
-                    LIMIT : limit OFFSET : offset
+                    LIMIT :limit OFFSET :offset
                     """
                     params = {"limit": 1000, "offset": 0}
 

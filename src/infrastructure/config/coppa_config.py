@@ -46,7 +46,9 @@ class COPPAConfig:
         """Initializes COPPA configuration from environment and settings."""
         try:
             self._enabled = self.settings.privacy.COPPA_ENABLED
-            logging.info(f"COPPA compliance initialized from settings: {self._enabled}")
+            logging.info(
+                f"COPPA compliance initialized from settings: {self._enabled}"
+            )
         except AttributeError:
             # Fallback to environment variable if settings not properly loaded
             env_value = os.getenv("COPPA_ENABLED", "").lower()

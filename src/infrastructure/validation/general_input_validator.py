@@ -73,7 +73,9 @@ class GeneralInputValidator:
 
         logger.info("General input validator initialized")
 
-    def validate_email(self, email: str, required: bool = True) -> ValidationResult:
+    def validate_email(
+        self, email: str, required: bool = True
+    ) -> ValidationResult:
         """Validate email address format and deliverability.
         Args: email: Email address to validate
             required: Whether email is required
@@ -90,7 +92,9 @@ class GeneralInputValidator:
 
         if not EMAIL_VALIDATOR_AVAILABLE:
             # Fallback to basic regex validation
-            email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+            email_pattern = (
+                r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+            )
             if not re.match(email_pattern, email):
                 return ValidationResult(
                     valid=False,
@@ -277,7 +281,9 @@ class GeneralInputValidator:
             )
 
         # XSS detection
-        xss_detected = any(pattern.search(text) for pattern in self.compiled_xss)
+        xss_detected = any(
+            pattern.search(text) for pattern in self.compiled_xss
+        )
         if xss_detected:
             return ValidationResult(
                 valid=False,
@@ -287,7 +293,9 @@ class GeneralInputValidator:
             )
 
         # SQL injection detection
-        sql_detected = any(pattern.search(text) for pattern in self.compiled_sql)
+        sql_detected = any(
+            pattern.search(text) for pattern in self.compiled_sql
+        )
         if sql_detected:
             return ValidationResult(
                 valid=False,
@@ -326,7 +334,9 @@ class GeneralInputValidator:
     def _sanitize_filename(self, filename: str) -> str:
         """Sanitize filename for safe storage."""
         # Remove path traversal attempts
-        safe_name = filename.replace("..", "").replace("/", "").replace("\\", "")
+        safe_name = (
+            filename.replace("..", "").replace("/", "").replace("\\", "")
+        )
 
         # Remove potentially dangerous characters
         safe_name = re.sub(r'[<>:"|?*]', "", safe_name)
@@ -334,7 +344,9 @@ class GeneralInputValidator:
         # Ensure reasonable length
         if len(safe_name) > 255:
             name_part, ext_part = (
-                safe_name.rsplit(".", 1) if "." in safe_name else (safe_name, "")
+                safe_name.rsplit(".", 1)
+                if "." in safe_name
+                else (safe_name, "")
             )
             safe_name = name_part[:250] + ("." + ext_part if ext_part else "")
 

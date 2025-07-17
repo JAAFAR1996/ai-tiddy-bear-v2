@@ -32,7 +32,9 @@ def create_security_headers_middleware(app, environment: str = "production"):
     return SecurityHeadersMiddleware(app)
 
 
-def get_middleware_stats(middleware: SecurityHeadersMiddleware) -> Dict[str, Any]:
+def get_middleware_stats(
+    middleware: SecurityHeadersMiddleware,
+) -> Dict[str, Any]:
     """Get performance statistics from security middleware
     Args: middleware: SecurityHeadersMiddleware instance
     Returns: Dictionary with performance metrics.

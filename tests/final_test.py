@@ -84,7 +84,8 @@ def test_services():
     # Device Services
     try:
         device_files = list(
-            Path("src/application/services/device").glob("*.py"))
+            Path("src/application/services/device").glob("*.py")
+        )
         if device_files:
             results["device_services"] = True
             logger.info("  ✅ Device Services: يعمل بشكل طبيعي")
@@ -169,7 +170,8 @@ def main():
         f"✅ خدمات ناجحة: {final_score['services_passed']}/{final_score['total_services']}"
     )
     logger.info(
-        f"📈 نسبة نجاح الخدمات: {final_score['service_percentage']:.1f}%")
+        f"📈 نسبة نجاح الخدمات: {final_score['service_percentage']:.1f}%"
+    )
     logger.info(
         f"🎯 الكيانات الأساسية: {'✅ تعمل' if final_score['entities_working'] else '❌ مشاكل'}"
     )

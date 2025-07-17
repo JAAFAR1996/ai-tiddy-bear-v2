@@ -4,16 +4,12 @@ End-to-End Tests for AI Teddy Bear System
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
 from httpx import AsyncClient
-import json
 from uuid import uuid4
 import os
 
 from src.main import app
-from src.infrastructure.config.settings import Settings
 from src.infrastructure.persistence.database import Database
-from src.infrastructure.persistence.real_database_service import DatabaseService
 
 
 @pytest.fixture(scope="session")
@@ -48,7 +44,8 @@ class TestCompleteUserJourney:
 
     @pytest.mark.asyncio
     async def test_full_user_journey(
-            self, test_client: AsyncClient, test_database):
+        self, test_client: AsyncClient, test_database
+    ):
         """Test complete flow: signup -> login -> create child -> interact -> monitor."""
 
         # Step 1: Parent Registration
@@ -268,7 +265,8 @@ class TestMultiChildFamily:
         # Create multiple children
         children = []
         for i, (name, age) in enumerate(
-                [("Alice", 5), ("Bob", 8), ("Charlie", 10)]):
+            [("Alice", 5), ("Bob", 8), ("Charlie", 10)]
+        ):
             # COPPA consent for each child
             consent_response = await test_client.post(
                 "/api/v1/coppa/consent",
@@ -298,7 +296,9 @@ class TestMultiChildFamily:
             children.append(child_response.json())
 
         # List all children
-        list_response = await test_client.get("/api/v1/children", headers=auth_headers)
+        list_response = await test_client.get(
+            "/api/v1/children", headers=auth_headers
+        )
 
         assert list_response.status_code == 200
         child_list = list_response.json()
@@ -321,10 +321,12 @@ class TestMultiChildFamily:
             # Verify age-appropriate content
             if child["age"] <= 5:
                 assert "simple" in response_data["metadata"].get(
-                    "complexity", "")
+                    "complexity", ""
+                )
             elif child["age"] >= 10:
                 assert "advanced" in response_data["metadata"].get(
-                    "complexity", "")
+                    "complexity", ""
+                )
 
 
 class TestLongRunningSession:
@@ -332,7 +334,8 @@ class TestLongRunningSession:
 
     @pytest.mark.asyncio
     async def test_extended_conversation(
-            self, test_client: AsyncClient, test_database):
+        self, test_client: AsyncClient, test_database
+    ):
         """Test extended conversation with context retention."""
 
         # Setup parent and child
@@ -389,7 +392,9 @@ class TestLongRunningSession:
                 chat_data["conversation_id"] = conversation_id
 
             response = await test_client.post(
-                "/api/v1/conversations/chat", json=chat_data, headers=auth_headers
+                "/api/v1/conversations/chat",
+                json=chat_data,
+                headers=auth_headers,
             )
 
             assert response.status_code == 200
@@ -412,8 +417,9 @@ class TestLongRunningSession:
 
         assert history_response.status_code == 200
         history = history_response.json()
-        assert len(history["messages"]) == len(
-            story_messages) * 2  # User + AI messages
+        assert (
+            len(history["messages"]) == len(story_messages) * 2
+        )  # User + AI messages
 
         # Verify story coherence
         full_story = " ".join(
@@ -433,7 +439,8 @@ class TestSystemResilience:
 
     @pytest.mark.asyncio
     async def test_concurrent_users(
-            self, test_client: AsyncClient, test_database):
+        self, test_client: AsyncClient, test_database
+    ):
         """Test system handling multiple concurrent users."""
 
         # Create multiple parent accounts concurrently
@@ -482,7 +489,8 @@ class TestSystemResilience:
                 json={
                     "name": "Test Child",
                     "age": 7,
-                    "interests": ["general"]},
+                    "interests": ["general"],
+                },
                 headers=auth_headers,
             )
 
@@ -501,7 +509,8 @@ class TestSystemResilience:
 
     @pytest.mark.asyncio
     async def test_token_refresh_flow(
-            self, test_client: AsyncClient, test_database):
+        self, test_client: AsyncClient, test_database
+    ):
         """Test token refresh mechanism."""
 
         # Register and login
@@ -526,7 +535,8 @@ class TestSystemResilience:
 
         # Use access token
         profile_response = await test_client.get(
-            "/api/v1/auth/profile", headers={"Authorization": f"Bearer {access_token}"}
+            "/api/v1/auth/profile",
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         assert profile_response.status_code == 200
 

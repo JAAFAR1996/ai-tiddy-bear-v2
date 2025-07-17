@@ -1,29 +1,26 @@
-"""from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+"""Clean, focused session management extracted from 426-line monolith.
+Provides enterprise-grade session handling with child safety features."""
+
 import asyncio
-import logging
-from .session_models import AsyncSessionData, SessionStatus, SessionStats
-from .session_storage import SessionStorage.
-"""
-
-"""Clean, focused session management extracted from 426 - line monolith.
-Provides enterprise - grade session handling with child safety features."""
-
 import contextlib
+from datetime import datetime, timedelta
+from typing import Dict, Any, Optional, List
 
+from .session_models import AsyncSessionData, SessionStatus, SessionStats
+from .session_storage import SessionStorage
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="services")
 
 
 class AsyncSessionManager:
-    """Refactored from 426 - line file into focused, maintainable components.
-    Provides enterprise - grade session management with child safety features.
+    """Refactored from 426-line file into focused, maintainable components.
+    Provides enterprise-grade session management with child safety features.
     Features:
-    - Thread - safe session operations
+    - Thread-safe session operations
     - Automatic expiration handling
     - Child safety monitoring
-    - COPPA - compliant data handling
+    - COPPA-compliant data handling
     - Performance optimized storage.
     """
 
@@ -149,7 +146,9 @@ class AsyncSessionManager:
         logger.info(f"Session ended: {session_id[:8]}...")
         return True
 
-    async def get_child_sessions(self, child_id: str) -> List[AsyncSessionData]:
+    async def get_child_sessions(
+        self, child_id: str
+    ) -> List[AsyncSessionData]:
         """Get all active sessions for a child.
 
         Args:
@@ -201,7 +200,9 @@ class AsyncSessionManager:
             Number of sessions cleaned up
 
         """
-        return await self.storage.cleanup_expired_sessions(self.default_timeout)
+        return await self.storage.cleanup_expired_sessions(
+            self.default_timeout
+        )
 
     async def _cleanup_loop(self) -> None:
         """Background task for periodic session cleanup."""

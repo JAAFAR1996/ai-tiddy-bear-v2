@@ -1,8 +1,7 @@
-
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 
 """
@@ -105,8 +104,9 @@ class Conversation:
         """
         self.summary = summary
 
-    def update_analysis(self, emotion_analysis: str,
-                        sentiment_score: float) -> None:
+    def update_analysis(
+        self, emotion_analysis: str, sentiment_score: float
+    ) -> None:
         """Updates the emotion analysis and sentiment score.
 
         Args:

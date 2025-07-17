@@ -28,12 +28,16 @@ class SecuritySettings(BaseApplicationSettings):
         60,
         env="RATE_LIMIT_REQUESTS_PER_MINUTE",
     )
-    RATE_LIMIT_REQUESTS_PER_HOUR: int = Field(3600, env="RATE_LIMIT_REQUESTS_PER_HOUR")
+    RATE_LIMIT_REQUESTS_PER_HOUR: int = Field(
+        3600, env="RATE_LIMIT_REQUESTS_PER_HOUR"
+    )
     MAX_LOGIN_ATTEMPTS: int = Field(5, env="MAX_LOGIN_ATTEMPTS")
     LOCKOUT_DURATION_SECONDS: int = Field(300, env="LOCKOUT_DURATION_SECONDS")
 
     JWT_ALGORITHM: str = Field("HS256", env="JWT_ALGORITHM")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
+        30, env="ACCESS_TOKEN_EXPIRE_MINUTES"
+    )
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(7, env="REFRESH_TOKEN_EXPIRE_DAYS")
 
     VAULT_URL: str | None = Field(None, env="VAULT_URL")

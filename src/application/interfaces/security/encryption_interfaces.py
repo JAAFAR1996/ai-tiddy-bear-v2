@@ -32,5 +32,7 @@ class ZeroKnowledgeProofService(ABC):
         """Generates a zero-knowledge proof for a given statement and private inputs."""
 
     @abstractmethod
-    async def verify_proof(self, statement: dict[str, Any], proof: Any) -> bool:
+    async def verify_proof(
+        self, statement: dict[str, Any], proof: Any
+    ) -> bool:
         """Verifies a zero-knowledge proof against a statement."""

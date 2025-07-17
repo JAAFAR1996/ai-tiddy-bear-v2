@@ -16,7 +16,10 @@ from src.application.exceptions import (
     TimeoutError,
 )
 from src.application.interfaces.ai_provider import AIProvider
-from src.application.interfaces.safety_monitor import SafetyLevel, SafetyMonitor
+from src.application.interfaces.safety_monitor import (
+    SafetyLevel,
+    SafetyMonitor,
+)
 from src.application.interfaces.tts_provider import TextToSpeechService
 from src.application.services.conversation_service import ConversationService
 from src.domain.value_objects.child_preferences import ChildPreferences
@@ -124,7 +127,9 @@ class AIOrchestrationService:
                 # Continue without audio if TTS fails, as it's not critical
 
         # 5. Update conversation history
-        self.conversation_service.add_interaction(child_id, current_input, raw_response)
+        self.conversation_service.add_interaction(
+            child_id, current_input, raw_response
+        )
 
         return AIResponse(
             text=raw_response,

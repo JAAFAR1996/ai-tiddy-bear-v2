@@ -50,7 +50,9 @@ class AudioService:
             self.logger.info(f"Processed audio chunk: {processed_data}")
             return processed_data
         except Exception as e:
-            self.logger.error(f"Error processing audio chunk: {e}", exc_info=True)
+            self.logger.error(
+                f"Error processing audio chunk: {e}", exc_info=True
+            )
             return None
 
     def get_audio_history(self) -> list[dict[str, Any]]:

@@ -121,7 +121,9 @@ def validate_config(config: SecurityHeadersConfig) -> Dict[str, list]:
 
     # Check CSP for child safety
     if "'unsafe-eval'" in config.csp.script_src:
-        issues["errors"].append("CSP allows unsafe-eval - dangerous for child safety")
+        issues["errors"].append(
+            "CSP allows unsafe-eval - dangerous for child safety"
+        )
     if "'unsafe-inline'" in config.csp.script_src:
         issues["warnings"].append(
             "CSP allows unsafe-inline scripts - consider using nonces",

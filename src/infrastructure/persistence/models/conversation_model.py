@@ -1,13 +1,11 @@
-class ConversationModel(Base):
-    from datetime import datetime
-    from uuid import UUID, uuid4
+from datetime import datetime
+from uuid import UUID, uuid4
 
-    from sqlalchemy import Column, DateTime, Float, ForeignKey, String
-    from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, Float, ForeignKey, String
+from sqlalchemy.orm import relationship
 
-    from src.domain.entities.conversation import Conversation
-    from src.infrastructure.persistence.database import Base
-
+from src.domain.entities.conversation import Conversation
+from src.infrastructure.persistence.database import Base
 
 class ConversationModel(Base):
     """SQLAlchemy model for conversations."""

@@ -29,8 +29,12 @@ class SettingsValidators:
     @classmethod
     def validate_database_url(cls, v: str) -> str:
         """Ensure PostgreSQL in production."""
-        if os.getenv("ENVIRONMENT") == "production" and not v.startswith("postgresql"):
-            raise ValueError("PostgreSQL is required for production environments.")
+        if os.getenv("ENVIRONMENT") == "production" and not v.startswith(
+            "postgresql"
+        ):
+            raise ValueError(
+                "PostgreSQL is required for production environments."
+            )
         weak_patterns = [
             "user:password",
             "user:pass",

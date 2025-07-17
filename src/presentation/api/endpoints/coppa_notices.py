@@ -190,7 +190,11 @@ async def request_coppa_consent(
         consent_id = await request_parental_consent(
             parent_id=current_user.id,
             child_id=child_id,
-            data_types=["voice_interactions", "preferences", "conversation_history"],
+            data_types=[
+                "voice_interactions",
+                "preferences",
+                "conversation_history",
+            ],
         )
 
         return {

@@ -1,16 +1,15 @@
-"""from dataclasses import dataclass, field
+"""Parent entity with comprehensive profile management and validation"""
+
+import logging
+import re
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-import logging
-import re.
-"""
-
-"""Parent entity with comprehensive profile management and validation"""
 
 
 @dataclass
 class Parent:
-    """Parent entity representing a parent / guardian in the AI Teddy Bear system.
+    """Parent entity representing a parent/guardian in the AI Teddy Bear system.
     Handles parent profile information with comprehensive validation and privacy controls.
     """
 
@@ -29,7 +28,7 @@ class Parent:
     phone_verified: bool = False
 
     def __post_init__(self):
-        """Post - initialization validation and setup."""
+        """Post-initialization validation and setup."""
         # Set creation timestamp if not provided
         if self.created_at is None:
             self.created_at = datetime.utcnow()
@@ -60,7 +59,7 @@ class Parent:
             "Ahmed Ali"
             >>> parent = Parent(name="Sarah Mohamed")
             >>> parent.get_full_name()
-            "Sarah Mohamed".
+            "Sarah Mohamed"
         """
         # Use first_name and last_name if available
         if self.first_name or self.last_name:
@@ -81,7 +80,7 @@ class Parent:
         return "Anonymous User"
 
     def get_display_name(self) -> str:
-        """Get a display - friendly version of the parent's name."""
+        """Get a display-friendly version of the parent's name."""
         full_name = self.get_full_name()
         # If it's the default name, return something more friendly
         if full_name == "Anonymous User":
@@ -144,7 +143,9 @@ class Parent:
         if key == "session_timeout_minutes" and (
             not isinstance(value, int) or value < 5 or value > 480
         ):
-            raise ValueError("Session timeout must be between 5 and 480 minutes")
+            raise ValueError(
+                "Session timeout must be between 5 and 480 minutes"
+            )
 
         self.preferences[key] = value
 
@@ -169,8 +170,12 @@ class Parent:
             "first_name": self.first_name,
             "last_name": self.last_name,
             "phone_number": self.phone_number,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "last_login": self.last_login.isoformat() if self.last_login else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "last_login": (
+                self.last_login.isoformat() if self.last_login else None
+            ),
             "preferences": self.preferences,
             "child_count": len(self.child_ids),
             "is_active": self.is_active,

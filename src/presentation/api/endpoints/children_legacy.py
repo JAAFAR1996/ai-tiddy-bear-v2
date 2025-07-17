@@ -9,4 +9,6 @@ logger = get_logger(__name__, component="api")
 # استيراد محدد من الحزمة الجديدة للتوافق العكسي - SECURE IMPORTS
 
 
-logger.info("Children endpoints loaded from refactored modules - legacy compatibility")
+logger.info(
+    "Children endpoints loaded from refactored modules - legacy compatibility"
+)

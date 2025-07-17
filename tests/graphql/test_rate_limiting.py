@@ -20,10 +20,14 @@ def federation_config():
     return FederationConfig(
         services=[
             ServiceConfig(
-                name="child_service", url="http://localhost:8001", schema_path="/schema"
+                name="child_service",
+                url="http://localhost:8001",
+                schema_path="/schema",
             ),
             ServiceConfig(
-                name="ai_service", url="http://localhost:8002", schema_path="/schema"
+                name="ai_service",
+                url="http://localhost:8002",
+                schema_path="/schema",
             ),
         ],
         enable_authentication=True,
@@ -50,8 +54,9 @@ async def federation_gateway(federation_config):
     await gateway.cleanup()
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE,
-                    reason="Federation not available")
+@pytest.mark.skipif(
+    not FEDERATION_AVAILABLE, reason="Federation not available"
+)
 class TestRateLimiting:
     """Test rate limiting functionality."""
 

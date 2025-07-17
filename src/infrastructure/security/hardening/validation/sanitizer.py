@@ -124,7 +124,9 @@ class InputSanitizer:
             # Profanity filter
             if self.config.enable_profanity_filter and self.profanity_words:
                 words = result["sanitized"].lower().split()
-                contains_profanity = any(word in self.profanity_words for word in words)
+                contains_profanity = any(
+                    word in self.profanity_words for word in words
+                )
                 if contains_profanity:
                     result["violations"].append(
                         {
@@ -165,7 +167,9 @@ class InputSanitizer:
                 "warnings": [],
             }
 
-    def sanitize_json(self, data: Any, is_child_input: bool = False) -> Dict[str, Any]:
+    def sanitize_json(
+        self, data: Any, is_child_input: bool = False
+    ) -> Dict[str, Any]:
         """Sanitize JSON data recursively."""
         result = {
             "original": data,
@@ -237,11 +241,13 @@ class InputSanitizer:
                     result["violations"].extend(key_result["violations"])
                     result["is_safe"] = False
                 # Sanitize value
-                sanitized[key_result["sanitized"]] = self._sanitize_json_recursive(
-                    value,
-                    is_child_input,
-                    depth + 1,
-                    result,
+                sanitized[key_result["sanitized"]] = (
+                    self._sanitize_json_recursive(
+                        value,
+                        is_child_input,
+                        depth + 1,
+                        result,
+                    )
                 )
             return sanitized
         if isinstance(data, list):
@@ -262,11 +268,15 @@ class InputSanitizer:
                 result["is_safe"] = False
                 data = data[:max_length]
             return [
-                self._sanitize_json_recursive(item, is_child_input, depth + 1, result)
+                self._sanitize_json_recursive(
+                    item, is_child_input, depth + 1, result
+                )
                 for item in data
             ]
         if isinstance(data, str):
-            string_result = self.sanitize_string(data, is_child_input, "json_string")
+            string_result = self.sanitize_string(
+                data, is_child_input, "json_string"
+            )
             if not string_result["is_safe"]:
                 result["violations"].extend(string_result["violations"])
                 result["warnings"].extend(string_result["warnings"])

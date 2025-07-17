@@ -1,12 +1,10 @@
-"""
+# SQLAlchemy Models - LEGACY COMPATIBILITY FILE
+# Enterprise-grade database models for AI Teddy Bear system
+# NOTE: This file maintains backward compatibility while new modular structure
+# is in src/infrastructure/persistence/models/package
+
+# Import all models from the new modular structure for backward compatibility
 from src.infrastructure.persistence.models import (
-    """
-    SQLAlchemy Models - LEGACY COMPATIBILITY FILE
-    Enterprise - grade database models for AI Teddy Bear system
-    NOTE: This file maintains backward compatibility while new modular structure
-    is in src / infrastructure / persistence / models / package
-    """
-    # Import all models from the new modular structure for backward compatibility
     Base,
     ParentModel,
     ChildModel,
@@ -15,8 +13,9 @@ from src.infrastructure.persistence.models import (
     ConsentModel,
     SafetyEventModel,
     ConsentType,
-    SafetyEventType
+    SafetyEventType,
 )
+
 # Export all models for backward compatibility
 __all__ = [
     "Base",
@@ -27,5 +26,5 @@ __all__ = [
     "ConsentModel",
     "SafetyEventModel",
     "ConsentType",
-    "SafetyEventType"
+    "SafetyEventType",
 ]

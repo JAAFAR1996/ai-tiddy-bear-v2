@@ -1,5 +1,4 @@
 from src.infrastructure.logging_config import get_logger
-import logging
 from typing import Any
 import sys
 from pathlib import Path
@@ -42,7 +41,10 @@ def test_backward_compatibility() -> Any:
     failed_imports = []
     total_tests = 0
     imports_to_test = [
-        ("from modern_ui import AudioProcessingEngine", "AudioProcessingEngine"),
+        (
+            "from modern_ui import AudioProcessingEngine",
+            "AudioProcessingEngine",
+        ),
         ("from modern_ui import WebSocketClient", "WebSocketClient"),
         ("from modern_ui import ModernAudioWidget", "ModernAudioWidget"),
         ("from modern_ui import TeddyMainWindow", "TeddyMainWindow"),
@@ -52,7 +54,10 @@ def test_backward_compatibility() -> Any:
         ("from modern_ui import MainWindow", "MainWindow"),
         ("from modern_ui import AudioEngine", "AudioEngine"),
         ("from modern_ui import WSClient", "WSClient"),
-        ("from modern_ui import get_available_features", "get_available_features"),
+        (
+            "from modern_ui import get_available_features",
+            "get_available_features",
+        ),
         (
             "from modern_ui import check_feature_compatibility",
             "check_feature_compatibility",
@@ -82,11 +87,15 @@ def test_backward_compatibility() -> Any:
             failed_imports.append(import_stmt)
     logger.info("\n⚙️ Testing Functionality:")
     try:
-        from modern_ui import check_feature_compatibility, get_available_features
+        from modern_ui import (
+            check_feature_compatibility,
+            get_available_features,
+        )
 
         features = get_available_features()
         logger.info(
-            f"✅ get_available_features() returned {len(features)} features")
+            f"✅ get_available_features() returned {len(features)} features"
+        )
         audio_available = check_feature_compatibility("audio_processing")
         logger.info(
             f"✅ check_feature_compatibility('audio_processing') = {audio_available}"
@@ -108,7 +117,9 @@ def test_backward_compatibility() -> Any:
         )
 
         assert AudioWidget is ModernAudioWidget, "AudioWidget alias incorrect"
-        assert AudioEngine is AudioProcessingEngine, "AudioEngine alias incorrect"
+        assert (
+            AudioEngine is AudioProcessingEngine
+        ), "AudioEngine alias incorrect"
         assert MainWindow is TeddyMainWindow, "MainWindow alias incorrect"
         logger.info("✅ All aliases point to correct classes")
         total_tests += 1
@@ -118,7 +129,9 @@ def test_backward_compatibility() -> Any:
         total_tests += 1
     logger.info("\n" + "=" * 60)
     logger.info("📊 BACKWARD COMPATIBILITY TEST RESULTS:")
-    logger.info(f"✅ Passed: {total_tests - len(failed_imports)}/{total_tests}")
+    logger.info(
+        f"✅ Passed: {total_tests - len(failed_imports)}/{total_tests}"
+    )
     logger.info(f"❌ Failed: {len(failed_imports)}/{total_tests}")
     if failed_imports:
         logger.info("\n❌ Failed Imports:")

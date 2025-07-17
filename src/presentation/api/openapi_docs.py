@@ -121,7 +121,10 @@ COMMON_RESPONSES = {
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "error": {"type": "string", "example": "RateLimitExceeded"},
+                        "error": {
+                            "type": "string",
+                            "example": "RateLimitExceeded",
+                        },
                         "message": {
                             "type": "string",
                             "example": "Too many requests. Please try again later.",
@@ -139,7 +142,10 @@ COMMON_RESPONSES = {
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "error": {"type": "string", "example": "InternalServerError"},
+                        "error": {
+                            "type": "string",
+                            "example": "InternalServerError",
+                        },
                         "message": {
                             "type": "string",
                             "example": "An unexpected error occurred",
@@ -219,7 +225,10 @@ def document_auth_endpoints():
                                                 "email": {"type": "string"},
                                                 "role": {
                                                     "type": "string",
-                                                    "enum": ["parent", "admin"],
+                                                    "enum": [
+                                                        "parent",
+                                                        "admin",
+                                                    ],
                                                 },
                                             },
                                         },
@@ -257,7 +266,10 @@ def document_auth_endpoints():
                                     "parental_consent",
                                 ],
                                 "properties": {
-                                    "email": {"type": "string", "format": "email"},
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                    },
                                     "password": {
                                         "type": "string",
                                         "format": "password",
@@ -366,7 +378,11 @@ def document_child_endpoints():
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "required": ["name", "birth_date", "parental_consent"],
+                                "required": [
+                                    "name",
+                                    "birth_date",
+                                    "parental_consent",
+                                ],
                                 "properties": {
                                     "name": {
                                         "type": "string",

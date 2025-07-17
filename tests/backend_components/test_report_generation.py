@@ -183,7 +183,10 @@ class TestReportGeneration:
 
         # Assert
         assert report["overview"]["total_conversations"] == 42
-        assert report["progress_tracking"]["language_skills"]["trend"] == "improving"
+        assert (
+            report["progress_tracking"]["language_skills"]["trend"]
+            == "improving"
+        )
         assert len(report["ai_insights"]) >= 2
         assert report["ai_insights"][0]["confidence"] > 0.7
         assert len(report["parent_action_items"]) >= 3
@@ -218,7 +221,9 @@ class TestReportGeneration:
         }
 
         email_export = await report_service.export_report(
-            report_id="weekly_001", format="email", recipient="parent@example.com"
+            report_id="weekly_001",
+            format="email",
+            recipient="parent@example.com",
         )
 
         assert email_export["format"] == "email"

@@ -8,7 +8,9 @@ class INotificationRepository(ABC):
     """Abstract interface for notification persistence operations."""
 
     @abstractmethod
-    async def save_notification(self, notification: NotificationRecord) -> None:
+    async def save_notification(
+        self, notification: NotificationRecord
+    ) -> None:
         """Saves or updates a notification record."""
 
     @abstractmethod

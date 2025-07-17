@@ -1,10 +1,14 @@
-"""from datetime import datetime
+from datetime import datetime
 from typing import Dict, Any, Optional, List
 import asyncio
 import logging
-from .speech_analysis_base import SpeechAnalysisConfig, AudioValidator, FeatureExtractor, create_response_template
-from .speech_disorder_analyzer import DisorderAnalyzer.
-"""
+from .speech_analysis_base import (
+    SpeechAnalysisConfig,
+    AudioValidator,
+    FeatureExtractor,
+    create_response_template,
+)
+from .speech_disorder_analyzer import DisorderAnalyzer
 
 """Speech Disorder Detection Service for AI Teddy Bear
 Main service interface for speech disorder detection"""
@@ -23,22 +27,30 @@ class SpeechDisorderDetector:
         self.feature_extractor = FeatureExtractor(self.config)
         self.disorder_analyzer = DisorderAnalyzer(self.config)
 
-    async def analyze_speech_for_disorders(self, audio_data: bytes) -> Dict[str, Any]:
+    async def analyze_speech_for_disorders(
+        self, audio_data: bytes
+    ) -> Dict[str, Any]:
         """Analyze speech audio for potential disorders."""
         try:
             # Validate audio data
-            validation_result = await self.validator.validate_audio_data(audio_data)
+            validation_result = await self.validator.validate_audio_data(
+                audio_data
+            )
             if not validation_result["valid"]:
                 return self._create_error_response(validation_result["error"])
 
             # Extract audio features
-            features = await self.feature_extractor.extract_audio_features(audio_data)
+            features = await self.feature_extractor.extract_audio_features(
+                audio_data
+            )
             if "error" in features:
                 return self._create_error_response(features["error"])
 
             # Analyze for disorders
-            analysis_result = await self.disorder_analyzer.analyze_for_disorders(
-                features,
+            analysis_result = (
+                await self.disorder_analyzer.analyze_for_disorders(
+                    features,
+                )
             )
 
             # Add metadata

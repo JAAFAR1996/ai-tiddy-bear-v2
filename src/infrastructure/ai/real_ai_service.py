@@ -5,19 +5,24 @@ Refactored to be under 300 lines by extracting components.
 
 from fastapi import Depends
 
+from src.infrastructure.config.settings import Settings, get_settings
+from src.infrastructure.logging_config import get_logger
+
+logger = get_logger(__name__, component="ai")
+
 # Production-only imports - no fallbacks allowed
 try:
     import redis.asyncio as redis
     from openai import AsyncOpenAI
 except ImportError as e:
     logger.critical(f"CRITICAL ERROR: Required dependencies missing: {e}")
-    logger.critical("Install required dependencies: pip install openai pydantic redis")
+    logger.critical(
+        "Install required dependencies: pip install openai pydantic redis"
+    )
     raise ImportError("Missing required AI dependencies") from e
 
-from src.infrastructure.config.settings import Settings, get_settings
-from src.infrastructure.logging_config import get_logger
-
-logger = get_logger(__name__, component="ai")
+from src.infrastructure.ai.prompt_builder import PromptBuilder
+from src.infrastructure.ai.safety_analyzer import SafetyAnalyzer
 
 
 class ProductionAIService:

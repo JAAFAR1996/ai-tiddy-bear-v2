@@ -6,12 +6,16 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 
-from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
+from src.application.use_cases.manage_child_profile import (
+    ManageChildProfileUseCase,
+)
 from src.domain.entities.user import User
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.real_auth_service import ProductionAuthService
-from src.infrastructure.security.safety_monitor_service import SafetyMonitorService
+from src.infrastructure.security.safety_monitor_service import (
+    SafetyMonitorService,
+)
 from src.presentation.api.endpoints.children.compliance import COPPAIntegration
 
 from .models import (
@@ -41,7 +45,9 @@ class ChildRouteHandlers:
         safety_monitor: SafetyMonitorService = Depends(
             Provide[container.safety_monitor],
         ),
-        auth_service: ProductionAuthService = Depends(Provide[container.auth_service]),
+        auth_service: ProductionAuthService = Depends(
+            Provide[container.auth_service]
+        ),
     ) -> None:
         self.manage_child_profile_use_case = manage_child_profile_use_case
         self.coppa_integration = coppa_integration
@@ -200,7 +206,9 @@ class ChildRouteHandlers:
                     detail="Access denied: Child not associated with this parent",
                 )
 
-            child = await self.manage_child_profile_use_case.get_child(child_id)
+            child = await self.manage_child_profile_use_case.get_child(
+                child_id
+            )
 
             # Record data access
             await self.safety_monitor.record_safety_event(
@@ -249,9 +257,11 @@ class ChildRouteHandlers:
                 )
 
             # Update the child
-            updated_child = await self.manage_child_profile_use_case.update_child(
-                child_id,
-                request,
+            updated_child = (
+                await self.manage_child_profile_use_case.update_child(
+                    child_id,
+                    request,
+                )
             )
 
             # Record modification event
@@ -260,7 +270,9 @@ class ChildRouteHandlers:
                 "profile_modified",
                 {
                     "parent_id": parent_id,
-                    "modified_fields": list(request.dict(exclude_unset=True).keys()),
+                    "modified_fields": list(
+                        request.dict(exclude_unset=True).keys()
+                    ),
                     "modification_time": updated_child.updated_at,
                 },
             )
@@ -304,9 +316,11 @@ class ChildRouteHandlers:
                 )
 
             # Handle compliant deletion
-            deletion_result = await self.coppa_integration.handle_child_deletion(
-                child_id,
-                parent_id,
+            deletion_result = (
+                await self.coppa_integration.handle_child_deletion(
+                    child_id,
+                    parent_id,
+                )
             )
 
             return ChildDeleteResponse(
@@ -352,8 +366,10 @@ class ChildRouteHandlers:
                     detail="Access denied: Cannot access this child's safety data",
                 )
 
-            safety_summary = await self.safety_monitor.get_child_safety_summary(
-                child_id,
+            safety_summary = (
+                await self.safety_monitor.get_child_safety_summary(
+                    child_id,
+                )
             )
 
             # Record safety data access
@@ -365,7 +381,9 @@ class ChildRouteHandlers:
 
             return safety_summary
         except Exception as e:
-            logger.error(f"Error getting safety summary for child {child_id}: {e}")
+            logger.error(
+                f"Error getting safety summary for child {child_id}: {e}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to get safety summary: {e!s}",
@@ -376,7 +394,9 @@ class ChildRouteHandlers:
         self,
         child_id: str,
         current_user: User = Depends(container.auth_service.get_current_user),
-        usage_monitor: UsageMonitor = Depends(Provide[container.usage_monitor_service]),
+        usage_monitor: UsageMonitor = Depends(
+            Provide[container.usage_monitor_service]
+        ),
     ):
         """Handle retrieval of child usage monitoring data."""
         # Verify user is a parent

@@ -3,8 +3,6 @@ Tests for AI Utils
 Testing AI service utility functions for content analysis and safety.
 """
 
-import pytest
-from unittest.mock import patch
 import hashlib
 
 from src.application.services.ai.utils import AIServiceUtils
@@ -225,7 +223,9 @@ class TestAIServiceUtils:
             content, moderation_result, banned_topics
         )
 
-        assert score > 0.9  # Should be high for safe content with positive words
+        assert (
+            score > 0.9
+        )  # Should be high for safe content with positive words
         assert score <= 1.0
 
     def test_calculate_safety_score_unsafe_moderation(self):
@@ -234,7 +234,8 @@ class TestAIServiceUtils:
         moderation_result = {
             "safe": False,
             "categories": ["hate"],
-            "scores": {}}
+            "scores": {},
+        }
         banned_topics = []
 
         score = AIServiceUtils.calculate_safety_score(
@@ -275,7 +276,8 @@ class TestAIServiceUtils:
 
         # Empty content
         score = AIServiceUtils.calculate_safety_score(
-            "", {"safe": True}, banned_topics)
+            "", {"safe": True}, banned_topics
+        )
         assert 0.0 <= score <= 1.0
 
         # Content with many banned topics
@@ -286,7 +288,9 @@ class TestAIServiceUtils:
         assert score == 0.0  # Should hit minimum
 
         # Content with many positive words
-        content = "fun fun fun learn learn learn play play play happy happy happy"
+        content = (
+            "fun fun fun learn learn learn play play play happy happy happy"
+        )
         score = AIServiceUtils.calculate_safety_score(
             content, {"safe": True}, banned_topics
         )
@@ -307,10 +311,12 @@ class TestAIServiceUtils:
         ]
 
         for content in inappropriate_content:
-            assert AIServiceUtils.check_age_appropriateness(
-                content, 3) is False
-            assert AIServiceUtils.check_age_appropriateness(
-                content, 4) is False
+            assert (
+                AIServiceUtils.check_age_appropriateness(content, 3) is False
+            )
+            assert (
+                AIServiceUtils.check_age_appropriateness(content, 4) is False
+            )
 
         for content in appropriate_content:
             assert AIServiceUtils.check_age_appropriateness(content, 3) is True
@@ -330,10 +336,12 @@ class TestAIServiceUtils:
         ]
 
         for content in inappropriate_content:
-            assert AIServiceUtils.check_age_appropriateness(
-                content, 6) is False
-            assert AIServiceUtils.check_age_appropriateness(
-                content, 7) is False
+            assert (
+                AIServiceUtils.check_age_appropriateness(content, 6) is False
+            )
+            assert (
+                AIServiceUtils.check_age_appropriateness(content, 7) is False
+            )
 
         for content in appropriate_content:
             assert AIServiceUtils.check_age_appropriateness(content, 6) is True

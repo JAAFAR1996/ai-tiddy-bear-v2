@@ -1,12 +1,12 @@
 import pytest
-from typing import Protocol
 from src.domain.value_objects.age_group import AgeGroup
 from src.domain.services.age_filter import AgeFilter
 
 
 class MockAgeFilter(AgeFilter):
     async def filter_content_by_age(
-            self, content: str, age_group: AgeGroup) -> str:
+        self, content: str, age_group: AgeGroup
+    ) -> str:
         # Simple mock implementation for testing purposes
         if age_group == AgeGroup.TODDLER:
             return f"Filtered content for toddler: {content.lower()}"

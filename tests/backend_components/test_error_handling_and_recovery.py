@@ -154,7 +154,8 @@ class TestErrorHandlingAndRecovery:
             side_effect=Exception("Service unavailable")
         )
         fallback_service.get_response = AsyncMock(
-            return_value="Fallback response")
+            return_value="Fallback response"
+        )
 
         async def get_response_with_fallback(query):
             try:

@@ -2,7 +2,12 @@
 
 import time
 
-from .core import RateLimitConfig, RateLimitResult, RateLimitState, RateLimitStrategy
+from .core import (
+    RateLimitConfig,
+    RateLimitResult,
+    RateLimitState,
+    RateLimitStrategy,
+)
 
 
 class RateLimitingStrategies:
@@ -48,7 +53,9 @@ class RateLimitingStrategies:
     ) -> RateLimitResult:
         """Apply fixed window rate limiting."""
         # Calculate window start
-        window_start = int(current_time / config.window_seconds) * config.window_seconds
+        window_start = (
+            int(current_time / config.window_seconds) * config.window_seconds
+        )
 
         # Reset counter if we're in a new window
         if not state.first_request or state.first_request < window_start:
@@ -57,7 +64,9 @@ class RateLimitingStrategies:
             state.first_request = current_time
 
         # Count requests in current window
-        current_requests = len([r for r in state.requests if r >= window_start])
+        current_requests = len(
+            [r for r in state.requests if r >= window_start]
+        )
 
         if current_requests >= config.max_requests:
             reset_time = window_start + config.window_seconds

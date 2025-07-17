@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .chaos_orchestrator import ChaosOrchestrator
@@ -39,7 +40,8 @@ class ChaosReporter:
             "performance_impact": metrics.performance_impact,
             "overall_status": (
                 "PASS"
-                if metrics.safety_violations == 0 and metrics.success_rate > 0.8
+                if metrics.safety_violations == 0
+                and metrics.success_rate > 0.8
                 else "FAIL"
             ),
         }
@@ -57,7 +59,10 @@ class ChaosReporter:
         )
 
         avg_recovery_time = (
-            sum(m.recovery_time_seconds for m in self.orchestrator.experiment_history)
+            sum(
+                m.recovery_time_seconds
+                for m in self.orchestrator.experiment_history
+            )
             / total_experiments
         )
 

@@ -132,7 +132,9 @@ def test_default_config():
 def test_custom_config():
     """Test custom configuration."""
     config = CacheConfig(
-        l1_max_size_mb=128, l2_ttl_seconds=7200, compression_threshold_bytes=2048
+        l1_max_size_mb=128,
+        l2_ttl_seconds=7200,
+        compression_threshold_bytes=2048,
     )
     assert config.l1_max_size_mb == 128
     assert config.l2_ttl_seconds == 7200
@@ -206,7 +208,9 @@ class TestL1MemoryCache:
     async def test_cache_stats(self, l1_cache):
         """Test cache statistics."""
         # Add some data
-        await l1_cache.set("stat_key", "stat_value", ContentType.AI_RESPONSE, 300)
+        await l1_cache.set(
+            "stat_key", "stat_value", ContentType.AI_RESPONSE, 300
+        )
 
         stats = l1_cache.get_stats()
 
@@ -311,7 +315,9 @@ class TestMultiLayerCache:
 
         # Verify cached values
         for key, expected_value, content_type in warm_data:
-            value = await multi_layer_cache.get_with_fallback(key, content_type)
+            value = await multi_layer_cache.get_with_fallback(
+                key, content_type
+            )
             assert value == expected_value
 
     @pytest.mark.asyncio
@@ -387,8 +393,9 @@ class TestMultiLayerCache:
 
         # Test model weights (should use L2 and L3, not L1)
         await multi_layer_cache.set_multi_layer(
-            "model_key", {
-                "weights": "large_model_data"}, ContentType.MODEL_WEIGHTS
+            "model_key",
+            {"weights": "large_model_data"},
+            ContentType.MODEL_WEIGHTS,
         )
 
         # Verify values are retrievable
@@ -450,7 +457,9 @@ async def test_cache_performance_under_load():
             await cache.set_multi_layer(key, value, ContentType.AI_RESPONSE)
 
             # Get value
-            result = await cache.get_with_fallback(key, ContentType.AI_RESPONSE)
+            result = await cache.get_with_fallback(
+                key, ContentType.AI_RESPONSE
+            )
             assert result == value
 
             return True

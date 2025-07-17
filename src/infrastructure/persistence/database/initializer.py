@@ -38,7 +38,10 @@ async def initialize_production_database() -> bool:
 
         # Setup production optimizations
         migration_manager = DatabaseMigrationManager(config)
-        if config.environment == "production" and config.engine_type == "postgresql":
+        if (
+            config.environment == "production"
+            and config.engine_type == "postgresql"
+        ):
             if not await migration_manager.create_production_schema():
                 raise RuntimeError("Production schema setup failed")
 

@@ -74,14 +74,27 @@ class ContentSafetyValidator:
                 "forbidden": ["violence", "scary_content", "complex_emotions"],
             },
             (6, 8): {
-                "allowed_topics": ["education", "friendship", "adventure", "nature"],
+                "allowed_topics": [
+                    "education",
+                    "friendship",
+                    "adventure",
+                    "nature",
+                ],
                 "max_complexity": "moderate",
-                "forbidden": ["violence", "adult_content", "dangerous_requests"],
+                "forbidden": [
+                    "violence",
+                    "adult_content",
+                    "dangerous_requests",
+                ],
             },
             (9, 12): {
                 "allowed_topics": ["science", "history", "sports", "hobbies"],
                 "max_complexity": "complex",
-                "forbidden": ["adult_content", "dangerous_requests", "personal_info"],
+                "forbidden": [
+                    "adult_content",
+                    "dangerous_requests",
+                    "personal_info",
+                ],
             },
         }
 
@@ -163,7 +176,10 @@ class AgeAppropriateContentGenerator:
                     "Once upon a time, there was a happy {animal}",
                     "The little {object} went on an adventure",
                 ],
-                "games": ["Let's play peek-a-boo!", "Can you jump like a {animal}?"],
+                "games": [
+                    "Let's play peek-a-boo!",
+                    "Can you jump like a {animal}?",
+                ],
             },
             5: {
                 "educational": [
@@ -175,7 +191,10 @@ class AgeAppropriateContentGenerator:
                     "The brave {character} helped their friend",
                     "In the magical forest, there lived a {creature}",
                 ],
-                "games": ["Let's play a rhyming game!", "I spy with my little eye..."],
+                "games": [
+                    "Let's play a rhyming game!",
+                    "I spy with my little eye...",
+                ],
             },
             8: {
                 "educational": [
@@ -232,9 +251,8 @@ class AgeAppropriateContentGenerator:
         """Generate age-appropriate content"""
         # Find closest age group
         age_key = min(
-            self.content_templates.keys(),
-            key=lambda x: abs(
-                x - age))
+            self.content_templates.keys(), key=lambda x: abs(x - age)
+        )
 
         # Get templates for age and topic
         templates = self.content_templates[age_key].get(
@@ -286,7 +304,11 @@ class COPPAComplianceChecker:
             if field not in self.allowed_data_fields:
                 if self._contains_personal_info(str(value)):
                     violations.append(
-                        {"field": field, "type": "personal_info", "severity": "high"}
+                        {
+                            "field": field,
+                            "type": "personal_info",
+                            "severity": "high",
+                        }
                     )
 
         # Check for exact age storage (should be age groups)
@@ -334,7 +356,8 @@ class COPPAComplianceChecker:
             "credit_card",
             "government_id",
             "signed_form",
-            "video_call"]
+            "video_call",
+        ]
         if consent_data.get("verification_method") not in valid_methods:
             return False
 

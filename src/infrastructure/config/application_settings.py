@@ -24,7 +24,9 @@ class ApplicationSettings(BaseApplicationSettings):
     ENABLE_HTTPS: bool = Field(True, env="ENABLE_HTTPS")
     CORS_ORIGINS: list[str] | None = Field(None, env="CORS_ORIGINS")
     TRUSTED_HOSTS: list[str] | None = Field(None, env="TRUSTED_HOSTS")
-    MAX_SESSION_DURATION_SECONDS: int = Field(3600, env="MAX_SESSION_DURATION_SECONDS")
+    MAX_SESSION_DURATION_SECONDS: int = Field(
+        3600, env="MAX_SESSION_DURATION_SECONDS"
+    )
     CHILD_ENDPOINTS: list[str] = Field(
         constants.CHILD_SPECIFIC_API_ENDPOINTS,
         env="CHILD_ENDPOINTS",  # Use the imported constant

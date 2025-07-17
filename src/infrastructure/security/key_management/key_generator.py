@@ -16,7 +16,11 @@ class KeyGenerator:
 
     def __init__(self) -> None:
         """Initialize key generator."""
-        self.algorithm_key_sizes = {"AES-256": 32, "AES-128": 16, "ChaCha20": 32}
+        self.algorithm_key_sizes = {
+            "AES-256": 32,
+            "AES-128": 16,
+            "ChaCha20": 32,
+        }
 
     def generate_key(
         self,
@@ -39,7 +43,9 @@ class KeyGenerator:
 
         # Enhanced security for child data keys
         if key_type == KeyType.CHILD_DATA:
-            algorithm = "ChaCha20"  # Better performance and security for child data
+            algorithm = (
+                "ChaCha20"  # Better performance and security for child data
+            )
 
         # Generate key based on algorithm
         key_size = self.algorithm_key_sizes.get(algorithm)

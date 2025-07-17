@@ -8,13 +8,9 @@ text-to-speech generation, and child-safe audio handling.
 
 import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
 from typing import List, Optional
 
 from src.application.services.audio_processing_service import AudioProcessingService
-from src.application.interfaces.safety_monitor import SafetyMonitor
-from src.application.interfaces.speech_processor import SpeechProcessor
-from src.application.interfaces.text_to_speech_service import TextToSpeechService
 from src.domain.value_objects.safety_level import SafetyLevel
 
 

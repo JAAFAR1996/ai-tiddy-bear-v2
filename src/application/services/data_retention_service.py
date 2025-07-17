@@ -250,8 +250,12 @@ class DataRetentionService:
         data_to_delete = []
         for item in all_data:
             # Assuming each item has a 'timestamp' attribute
-            if hasattr(item, "timestamp") and isinstance(item.timestamp, datetime):
-                if (datetime.now() - item.timestamp).days > policy.retention_days:
+            if hasattr(item, "timestamp") and isinstance(
+                item.timestamp, datetime
+            ):
+                if (
+                    datetime.now() - item.timestamp
+                ).days > policy.retention_days:
                     data_to_delete.append(item)
             else:
                 self._logger.warning(

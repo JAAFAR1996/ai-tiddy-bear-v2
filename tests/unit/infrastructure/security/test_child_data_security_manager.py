@@ -4,7 +4,7 @@ Testing enhanced child data security manager with COPPA compliance.
 """
 
 import pytest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 from datetime import datetime, timedelta
 
 from src.infrastructure.security.child_data_security_manager import (
@@ -17,7 +17,8 @@ class MockCOPPAComplianceRecord:
     def __init__(self, **kwargs):
         self.child_id = kwargs.get("child_id")
         self.consent_timestamp = kwargs.get(
-            "consent_timestamp", datetime.utcnow())
+            "consent_timestamp", datetime.utcnow()
+        )
         self.data_retention_expires = kwargs.get(
             "data_retention_expires", datetime.utcnow() + timedelta(days=90)
         )
@@ -40,7 +41,9 @@ class TestChildDataSecurityManager:
 
             # Setup default mock behaviors
             mock_consent_record = MockCOPPAComplianceRecord()
-            mock_service.create_consent_record.return_value = mock_consent_record
+            mock_service.create_consent_record.return_value = (
+                mock_consent_record
+            )
             mock_service.validate_coppa_compliance.return_value = {
                 "compliant": True,
                 "violations": [],
@@ -79,7 +82,8 @@ class TestChildDataSecurityManager:
         return ChildDataSecurityManager(encryption_key="test_key")
 
     def test_initialization_with_key(
-            self, mock_encryption_service, mock_coppa_service):
+        self, mock_encryption_service, mock_coppa_service
+    ):
         """Test security manager initialization with encryption key."""
         encryption_key = "test_encryption_key"
         manager = ChildDataSecurityManager(encryption_key)
@@ -111,7 +115,8 @@ class TestChildDataSecurityManager:
 
         parent_consent = {
             "method": "email_verification",
-            "ip_address": "192.168.1.100"}
+            "ip_address": "192.168.1.100",
+        }
 
         # Setup mock return values
         mock_consent_record = MockCOPPAComplianceRecord(
@@ -140,10 +145,13 @@ class TestChildDataSecurityManager:
             "date_of_birth": "[ENCRYPTED:DATE_OF_BIRTH]",
             "_encrypted_data": "encrypted_sensitive_data",
         }
-        security_manager.encryption.encrypt_child_data.return_value = encrypted_data
+        security_manager.encryption.encrypt_child_data.return_value = (
+            encrypted_data
+        )
 
         result = security_manager.secure_child_profile(
-            child_data, parent_consent)
+            child_data, parent_consent
+        )
 
         # Verify encryption service calls
         security_manager.encryption.create_consent_record.assert_called_once_with(
@@ -178,7 +186,8 @@ class TestChildDataSecurityManager:
 
         parent_consent = {
             "method": "email_verification",
-            "ip_address": "192.168.1.101"}
+            "ip_address": "192.168.1.101",
+        }
 
         # Setup compliance violation
         compliance_check = {
@@ -204,10 +213,12 @@ class TestChildDataSecurityManager:
 
         parent_consent = {
             "method": "sms_verification",
-            "ip_address": "192.168.1.102"}
+            "ip_address": "192.168.1.102",
+        }
 
         result = security_manager.secure_child_profile(
-            child_data, parent_consent)
+            child_data, parent_consent
+        )
 
         # Should handle gracefully with empty string for child_id
         security_manager.encryption.create_consent_record.assert_called_once_with(
@@ -217,19 +228,22 @@ class TestChildDataSecurityManager:
         )
 
     def test_secure_child_profile_missing_consent_fields(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test child profile securing with missing consent fields."""
         child_data = {
             "id": "child_missing_consent",
             "name": "Test Child",
-            "age": 7}
+            "age": 7,
+        }
 
         parent_consent = {
             # Missing method and ip_address
         }
 
         result = security_manager.secure_child_profile(
-            child_data, parent_consent)
+            child_data, parent_consent
+        )
 
         # Should handle missing fields with defaults
         security_manager.encryption.create_consent_record.assert_called_once_with(
@@ -244,8 +258,8 @@ class TestChildDataSecurityManager:
         parent_consent = {"method": "email", "ip_address": "192.168.1.200"}
 
         # Setup encryption service to raise exception
-        security_manager.encryption.create_consent_record.side_effect = Exception(
-            "Encryption error"
+        security_manager.encryption.create_consent_record.side_effect = (
+            Exception("Encryption error")
         )
 
         with pytest.raises(Exception, match="Encryption error"):
@@ -257,8 +271,8 @@ class TestChildDataSecurityManager:
         parent_consent = {"method": "email", "ip_address": "192.168.1.201"}
 
         error_message = "Test encryption error"
-        security_manager.encryption.create_consent_record.side_effect = Exception(
-            error_message
+        security_manager.encryption.create_consent_record.side_effect = (
+            Exception(error_message)
         )
 
         with patch(
@@ -266,7 +280,8 @@ class TestChildDataSecurityManager:
         ) as mock_logger:
             with pytest.raises(Exception):
                 security_manager.secure_child_profile(
-                    child_data, parent_consent)
+                    child_data, parent_consent
+                )
 
             mock_logger.error.assert_called_once()
             log_call = mock_logger.error.call_args[0][0]
@@ -293,10 +308,13 @@ class TestChildDataSecurityManager:
             "age": 8,
             "favorite_color": "blue",
         }
-        security_manager.encryption.decrypt_child_data.return_value = decrypted_data
+        security_manager.encryption.decrypt_child_data.return_value = (
+            decrypted_data
+        )
 
         result = security_manager.get_child_data_for_interaction(
-            encrypted_child_data)
+            encrypted_child_data
+        )
 
         # Verify decryption was called
         security_manager.encryption.decrypt_child_data.assert_called_once_with(
@@ -309,24 +327,31 @@ class TestChildDataSecurityManager:
         assert result["age"] == 8
 
     def test_get_child_data_for_interaction_expired_retention(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test child data retrieval with expired data retention."""
         expired_date = datetime.utcnow() - timedelta(days=1)
         encrypted_child_data = {
             "id": "child_expired",
             "name": "[ENCRYPTED:NAME]",
-            "_coppa_compliance": {"data_retention_expires": expired_date.isoformat()},
+            "_coppa_compliance": {
+                "data_retention_expires": expired_date.isoformat()
+            },
         }
 
-        with pytest.raises(ValueError, match="Child data retention period expired"):
+        with pytest.raises(
+            ValueError, match="Child data retention period expired"
+        ):
             security_manager.get_child_data_for_interaction(
-                encrypted_child_data)
+                encrypted_child_data
+            )
 
         # Should not attempt decryption for expired data
         security_manager.encryption.decrypt_child_data.assert_not_called()
 
     def test_get_child_data_for_interaction_no_coppa_info(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test child data retrieval without COPPA compliance info."""
         encrypted_child_data = {
             "id": "child_no_coppa",
@@ -336,10 +361,13 @@ class TestChildDataSecurityManager:
         }
 
         decrypted_data = {"id": "child_no_coppa", "name": "Test Child"}
-        security_manager.encryption.decrypt_child_data.return_value = decrypted_data
+        security_manager.encryption.decrypt_child_data.return_value = (
+            decrypted_data
+        )
 
         result = security_manager.get_child_data_for_interaction(
-            encrypted_child_data)
+            encrypted_child_data
+        )
 
         # Should still work without COPPA info (no expiry check)
         assert result == decrypted_data
@@ -357,16 +385,20 @@ class TestChildDataSecurityManager:
         }
 
         decrypted_data = {"id": "child_no_expiry", "name": "Test Child"}
-        security_manager.encryption.decrypt_child_data.return_value = decrypted_data
+        security_manager.encryption.decrypt_child_data.return_value = (
+            decrypted_data
+        )
 
         result = security_manager.get_child_data_for_interaction(
-            encrypted_child_data)
+            encrypted_child_data
+        )
 
         # Should work without expiry (no expiry check)
         assert result == decrypted_data
 
     def test_get_child_data_for_interaction_error_handling(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test error handling in child data retrieval."""
         encrypted_child_data = {"id": "child_decrypt_error"}
 
@@ -377,10 +409,12 @@ class TestChildDataSecurityManager:
 
         with pytest.raises(Exception, match="Decryption error"):
             security_manager.get_child_data_for_interaction(
-                encrypted_child_data)
+                encrypted_child_data
+            )
 
     def test_get_child_data_for_interaction_logging_on_error(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test that errors are properly logged in get_child_data_for_interaction."""
         encrypted_child_data = {"id": "child_log_error"}
 
@@ -394,7 +428,8 @@ class TestChildDataSecurityManager:
         ) as mock_logger:
             with pytest.raises(Exception):
                 security_manager.get_child_data_for_interaction(
-                    encrypted_child_data)
+                    encrypted_child_data
+                )
 
             mock_logger.error.assert_called_once()
             log_call = mock_logger.error.call_args[0][0]
@@ -403,7 +438,9 @@ class TestChildDataSecurityManager:
     def test_schedule_data_cleanup_no_expired_records(self, security_manager):
         """Test data cleanup scheduling with no expired records."""
         # Setup COPPA service to return no expired records
-        security_manager.coppa_service.check_data_retention_compliance.return_value = []
+        security_manager.coppa_service.check_data_retention_compliance.return_value = (
+            []
+        )
 
         with patch(
             "src.infrastructure.security.child_data_security_manager.datetime"
@@ -421,7 +458,8 @@ class TestChildDataSecurityManager:
         security_manager.coppa_service.check_data_retention_compliance.assert_called_once()
 
     def test_schedule_data_cleanup_with_expired_records(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test data cleanup scheduling with expired records."""
         expired_records = [
             {
@@ -479,9 +517,12 @@ class TestChildDataSecurityManager:
             assert "Found 3 child records requiring data deletion" in log_call
 
     def test_schedule_data_cleanup_no_logging_when_no_expired(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test that no warning is logged when no expired records are found."""
-        security_manager.coppa_service.check_data_retention_compliance.return_value = []
+        security_manager.coppa_service.check_data_retention_compliance.return_value = (
+            []
+        )
 
         with patch(
             "src.infrastructure.security.child_data_security_manager.logger"
@@ -533,7 +574,9 @@ class TestChildDataSecurityManager:
             "medical_notes": "[ENCRYPTED:MEDICAL_NOTES]",
             "_encrypted_data": "encrypted_sensitive_data",
         }
-        security_manager.encryption.encrypt_child_data.return_value = encrypted_result
+        security_manager.encryption.encrypt_child_data.return_value = (
+            encrypted_result
+        )
 
         secured_profile = security_manager.secure_child_profile(
             child_data, parent_consent
@@ -560,13 +603,16 @@ class TestChildDataSecurityManager:
         assert interaction_data["name"] == "Workflow Child"
 
         # Step 3: Schedule cleanup
-        security_manager.coppa_service.check_data_retention_compliance.return_value = []
+        security_manager.coppa_service.check_data_retention_compliance.return_value = (
+            []
+        )
 
         cleanup_result = security_manager.schedule_data_cleanup()
         assert cleanup_result["total_expired"] == 0
 
     def test_service_integration_with_different_consent_methods(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test service integration with different consent verification methods."""
         consent_methods = [
             "email_verification",
@@ -580,15 +626,18 @@ class TestChildDataSecurityManager:
             child_data = {
                 "id": f"child_{method}_{i}",
                 "name": f"Child {i}",
-                "age": 8}
+                "age": 8,
+            }
 
             parent_consent = {
                 "method": method,
-                "ip_address": f"192.168.1.{100 + i}"}
+                "ip_address": f"192.168.1.{100 + i}",
+            }
 
             # Each method should work
             result = security_manager.secure_child_profile(
-                child_data, parent_consent)
+                child_data, parent_consent
+            )
 
             assert result["id"] == f"child_{method}_{i}"
             assert "_coppa_compliance" in result
@@ -617,7 +666,9 @@ class TestChildDataSecurityManager:
             }
 
             decrypted_data = {"id": "child_datetime_test", "name": "Test"}
-            security_manager.encryption.decrypt_child_data.return_value = decrypted_data
+            security_manager.encryption.decrypt_child_data.return_value = (
+                decrypted_data
+            )
 
             try:
                 # Should handle various datetime formats
@@ -627,8 +678,9 @@ class TestChildDataSecurityManager:
                 assert result == decrypted_data
             except ValueError as e:
                 # Some formats might not be parseable, that's expected
-                assert "time data" in str(
-                    e) or "does not match format" in str(e)
+                assert "time data" in str(e) or "does not match format" in str(
+                    e
+                )
 
     def test_memory_efficiency_large_datasets(self, security_manager):
         """Test memory efficiency with large datasets."""
@@ -643,11 +695,13 @@ class TestChildDataSecurityManager:
 
         parent_consent = {
             "method": "email_verification",
-            "ip_address": "192.168.1.200"}
+            "ip_address": "192.168.1.200",
+        }
 
         # Should handle large data without issues
         result = security_manager.secure_child_profile(
-            large_child_data, parent_consent)
+            large_child_data, parent_consent
+        )
 
         assert result["id"] == "child_large"
         assert "_coppa_compliance" in result
@@ -655,7 +709,6 @@ class TestChildDataSecurityManager:
     def test_concurrent_operations(self, security_manager):
         """Test concurrent operations on the security manager."""
         import threading
-        import time
 
         results = []
         errors = []

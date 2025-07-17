@@ -93,7 +93,9 @@ class TestCOPPAConfiguration:
         assert result.is_coppa_subject == False  # Never subject when disabled
         assert result.parental_consent_required == False
         assert result.data_retention_days == 730  # Extended retention
-        assert result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
+        assert (
+            result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
+        )
 
         # Test special protections - mostly disabled
         assert (
@@ -150,7 +152,9 @@ class TestCOPPAConditionalFunctions:
         get_coppa_config().force_enable()
 
         # Import and test
-        from src.infrastructure.config.coppa_config import requires_parental_consent
+        from src.infrastructure.config.coppa_config import (
+            requires_parental_consent,
+        )
 
         assert requires_parental_consent(10) == True
 

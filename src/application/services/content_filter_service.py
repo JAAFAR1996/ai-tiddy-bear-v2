@@ -25,7 +25,8 @@ class ContentFilterService:
         """Initializes the content filter service.
 
         Args:
-            safety_monitor: The SafetyMonitor implementation for comprehensive content safety checks.
+            safety_monitor: The SafetyMonitor implementation for comprehensive
+                content safety checks.
             logger: Logger instance for logging service operations.
 
         """
@@ -33,11 +34,13 @@ class ContentFilterService:
         self.logger = logger
 
     async def filter_content(self, text: str, age: int = 0) -> str:
-        """Filters inappropriate content from the given text using a comprehensive safety monitor.
+        """Filters inappropriate content from the given text using a comprehensive
+        safety monitor.
 
         Args:
             text: The input text to filter.
-            age: The age of the user for age-specific filtering (default to 0 if not provided).
+            age: The age of the user for age-specific filtering (default to 0 if
+                not provided).
 
         Returns:
             The filtered text, or "[CONTENT BLOCKED]" if deemed unsafe.
@@ -51,12 +54,14 @@ class ContentFilterService:
 
         if safety_result.risk_level == SafetyLevel.UNSAFE:
             self.logger.warning(
-                f"Content deemed UNSAFE for age {age}. Original: '{text[:50]}...' Reason: {safety_result.analysis_details}",
+                f"Content deemed UNSAFE for age {age}. Original: "
+                f"'{text[:50]}...' Reason: {safety_result.analysis_details}",
             )
             return "[CONTENT BLOCKED]"
         if safety_result.risk_level == SafetyLevel.POTENTIALLY_UNSAFE:
             self.logger.warning(
-                f"Content deemed POTENTIALLY UNSAFE for age {age}. Original: '{text[:50]}...' Reason: {safety_result.analysis_details}",
+                f"Content deemed POTENTIALLY UNSAFE for age {age}. Original: "
+                f"'{text[:50]}...' Reason: {safety_result.analysis_details}",
             )
             return "[CONTENT FLAGGED FOR REVIEW]"
 

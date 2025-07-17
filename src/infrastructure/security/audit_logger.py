@@ -1,4 +1,4 @@
-"""from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, Optional, List
@@ -8,13 +8,7 @@ import hashlib
 import json
 import logging
 import os
-import aiofiles.
-"""
-
-"""Comprehensive Audit Logging System for COPPA Compliance and Security
-This module provides enterprise - grade audit logging capabilities for tracking
-all security - relevant events, child data access, and compliance activities.
-"""
+import aiofiles
 
 from src.infrastructure.logging_config import get_logger
 
@@ -215,12 +209,16 @@ class AuditLogger:
             if severity in [AuditSeverity.ERROR, AuditSeverity.CRITICAL]:
                 await self._handle_critical_event(audit_event)
 
-            logger.debug(f"Audit event logged: {event_id} - {event_type.value}")
+            logger.debug(
+                f"Audit event logged: {event_id} - {event_type.value}"
+            )
             return event_id
         except Exception as e:
             logger.error(f"Failed to log audit event: {e}")
             # Fallback logging to ensure we don't lose critical events
-            logger.critical(f"AUDIT_FALLBACK: {event_type.value} - {description}")
+            logger.critical(
+                f"AUDIT_FALLBACK: {event_type.value} - {description}"
+            )
             return event_id
 
     async def log_child_interaction(
@@ -252,8 +250,12 @@ class AuditLogger:
             content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
             response_hash = hashlib.sha256(response.encode()).hexdigest()[:16]
         else:
-            content_hash = content[:100] + "..." if len(content) > 100 else content
-            response_hash = response[:100] + "..." if len(response) > 100 else response
+            content_hash = (
+                content[:100] + "..." if len(content) > 100 else content
+            )
+            response_hash = (
+                response[:100] + "..." if len(response) > 100 else response
+            )
 
         details = {
             "interaction_type": interaction_type,
@@ -408,7 +410,9 @@ class AuditLogger:
             if event.severity == AuditSeverity.CRITICAL:
                 await self._send_security_alert(event)
         except Exception as e:
-            logger.error(f"Failed to handle critical event {event.event_id}: {e}")
+            logger.error(
+                f"Failed to handle critical event {event.event_id}: {e}"
+            )
 
     async def _send_security_alert(self, event: AuditEvent) -> None:
         """Send security alert for critical events."""
@@ -430,7 +434,9 @@ class AuditLogger:
                 await asyncio.sleep(self.config.flush_interval_seconds)
                 async with self.buffer_lock:
                     if len(self.audit_entries) >= self.config.batch_size:
-                        events_to_write = self.audit_entries[: self.config.batch_size]
+                        events_to_write = self.audit_entries[
+                            : self.config.batch_size
+                        ]
                         self.audit_entries = self.audit_entries[
                             self.config.batch_size :
                         ]
@@ -467,8 +473,12 @@ class AuditLogger:
                 )
 
                 for filename in os.listdir(self.config.log_directory):
-                    if filename.startswith("audit_") and filename.endswith(".jsonl"):
-                        file_path = os.path.join(self.config.log_directory, filename)
+                    if filename.startswith("audit_") and filename.endswith(
+                        ".jsonl"
+                    ):
+                        file_path = os.path.join(
+                            self.config.log_directory, filename
+                        )
                         file_stat = os.stat(file_path)
                         file_date = datetime.fromtimestamp(file_stat.st_mtime)
 

@@ -19,7 +19,9 @@ class ComprehensiveSecurityHeadersMiddleware(BaseHTTPMiddleware):
     def __init__(self, app) -> None:
         super().__init__(app)
         self.settings = get_settings()
-        self.is_production = self.settings.application.ENVIRONMENT == "production"
+        self.is_production = (
+            self.settings.application.ENVIRONMENT == "production"
+        )
 
     async def dispatch(self, request: Request, call_next) -> Response:
         """Add comprehensive security headers to all responses."""
@@ -157,16 +159,22 @@ class ComprehensiveSecurityHeadersMiddleware(BaseHTTPMiddleware):
         """Add appropriate cache control headers."""
         path = str(request.url.path)
 
-        if any(sensitive in path for sensitive in ["/api/", "/auth/", "/child"]):
+        if any(
+            sensitive in path for sensitive in ["/api/", "/auth/", "/child"]
+        ):
             # No caching for sensitive endpoints
             response.headers["Cache-Control"] = (
                 "no-store, no-cache, must-revalidate, private"
             )
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
-        elif any(static in path for static in ["/static/", "/assets/", "/media/"]):
+        elif any(
+            static in path for static in ["/static/", "/assets/", "/media/"]
+        ):
             # Long cache for static assets
-            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            response.headers["Cache-Control"] = (
+                "public, max-age=31536000, immutable"
+            )
         else:
             # Default short cache
             response.headers["Cache-Control"] = "private, max-age=300"
@@ -180,7 +188,9 @@ class ComprehensiveSecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Parental-Controls"] = "available"
         response.headers["X-Data-Retention"] = "coppa-compliant"
 
-    def _add_child_safety_headers(self, response: Response, request: Request) -> None:
+    def _add_child_safety_headers(
+        self, response: Response, request: Request
+    ) -> None:
         """Add child safety specific headers."""
         response.headers["X-Content-Filter"] = "enabled"
         response.headers["X-Age-Verification"] = "required"

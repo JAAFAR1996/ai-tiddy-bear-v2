@@ -5,8 +5,6 @@ Testing JWT authentication system with comprehensive security validations.
 
 import pytest
 from unittest.mock import patch, Mock, AsyncMock
-from uuid import UUID, uuid4
-from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_users.authentication import JWTStrategy
 from fastapi_users_sqlalchemy import SQLAlchemyUserDatabase
@@ -127,7 +125,8 @@ class TestGetJwtStrategy:
         """Test JWT strategy creation with vault secret."""
         vault_secret = "vault_jwt_secret_key_with_32_chars_minimum"
         mock_vault_client.get_secret.return_value = {
-            "JWT_SECRET": vault_secret}
+            "JWT_SECRET": vault_secret
+        }
 
         with patch(
             "src.infrastructure.security.jwt_auth.get_settings",
@@ -143,7 +142,8 @@ class TestGetJwtStrategy:
                 assert strategy.secret == vault_secret
                 assert strategy.lifetime_seconds == 3600
                 mock_vault_client.get_secret.assert_called_once_with(
-                    "jwt-secrets")
+                    "jwt-secrets"
+                )
 
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_fallback_to_settings(self, mock_settings):
@@ -202,7 +202,8 @@ class TestGetJwtStrategy:
 
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_whitespace_secret_error(
-            self, mock_settings):
+        self, mock_settings
+    ):
         """Test JWT strategy with whitespace-only secret raises error."""
         mock_settings.security.JWT_SECRET_KEY = "   \t\n   "
 
@@ -239,7 +240,8 @@ class TestGetJwtStrategy:
 
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_missing_attribute_error(
-            self, mock_settings):
+        self, mock_settings
+    ):
         """Test JWT strategy when settings missing JWT_SECRET_KEY attribute."""
         delattr(mock_settings.security, "JWT_SECRET_KEY")
 
@@ -259,7 +261,9 @@ class TestGetJwtStrategy:
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_short_secret_error(self, mock_settings):
         """Test JWT strategy with short secret raises error."""
-        mock_settings.security.JWT_SECRET_KEY = "short_secret"  # Less than 32 chars
+        mock_settings.security.JWT_SECRET_KEY = (
+            "short_secret"  # Less than 32 chars
+        )
 
         with patch(
             "src.infrastructure.security.jwt_auth.get_settings",
@@ -302,7 +306,8 @@ class TestGetJwtStrategy:
                     return_value=None,
                 ):
                     with pytest.raises(
-                        ValueError, match="JWT secret uses a common/insecure value"
+                        ValueError,
+                        match="JWT secret uses a common/insecure value",
                     ):
                         await get_jwt_strategy()
 
@@ -335,13 +340,15 @@ class TestGetJwtStrategy:
                     return_value=None,
                 ):
                     with pytest.raises(
-                        ValueError, match="JWT secret uses a common/insecure value"
+                        ValueError,
+                        match="JWT secret uses a common/insecure value",
                     ):
                         await get_jwt_strategy()
 
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_secure_secret_variations(
-            self, mock_settings):
+        self, mock_settings
+    ):
         """Test JWT strategy with various secure secrets."""
         secure_secrets = [
             "secure_jwt_secret_key_with_32_chars_min",
@@ -376,7 +383,8 @@ class TestGetJwtStrategy:
     ):
         """Test JWT strategy handles vault exceptions gracefully."""
         mock_vault_client.get_secret.side_effect = Exception(
-            "Vault connection error")
+            "Vault connection error"
+        )
 
         with patch(
             "src.infrastructure.security.jwt_auth.get_settings",
@@ -438,7 +446,10 @@ class TestGetJwtStrategy:
                 assert len(strategies) == 10
                 for strategy in strategies:
                     assert isinstance(strategy, JWTStrategy)
-                    assert strategy.secret == mock_settings.security.JWT_SECRET_KEY
+                    assert (
+                        strategy.secret
+                        == mock_settings.security.JWT_SECRET_KEY
+                    )
                     assert strategy.lifetime_seconds == 3600
 
     @pytest.mark.asyncio
@@ -471,12 +482,15 @@ class TestGetJwtStrategy:
                 "src.infrastructure.security.jwt_auth.get_vault_client",
                 return_value=None,
             ):
-                with pytest.raises(ValueError, match="JWT secret is too short"):
+                with pytest.raises(
+                    ValueError, match="JWT secret is too short"
+                ):
                     await get_jwt_strategy()
 
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_unicode_secret_handling(
-            self, mock_settings):
+        self, mock_settings
+    ):
         """Test JWT strategy with unicode characters in secret."""
         unicode_secret = "unicode_secret_🔐_with_emojis_🔒_and_32_chars"
         mock_settings.security.JWT_SECRET_KEY = unicode_secret
@@ -496,7 +510,8 @@ class TestGetJwtStrategy:
 
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_lifetime_configuration(
-            self, mock_settings):
+        self, mock_settings
+    ):
         """Test JWT strategy lifetime configuration."""
         with patch(
             "src.infrastructure.security.jwt_auth.get_settings",
@@ -514,7 +529,6 @@ class TestGetJwtStrategy:
     @pytest.mark.asyncio
     async def test_get_jwt_strategy_memory_safety(self, mock_settings):
         """Test JWT strategy doesn't leak secret in memory."""
-        import gc
 
         with patch(
             "src.infrastructure.security.jwt_auth.get_settings",
@@ -735,7 +749,9 @@ class TestJWTSecurityValidation:
         """Test JWT secret configuration priority (vault > settings)."""
         mock_settings = Mock()
         mock_settings.security = Mock()
-        mock_settings.security.JWT_SECRET_KEY = "settings_secret_key_with_32_chars_min"
+        mock_settings.security.JWT_SECRET_KEY = (
+            "settings_secret_key_with_32_chars_min"
+        )
 
         vault_secret = "vault_secret_key_with_32_chars_minimum"
         mock_vault_client = Mock()
@@ -762,7 +778,9 @@ class TestJWTSecurityValidation:
         """Test JWT secret when vault is available but returns incomplete data."""
         mock_settings = Mock()
         mock_settings.security = Mock()
-        mock_settings.security.JWT_SECRET_KEY = "fallback_secret_key_with_32_chars_min"
+        mock_settings.security.JWT_SECRET_KEY = (
+            "fallback_secret_key_with_32_chars_min"
+        )
 
         # Test various vault failure scenarios
         vault_responses = [
@@ -776,7 +794,8 @@ class TestJWTSecurityValidation:
         for vault_response in vault_responses:
             mock_vault_client = Mock()
             mock_vault_client.get_secret = AsyncMock(
-                return_value=vault_response)
+                return_value=vault_response
+            )
 
             with patch(
                 "src.infrastructure.security.jwt_auth.get_settings",
@@ -789,7 +808,10 @@ class TestJWTSecurityValidation:
                     strategy = await get_jwt_strategy()
 
                     # Should fall back to settings
-                    assert strategy.secret == mock_settings.security.JWT_SECRET_KEY
+                    assert (
+                        strategy.secret
+                        == mock_settings.security.JWT_SECRET_KEY
+                    )
 
     @pytest.mark.asyncio
     async def test_jwt_strategy_concurrent_access(self):
@@ -820,14 +842,16 @@ class TestJWTSecurityValidation:
                 assert len(strategies) == 100
                 for strategy in strategies:
                     assert isinstance(strategy, JWTStrategy)
-                    assert strategy.secret == mock_settings.security.JWT_SECRET_KEY
+                    assert (
+                        strategy.secret
+                        == mock_settings.security.JWT_SECRET_KEY
+                    )
                     assert strategy.lifetime_seconds == 3600
 
     def test_jwt_auth_module_structure(self):
         """Test JWT auth module structure and exports."""
         # Verify all expected components are available
         from src.infrastructure.security.jwt_auth import (
-            User,
             get_user_db,
             get_jwt_strategy,
             bearer_transport,
@@ -857,7 +881,9 @@ class TestJWTSecurityValidation:
         """Test JWT auth security considerations."""
         mock_settings = Mock()
         mock_settings.security = Mock()
-        mock_settings.security.JWT_SECRET_KEY = "security_test_secret_key_with_32_chars"
+        mock_settings.security.JWT_SECRET_KEY = (
+            "security_test_secret_key_with_32_chars"
+        )
 
         with patch(
             "src.infrastructure.security.jwt_auth.get_settings",
@@ -899,7 +925,9 @@ class TestJWTSecurityValidation:
                 strategy = await get_jwt_strategy()
 
                 # Child safety considerations
-                assert strategy.lifetime_seconds <= 3600  # Not too long for security
+                assert (
+                    strategy.lifetime_seconds <= 3600
+                )  # Not too long for security
                 assert (
                     len(strategy.secret) >= 32
                 )  # Strong secret for child data protection

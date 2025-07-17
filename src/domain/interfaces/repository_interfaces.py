@@ -1,13 +1,13 @@
-"""from abc import ABC, abstractmethod
-from typing import List, Optional
-from uuid import UUID
-from ..entities.child import Child
-from ..entities.user import User.
-"""
-
 """Repository interfaces for the domain layer.
 These interfaces define contracts for data persistence without
 creating dependencies on specific database implementations."""
+
+from abc import ABC, abstractmethod
+from typing import List, Optional
+from uuid import UUID
+
+from ..entities.child import Child
+from ..entities.user import User
 
 
 class IChildRepository(ABC):

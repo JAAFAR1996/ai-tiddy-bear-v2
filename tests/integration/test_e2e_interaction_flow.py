@@ -1,5 +1,4 @@
 import pytest
-from httpx import AsyncClient
 from src.main import app  # Assuming app is the FastAPI instance
 
 # You'll likely need to import fixtures from conftest.py or define them here
@@ -40,7 +39,9 @@ async def test_end_to_end_voice_interaction_flow(
     # assert response.status_code == 201
     # child_profile = response.json()
     # child_id = child_profile["id"]
-    child_id = "mock_child_id_from_fixture_or_setup"  # Placeholder if no API call
+    child_id = (
+        "mock_child_id_from_fixture_or_setup"  # Placeholder if no API call
+    )
 
     # Step 2: Simulate sending child's voice input to the AI
     # This would typically be a WebSocket or gRPC endpoint.

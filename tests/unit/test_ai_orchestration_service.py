@@ -2,7 +2,9 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from src.application.services.ai_orchestration_service import AIOrchestrationService
+from src.application.services.ai_orchestration_service import (
+    AIOrchestrationService,
+)
 from src.application.dto.ai_response import AIResponse
 from src.domain.value_objects.child_preferences import ChildPreferences
 from src.application.interfaces.ai_provider import AIProvider
@@ -24,7 +26,8 @@ def mock_ai_provider():
 def mock_safety_monitor():
     monitor = AsyncMock(spec=SafetyMonitor)
     monitor.check_content_safety.return_value = MagicMock(
-        is_safe=True, severity="none")
+        is_safe=True, severity="none"
+    )
     return monitor
 
 
@@ -44,7 +47,10 @@ def mock_tts_service():
 
 @pytest.fixture
 def ai_orchestration_service(
-    mock_ai_provider, mock_safety_monitor, mock_conversation_service, mock_tts_service
+    mock_ai_provider,
+    mock_safety_monitor,
+    mock_conversation_service,
+    mock_tts_service,
 ):
     return AIOrchestrationService(
         ai_provider=mock_ai_provider,

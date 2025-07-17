@@ -51,14 +51,18 @@ class ChildAnalytics:
                 return EMOTION_NEUTRAL_BASELINE
 
             mean_emotion = sum(emotion_values) / len(emotion_values)
-            variance = sum((x - mean_emotion) ** 2 for x in emotion_values) / len(
+            variance = sum(
+                (x - mean_emotion) ** 2 for x in emotion_values
+            ) / len(
                 emotion_values,
             )
 
             # Convert variance to stability score (inverted and normalized)
             stability_score = max(
                 MINIMUM_STABILITY_SCORE,
-                min(MAXIMUM_STABILITY_SCORE, MAXIMUM_STABILITY_SCORE - variance),
+                min(
+                    MAXIMUM_STABILITY_SCORE, MAXIMUM_STABILITY_SCORE - variance
+                ),
             )
 
             return stability_score
@@ -88,9 +92,13 @@ class ChildAnalytics:
                 return []
 
             # Check for clarity issues
-            clarity_scores = [entry.get("clarity_score", 1.0) for entry in recent_data]
+            clarity_scores = [
+                entry.get("clarity_score", 1.0) for entry in recent_data
+            ]
             avg_clarity = (
-                sum(clarity_scores) / len(clarity_scores) if clarity_scores else 1.0
+                sum(clarity_scores) / len(clarity_scores)
+                if clarity_scores
+                else 1.0
             )
 
             if avg_clarity < CLARITY_THRESHOLD_LOW:
@@ -121,7 +129,10 @@ class ChildAnalytics:
                 age_months * VOCABULARY_DEVELOPMENT_FACTOR,
             )  # Rough estimate
 
-            if vocabulary_size < expected_vocabulary * VOCABULARY_THRESHOLD_RATIO:
+            if (
+                vocabulary_size
+                < expected_vocabulary * VOCABULARY_THRESHOLD_RATIO
+            ):
                 concerns.append(
                     {
                         "type": "vocabulary",
@@ -135,7 +146,9 @@ class ChildAnalytics:
 
             # Check for speech patterns (repetition, stuttering indicators)
             repetition_rate = sum(
-                1 for entry in recent_data if entry.get("repetition_detected", False)
+                1
+                for entry in recent_data
+                if entry.get("repetition_detected", False)
             ) / len(recent_data)
 
             if (
@@ -170,7 +183,11 @@ class ChildAnalytics:
             self.emotion_history[child_id] = []
 
         self.emotion_history[child_id].append(
-            {"timestamp": datetime.now(), "score": emotion_score, "context": context},
+            {
+                "timestamp": datetime.now(),
+                "score": emotion_score,
+                "context": context,
+            },
         )
 
     def record_speech_data(

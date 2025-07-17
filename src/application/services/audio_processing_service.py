@@ -7,7 +7,9 @@ that all audio is processed safely and efficiently.
 
 from src.application.interfaces.safety_monitor import SafetyMonitor
 from src.application.interfaces.speech_processor import SpeechProcessor
-from src.application.interfaces.text_to_speech_service import TextToSpeechService
+from src.application.interfaces.text_to_speech_service import (
+    TextToSpeechService,
+)
 from src.domain.value_objects.safety_level import SafetyLevel
 from src.infrastructure.logging_config import get_logger
 
@@ -50,7 +52,9 @@ class AudioProcessingService:
             A tuple containing the transcription and the safety level.
 
         """
-        transcription = await self.speech_processor.speech_to_text(audio_data, language)
+        transcription = await self.speech_processor.speech_to_text(
+            audio_data, language
+        )
         safety_level = await self.safety_monitor.check_audio_safety(audio_data)
         return transcription, safety_level
 

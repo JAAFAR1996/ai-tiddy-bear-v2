@@ -6,9 +6,8 @@ Validates all security fixes implemented based on AMAO211_report.md audit findin
 import pytest
 import asyncio
 import os
-import json
 import tempfile
-from typing import Dict, Any, List
+from typing import Dict, Any
 from unittest.mock import patch, MagicMock
 
 # Security imports
@@ -42,7 +41,9 @@ class SecurityValidationTest:
 
             source = inspect.getsource(router.__module__)
 
-            assert "parent_123" not in source, "Hardcoded parent_id still found"
+            assert (
+                "parent_123" not in source
+            ), "Hardcoded parent_id still found"
             assert (
                 'parent_id = "' not in source or 'parent_id = ""' in source
             ), "Hardcoded parent ID pattern detected"
@@ -54,7 +55,8 @@ class SecurityValidationTest:
             print(f"❌ Hardcoded credential test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"Hardcoded credentials: {e}")
+                f"Hardcoded credentials: {e}"
+            )
 
     def test_production_host_binding(self):
         """Test 2: Verify production host binding is configurable"""
@@ -68,9 +70,13 @@ class SecurityValidationTest:
                 from src.main import get_host_config
 
                 host = get_host_config()
-                assert host != "127.0.0.1", "Production still bound to localhost"
+                assert (
+                    host != "127.0.0.1"
+                ), "Production still bound to localhost"
                 assert host in [
-                    "0.0.0.0", None], f"Unexpected host binding: {host}"
+                    "0.0.0.0",
+                    None,
+                ], f"Unexpected host binding: {host}"
 
             print("✅ Production host binding configurable")
             self.test_results["tests_passed"] += 1
@@ -88,7 +94,10 @@ class SecurityValidationTest:
             # Test SSL enforcement in production
             with patch.dict(
                 os.environ,
-                {"ENVIRONMENT": "production", "SSL_CERT_PATH": "/fake/cert.pem"},
+                {
+                    "ENVIRONMENT": "production",
+                    "SSL_CERT_PATH": "/fake/cert.pem",
+                },
             ):
                 from src.main import get_ssl_config
 
@@ -102,7 +111,8 @@ class SecurityValidationTest:
             print(f"❌ SSL enforcement test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"SSL enforcement: {e}")
+                f"SSL enforcement: {e}"
+            )
 
     def test_sql_injection_prevention(self):
         """Test 4: Verify SQL injection prevention"""
@@ -124,7 +134,8 @@ class SecurityValidationTest:
 
             assert "text(" in source, "SQL queries not using text() wrapper"
             assert (
-                "SELECT version()" not in source or 'text("SELECT version()")' in source
+                "SELECT version()" not in source
+                or 'text("SELECT version()")' in source
             ), "Raw SQL still present"
 
             print("✅ SQL injection prevention implemented")
@@ -165,7 +176,8 @@ class SecurityValidationTest:
             print(f"❌ Error sanitization test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"Error sanitization: {e}")
+                f"Error sanitization: {e}"
+            )
 
     def test_environment_variable_validation(self):
         """Test 6: Verify environment variable validation"""
@@ -188,7 +200,9 @@ class SecurityValidationTest:
                         not result.is_valid
                     ), f"Failed to detect malicious env var: {key}"
                 else:
-                    assert result.is_valid, f"False positive on normal env var: {key}"
+                    assert (
+                        result.is_valid
+                    ), f"False positive on normal env var: {key}"
 
             print("✅ Environment variable validation working")
             self.test_results["tests_passed"] += 1
@@ -197,7 +211,8 @@ class SecurityValidationTest:
             print(f"❌ Environment validation test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"Environment validation: {e}")
+                f"Environment validation: {e}"
+            )
 
     def test_rate_limiting_implementation(self):
         """Test 7: Verify rate limiting on authentication endpoints"""
@@ -232,11 +247,15 @@ class SecurityValidationTest:
         print("\n=== Testing: File Upload Validation ===")
 
         try:
-            from src.presentation.api.endpoints.audio import validate_audio_file
+            from src.presentation.api.endpoints.audio import (
+                validate_audio_file,
+            )
             from fastapi import UploadFile
 
             # Create a mock dangerous file
-            with tempfile.NamedTemporaryFile(suffix=".exe", delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(
+                suffix=".exe", delete=False
+            ) as temp_file:
                 temp_file.write(b"MZ\x90\x00")  # Executable header
 
                 # Mock UploadFile with dangerous content
@@ -257,7 +276,8 @@ class SecurityValidationTest:
             print(f"❌ File upload validation test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"File upload validation: {e}")
+                f"File upload validation: {e}"
+            )
 
     def test_deprecated_imports_removed(self):
         """Test 9: Verify deprecated imports are removed"""
@@ -271,13 +291,12 @@ class SecurityValidationTest:
                 warnings.simplefilter("always")
 
                 try:
-                    from src.infrastructure.validation.comprehensive_input_validator import (
-                        create_comprehensive_validator,
-                    )
+                    pass
 
                     # This should trigger a deprecation warning
-                    assert len(
-                        w) > 0, "No deprecation warning for deprecated import"
+                    assert (
+                        len(w) > 0
+                    ), "No deprecation warning for deprecated import"
                     assert (
                         "deprecated" in str(w[0].message).lower()
                     ), "Warning doesn't mention deprecation"
@@ -293,14 +312,17 @@ class SecurityValidationTest:
             print(f"❌ Deprecated imports test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"Deprecated imports: {e}")
+                f"Deprecated imports: {e}"
+            )
 
     def test_type_annotations_present(self):
         """Test 10: Verify critical security functions have type annotations"""
         print("\n=== Testing: Type Annotations Presence ===")
 
         try:
-            from src.infrastructure.security.error_handler import SecureErrorHandler
+            from src.infrastructure.security.error_handler import (
+                SecureErrorHandler,
+            )
             from src.infrastructure.security.database_input_validator import (
                 SafeDatabaseOperations,
             )
@@ -329,7 +351,8 @@ class SecurityValidationTest:
             print(f"❌ Type annotations test failed: {e}")
             self.test_results["tests_failed"] += 1
             self.test_results["issues_detected"].append(
-                f"Type annotations: {e}")
+                f"Type annotations: {e}"
+            )
 
     def run_all_tests(self) -> Dict[str, Any]:
         """Run all security validation tests"""
@@ -357,12 +380,13 @@ class SecurityValidationTest:
                 print(f"❌ Test failed with exception: {e}")
                 self.test_results["tests_failed"] += 1
                 self.test_results["issues_detected"].append(
-                    f"Test exception: {e}")
+                    f"Test exception: {e}"
+                )
 
         # Calculate results
         total_tests = (
-            self.test_results["tests_passed"] +
-            self.test_results["tests_failed"]
+            self.test_results["tests_passed"]
+            + self.test_results["tests_failed"]
         )
         success_rate = (
             (self.test_results["tests_passed"] / total_tests * 100)

@@ -22,19 +22,35 @@ from dependency_injector import containers, providers
 from src.application.event_handlers.child_profile_event_handlers import (
     ChildProfileEventHandlers,
 )
-from src.application.services.ai_orchestration_service import AIOrchestrationService
-from src.application.services.audio_processing_service import AudioProcessingService
+from src.application.services.ai_orchestration_service import (
+    AIOrchestrationService,
+)
+from src.application.services.audio_processing_service import (
+    AudioProcessingService,
+)
 from src.application.services.conversation_service import ConversationService
-from src.application.services.dynamic_content_service import DynamicContentService
+from src.application.services.dynamic_content_service import (
+    DynamicContentService,
+)
 from src.application.services.dynamic_story_service import DynamicStoryService
 from src.application.services.esp32_device_service import ESP32DeviceService
-from src.application.services.federated_learning_service import FederatedLearningService
+from src.application.services.federated_learning_service import (
+    FederatedLearningService,
+)
 
 # Use Cases
-from src.application.use_cases.generate_ai_response import GenerateAIResponseUseCase
-from src.application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
-from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
-from src.application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
+from src.application.use_cases.generate_ai_response import (
+    GenerateAIResponseUseCase,
+)
+from src.application.use_cases.generate_dynamic_story import (
+    GenerateDynamicStoryUseCase,
+)
+from src.application.use_cases.manage_child_profile import (
+    ManageChildProfileUseCase,
+)
+from src.application.use_cases.process_esp32_audio import (
+    ProcessESP32AudioUseCase,
+)
 from src.common.constants import EventStoreType  # Import the new Enum
 
 # Domain Events
@@ -57,7 +73,9 @@ from src.infrastructure.persistence.conversation_repository import (
     AsyncSQLAlchemyConversationRepo,
 )
 from src.infrastructure.persistence.kafka_event_store import KafkaEventStore
-from src.infrastructure.persistence.postgres_event_store import PostgresEventStore
+from src.infrastructure.persistence.postgres_event_store import (
+    PostgresEventStore,
+)
 from src.infrastructure.read_models.child_profile_read_model import (
     ChildProfileReadModelStore,
 )
@@ -69,7 +87,9 @@ from src.infrastructure.security.hardening.coppa_compliance import (
 )
 from src.infrastructure.security.password_hasher import PasswordHasher
 from src.infrastructure.security.rate_limiter_service import RateLimiterService
-from src.infrastructure.security.safety_monitor_service import SafetyMonitorService
+from src.infrastructure.security.safety_monitor_service import (
+    SafetyMonitorService,
+)
 from src.infrastructure.security.token_service import TokenService
 
 # Presentation Layer Components
@@ -97,9 +117,13 @@ class Container(containers.DeclarativeContainer):
 
     # Configuration
     settings = providers.Singleton(get_settings)
-    wiring_config = containers.WiringConfiguration(modules=FullWiringConfig.modules)
+    wiring_config = containers.WiringConfiguration(
+        modules=FullWiringConfig.modules
+    )
     # Startup Validator
-    startup_validator = providers.Singleton(StartupValidator, settings=settings)
+    startup_validator = providers.Singleton(
+        StartupValidator, settings=settings
+    )
     # Infrastructure: Core Services (Singletons)
     # These services are instantiated once and shared across the application,
     # suitable for stateless or globally shared resources.
@@ -112,7 +136,9 @@ class Container(containers.DeclarativeContainer):
         service_factory.provided.create_database,
         settings=settings,
     )
-    db_session_factory = providers.Factory(database_manager.provided.get_session)
+    db_session_factory = providers.Factory(
+        database_manager.provided.get_session
+    )
 
     redis_cache = providers.Singleton(
         RedisCache,
@@ -173,7 +199,9 @@ class Container(containers.DeclarativeContainer):
     # Infrastructure: Read Models (Singletons)
     # Read models typically hold cached or aggregated data and can be shared
     # globally for performance.
-    child_profile_read_model_store = providers.Singleton(ChildProfileReadModelStore)
+    child_profile_read_model_store = providers.Singleton(
+        ChildProfileReadModelStore
+    )
 
     # Application: Event Handlers (Factories)
     # Event handlers process specific events and might have internal state tied to the event context,
@@ -216,11 +244,13 @@ class Container(containers.DeclarativeContainer):
             ),  # Concrete implementation via factory
         )
     )
-    dynamic_story_service: providers.Factory[DynamicStoryService] = providers.Factory(
-        DynamicStoryService,
-        ai_provider=providers.Factory(
-            service_factory.provided.create_openai_client,
-        ),  # Concrete implementation via factory
+    dynamic_story_service: providers.Factory[DynamicStoryService] = (
+        providers.Factory(
+            DynamicStoryService,
+            ai_provider=providers.Factory(
+                service_factory.provided.create_openai_client,
+            ),  # Concrete implementation via factory
+        )
     )
     esp32_device_service = providers.Factory(
         ESP32DeviceService,

@@ -60,7 +60,9 @@ class ChildProfileEventHandlers:
             # Re-raise to ensure event processing fails if needed
             raise
 
-    async def handle_child_profile_updated(self, event: ChildProfileUpdated) -> None:
+    async def handle_child_profile_updated(
+        self, event: ChildProfileUpdated
+    ) -> None:
         """Handle child profile update event with optimized async operations.
 
         Args:
@@ -98,7 +100,8 @@ class ChildProfileEventHandlers:
             if updates_made:
                 await self._async_save(existing_model)
                 logger.debug(
-                    f"Child profile updated with {len(event.preferences or {})} preference changes",
+                    f"Child profile updated with "
+                    f"{len(event.preferences or {})} preference changes",
                 )
             else:
                 logger.debug("No changes detected, skipping database update")
@@ -120,7 +123,9 @@ class ChildProfileEventHandlers:
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self.read_model_store.save, model)
 
-    async def _async_get_by_id(self, child_id: str) -> ChildProfileReadModel | None:
+    async def _async_get_by_id(
+        self, child_id: str
+    ) -> IChildProfileReadModel | None:
         """Async wrapper for get_by_id operation to prevent blocking.
 
         Args:

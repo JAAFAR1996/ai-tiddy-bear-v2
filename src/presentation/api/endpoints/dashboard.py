@@ -9,14 +9,21 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.application.services.ai_orchestration_service import AIOrchestrationService
-from src.application.services.audio_processing_service import AudioProcessingService
+from src.application.services.ai_orchestration_service import (
+    AIOrchestrationService,
+)
+from src.application.services.audio_processing_service import (
+    AudioProcessingService,
+)
 from src.infrastructure.dependencies import (
     get_ai_orchestration_service,
     get_audio_processing_service,
 )
 from src.infrastructure.logging import get_standard_logger
-from src.presentation.api.error_handlers import APIErrorHandler, validate_child_access
+from src.presentation.api.error_handlers import (
+    APIErrorHandler,
+    validate_child_access,
+)
 
 try:
     from src.infrastructure.security.log_sanitizer import LogSanitizer
@@ -43,7 +50,9 @@ async def get_authenticated_user(
 ) -> dict[str, Any]:
     """Verify authentication for dashboard access - COPPA compliance required."""
     try:
-        from src.infrastructure.security.real_auth_service import create_auth_service
+        from src.infrastructure.security.real_auth_service import (
+            create_auth_service,
+        )
 
         auth_service = create_auth_service()
 
@@ -118,8 +127,12 @@ async def get_child_stats(
         stats = {
             "child_id": child_id,
             "period": period,
-            "total_interactions": max(0, child_stats.get("interaction_count", 0)),
-            "learning_time_minutes": max(0, child_stats.get("learning_time", 0)),
+            "total_interactions": max(
+                0, child_stats.get("interaction_count", 0)
+            ),
+            "learning_time_minutes": max(
+                0, child_stats.get("learning_time", 0)
+            ),
             "favorite_topics": child_stats.get("topics", [])[:10],
             "emotion_analysis": child_stats.get(
                 "emotions",
@@ -204,9 +217,13 @@ async def get_devices_status(
             "total": len(devices),
             "online": len([d for d in devices if d["status"] == "online"]),
             "offline": len([d for d in devices if d["status"] == "offline"]),
-            "maintenance": len([d for d in devices if d["status"] == "maintenance"]),
+            "maintenance": len(
+                [d for d in devices if d["status"] == "maintenance"]
+            ),
             "error": len([d for d in devices if d["status"] == "error"]),
-            "low_battery": len([d for d in devices if d["battery_level"] < 20]),
+            "low_battery": len(
+                [d for d in devices if d["battery_level"] < 20]
+            ),
             "generated_at": datetime.now().isoformat(),
         }
 
@@ -244,7 +261,9 @@ async def get_devices_status(
 async def get_system_health(
     current_user: dict[str, Any] = Depends(get_authenticated_user),
     ai_service: AIOrchestrationService = Depends(get_ai_orchestration_service),
-    voice_service: AudioProcessingService = Depends(get_audio_processing_service),
+    voice_service: AudioProcessingService = Depends(
+        get_audio_processing_service
+    ),
     database: Database = Depends(container.db),
     redis_cache: RedisCache = Depends(container.redis_cache),
 ) -> dict[str, Any]:
@@ -313,7 +332,12 @@ async def get_system_health(
                 else "unknown"
             )
             services_status["redis"] = redis_health
-        except (ImportError, ConnectionError, RuntimeError, AttributeError) as e:
+        except (
+            ImportError,
+            ConnectionError,
+            RuntimeError,
+            AttributeError,
+        ) as e:
             logger.cache_error(f"Redis health check failed: {e}")
             services_status["redis"] = "unhealthy"
             health_status = "degraded"
@@ -339,7 +363,8 @@ async def get_system_health(
             "cpu_usage": cpu_usage,
             "memory_usage": memory_usage,
             "requests_per_minute": secrets.randbelow(91) + 10,  # 10-100
-            "child_safety_checks_per_hour": secrets.randbelow(901) + 100,  # 100-1000
+            "child_safety_checks_per_hour": secrets.randbelow(901)
+            + 100,  # 100-1000
             "coppa_compliance_status": "active",
         }
 

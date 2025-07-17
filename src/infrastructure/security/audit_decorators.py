@@ -1,17 +1,16 @@
-"""from datetime import datetime
+from datetime import datetime
 from typing import Callable, Any, Optional, Dict
 import asyncio
 import functools
 import inspect
 import logging
-from src.infrastructure.security.comprehensive_audit_integration import get_audit_integration.
-"""
+
+from src.infrastructure.security.comprehensive_audit_integration import get_audit_integration
+from src.infrastructure.logging_config import get_logger
 
 """Audit Decorators for Automatic Audit Trail Creation
 Provides decorators to automatically add audit logging to functions and methods.
 """
-
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
@@ -64,7 +63,9 @@ def audit_authentication(
                     audit_integration = get_audit_integration()
                     details = {
                         "function": func.__name__,
-                        "duration_ms": (datetime.utcnow() - start_time).total_seconds()
+                        "duration_ms": (
+                            datetime.utcnow() - start_time
+                        ).total_seconds()
                         * 1000,
                         "error": error_message,
                     }
@@ -200,7 +201,9 @@ def audit_data_access(
                     elif "user_id" in kwargs:
                         user_id = kwargs["user_id"]
                     elif hasattr(args[0], "current_user"):
-                        user_id = getattr(args[0].current_user, "id", "unknown")
+                        user_id = getattr(
+                            args[0].current_user, "id", "unknown"
+                        )
 
                     if extract_ip:
                         ip_address = extract_ip(*args, **kwargs)
@@ -358,12 +361,16 @@ def audit_security_event(
                     audit_integration = get_audit_integration()
                     details = {
                         "function": func.__name__,
-                        "duration_ms": (datetime.utcnow() - start_time).total_seconds()
+                        "duration_ms": (
+                            datetime.utcnow() - start_time
+                        ).total_seconds()
                         * 1000,
                         "success": success,
                         "error": error_message,
                     }
-                    description = f"Security event in {func.__name__}: {event_type}"
+                    description = (
+                        f"Security event in {func.__name__}: {event_type}"
+                    )
                     if error_message:
                         description += f" (Error: {error_message})"
 
@@ -424,7 +431,9 @@ def audit_security_event(
                             "success": success,
                             "error": error_message,
                         }
-                        description = f"Security event in {func.__name__}: {event_type}"
+                        description = (
+                            f"Security event in {func.__name__}: {event_type}"
+                        )
                         if error_message:
                             description += f" (Error: {error_message})"
 

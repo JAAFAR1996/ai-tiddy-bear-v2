@@ -20,7 +20,6 @@ except ImportError:
         from common.mock_pytest import pytest
     except ImportError:
         pass
-        pass
 
     # Mock pytest when not available
     class MockPytest:
@@ -71,7 +70,9 @@ except ImportError:
     pytest = MockPytest()
 
 try:
-    from infrastructure.security.unified_encryption_service import EncryptionLevel
+    from infrastructure.security.unified_encryption_service import (
+        EncryptionLevel,
+    )
 except ImportError:
     # If import fails, use mock versions
     class EncryptionLevel:
@@ -119,7 +120,9 @@ class TestUnifiedEncryptionService:
 
         for level, expiry_days in levels:
             # Encrypt
-            encrypted = await encryption_service.encrypt(test_data, level=level)
+            encrypted = await encryption_service.encrypt(
+                test_data, level=level
+            )
 
             # Assertions
             assert encrypted.encryption_level == level
@@ -128,9 +131,16 @@ class TestUnifiedEncryptionService:
 
             # Check expiry
             if encrypted.expires_at:
-                expected_expiry = datetime.utcnow() + timedelta(days=expiry_days)
+                expected_expiry = datetime.utcnow() + timedelta(
+                    days=expiry_days
+                )
                 assert (
-                    abs((encrypted.expires_at - expected_expiry).total_seconds()) < 60
+                    abs(
+                        (
+                            encrypted.expires_at - expected_expiry
+                        ).total_seconds()
+                    )
+                    < 60
                 )
 
             # Decrypt
@@ -155,7 +165,9 @@ class TestUnifiedEncryptionService:
         }
 
         # Encrypt child data
-        encrypted_child_data = await encryption_service.encrypt_child_data(child_data)
+        encrypted_child_data = await encryption_service.encrypt_child_data(
+            child_data
+        )
 
         # Assert sensitive fields are encrypted
         assert "encrypted_name" in encrypted_child_data
@@ -190,7 +202,9 @@ class TestUnifiedEncryptionService:
         child_id = "child456"
 
         # Encrypt audio
-        encrypted_audio = await encryption_service.encrypt_audio(audio_data, child_id)
+        encrypted_audio = await encryption_service.encrypt_audio(
+            audio_data, child_id
+        )
 
         # Assertions
         assert encrypted_audio.encryption_level == EncryptionLevel.CRITICAL
@@ -226,7 +240,8 @@ class TestUnifiedEncryptionService:
         for i in range(5):
             key_id = f"key_{i}"
             encryption_service._generate_data_key(
-                key_id, EncryptionLevel.STANDARD)
+                key_id, EncryptionLevel.STANDARD
+            )
 
         # Check keys in cache
         assert len(encryption_service._key_cache) == 5
@@ -239,7 +254,9 @@ class TestUnifiedEncryptionService:
             if i < 3:
                 # Make first 3 keys expired
                 encryption_service._key_cache[key_id] = (
-                    key, now - timedelta(days=31))
+                    key,
+                    now - timedelta(days=31),
+                )
 
         # Rotate keys
         encryption_service.rotate_keys()

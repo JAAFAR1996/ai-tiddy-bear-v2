@@ -4,7 +4,8 @@ from .models import TestResult, TestSuite
 async def run_quality_automation(framework):
     """تشغيل أتمتة الجودة"""
     suite = TestSuite(
-        name="Quality Automation", description="أتمتة الجودة مع مراجعة الكود الآلية"
+        name="Quality Automation",
+        description="أتمتة الجودة مع مراجعة الكود الآلية",
     )
 
     # Code quality tests

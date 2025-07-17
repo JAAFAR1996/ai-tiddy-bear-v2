@@ -1,27 +1,20 @@
-"""from typing import Dict, Any, Optional, List
-from uuid import UUID
-import logging
-from .relationship_manager import RelationshipManager
-from .verification_models import RelationshipType, RelationshipStatus.
-"""
-
-"""Clean, focused verification service extracted from 513 - line monolith.
-Provides COPPA - compliant parent - child relationship verification."""
+"""Clean, focused verification service extracted from 513-line monolith.
+Provides COPPA-compliant parent-child relationship verification."""
 
 import logging
 from datetime import datetime
-from typing import Any
-
-from src.infrastructure.logging_config import get_logger
+from typing import Dict, Any, Optional, List
+from uuid import UUID
 
 from .relationship_manager import RelationshipManager
-from .verification_models import RelationshipType
+from .verification_models import RelationshipType, RelationshipStatus
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="parent_child_verification_service")
 
 
 class ParentChildVerificationService:
-    """Refactored from 513 - line file into focused, maintainable components.
+    """Refactored from 513-line file into focused, maintainable components.
     Ensures only verified parents can access their children's data.
     Features:
     - Secure relationship verification
@@ -36,8 +29,10 @@ class ParentChildVerificationService:
         logger: logging.Logger = logger,
     ) -> None:
         """Initialize verification service with relationship manager."""
-        self.relationship_manager = relationship_manager or RelationshipManager()
-        self.access_logs: dict[str, list[dict[str, Any]]] = {}
+        self.relationship_manager = (
+            relationship_manager or RelationshipManager()
+        )
+        self.access_logs: Dict[str, List[Dict[str, Any]]] = {}
         self.logger = logger
 
     async def establish_relationship(
@@ -45,14 +40,14 @@ class ParentChildVerificationService:
         parent_id: str,
         child_id: str,
         relationship_type: str,
-        verification_evidence: list[str] | None = None,
-    ) -> dict[str, Any]:
-        """Establish a new parent - child relationship.
+        verification_evidence: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Establish a new parent-child relationship.
 
         Args:
             parent_id: Parent identifier
             child_id: Child identifier
-            relationship_type: Type of relationship(biological_parent, guardian, etc.)
+            relationship_type: Type of relationship (biological_parent, guardian, etc.)
             verification_evidence: Supporting documentation
         Returns:
             Relationship establishment result
@@ -77,7 +72,8 @@ class ParentChildVerificationService:
         )
 
         self.logger.info(
-            f"Relationship establishment requested: {relationship_type} for parent {parent_id} and child {child_id}",
+            f"Relationship establishment requested: {relationship_type} "
+            f"for parent {parent_id} and child {child_id}",
         )
         return result
 
@@ -87,7 +83,7 @@ class ParentChildVerificationService:
         child_id: str,
         require_strong_verification: bool = False,
     ) -> bool:
-        """Verify if a valid parent - child relationship exists.
+        """Verify if a valid parent-child relationship exists.
 
         Args:
             parent_id: Parent identifier
@@ -105,19 +101,23 @@ class ParentChildVerificationService:
 
         if is_valid and require_strong_verification:
             self.logger.info(
-                f"Performing strong verification for parent {parent_id} accessing child {child_id}.",
+                f"Performing strong verification for parent {parent_id} "
+                f"accessing child {child_id}.",
             )
             is_valid = await self._perform_strong_verification(parent_id)
             if not is_valid:
                 self.logger.warning(
-                    f"Strong verification failed for parent {parent_id} accessing child {child_id}.",
+                    f"Strong verification failed for parent {parent_id} "
+                    f"accessing child {child_id}.",
                 )
 
         self._log_access_attempt(
             parent_id=parent_id,
             child_id=child_id,
             access_granted=is_valid,
-            verification_type="strong" if require_strong_verification else "standard",
+            verification_type=(
+                "strong" if require_strong_verification else "standard"
+            ),
         )
         return is_valid
 
@@ -125,15 +125,17 @@ class ParentChildVerificationService:
         """Simulates a stronger verification step for a parent.
         In a real system, this could involve:
         - Checking recent successful logins for the parent.
-        - Requiring a re - entry of a parental PIN or password.
-        - Multi - factor authentication prompt.
+        - Requiring a re-entry of a parental PIN or password.
+        - Multi-factor authentication prompt.
         """
-        self.logger.debug(f"Simulating strong verification for parent: {parent_id}")
+        self.logger.debug(
+            f"Simulating strong verification for parent: {parent_id}"
+        )
         import random
 
         return random.choice([True, True, True, False])
 
-    async def get_parent_children(self, parent_id: str) -> list[str]:
+    async def get_parent_children(self, parent_id: str) -> List[str]:
         """Get all children associated with a verified parent.
 
         Args:
@@ -148,13 +150,13 @@ class ParentChildVerificationService:
         )
         return children
 
-    async def get_child_guardians(self, child_id: str) -> list[str]:
-        """Get all verified parents / guardians for a child.
+    async def get_child_guardians(self, child_id: str) -> List[str]:
+        """Get all verified parents/guardians for a child.
 
         Args:
             child_id: Child identifier
         Returns:
-            List of parent / guardian IDs
+            List of parent/guardian IDs
 
         """
         parents = self.relationship_manager.get_child_parents(child_id)
@@ -167,8 +169,8 @@ class ParentChildVerificationService:
         self,
         relationship_id: str,
         verification_method: str = "manual_review",
-        evidence: list[str] | None = None,
-    ) -> dict[str, Any]:
+        evidence: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
         """Approve a pending relationship after verification.
 
         Args:
@@ -186,7 +188,8 @@ class ParentChildVerificationService:
         )
 
         self.logger.info(
-            f"Relationship approval processed via {verification_method} for relationship {relationship_id}",
+            f"Relationship approval processed via {verification_method} "
+            f"for relationship {relationship_id}",
         )
         return result
 
@@ -203,7 +206,7 @@ class ParentChildVerificationService:
             parent_id: Parent identifier
             child_id: Child identifier
             access_granted: Whether access was granted
-            verification_type: The type of verification performed(standard or strong)
+            verification_type: The type of verification performed (standard or strong)
 
         """
         if parent_id not in self.access_logs:
@@ -219,7 +222,8 @@ class ParentChildVerificationService:
 
         self.access_logs[parent_id].append(access_record)
         self.logger.info(
-            f"Access attempt logged for parent {parent_id} to child {child_id}. Granted: {access_granted}, Type: {verification_type}",
+            f"Access attempt logged for parent {parent_id} to child {child_id}. "
+            f"Granted: {access_granted}, Type: {verification_type}",
         )
 
         if len(self.access_logs[parent_id]) > 100:
@@ -229,7 +233,7 @@ class ParentChildVerificationService:
         self,
         parent_id: str,
         limit: int = 50,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """Get access audit trail for a parent.
 
         Args:
@@ -243,6 +247,7 @@ class ParentChildVerificationService:
             return []
 
         self.logger.info(
-            f"Retrieving access audit trail for parent {parent_id}. Limit: {limit}",
+            f"Retrieving access audit trail for parent {parent_id}. "
+            f"Limit: {limit}",
         )
         return self.access_logs[parent_id][-limit:]

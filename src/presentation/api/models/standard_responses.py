@@ -40,10 +40,14 @@ class StandardAPIResponse(BaseModel):
     """
 
     status: ResponseStatus = Field(description="Response status indicator")
-    message: Optional[str] = Field(default=None, description="Human-readable message")
-    data: Optional[Union[Dict[str, Any], List[Any], str, int, float, bool]] = Field(
-        default=None,
-        description="Response payload data",
+    message: Optional[str] = Field(
+        default=None, description="Human-readable message"
+    )
+    data: Optional[Union[Dict[str, Any], List[Any], str, int, float, bool]] = (
+        Field(
+            default=None,
+            description="Response payload data",
+        )
     )
     errors: Optional[List[Dict[str, Any]]] = Field(
         default=None,
@@ -88,7 +92,9 @@ class ChildSafetyResponse(StandardAPIResponse):
     Includes COPPA compliance indicators and safety metadata.
     """
 
-    safety_validated: bool = Field(description="Content passed safety validation")
+    safety_validated: bool = Field(
+        description="Content passed safety validation"
+    )
     coppa_compliant: bool = Field(description="Response is COPPA compliant")
     age_appropriate: bool = Field(description="Content is age-appropriate")
     content_rating: Optional[str] = Field(
@@ -104,8 +110,12 @@ class AuthenticationResponse(StandardAPIResponse):
     refresh_token: str = Field(description="JWT refresh token")
     token_type: str = Field(default="bearer", description="Token type")
     expires_in: int = Field(description="Token expiration time in seconds")
-    user_info: Dict[str, Any] = Field(description="Authenticated user information")
-    permissions: List[str] = Field(default_factory=list, description="User permissions")
+    user_info: Dict[str, Any] = Field(
+        description="Authenticated user information"
+    )
+    permissions: List[str] = Field(
+        default_factory=list, description="User permissions"
+    )
 
 
 class PaginatedResponse(StandardAPIResponse):

@@ -4,20 +4,14 @@ Comprehensive API Integration Tests for AI Teddy Bear
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 from uuid import uuid4
-import json
 
 from src.main import app
 from src.infrastructure.config.settings import Settings
 from src.infrastructure.security.real_auth_service import ProductionAuthService
-from src.infrastructure.ai.real_ai_service import ProductionAIService
-from src.infrastructure.persistence.real_database_service import DatabaseService
-from src.infrastructure.security.hardening.coppa_compliance import (
-    ProductionCOPPACompliance,
-)
 
 
 @pytest.fixture
@@ -138,7 +132,9 @@ class TestCompleteUserFlow:
         }
 
         conv_response = await async_client.post(
-            "/api/v1/conversations/chat", json=conversation_data, headers=auth_headers
+            "/api/v1/conversations/chat",
+            json=conversation_data,
+            headers=auth_headers,
         )
 
         assert conv_response.status_code == 200
@@ -165,7 +161,8 @@ class TestSafetyAndCompliance:
 
     @pytest.mark.asyncio
     async def test_content_filtering(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test inappropriate content filtering."""
         # Create child
         child_response = await async_client.post(
@@ -198,7 +195,8 @@ class TestSafetyAndCompliance:
 
     @pytest.mark.asyncio
     async def test_coppa_consent_flow(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test COPPA consent collection and validation."""
         consent_data = {
             "parent_name": "John Doe",
@@ -226,7 +224,8 @@ class TestSafetyAndCompliance:
 
     @pytest.mark.asyncio
     async def test_age_limit_enforcement(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test age limit enforcement for COPPA."""
         # Try to create profile for child over 13
         response = await async_client.post(
@@ -242,7 +241,8 @@ class TestSafetyAndCompliance:
 
     @pytest.mark.asyncio
     async def test_data_deletion_request(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test COPPA data deletion request."""
         # Create child
         child_response = await async_client.post(
@@ -359,7 +359,8 @@ class TestErrorHandling:
 
     @pytest.mark.asyncio
     async def test_validation_errors(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test request validation errors."""
         # Invalid child data
         response = await async_client.post(
@@ -426,7 +427,8 @@ class TestPerformanceAndCaching:
 
     @pytest.mark.asyncio
     async def test_response_caching(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test that repeated requests use cache."""
         child_id = str(uuid4())
         message = "What is 2 + 2?"
@@ -459,7 +461,8 @@ class TestPerformanceAndCaching:
 
     @pytest.mark.asyncio
     async def test_concurrent_requests(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test handling of concurrent requests."""
         child_id = str(uuid4())
 
@@ -488,11 +491,11 @@ class TestWebSocketConnections:
 
     @pytest.mark.asyncio
     async def test_websocket_connection(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test WebSocket connection and messaging."""
         # Note: This would require WebSocket client setup
         # Placeholder for WebSocket tests
-        pass
 
 
 class TestMonitoringAndHealth:
@@ -512,13 +515,16 @@ class TestMonitoringAndHealth:
 
     @pytest.mark.asyncio
     async def test_metrics_endpoint(
-            self, async_client: AsyncClient, auth_headers):
+        self, async_client: AsyncClient, auth_headers
+    ):
         """Test metrics endpoint for monitoring."""
         # Admin only endpoint
         admin_headers = auth_headers.copy()
         admin_headers["X-Admin-Token"] = "admin-secret"  # Would be from env
 
-        response = await async_client.get("/api/v1/metrics", headers=admin_headers)
+        response = await async_client.get(
+            "/api/v1/metrics", headers=admin_headers
+        )
 
         assert response.status_code == 200
         metrics = response.json()

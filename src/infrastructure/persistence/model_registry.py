@@ -1,14 +1,13 @@
-"""from typing import List, Type, Optional
+from typing import List, Type, Optional
 import logging
-from sqlalchemy.orm import DeclarativeBase.
-"""
+from sqlalchemy.orm import DeclarativeBase
+
+from src.infrastructure.logging_config import get_logger
 
 """Model Registry to avoid circular imports.
 This module handles model registration and discovery to prevent circular dependencies
 between database.py and model files.
 """
-
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="persistence")
 
@@ -36,11 +35,7 @@ class ModelRegistry:
         """Discover and register all models."""
         try:
             # Import models to trigger registration
-            from src.infrastructure.persistence.models.child_model import ChildModel
-            from src.infrastructure.persistence.models.conversation_model import (
-                ConversationModel,
-            )
-            from src.infrastructure.persistence.models.user_model import UserModel
+            pass
 
             # Models should auto-register themselves when imported
             self._registered = True
@@ -62,7 +57,9 @@ def get_model_registry() -> ModelRegistry:
     return _model_registry
 
 
-def register_model(model_class: Type[DeclarativeBase]) -> Type[DeclarativeBase]:
+def register_model(
+    model_class: Type[DeclarativeBase],
+) -> Type[DeclarativeBase]:
     """Decorator to register a model class.
     Usage: @register_model class MyModel(Base): pass.
     """

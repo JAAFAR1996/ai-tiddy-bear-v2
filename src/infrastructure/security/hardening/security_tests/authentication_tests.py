@@ -19,7 +19,10 @@ class AuthenticationTester(BaseSecurityTester):
         auth_patterns = [
             (r'password\s*=\s*".*"', "Hardcoded password"),
             (r'secret\s*=\s*".*"', "Hardcoded secret"),
-            (r'jwt\.encode\s*\(.*algorithm\s*=\s*"none"', "JWT with no algorithm"),
+            (
+                r'jwt\.encode\s*\(.*algorithm\s*=\s*"none"',
+                "JWT with no algorithm",
+            ),
             (r"verify\s*=\s*False", "Disabled SSL verification"),
             (r"check_password\s*=\s*False", "Disabled password check"),
             (r"session_cookie_secure\s*=\s*False", "Insecure session cookie"),
@@ -62,10 +65,14 @@ class AuthenticationTester(BaseSecurityTester):
             content = self.read_file_safely(file_path)
             if not content:
                 continue
-            if any(keyword in content.lower() for keyword in validation_keywords):
+            if any(
+                keyword in content.lower() for keyword in validation_keywords
+            ):
                 files_with_validation += 1
 
-        if files_with_validation / len(python_files) < 0.25:  # Arbitrary threshold
+        if (
+            files_with_validation / len(python_files) < 0.25
+        ):  # Arbitrary threshold
             issues.append("Low usage of input validation keywords")
 
         recommendations = [

@@ -6,7 +6,15 @@ Enterprise-grade models for conversation tracking and analysis
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -34,7 +42,9 @@ class ConversationModel(Base):
     )
 
     # Session information
-    session_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    session_id: Mapped[str] = mapped_column(
+        String(36), nullable=False, index=True
+    )
     conversation_type: Mapped[str] = mapped_column(String(20), default="chat")
 
     # Timing
@@ -51,7 +61,9 @@ class ConversationModel(Base):
     message_count: Mapped[int] = mapped_column(Integer, default=0)
 
     # AI Analysis
-    emotion_analysis: Mapped[str] = mapped_column(String(50), default="neutral")
+    emotion_analysis: Mapped[str] = mapped_column(
+        String(50), default="neutral"
+    )
     sentiment_score: Mapped[float] = mapped_column(Float, default=0.0)
     engagement_level: Mapped[str] = mapped_column(String(20), default="medium")
 

@@ -1,7 +1,5 @@
-"""from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Optional, Dict, Any.
-"""
+from abc import ABC, abstractmethod
+from typing import Optional, Dict, Any
 
 """
 Read Model Interfaces for Application Layer
@@ -42,7 +40,9 @@ class IChildProfileReadModelStore(ABC):
         """Save child profile read model."""
 
     @abstractmethod
-    async def get_by_id(self, child_id: str) -> Optional[IChildProfileReadModel]:
+    async def get_by_id(
+        self, child_id: str
+    ) -> Optional[IChildProfileReadModel]:
         """Get child profile by ID."""
 
     @abstractmethod
@@ -58,7 +58,9 @@ class IEventBus(ABC):
     """Interface for event bus messaging."""
 
     @abstractmethod
-    async def publish(self, event_name: str, event_data: Dict[str, Any]) -> None:
+    async def publish(
+        self, event_name: str, event_data: Dict[str, Any]
+    ) -> None:
         """Publish an event."""
 
     @abstractmethod
@@ -74,7 +76,9 @@ class IExternalAPIClient(ABC):
     """Interface for external API clients."""
 
     @abstractmethod
-    async def make_request(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def make_request(
+        self, endpoint: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Make an API request."""
 
     @abstractmethod
@@ -120,10 +124,7 @@ class IConsentManager(ABC):
 
 # Factory functions for creating implementations
 def create_child_profile_read_model(
-    child_id: str,
-    name: str,
-    age: int,
-    preferences: Dict[str, Any],
+    child_id: str, name: str, age: int, preferences: Dict[str, Any]
 ) -> IChildProfileReadModel:
     """Factory function for creating child profile read models
     This will be implemented by the infrastructure layer.

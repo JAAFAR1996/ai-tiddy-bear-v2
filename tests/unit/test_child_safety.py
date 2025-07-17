@@ -3,13 +3,14 @@ Production-grade test suite covering all safety features
 """
 
 import pytest
-import asyncio
 from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime, timedelta
 from uuid import uuid4
 
 from src.infrastructure.security.coppa.consent_manager import ConsentManager
-from src.infrastructure.security.coppa.data_models import ParentConsent, ChildData
+from src.infrastructure.security.coppa.data_models import (
+    ParentConsent,
+)
 from src.infrastructure.ai.production_ai_service import ProductionAIService
 from src.domain.value_objects import ChildAge
 
@@ -34,9 +35,12 @@ class TestCOPPACompliance:
 
     @pytest.mark.asyncio
     async def test_verify_parental_consent_valid(
-            self, consent_manager, sample_consent):
+        self, consent_manager, sample_consent
+    ):
         """Test valid parental consent verification"""
-        with patch("src.infrastructure.persistence.database.get_database") as mock_db:
+        with patch(
+            "src.infrastructure.persistence.database.get_database"
+        ) as mock_db:
             # Mock database response with valid consent
             mock_session = AsyncMock()
             mock_result = AsyncMock()
@@ -66,7 +70,9 @@ class TestCOPPACompliance:
     @pytest.mark.asyncio
     async def test_verify_parental_consent_expired(self, consent_manager):
         """Test expired consent rejection"""
-        with patch("src.infrastructure.persistence.database.get_database") as mock_db:
+        with patch(
+            "src.infrastructure.persistence.database.get_database"
+        ) as mock_db:
             # Mock database response with no consent found
             mock_session = AsyncMock()
             mock_result = AsyncMock()
@@ -153,12 +159,14 @@ class TestChildDataEncryption:
 
     def test_child_model_encryption(self):
         """Test that child PII is encrypted"""
-        from src.infrastructure.persistence.models.child_model import ChildModel
+        from src.infrastructure.persistence.models.child_model import (
+            ChildModel,
+        )
 
         # Mock encryption key
         with patch.dict(
-            "os.environ", {
-                "COPPA_ENCRYPTION_KEY": "test_key_32_characters_long_12345"}
+            "os.environ",
+            {"COPPA_ENCRYPTION_KEY": "test_key_32_characters_long_12345"},
         ):
             with patch("cryptography.fernet.Fernet") as mock_fernet:
                 mock_cipher = MagicMock()
@@ -174,7 +182,9 @@ class TestChildDataEncryption:
 
     def test_encryption_key_required(self):
         """Test that encryption key is required"""
-        from src.infrastructure.persistence.models.child_model import ChildModel
+        from src.infrastructure.persistence.models.child_model import (
+            ChildModel,
+        )
 
         with patch.dict("os.environ", {}, clear=True):
             child = ChildModel()
@@ -188,7 +198,9 @@ class TestInputValidation:
 
     def test_conversation_request_validation(self):
         """Test conversation request validation"""
-        from src.presentation.api.endpoints.conversations import ConversationRequest
+        from src.presentation.api.endpoints.conversations import (
+            ConversationRequest,
+        )
 
         # Valid request
         valid_request = ConversationRequest(
@@ -215,7 +227,9 @@ class TestInputValidation:
 
     def test_message_content_filtering(self):
         """Test message content filtering"""
-        from src.presentation.api.endpoints.conversations import ConversationRequest
+        from src.presentation.api.endpoints.conversations import (
+            ConversationRequest,
+        )
 
         # Message with forbidden content should be rejected
         with pytest.raises(ValueError, match="inappropriate content"):
@@ -244,8 +258,8 @@ class TestRateLimiting:
             mock_limiter.return_value = mock_rate_limiter
 
             request = LoginRequest(
-                email="test@example.com",
-                password="test123")
+                email="test@example.com", password="test123"
+            )
 
             with pytest.raises(Exception):  # Should raise HTTPException
                 await login(request, client_ip="192.168.1.1")
@@ -261,8 +275,8 @@ class TestRateLimiting:
             side_effect=ImportError(),
         ):
             request = LoginRequest(
-                email="test@example.com",
-                password="test123")
+                email="test@example.com", password="test123"
+            )
 
             with pytest.raises(
                 Exception

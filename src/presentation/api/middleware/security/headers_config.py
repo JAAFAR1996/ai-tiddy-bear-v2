@@ -76,7 +76,9 @@ class ProductionHeadersConfig(SecurityHeadersConfig):
         super().__init__()
 
         # Strict HTTPS enforcement
-        self.strict_transport_security = "max-age=31536000; includeSubDomains; preload"
+        self.strict_transport_security = (
+            "max-age=31536000; includeSubDomains; preload"
+        )
         self.expect_ct = "max-age=86400, enforce"
 
         # Strict Content Security Policy for production

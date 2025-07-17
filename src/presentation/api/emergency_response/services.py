@@ -19,7 +19,9 @@ logger = get_logger(__name__, component="api")
 class EmergencyResponseService:
     """خدمة الاستجابة الطارئة."""
 
-    def __init__(self, redis_client: redis.Redis, db_session: AsyncSession) -> None:
+    def __init__(
+        self, redis_client: redis.Redis, db_session: AsyncSession
+    ) -> None:
         self.redis = redis_client
         self.db = db_session
         self.alert_handlers = {
@@ -29,7 +31,9 @@ class EmergencyResponseService:
             "CONTENT_VIOLATION": self._handle_content_violation_alert,
         }
 
-    async def process_alert(self, alert_data: Dict[str, Any]) -> EmergencyAlert:
+    async def process_alert(
+        self, alert_data: Dict[str, Any]
+    ) -> EmergencyAlert:
         """معالجة تنبيه طارئ."""
         alert = EmergencyAlert(**alert_data)
         # حفظ التنبيه في Redis للمعالجة السريعة
@@ -39,7 +43,9 @@ class EmergencyResponseService:
             json.dumps(alert.dict(), default=str),
         )
         # تحديد نوع المعالج المطلوب
-        handler = self.alert_handlers.get(alert.severity, self._handle_default_alert)
+        handler = self.alert_handlers.get(
+            alert.severity, self._handle_default_alert
+        )
         # تنفيذ المعالجة
         await handler(alert)
         logger.info(f"Alert {alert.id} processed successfully")
@@ -57,7 +63,10 @@ class EmergencyResponseService:
             ResponseAction(
                 action_type="NOTIFY_PARENTS",
                 target="notification_service",
-                parameters={"child_id": alert.child_id, "priority": "critical"},
+                parameters={
+                    "child_id": alert.child_id,
+                    "priority": "critical",
+                },
             ),
             ResponseAction(
                 action_type="LOG_INCIDENT",
@@ -118,7 +127,9 @@ class EmergencyResponseService:
             ResponseAction(
                 action_type="UPDATE_FILTER",
                 target="ai_service",
-                parameters={"pattern": alert.metadata.get("violation_pattern")},
+                parameters={
+                    "pattern": alert.metadata.get("violation_pattern")
+                },
             ),
         ]
         await self._execute_actions(actions)
@@ -141,7 +152,9 @@ class EmergencyResponseService:
                 # هنا يتم تنفيذ الإجراء الفعلي
                 await self._execute_single_action(action)
                 action.success = True
-                logger.info(f"Action {action.action_type} executed successfully")
+                logger.info(
+                    f"Action {action.action_type} executed successfully"
+                )
             except Exception as e:
                 action.success = False
                 action.error_message = str(e)
@@ -170,7 +183,8 @@ class SystemMonitorService:
         statuses = []
         async with httpx.AsyncClient() as client:
             tasks = [
-                self._check_service_health(client, service) for service in self.services
+                self._check_service_health(client, service)
+                for service in self.services
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             for i, result in enumerate(results):
@@ -195,12 +209,16 @@ class SystemMonitorService:
         """فحص صحة خدمة واحدة."""
         start_time = datetime.now(timezone.utc)
         try:
-            response = await client.get(f"http://{service}/health", timeout=5.0)
+            response = await client.get(
+                f"http://{service}/health", timeout=5.0
+            )
             end_time = datetime.now(timezone.utc)
             response_time = (end_time - start_time).total_seconds() * 1000
             return SystemStatus(
                 service_name=service,
-                status="healthy" if response.status_code == 200 else "unhealthy",
+                status=(
+                    "healthy" if response.status_code == 200 else "unhealthy"
+                ),
                 last_check=end_time,
                 response_time_ms=response_time,
                 error_message=(
@@ -238,7 +256,9 @@ class NotificationService:
                 "priority": request.priority,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
-            await self.redis.lpush("notification_queue", json.dumps(notification_data))
+            await self.redis.lpush(
+                "notification_queue", json.dumps(notification_data)
+            )
             logger.info(f"Notification queued for alert {request.alert_id}")
             return True
         except Exception as e:

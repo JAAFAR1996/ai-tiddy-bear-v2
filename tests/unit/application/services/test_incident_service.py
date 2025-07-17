@@ -40,7 +40,8 @@ class TestIncidentService:
             "src.application.services.incident_service.datetime"
         ) as mock_datetime:
             mock_datetime.utcnow.return_value = datetime(
-                2024, 1, 15, 10, 30, 0)
+                2024, 1, 15, 10, 30, 0
+            )
 
             # Act
             result = await service.report_incident(incident_details)
@@ -128,7 +129,8 @@ class TestIncidentService:
         # First, report an incident
         incident_details = {
             "title": "Test Incident",
-            "description": "Test description"}
+            "description": "Test description",
+        }
         reported = await service.report_incident(incident_details)
         incident_id = reported["id"]
 
@@ -176,7 +178,8 @@ class TestIncidentService:
         # First, report an incident
         incident_details = {
             "title": "Bug Report",
-            "description": "UI not responsive"}
+            "description": "UI not responsive",
+        }
         reported = await service.report_incident(incident_details)
         incident_id = reported["id"]
 
@@ -191,9 +194,12 @@ class TestIncidentService:
             "src.application.services.incident_service.datetime"
         ) as mock_datetime:
             mock_datetime.utcnow.return_value = datetime(
-                2024, 1, 15, 14, 45, 0)
+                2024, 1, 15, 14, 45, 0
+            )
 
-            result = await service.resolve_incident(incident_id, resolution_details)
+            result = await service.resolve_incident(
+                incident_id, resolution_details
+            )
 
         # Check resolution
         assert result is not None
@@ -214,7 +220,9 @@ class TestIncidentService:
         """Test resolving a non-existing incident."""
         resolution_details = {"solution": "Fixed the issue"}
 
-        result = await service.resolve_incident("non_existing_id", resolution_details)
+        result = await service.resolve_incident(
+            "non_existing_id", resolution_details
+        )
 
         assert result is None
 
@@ -259,7 +267,9 @@ class TestIncidentService:
             "root_cause": "Service memory leak",
         }
 
-        resolved = await service.resolve_incident(incident_id, resolution_details)
+        resolved = await service.resolve_incident(
+            incident_id, resolution_details
+        )
         assert resolved is not None
         assert resolved["status"] == "resolved"
 
@@ -320,7 +330,8 @@ class TestIncidentService:
         ) as mock_datetime:
             # Mock specific datetime
             mock_datetime.utcnow.return_value = datetime(
-                2024, 3, 15, 9, 45, 30, 123456)
+                2024, 3, 15, 9, 45, 30, 123456
+            )
 
             incident = await service.report_incident(incident_details)
 
@@ -427,8 +438,9 @@ class TestIncidentService:
         assert len(service.incidents) == incident_count
 
         # Test retrieval performance
-        middle_id = incidents[incident_count //
-                              2]["id"] if incidents else "inc_1"
+        middle_id = (
+            incidents[incident_count // 2]["id"] if incidents else "inc_1"
+        )
         retrieved = await service.get_incident(middle_id)
 
         if incident_count > 0:

@@ -104,7 +104,9 @@ class TestAIServiceIntegration:
             response_type="educational",
         )
 
-        assert response == "The sun is a big star that gives us light and warmth!"
+        assert (
+            response == "The sun is a big star that gives us light and warmth!"
+        )
         self.mock_client.chat.completions.create.assert_called_once()
 
     async def test_generate_playful_response(self):
@@ -125,14 +127,16 @@ class TestAIServiceIntegration:
 
         assert "sun" in response.lower()
         assert (
-            response == "Hey there! The sun is like a giant glowing ball in the sky! ☀️"
+            response
+            == "Hey there! The sun is like a giant glowing ball in the sky! ☀️"
         )
 
     async def test_ai_service_error_handling(self):
         """Test AI service error handling"""
         # Mock an exception
         self.mock_client.chat.completions.create.side_effect = Exception(
-            "API Error")
+            "API Error"
+        )
 
         with pytest.raises(AIServiceError) as exc_info:
             await self.ai_service.generate_response(

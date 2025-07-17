@@ -20,8 +20,12 @@ class ProgressMetrics:
 
     skill_level: str = "beginner"
     improvement_rate: float = 0.1
-    strengths: list[str] = field(default_factory=lambda: ["listening", "vocabulary"])
-    areas_for_improvement: list[str] = field(default_factory=lambda: ["pronunciation"])
+    strengths: list[str] = field(
+        default_factory=lambda: ["listening", "vocabulary"]
+    )
+    areas_for_improvement: list[str] = field(
+        default_factory=lambda: ["pronunciation"]
+    )
 
 
 class AdvancedProgressAnalyzer:
@@ -81,7 +85,11 @@ class AdvancedProgressAnalyzer:
             "child_id": child_id,
             "report_date": datetime.now().isoformat(),
             "overall_progress": "good",
-            "skills_assessment": {"language": 75, "social": 80, "cognitive": 70},
+            "skills_assessment": {
+                "language": 75,
+                "social": 80,
+                "cognitive": 70,
+            },
             "recommendations": [
                 "Continue with storytelling activities",
                 "Introduce more complex vocabulary",

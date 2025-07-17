@@ -88,10 +88,19 @@ class KeyStorage(Protocol):
         key_type: KeyType,
         key_id: str,
         key_data: dict[str, Any],
-    ) -> None: ...
-    def retrieve_key(self, key_type: KeyType, key_id: str) -> dict[str, Any] | None: ...
-    def get_active_key_id(self, key_type: KeyType) -> str | None: ...
-    def set_active_key_id(self, key_type: KeyType, key_id: str) -> None: ...
+    ) -> None:
+        ...
+
+    def retrieve_key(
+        self, key_type: KeyType, key_id: str
+    ) -> dict[str, Any] | None:
+        ...
+
+    def get_active_key_id(self, key_type: KeyType) -> str | None:
+        ...
+
+    def set_active_key_id(self, key_type: KeyType, key_id: str) -> None:
+        ...
 
 
 class KeyRotationService:
@@ -102,7 +111,9 @@ class KeyRotationService:
         self.storage = storage
         self.rotation_lock = threading.Lock()
 
-    def generate_key(self, key_type: KeyType, key_size: int = 256) -> tuple[str, str]:
+    def generate_key(
+        self, key_type: KeyType, key_size: int = 256
+    ) -> tuple[str, str]:
         """Generate a new key and key ID."""
         key = secrets.token_bytes(key_size // 8)
         key_id = hashlib.sha256(key).hexdigest()
@@ -124,7 +135,10 @@ class KeyRotationService:
                 key_size=256,
                 rotation_trigger=trigger,
             )
-            key_storage_data = {"key": key_data_b64, "metadata": metadata.to_dict()}
+            key_storage_data = {
+                "key": key_data_b64,
+                "metadata": metadata.to_dict(),
+            }
             self.storage.store_key(key_type, key_id, key_storage_data)
             self.storage.set_active_key_id(key_type, key_id)
             logger.info(

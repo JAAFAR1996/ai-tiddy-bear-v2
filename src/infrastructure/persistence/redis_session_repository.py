@@ -18,7 +18,9 @@ class RedisSessionRepository(ISessionRepository):
 
     SESSION_KEY_PREFIX = "session:"
 
-    def __init__(self, redis_client: Redis, session_config: SessionConfig) -> None:
+    def __init__(
+        self, redis_client: Redis, session_config: SessionConfig
+    ) -> None:
         self.redis_client = redis_client
         self.session_config = session_config
         self.logger = logger
@@ -32,13 +34,17 @@ class RedisSessionRepository(ISessionRepository):
                 session_data = SessionData(
                     child_id=session_data_dict["child_id"],
                     session_id=session_data_dict["session_id"],
-                    created_at=datetime.fromisoformat(session_data_dict["created_at"]),
+                    created_at=datetime.fromisoformat(
+                        session_data_dict["created_at"]
+                    ),
                     last_activity=datetime.fromisoformat(
                         session_data_dict["last_activity"],
                     ),
                     data=session_data_dict.get("data", {}),
                 )
-                self.logger.debug(f"Retrieved session {session_id} from Redis.")
+                self.logger.debug(
+                    f"Retrieved session {session_id} from Redis."
+                )
                 return session_data
             self.logger.debug(f"Session {session_id} not found in Redis.")
             return None
@@ -49,7 +55,9 @@ class RedisSessionRepository(ISessionRepository):
             )
             return None
 
-    async def save(self, session_data: SessionData, timeout_minutes: int) -> None:
+    async def save(
+        self, session_data: SessionData, timeout_minutes: int
+    ) -> None:
         key = self.SESSION_KEY_PREFIX + session_data.session_id
         try:
             # Convert datetime objects to ISO format strings for JSON
@@ -83,7 +91,9 @@ class RedisSessionRepository(ISessionRepository):
             if result > 0:
                 self.logger.debug(f"Deleted session {session_id} from Redis.")
                 return True
-            self.logger.debug(f"Session {session_id} not found for deletion in Redis.")
+            self.logger.debug(
+                f"Session {session_id} not found for deletion in Redis."
+            )
             return False
         except Exception as e:
             self.logger.error(

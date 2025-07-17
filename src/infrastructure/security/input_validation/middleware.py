@@ -32,7 +32,11 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         self.audit_integration = get_audit_integration()
 
         # Endpoints that require special handling
-        self.child_endpoints = ["/api/children", "/api/conversations", "/api/interact"]
+        self.child_endpoints = [
+            "/api/children",
+            "/api/conversations",
+            "/api/interact",
+        ]
         self.auth_endpoints = ["/api/auth", "/api/login", "/api/register"]
         self.skip_validation = ["/health", "/docs", "/openapi.json", "/static"]
 
@@ -105,7 +109,9 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
             all_child_safety_violations = []
             for _field_name, result in validation_results:
                 all_threats.extend(result.threats)
-                all_child_safety_violations.extend(result.child_safety_violations)
+                all_child_safety_violations.extend(
+                    result.child_safety_violations
+                )
 
             # Check if request should be blocked
             should_block = await self._should_block_request(
@@ -154,7 +160,9 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
             response.headers["X-Input-Validation"] = "error"
             return response
 
-    async def _extract_request_context(self, request: Request) -> Dict[str, Any]:
+    async def _extract_request_context(
+        self, request: Request
+    ) -> Dict[str, Any]:
         """Extract context information from request."""
         return {
             "method": request.method,
@@ -162,10 +170,12 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
             "ip_address": self._get_client_ip(request),
             "user_agent": request.headers.get("user-agent", ""),
             "is_child_endpoint": any(
-                child_ep in str(request.url.path) for child_ep in self.child_endpoints
+                child_ep in str(request.url.path)
+                for child_ep in self.child_endpoints
             ),
             "is_auth_endpoint": any(
-                auth_ep in str(request.url.path) for auth_ep in self.auth_endpoints
+                auth_ep in str(request.url.path)
+                for auth_ep in self.auth_endpoints
             ),
         }
 
@@ -239,7 +249,9 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         """Log security incident for blocked request."""
         threat_summary = {
             "total_threats": len(threats),
-            "critical_threats": len([t for t in threats if t.severity == "critical"]),
+            "critical_threats": len(
+                [t for t in threats if t.severity == "critical"]
+            ),
             "high_threats": len([t for t in threats if t.severity == "high"]),
             "child_safety_violations": len(child_safety_violations),
             "threat_types": list({t.threat_type for t in threats}),
@@ -267,7 +279,9 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         """Log security warning for non - blocking threats."""
         threat_summary = {
             "total_threats": len(threats),
-            "medium_threats": len([t for t in threats if t.severity == "medium"]),
+            "medium_threats": len(
+                [t for t in threats if t.severity == "medium"]
+            ),
             "low_threats": len([t for t in threats if t.severity == "low"]),
             "child_safety_violations": len(child_safety_violations),
             "threat_types": list({t.threat_type for t in threats}),
@@ -295,9 +309,7 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         # Determine response based on violation type
         if child_safety_violations:
             status_code = status.HTTP_400_BAD_REQUEST
-            error_message = (
-                "Request contains content that is not appropriate for children."
-            )
+            error_message = "Request contains content that is not appropriate for children."
             error_type = "child_safety_violation"
         elif any(t.severity == "critical" for t in threats):
             status_code = status.HTTP_400_BAD_REQUEST

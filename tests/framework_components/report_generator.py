@@ -17,7 +17,8 @@ def _calculate_average_coverage(test_suites: Dict[str, TestSuite]) -> float:
 
 
 def _calculate_average_security_score(
-        test_suites: Dict[str, TestSuite]) -> float:
+    test_suites: Dict[str, TestSuite],
+) -> float:
     """Calculate the average security score across all suites."""
     total_security_score = 0.0
     for suite in test_suites.values():
@@ -25,15 +26,16 @@ def _calculate_average_security_score(
             r for r in suite.test_results if r.security_score is not None
         ]
         if security_results:
-            avg_security = sum(r.security_score for r in security_results) / len(
-                security_results
-            )
+            avg_security = sum(
+                r.security_score for r in security_results
+            ) / len(security_results)
             total_security_score += avg_security
     return total_security_score
 
 
 def _calculate_average_child_safety_score(
-        test_suites: Dict[str, TestSuite]) -> float:
+    test_suites: Dict[str, TestSuite],
+) -> float:
     """Calculate the average child safety score across all suites."""
     total_child_safety_score = 0.0
     for suite in test_suites.values():
@@ -41,9 +43,9 @@ def _calculate_average_child_safety_score(
             r for r in suite.test_results if r.child_safety_score is not None
         ]
         if safety_results:
-            avg_safety = sum(r.child_safety_score for r in safety_results) / len(
-                safety_results
-            )
+            avg_safety = sum(
+                r.child_safety_score for r in safety_results
+            ) / len(safety_results)
             total_child_safety_score += avg_safety
     return total_child_safety_score
 
@@ -53,12 +55,18 @@ def _check_quality_gates(framework) -> Dict[str, bool]:
     gates = {
         "coverage_95_percent": framework.overall_results["coverage_percent"]
         >= framework.config.min_coverage,
-        "zero_critical_vulnerabilities": framework.overall_results["security_score"]
+        "zero_critical_vulnerabilities": framework.overall_results[
+            "security_score"
+        ]
         >= 0.95,
-        "performance_benchmarks_pass": framework.overall_results["performance_score"]
+        "performance_benchmarks_pass": framework.overall_results[
+            "performance_score"
+        ]
         >= 90.0,
         "all_tests_pass": framework.overall_results["failed_tests"] == 0,
-        "child_safety_compliance": framework.overall_results["child_safety_score"]
+        "child_safety_compliance": framework.overall_results[
+            "child_safety_score"
+        ]
         >= 0.95,
     }
 
@@ -69,7 +77,10 @@ def _generate_recommendations(framework) -> List[str]:
     """توليد التوصيات"""
     recommendations = []
 
-    if framework.overall_results["coverage_percent"] < framework.config.min_coverage:
+    if (
+        framework.overall_results["coverage_percent"]
+        < framework.config.min_coverage
+    ):
         recommendations.append("📈 زيادة تغطية الاختبارات لتصل إلى 95%+")
 
     if framework.overall_results["security_score"] < 0.95:
@@ -91,7 +102,8 @@ def _generate_recommendations(framework) -> List[str]:
 
 
 def generate_comprehensive_report(
-        framework, execution_time: float) -> Dict[str, Any]:
+    framework, execution_time: float
+) -> Dict[str, Any]:
     """توليد تقرير شامل"""
     return {
         "timestamp": datetime.now().isoformat(),

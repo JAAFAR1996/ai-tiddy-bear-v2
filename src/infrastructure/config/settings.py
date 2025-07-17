@@ -60,7 +60,10 @@ class Settings(BaseSettings):
                 )
 
             # Critical security and infrastructure keys
-            if not self.security.SECRET_KEY or len(self.security.SECRET_KEY) < 32:
+            if (
+                not self.security.SECRET_KEY
+                or len(self.security.SECRET_KEY) < 32
+            ):
                 raise ValueError(
                     "SECRET_KEY must be set and at least 32 characters long in production.",
                 )
@@ -84,8 +87,11 @@ class Settings(BaseSettings):
                 raise ValueError("DATABASE_URL must be set in production.")
             if not self.redis.REDIS_URL:
                 raise ValueError("REDIS_URL must be set in production.")
-            if not self.ai.OPENAI_API_KEY or not self.ai.OPENAI_API_KEY.startswith(
-                "sk-",
+            if (
+                not self.ai.OPENAI_API_KEY
+                or not self.ai.OPENAI_API_KEY.startswith(
+                    "sk-",
+                )
             ):
                 raise ValueError(
                     "OPENAI_API_KEY must be a valid OpenAI API key in production.",

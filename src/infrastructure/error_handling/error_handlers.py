@@ -3,32 +3,35 @@ Error handlers for AI Teddy Bear backend
 """
 
 from datetime import datetime
-from typing import Dict, Any, Optional, Callable
-import logging
+from typing import Dict, Any, Callable
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 import traceback
 from src.infrastructure.error_handling.exceptions import (
-    AITeddyError, ValidationError, AuthenticationError, AuthorizationError,
-    ExternalServiceError, DatabaseError, SystemError, ChildSafetyError, NotFoundError, ConflictError, RateLimitError)
+    AITeddyError,
+    ErrorCategory,
+    BaseApplicationError,
+)
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
 
+
 class ErrorHandler:
     """Base error handler with common functionality"""
+
     def __init__(self) -> None:
         self.error_count = {}
         self.error_callbacks: Dict[ErrorCategory, Callable] = {}
 
-    def register_callback(self, category: ErrorCategory, callback: Callable) -> None:
+    def register_callback(
+        self, category: ErrorCategory, callback: Callable
+    ) -> None:
         """Register a callback for specific error category"""
         self.error_callbacks[category] = callback
 
     async def handle_error(
-        self,
-        error: Exception,
-        context: Dict[str, Any] = None
+        self, error: Exception, context: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """Handle an error with appropriate strategy"""
         context = context or {}
@@ -54,7 +57,7 @@ class ErrorHandler:
             "error_message": str(error),
             "context": context,
             "timestamp": datetime.utcnow().isoformat(),
-            "traceback": traceback.format_exc()
+            "traceback": traceback.format_exc(),
         }
         if isinstance(error, AITeddyError) and error.http_status >= 500:
             logger.error("Server Error", extra=error_info)
@@ -75,9 +78,9 @@ class ErrorHandler:
                 "error": {
                     "code": error.error_code,
                     "message": error.message,
-                    "details": error.details
+                    "details": error.details,
                 },
-                "status_code": error.http_status
+                "status_code": error.http_status,
             }
         elif isinstance(error, HTTPException):
             return {
@@ -85,24 +88,28 @@ class ErrorHandler:
                     "code": "HTTP_EXCEPTION",
                     "message": error.detail,
                 },
-                "status_code": error.status_code
+                "status_code": error.status_code,
             }
         else:
             return {
                 "error": {
                     "code": "INTERNAL_SERVER_ERROR",
-                    "message": "An unexpected error occurred."
+                    "message": "An unexpected error occurred.",
                 },
-                "status_code": 500
+                "status_code": 500,
             }
+
 
 async def http_exception_handler(request: Request, exc: HTTPException):
     """FastAPI handler for HTTPException"""
-    logger.warning(f"HTTPException: {exc.detail}", extra={"url": str(request.url)})
+    logger.warning(
+        f"HTTPException: {exc.detail}", extra={"url": str(request.url)}
+    )
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail},
     )
+
 
 async def aiteddy_error_handler(request: Request, exc: AITeddyError):
     """FastAPI handler for AITeddyError"""
@@ -113,6 +120,7 @@ async def aiteddy_error_handler(request: Request, exc: AITeddyError):
         content=response_data["error"],
     )
 
+
 async def generic_exception_handler(request: Request, exc: Exception):
     """FastAPI handler for generic exceptions"""
     handler = ErrorHandler()
@@ -121,6 +129,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
         status_code=response_data["status_code"],
         content=response_data["error"],
     )
+
 
 def setup_error_handlers(app):
     """Add error handlers to the FastAPI app"""

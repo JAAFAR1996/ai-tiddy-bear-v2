@@ -1,18 +1,21 @@
-"""from typing import List
+"""Middleware configuration for FastAPI application."""
+
 import logging
+from typing import List
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.config.application_settings import ApplicationSettings
+from src.infrastructure.logging_config import get_logger
 from src.presentation.api.middleware.error_handling import ErrorHandlingMiddleware
 from src.presentation.api.middleware.request_logging import RequestLoggingMiddleware
 from src.presentation.api.middleware.security.child_safety_middleware import ChildSafetyMiddleware
 from src.presentation.api.middleware.security.rate_limiting_middleware import RateLimitingMiddleware
 from src.presentation.api.middleware.security_headers_refactored_clean import SecurityHeadersMiddleware
-from src.infrastructure.logging_config import get_logger.
-"""
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -80,7 +83,9 @@ def setup_middleware(app: FastAPI) -> None:
         ],
         max_age=600,
     )
-    logger.info(f"✅ CORS middleware configured with {len(cors_origins)} origin(s)")
+    logger.info(
+        f"✅ CORS middleware configured with {len(cors_origins)} origin(s)"
+    )
 
     # Log final middleware configuration
     _log_middleware_summary(is_production, cors_origins)
@@ -100,11 +105,14 @@ def _get_cors_origins(
         # In production, CORS_ORIGINS must be explicitly configured and secure.
         # If not set, it defaults to an empty list, which will be caught by validation.
         configured_origins = (
-            app_settings.CORS_ORIGINS if app_settings.CORS_ORIGINS is not None else []
+            app_settings.CORS_ORIGINS
+            if app_settings.CORS_ORIGINS is not None
+            else []
         )
         if not configured_origins:
             logger.warning(
-                "CORS_ORIGINS is empty or not set in production. This might lead to CORS issues. Ensure it's configured securely.",
+                "CORS_ORIGINS is empty or not set in production. "
+                "This might lead to CORS issues. Ensure it's configured securely.",
             )
         return configured_origins
     # In development, allow common localhost origins for convenience.
@@ -137,7 +145,9 @@ def _validate_cors_origins(origins: List[str], is_production: bool) -> None:
         suspicious_patterns = ["javascript:", "data:", "file:", "ftp://"]
         if any(pattern in origin.lower() for pattern in suspicious_patterns):
             raise ValueError(f"Suspicious origin pattern detected: {origin}")
-    logger.info(f"CORS origins validation passed: {len(origins)} origins validated")
+    logger.info(
+        f"CORS origins validation passed: {len(origins)} origins validated"
+    )
 
 
 def _get_trusted_hosts(app_settings: ApplicationSettings) -> List[str]:
@@ -151,13 +161,17 @@ def _get_trusted_hosts(app_settings: ApplicationSettings) -> List[str]:
     return ["aiteddybear.com", "*.aiteddybear.com", "localhost", "127.0.0.1"]
 
 
-def _log_middleware_summary(is_production: bool, cors_origins: List[str]) -> None:
+def _log_middleware_summary(
+    is_production: bool, cors_origins: List[str]
+) -> None:
     """Log summary of middleware configuration.
     Args: is_production: Whether running in production
         cors_origins: Configured CORS origins.
     """
     logger.info("🔒 Middleware Configuration Summary:")
-    logger.info(f"   • Environment: {'Production' if is_production else 'Development'}")
+    logger.info(
+        f"   • Environment: {'Production' if is_production else 'Development'}"
+    )
     logger.info("   • Error Handling: ✅ Enabled")
     logger.info("   • Request Logging: ✅ Enabled")
     logger.info("   • Security Headers: ✅ Enabled")
@@ -170,4 +184,6 @@ def _log_middleware_summary(is_production: bool, cors_origins: List[str]) -> Non
     logger.info(
         f"   • Trusted Hosts: {'✅ Enabled' if is_production else '❌ Development Only'}",
     )
-    logger.info("🧸 AI Teddy Bear middleware stack ready for child-safe interactions!")
+    logger.info(
+        "🧸 AI Teddy Bear middleware stack ready for child-safe interactions!"
+    )

@@ -1,7 +1,9 @@
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.child_data_encryption import ChildDataEncryption
+from src.infrastructure.security.child_data_encryption import (
+    ChildDataEncryption,
+)
 from src.infrastructure.security.models import COPPAComplianceRecord
 
 logger = get_logger(__name__, component="security")

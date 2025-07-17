@@ -1,4 +1,4 @@
-"""from functools import lru_cache
+from functools import lru_cache
 from typing import Optional, Any, Dict
 import logging
 from fastapi import Depends, HTTPException, status
@@ -7,8 +7,7 @@ from src.infrastructure.caching.redis_cache_manager import RedisCacheManager
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.persistence.database import Database
 from src.infrastructure.security.main_security_service import MainSecurityService, get_security_service
-from src.infrastructure.security.real_auth_service import ProductionAuthService.
-"""
+from src.infrastructure.security.real_auth_service import ProductionAuthService
 
 """FastAPI Dependency Injection Utilities"""
 
@@ -28,7 +27,9 @@ def get_cached_settings() -> Settings:
 
 
 @lru_cache()
-def get_database(settings: Settings = Depends(get_cached_settings)) -> Database:
+def get_database(
+    settings: Settings = Depends(get_cached_settings),
+) -> Database:
     """Get database connection."""
     try:
         return Database(str(settings.database.DATABASE_URL))
@@ -41,7 +42,9 @@ def get_database(settings: Settings = Depends(get_cached_settings)) -> Database:
 
 
 @lru_cache()
-def get_cache(settings: Settings = Depends(get_cached_settings)) -> RedisCacheManager:
+def get_cache(
+    settings: Settings = Depends(get_cached_settings),
+) -> RedisCacheManager:
     """Get cache service."""
     try:
         return RedisCacheManager(str(settings.redis.REDIS_URL))

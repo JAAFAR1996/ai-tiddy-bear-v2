@@ -4,15 +4,14 @@ Testing parental verification functionality for COPPA compliance.
 """
 
 import pytest
-from unittest.mock import patch, Mock
-import re
-from datetime import datetime
+from unittest.mock import patch
 
-from src.application.services.consent.verification_service import VerificationService
+from src.application.services.consent.verification_service import (
+    VerificationService,
+)
 from src.application.services.consent.consent_models import (
     VerificationMethod,
     VerificationStatus,
-    VerificationAttempt,
 )
 
 
@@ -48,7 +47,9 @@ class TestVerificationService:
                     "src.application.services.consent.verification_service.secrets.token_urlsafe",
                     return_value="random_token",
                 ):
-                    result = await service.send_email_verification(email, consent_id)
+                    result = await service.send_email_verification(
+                        email, consent_id
+                    )
 
         assert result["status"] == "success"
         assert "attempt_id" in result
@@ -77,7 +78,9 @@ class TestVerificationService:
         ]
 
         for email in invalid_emails:
-            result = await service.send_email_verification(email, "consent_123")
+            result = await service.send_email_verification(
+                email, "consent_123"
+            )
 
             assert result["status"] == "error"
             assert result["message"] == "Invalid email format"
@@ -96,7 +99,9 @@ class TestVerificationService:
                     "src.application.services.consent.verification_service.secrets.token_urlsafe",
                     return_value="sms_token",
                 ):
-                    result = await service.send_sms_verification(phone, consent_id)
+                    result = await service.send_sms_verification(
+                        phone, consent_id
+                    )
 
         assert result["status"] == "success"
         assert "attempt_id" in result
@@ -178,7 +183,9 @@ class TestVerificationService:
 
         with patch.object(service, "_validate_email", return_value=True):
             with patch.object(
-                service, "_generate_verification_code", return_value="correct_code"
+                service,
+                "_generate_verification_code",
+                return_value="correct_code",
             ):
                 with patch(
                     "src.application.services.consent.verification_service.secrets.token_urlsafe",
@@ -327,7 +334,9 @@ class TestVerificationService:
         assert len(service.verification_attempts) == 2
 
         # Both should reference the same consent
-        email_attempt = service.verification_attempts[email_result["attempt_id"]]
+        email_attempt = service.verification_attempts[
+            email_result["attempt_id"]
+        ]
         sms_attempt = service.verification_attempts[sms_result["attempt_id"]]
 
         assert email_attempt.consent_id == consent_id
@@ -346,7 +355,9 @@ class TestVerificationService:
             with patch.object(
                 service, "_generate_verification_code", return_value="555666"
             ):
-                result = await service.send_email_verification(email, consent_id)
+                result = await service.send_email_verification(
+                    email, consent_id
+                )
 
         attempt_id = result["attempt_id"]
         attempt = service.verification_attempts[attempt_id]
@@ -375,9 +386,13 @@ class TestVerificationService:
         # Step 1: Initiate verification
         with patch.object(service, "_validate_email", return_value=True):
             with patch.object(
-                service, "_generate_verification_code", return_value="correct123"
+                service,
+                "_generate_verification_code",
+                return_value="correct123",
             ):
-                result = await service.send_email_verification(email, consent_id)
+                result = await service.send_email_verification(
+                    email, consent_id
+                )
 
         attempt_id = result["attempt_id"]
         attempt = service.verification_attempts[attempt_id]
@@ -488,7 +503,9 @@ class TestVerificationService:
             # Test email verification logging
             with patch.object(service, "_validate_email", return_value=True):
                 with patch.object(
-                    service, "_generate_verification_code", return_value="123456"
+                    service,
+                    "_generate_verification_code",
+                    return_value="123456",
                 ):
                     await service.send_email_verification(
                         "test@example.com", "consent_log"
@@ -509,7 +526,9 @@ class TestVerificationService:
             # Create verification attempt
             with patch.object(service, "_validate_email", return_value=True):
                 with patch.object(
-                    service, "_generate_verification_code", return_value="success123"
+                    service,
+                    "_generate_verification_code",
+                    return_value="success123",
                 ):
                     result = await service.send_email_verification(
                         "success@test.com", "consent_success"
@@ -536,7 +555,9 @@ class TestVerificationService:
             # Create verification attempt
             with patch.object(service, "_validate_email", return_value=True):
                 with patch.object(
-                    service, "_generate_verification_code", return_value="fail123"
+                    service,
+                    "_generate_verification_code",
+                    return_value="fail123",
                 ):
                     result = await service.send_email_verification(
                         "fail@test.com", "consent_fail"
@@ -567,21 +588,28 @@ class TestVerificationService:
             with patch(
                 "src.application.services.consent.verification_service.logger"
             ) as mock_logger:
-                with patch.object(service, "_validate_phone", return_value=True):
+                with patch.object(
+                    service, "_validate_phone", return_value=True
+                ):
                     with patch.object(
-                        service, "_generate_verification_code", return_value="123456"
+                        service,
+                        "_generate_verification_code",
+                        return_value="123456",
                     ):
                         # This should trigger the masking logic
                         asyncio.run(
                             service.send_sms_verification(
-                                phone, "consent_mask")
+                                phone, "consent_mask"
+                            )
                         )
 
                 # Check that phone was properly masked
                 mock_logger.info.assert_called()
                 log_call = mock_logger.info.call_args[0][0]
                 assert expected_mask in log_call
-                assert phone not in log_call  # Original number should not appear
+                assert (
+                    phone not in log_call
+                )  # Original number should not appear
 
     def test_email_masking_in_logs(self, service):
         """Test that email addresses are properly masked in logs."""
@@ -595,17 +623,24 @@ class TestVerificationService:
             with patch(
                 "src.application.services.consent.verification_service.logger"
             ) as mock_logger:
-                with patch.object(service, "_validate_email", return_value=True):
+                with patch.object(
+                    service, "_validate_email", return_value=True
+                ):
                     with patch.object(
-                        service, "_generate_verification_code", return_value="123456"
+                        service,
+                        "_generate_verification_code",
+                        return_value="123456",
                     ):
                         asyncio.run(
                             service.send_email_verification(
-                                email, "consent_mask")
+                                email, "consent_mask"
+                            )
                         )
 
                 # Check that email was properly masked
                 mock_logger.info.assert_called()
                 log_call = mock_logger.info.call_args[0][0]
                 assert expected_mask in log_call
-                assert email not in log_call  # Original email should not appear
+                assert (
+                    email not in log_call
+                )  # Original email should not appear

@@ -1,4 +1,6 @@
-"""from dataclasses import dataclassfrom datetime import datetimefrom typing import Dict."""
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List
 
 """Data Models for Chaos Metrics"""
 
@@ -37,7 +39,7 @@ class AlertRule:
     condition: str
     threshold: float
     severity: str
-    notification_channels: list
+    notification_channels: List[str]
 
 
 @dataclass
@@ -48,6 +50,6 @@ class ChaosExperimentResult:
     start_time: datetime
     end_time: datetime
     success: bool
-    metrics: list
-    alerts_triggered: list
+    metrics: List[ChaosMetric]
+    alerts_triggered: List[AlertRule]
     recovery_time: float

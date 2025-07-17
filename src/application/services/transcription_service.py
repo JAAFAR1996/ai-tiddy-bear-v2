@@ -9,7 +9,9 @@ accurate and reliable transcription for various audio inputs.
 import logging
 
 from src.application.exceptions.invalid_input_error import InvalidInputError
-from src.application.exceptions.service_unavailable_error import ServiceUnavailableError
+from src.application.exceptions.service_unavailable_error import (
+    ServiceUnavailableError,
+)
 from src.application.interfaces.ai_provider import (  # Assuming AIProvider can handle ASR
     AIProvider,
 )
@@ -49,11 +51,15 @@ class TranscriptionService:
         """
         self.logger.info("Initiating audio transcription via AI provider.")
         try:
-            transcribed_text = await self.ai_provider.transcribe_audio(audio_data)
+            transcribed_text = await self.ai_provider.transcribe_audio(
+                audio_data
+            )
             self.logger.info("Audio transcription successful.")
             return transcribed_text
         except Exception as e:
-            self.logger.error(f"Error during audio transcription: {e}", exc_info=True)
+            self.logger.error(
+                f"Error during audio transcription: {e}", exc_info=True
+            )
             raise ServiceUnavailableError(
                 "Failed to transcribe audio due to an external service error.",
             ) from e
@@ -80,8 +86,12 @@ class TranscriptionService:
         )
         for attempt in range(retries + 1):
             try:
-                transcribed_text = await self.ai_provider.transcribe_audio(audio_data)
-                self.logger.info(f"Transcription successful on attempt {attempt + 1}.")
+                transcribed_text = await self.ai_provider.transcribe_audio(
+                    audio_data
+                )
+                self.logger.info(
+                    f"Transcription successful on attempt {attempt + 1}."
+                )
                 # In a real scenario, this would populate all
                 # TranscriptionResult fields
                 return TranscriptionResult(
@@ -157,9 +167,15 @@ class TranscriptionService:
         # 3. Size limits to prevent DoS attacks
         # For now, we assume a basic binary check is sufficient until specific
         # formats are defined.
-        if len(audio_data) < 100:  # Example: Minimum size for a valid audio file
-            self.logger.warning(f"Audio data too small: {len(audio_data)} bytes.")
-            raise InvalidInputError("Audio data is too short to be a valid audio file.")
+        if (
+            len(audio_data) < 100
+        ):  # Example: Minimum size for a valid audio file
+            self.logger.warning(
+                f"Audio data too small: {len(audio_data)} bytes."
+            )
+            raise InvalidInputError(
+                "Audio data is too short to be a valid audio file."
+            )
 
         self.logger.info("Audio format validation successful (basic check).")
         return True

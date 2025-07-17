@@ -2,8 +2,8 @@
 Input Validation ASGI Middleware
 Extracted from input_validation.py to reduce file size
 """
+
 import json
-import logging
 from fastapi import HTTPException, Request
 from .sanitizer import InputSanitizer
 from .validation_config import InputValidationConfig
@@ -11,10 +11,12 @@ from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
+
 class InputValidationMiddleware:
     """
     ASGI middleware for input validation and sanitization
     """
+
     def __init__(self, app, config: InputValidationConfig = None) -> None:
         self.app = app
         self.config = config or InputValidationConfig()
@@ -43,12 +45,13 @@ class InputValidationMiddleware:
             except Exception as e:
                 logger.error(f"Input validation error: {e}")
                 raise HTTPException(
-                    status_code=400,
-                    detail="Request validation failed"
+                    status_code=400, detail="Request validation failed"
                 )
         await self.app(scope, receive, send)
 
-    async def _validate_request_body(self, body: bytes, request: Request) -> bytes:
+    async def _validate_request_body(
+        self, body: bytes, request: Request
+    ) -> bytes:
         """Validate and sanitize request body"""
         try:
             # Determine if this is child input
@@ -58,17 +61,18 @@ class InputValidationMiddleware:
             if len(body) > max_size:
                 raise HTTPException(
                     status_code=413,
-                    detail=f"Request body too large (max {max_size} bytes)"
+                    detail=f"Request body too large (max {max_size} bytes)",
                 )
             # Try to parse as JSON
             try:
-                data = json.loads(body.decode('utf-8'))
+                data = json.loads(body.decode("utf-8"))
                 # Sanitize JSON data
                 result = self.sanitizer.sanitize_json(data, is_child_input)
                 # Check if sanitization was successful
                 if not result["is_safe"]:
                     critical_violations = [
-                        v for v in result["violations"]
+                        v
+                        for v in result["violations"]
                         if v["severity"] == "critical"
                     ]
                     if critical_violations:
@@ -78,34 +82,34 @@ class InputValidationMiddleware:
                         )
                         raise HTTPException(
                             status_code=400,
-                            detail="Input contains unsafe content"
+                            detail="Input contains unsafe content",
                         )
                 # Return sanitized data
-                return json.dumps(result["sanitized"]).encode('utf-8')
+                return json.dumps(result["sanitized"]).encode("utf-8")
             except json.JSONDecodeError:
                 # Not JSON, treat as plain text
-                text = body.decode('utf-8')
+                text = body.decode("utf-8")
                 result = self.sanitizer.sanitize_string(
                     text, is_child_input, "request_body"
                 )
                 if not result["is_safe"]:
                     critical_violations = [
-                        v for v in result["violations"]
+                        v
+                        for v in result["violations"]
                         if v["severity"] == "critical"
                     ]
                     if critical_violations:
                         raise HTTPException(
                             status_code=400,
-                            detail="Input contains unsafe content"
+                            detail="Input contains unsafe content",
                         )
-                return result["sanitized"].encode('utf-8')
+                return result["sanitized"].encode("utf-8")
         except HTTPException:
             raise
         except Exception as e:
             logger.error(f"Error validating request body: {e}")
             raise HTTPException(
-                status_code=400,
-                detail="Request validation failed"
+                status_code=400, detail="Request validation failed"
             )
 
     def _is_child_request(self, request: Request) -> bool:
@@ -117,9 +121,13 @@ class InputValidationMiddleware:
                 return user.get("role") == "child"
             # Check for child-specific endpoints
             child_endpoints = ["/process-audio", "/children/", "/story/"]
-            return any(endpoint in request.url.path for endpoint in child_endpoints)
+            return any(
+                endpoint in request.url.path for endpoint in child_endpoints
+            )
         except (AttributeError, ValueError) as e:
-            logger.warning(f"Error determining if request is child-related: {e}")
+            logger.warning(
+                f"Error determining if request is child-related: {e}"
+            )
             # Default to child input for safety
             return True
         except Exception as e:
@@ -127,10 +135,11 @@ class InputValidationMiddleware:
             # Default to child input for safety
             return True
 
+
 # Factory function
 def create_input_validation_middleware(
-    child_safety_mode: bool = True,
-    **kwargs) -> InputValidationMiddleware:
+    child_safety_mode: bool = True, **kwargs
+) -> InputValidationMiddleware:
     """Create input validation middleware with custom configuration"""
     config = InputValidationConfig(**kwargs)
     if child_safety_mode:

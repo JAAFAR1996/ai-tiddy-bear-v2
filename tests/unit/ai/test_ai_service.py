@@ -107,7 +107,8 @@ class TestAIService:
     def test_generate_greeting_response(self):
         """اختبار توليد استجابة تحية"""
         response = self.ai_service.generate_response(
-            "Hello", 6, {"language": "en"})
+            "Hello", 6, {"language": "en"}
+        )
 
         assert response["response_type"] == "greeting"
         assert response["emotion"] == "friendly"
@@ -116,9 +117,11 @@ class TestAIService:
     def test_age_appropriate_response(self):
         """اختبار الاستجابة المناسبة للعمر"""
         young_response = self.ai_service.generate_story(
-            3, {"interests": ["animals"]})
+            3, {"interests": ["animals"]}
+        )
         older_response = self.ai_service.generate_story(
-            9, {"interests": ["animals"]})
+            9, {"interests": ["animals"]}
+        )
 
         assert len(young_response) > 0
         assert len(older_response) > 0

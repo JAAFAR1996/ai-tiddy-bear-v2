@@ -64,7 +64,9 @@ class RedisRateLimiter:
         """Initialize with Redis client."""
         self.redis_client = redis_client
         if not redis_client:
-            logger.warning("Redis client not provided, using local cache fallback")
+            logger.warning(
+                "Redis client not provided, using local cache fallback"
+            )
 
     async def check_rate_limit(
         self,

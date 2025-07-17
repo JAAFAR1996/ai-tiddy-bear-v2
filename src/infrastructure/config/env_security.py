@@ -76,7 +76,8 @@ class EnvPattern(str, Enum):
     TWILIO = r"^TWILIO_.*"
     # Add other sensitive patterns as needed
 
-    class EnvDebugVariant(str, Enum):
+
+class EnvDebugVariant(str, Enum):
     """Enumeration of common debug-related environment variable names."""
 
     DEBUG = EnvVar.DEBUG.value

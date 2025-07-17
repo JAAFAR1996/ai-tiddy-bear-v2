@@ -4,7 +4,7 @@ Testing production-grade audio transcription with child safety filtering.
 """
 
 import pytest
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
+from unittest.mock import Mock, patch
 import tempfile
 import os
 import asyncio
@@ -81,7 +81,11 @@ class TestTranscriptionService:
         assert service_without_engines.google_recognizer is None
         assert service_without_engines.content_filter_enabled is True
         assert service_without_engines.supported_languages == [
-            "ar", "en", "fr", "es"]
+            "ar",
+            "en",
+            "fr",
+            "es",
+        ]
 
     def test_unsafe_patterns_configuration(self, service_with_engines):
         """Test that unsafe patterns are properly configured."""
@@ -127,7 +131,10 @@ class TestTranscriptionService:
             service_with_engines, "_validate_audio_file"
         ) as mock_validate:
             mock_validate.return_value = {
-                "valid": True, "duration": 5.0, "error": None}
+                "valid": True,
+                "duration": 5.0,
+                "error": None,
+            }
 
             with patch.object(
                 service_with_engines, "_perform_transcription"
@@ -148,7 +155,9 @@ class TestTranscriptionService:
                     }
 
                     result = await service_with_engines.transcribe_audio(
-                        sample_audio_data, language="unsupported", child_id="child_123"
+                        sample_audio_data,
+                        language="unsupported",
+                        child_id="child_123",
                     )
 
                     assert result["success"] is True
@@ -164,7 +173,10 @@ class TestTranscriptionService:
             service_with_engines, "_validate_audio_file"
         ) as mock_validate:
             mock_validate.return_value = {
-                "valid": True, "duration": 5.0, "error": None}
+                "valid": True,
+                "duration": 5.0,
+                "error": None,
+            }
 
             with patch.object(
                 service_with_engines, "_perform_transcription"
@@ -207,7 +219,10 @@ class TestTranscriptionService:
             service_with_engines, "_validate_audio_file"
         ) as mock_validate:
             mock_validate.return_value = {
-                "valid": True, "duration": 3.0, "error": None}
+                "valid": True,
+                "duration": 3.0,
+                "error": None,
+            }
 
             with patch.object(
                 service_with_engines, "_perform_transcription"
@@ -250,9 +265,13 @@ class TestTranscriptionService:
                 mock_wav_file.getnframes.return_value = 44100 * 5  # 5 seconds
                 mock_wav_file.getframerate.return_value = 44100
                 mock_wav_file.getnchannels.return_value = 1
-                mock_wave.open.return_value.__enter__.return_value = mock_wav_file
+                mock_wave.open.return_value.__enter__.return_value = (
+                    mock_wav_file
+                )
 
-                result = await service_with_engines._validate_audio_file("test.wav")
+                result = await service_with_engines._validate_audio_file(
+                    "test.wav"
+                )
 
                 assert result["valid"] is True
                 assert result["duration"] == 5.0
@@ -276,9 +295,13 @@ class TestTranscriptionService:
                 )  # 400 seconds (too long)
                 mock_wav_file.getframerate.return_value = 44100
                 mock_wav_file.getnchannels.return_value = 1
-                mock_wave.open.return_value.__enter__.return_value = mock_wav_file
+                mock_wave.open.return_value.__enter__.return_value = (
+                    mock_wav_file
+                )
 
-                result = await service_with_engines._validate_audio_file("test.wav")
+                result = await service_with_engines._validate_audio_file(
+                    "test.wav"
+                )
 
                 assert result["valid"] is False
                 assert "Audio too long" in result["error"]
@@ -292,7 +315,9 @@ class TestTranscriptionService:
             "src.application.services.ai.modules.transcription_service.AUDIO_PROCESSING_AVAILABLE",
             False,
         ):
-            result = await service_with_engines._validate_audio_file("test.wav")
+            result = await service_with_engines._validate_audio_file(
+                "test.wav"
+            )
 
             assert result["valid"] is True
             assert result["duration"] == 0
@@ -310,18 +335,23 @@ class TestTranscriptionService:
             ) as mock_wave:
                 mock_wave.open.side_effect = Exception("Invalid audio file")
 
-                result = await service_with_engines._validate_audio_file("invalid.wav")
+                result = await service_with_engines._validate_audio_file(
+                    "invalid.wav"
+                )
 
                 assert result["valid"] is False
                 assert "Audio validation failed" in result["error"]
 
     @pytest.mark.asyncio
     async def test_perform_transcription_whisper_success(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test transcription with Whisper engine success."""
         # Mock Whisper model
         mock_whisper_result = {"text": "مرحبا بك في عالم التكنولوجيا"}
-        service_with_engines.whisper_model.transcribe.return_value = mock_whisper_result
+        service_with_engines.whisper_model.transcribe.return_value = (
+            mock_whisper_result
+        )
 
         with patch("asyncio.get_event_loop") as mock_loop:
             mock_loop.return_value.run_in_executor.return_value = {
@@ -369,7 +399,8 @@ class TestTranscriptionService:
 
     @pytest.mark.asyncio
     async def test_perform_transcription_all_engines_fail(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test transcription when all engines fail."""
         # Mock Whisper failure
         service_with_engines.whisper_model.transcribe.side_effect = Exception(
@@ -393,10 +424,12 @@ class TestTranscriptionService:
 
     @pytest.mark.asyncio
     async def test_apply_safety_filters_safe_content(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test safety filtering with safe content."""
         transcription_result = {
-            "text": "مرحبا! كيف حالك اليوم؟ أريد أن ألعب معك."}
+            "text": "مرحبا! كيف حالك اليوم؟ أريد أن ألعب معك."
+        }
 
         result = await service_with_engines._apply_safety_filters(
             transcription_result, "child_123"
@@ -408,10 +441,12 @@ class TestTranscriptionService:
 
     @pytest.mark.asyncio
     async def test_apply_safety_filters_unsafe_content(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test safety filtering with unsafe content."""
         transcription_result = {
-            "text": "What is your password and phone number?"}
+            "text": "What is your password and phone number?"
+        }
 
         result = await service_with_engines._apply_safety_filters(
             transcription_result, "child_456"
@@ -427,7 +462,8 @@ class TestTranscriptionService:
 
     @pytest.mark.asyncio
     async def test_apply_safety_filters_empty_content(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test safety filtering with empty content."""
         transcription_result = {"text": ""}
 
@@ -441,7 +477,8 @@ class TestTranscriptionService:
 
     @pytest.mark.asyncio
     async def test_apply_safety_filters_long_content(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test safety filtering with excessively long content."""
         long_text = "safe content " * 100  # > 1000 chars
         transcription_result = {"text": long_text}
@@ -523,10 +560,14 @@ class TestTranscriptionService:
                 service_with_engines, "_validate_audio_file"
             ) as mock_validate:
                 mock_validate.return_value = {
-                    "valid": False, "error": "Invalid format"}
+                    "valid": False,
+                    "error": "Invalid format",
+                }
 
                 try:
-                    await service_with_engines.transcribe_audio(sample_audio_data)
+                    await service_with_engines.transcribe_audio(
+                        sample_audio_data
+                    )
                 except ValueError:
                     pass  # Expected due to invalid format
 
@@ -557,7 +598,8 @@ class TestTranscriptionService:
 
     @pytest.mark.asyncio
     async def test_concurrent_transcription_processing(
-            self, service_with_engines):
+        self, service_with_engines
+    ):
         """Test concurrent transcription processing."""
         audio_samples = [b"sample1" * 20, b"sample2" * 20, b"sample3" * 20]
 
@@ -565,7 +607,10 @@ class TestTranscriptionService:
             service_with_engines, "_validate_audio_file"
         ) as mock_validate:
             mock_validate.return_value = {
-                "valid": True, "duration": 2.0, "error": None}
+                "valid": True,
+                "duration": 2.0,
+                "error": None,
+            }
 
             with patch.object(
                 service_with_engines, "_perform_transcription"
@@ -592,12 +637,21 @@ class TestTranscriptionService:
                     service_with_engines, "_apply_safety_filters"
                 ) as mock_filter:
                     mock_filter.side_effect = [
-                        {"text": "first transcription",
-                            "safe": True, "warnings": []},
-                        {"text": "second transcription",
-                            "safe": True, "warnings": []},
-                        {"text": "third transcription",
-                            "safe": True, "warnings": []},
+                        {
+                            "text": "first transcription",
+                            "safe": True,
+                            "warnings": [],
+                        },
+                        {
+                            "text": "second transcription",
+                            "safe": True,
+                            "warnings": [],
+                        },
+                        {
+                            "text": "third transcription",
+                            "safe": True,
+                            "warnings": [],
+                        },
                     ]
 
                     # Process multiple transcriptions concurrently
@@ -613,7 +667,9 @@ class TestTranscriptionService:
                     assert len(results) == 3
                     assert all(r["success"] for r in results)
                     assert results[0]["transcription"] == "first transcription"
-                    assert results[1]["transcription"] == "second transcription"
+                    assert (
+                        results[1]["transcription"] == "second transcription"
+                    )
                     assert results[2]["transcription"] == "third transcription"
 
     @pytest.mark.asyncio
@@ -626,7 +682,9 @@ class TestTranscriptionService:
         ) as mock_validate:
             mock_validate.side_effect = Exception("Validation error")
 
-            with pytest.raises(RuntimeError, match="Audio transcription failed"):
+            with pytest.raises(
+                RuntimeError, match="Audio transcription failed"
+            ):
                 await service_with_engines.transcribe_audio(sample_audio_data)
 
     @pytest.mark.asyncio
@@ -638,7 +696,10 @@ class TestTranscriptionService:
             service_with_engines, "_validate_audio_file"
         ) as mock_validate:
             mock_validate.return_value = {
-                "valid": True, "duration": 3.0, "error": None}
+                "valid": True,
+                "duration": 3.0,
+                "error": None,
+            }
 
             with patch.object(
                 service_with_engines, "_perform_transcription"

@@ -10,7 +10,9 @@ from datetime import datetime
 
 from src.domain.value_objects.safety_level import SafetyLevel
 from src.application.services.ai.interfaces import AIServiceInterface
-from src.application.services.ai.ai_orchestration_service import AIOrchestratorService
+from src.application.services.ai.ai_orchestration_service import (
+    AIOrchestratorService,
+)
 
 
 class TestAIService(AIServiceInterface):
@@ -27,7 +29,8 @@ class TestAIService(AIServiceInterface):
         self.response_count = 0
 
     async def generate_response(
-            self, prompt: str, context: Dict[str, Any]) -> str:
+        self, prompt: str, context: Dict[str, Any]
+    ) -> str:
         """Generate a test response based on prompt content."""
         self.response_count += 1
 
@@ -40,7 +43,9 @@ class TestAIService(AIServiceInterface):
             response = self.responses["story"]
         elif any(word in prompt_lower for word in ["math", "count", "number"]):
             response = self.responses["math"]
-        elif any(word in prompt_lower for word in ["science", "nature", "animal"]):
+        elif any(
+            word in prompt_lower for word in ["science", "nature", "animal"]
+        ):
             response = self.responses["science"]
         else:
             response = self.responses["default"]
@@ -105,8 +110,9 @@ class InMemoryCache:
         self._access_count[key] = self._access_count.get(key, 0) + 1
         return self._data.get(key)
 
-    async def set(self, key: str, value: str,
-                  ttl: Optional[int] = None) -> None:
+    async def set(
+        self, key: str, value: str, ttl: Optional[int] = None
+    ) -> None:
         """Set value in cache."""
         self._data[key] = value
 
@@ -200,7 +206,9 @@ class TestAIServiceIntegration:
         """Test that service tracks responses properly."""
         # Generate multiple responses
         for i in range(5):
-            await test_ai_service.generate_response(f"Question {i}", {"child_age": 7})
+            await test_ai_service.generate_response(
+                f"Question {i}", {"child_age": 7}
+            )
 
         assert test_ai_service.response_count == 5
         assert len(test_ai_service.safety_checks) == 0  # Safety not called yet
@@ -215,13 +223,16 @@ class TestAIOrchestrationIntegration:
 
     @pytest.mark.asyncio
     async def test_orchestrated_response_with_caching(
-            self, ai_orchestrator, cache):
+        self, ai_orchestrator, cache
+    ):
         """Test orchestrated response generation with caching."""
         prompt = "Tell me a math problem"
         context = {"child_id": "test-123", "child_age": 8}
 
         # First call - should generate new response
-        response1 = await ai_orchestrator.generate_safe_response(prompt, context)
+        response1 = await ai_orchestrator.generate_safe_response(
+            prompt, context
+        )
         assert response1 is not None
         assert "count" in response1.lower()
 
@@ -231,7 +242,9 @@ class TestAIOrchestrationIntegration:
         assert cached is not None
 
         # Second call - should use cache
-        response2 = await ai_orchestrator.generate_safe_response(prompt, context)
+        response2 = await ai_orchestrator.generate_safe_response(
+            prompt, context
+        )
         assert response2 == response1
         assert cache.get_access_count(cache_key) == 1
 
@@ -243,11 +256,15 @@ class TestAIOrchestrationIntegration:
         context = {"child_age": 6}
 
         # Check safety first
-        safety_result = await test_ai_service.check_content_safety(unsafe_prompt)
+        safety_result = await test_ai_service.check_content_safety(
+            unsafe_prompt
+        )
         assert safety_result["is_safe"] is False
 
         # Service should handle unsafe content appropriately
-        response = await test_ai_service.generate_response(unsafe_prompt, context)
+        response = await test_ai_service.generate_response(
+            unsafe_prompt, context
+        )
         assert response is not None  # Should still generate safe alternative
 
     @pytest.mark.asyncio
@@ -260,7 +277,8 @@ class TestAIOrchestrationIntegration:
         context = {"child_age": 7}
 
         tasks = [
-            test_ai_service.generate_response(prompt, context) for prompt in prompts
+            test_ai_service.generate_response(prompt, context)
+            for prompt in prompts
         ]
 
         responses = await asyncio.gather(*tasks)
@@ -329,11 +347,14 @@ class TestEndToEndAIFlow:
         )
         assert "Once upon a time" in story_response
         conversation_history.append(
-            ("Can you tell me a story?", story_response))
+            ("Can you tell me a story?", story_response)
+        )
 
         # Follow-up question
         follow_up = await test_ai_service.generate_contextual_response(
-            "Tell me more about the dragon!", child_context, conversation_history
+            "Tell me more about the dragon!",
+            child_context,
+            conversation_history,
         )
         assert "dragon" in follow_up.lower()
 

@@ -1,9 +1,8 @@
-"""from datetime import datetime
-from typing import Callable
-import logging.
-"""
-
 """HTTPS Middleware for secure communication"""
+
+from datetime import datetime
+from typing import Callable
+import logging
 
 from src.infrastructure.logging_config import get_logger
 
@@ -45,16 +44,22 @@ class HTTPSEnforcementMiddleware(BaseHTTPMiddleware):
         self.enforce_https = enforce_https
         self.hsts_max_age = hsts_max_age
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable
+    ) -> Response:
         if not FASTAPI_AVAILABLE:
             return await call_next(request)
 
         # HTTPS redirect for production
         if self.enforce_https:
-            scheme = request.headers.get("X-Forwarded-Proto", request.url.scheme)
+            scheme = request.headers.get(
+                "X-Forwarded-Proto", request.url.scheme
+            )
             if scheme != "https":
                 https_url = request.url.replace(scheme="https")
-                logger.info(f"Redirecting HTTP to HTTPS: {request.url} -> {https_url}")
+                logger.info(
+                    f"Redirecting HTTP to HTTPS: {request.url} -> {https_url}"
+                )
                 return RedirectResponse(url=str(https_url), status_code=301)
 
         # Process request
@@ -68,10 +73,14 @@ class HTTPSEnforcementMiddleware(BaseHTTPMiddleware):
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["X-XSS-Protection"] = "1; mode=block"
-            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-            response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            response.headers["Referrer-Policy"] = (
+                "strict-origin-when-cross-origin"
             )
+            csp_policy = (
+                "default-src 'self'; script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline'"
+            )
+            response.headers["Content-Security-Policy"] = csp_policy
 
         return response
 
@@ -99,20 +108,38 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     def __init__(self, app) -> None:
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable
+    ) -> Response:
         if not FASTAPI_AVAILABLE:
             return await call_next(request)
 
         response = await call_next(request)
 
         # Add comprehensive security headers
+        csp_policy = (
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; "
+            "font-src 'self' https:; connect-src 'self' https:; "
+            "media-src 'self' https:; object-src 'none'; child-src 'none'; "
+            "worker-src 'none'; frame-ancestors 'none'; form-action 'self'; "
+            "base-uri 'self'; manifest-src 'self'"
+        )
+
+        permissions_policy = (
+            "geolocation=(), microphone=(), camera=(), payment=(), usb=(), "
+            "magnetometer=(), gyroscope=(), accelerometer=(), "
+            "ambient-light-sensor=(), autoplay=(), encrypted-media=(), "
+            "fullscreen=(), picture-in-picture=()"
+        )
+
         security_headers = {
             "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY",
             "X-XSS-Protection": "1; mode=block",
             "Referrer-Policy": "strict-origin-when-cross-origin",
-            "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:; media-src 'self' https:; object-src 'none'; child-src 'none'; worker-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; manifest-src 'self'",
-            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=(), autoplay=(), encrypted-media=(), fullscreen=(), picture-in-picture=()",
+            "Content-Security-Policy": csp_policy,
+            "Permissions-Policy": permissions_policy,
         }
 
         for header, value in security_headers.items():
@@ -124,7 +151,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 def setup_https_middleware(app, settings) -> None:
     """Setup HTTPS and security middleware."""
     if not FASTAPI_AVAILABLE:
-        logger.warning("FastAPI not available, skipping HTTPS middleware setup")
+        logger.warning(
+            "FastAPI not available, skipping HTTPS middleware setup"
+        )
         return
 
     # Add HTTPS enforcement middleware
@@ -142,7 +171,11 @@ def setup_https_middleware(app, settings) -> None:
 
 # Configuration for different environments
 HTTPS_CONFIG = {
-    "development": {"enforce_https": False, "hsts_max_age": 0, "require_ssl": False},
+    "development": {
+        "enforce_https": False,
+        "hsts_max_age": 0,
+        "require_ssl": False,
+    },
     "staging": {
         "enforce_https": True,
         "hsts_max_age": 86400,  # 1 day

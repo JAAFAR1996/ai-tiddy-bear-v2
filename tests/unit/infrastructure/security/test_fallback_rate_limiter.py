@@ -8,7 +8,6 @@ from unittest.mock import patch, Mock, AsyncMock
 import asyncio
 import time
 import threading
-from datetime import datetime
 
 from src.infrastructure.security.fallback_rate_limiter import (
     SlidingWindowRateLimiter,
@@ -192,7 +191,8 @@ class TestSlidingWindowRateLimiter:
 
         # Test default config
         limit, window = rate_limiter._get_rate_limit_config(
-            user_id, None, None)
+            user_id, None, None
+        )
         assert limit == 5  # default_limit
         assert window == 10  # window_seconds
 
@@ -204,7 +204,8 @@ class TestSlidingWindowRateLimiter:
         # Test stored custom limits
         rate_limiter.set_custom_limit(user_id, 15, 25)
         limit, window = rate_limiter._get_rate_limit_config(
-            user_id, None, None)
+            user_id, None, None
+        )
         assert limit == 15
         assert window == 25
 
@@ -312,7 +313,8 @@ class TestSlidingWindowRateLimiter:
 
                 for _ in range(10):
                     result = loop.run_until_complete(
-                        rate_limiter.is_allowed(user_id))
+                        rate_limiter.is_allowed(user_id)
+                    )
                     results.append(result)
 
                 loop.close()
@@ -400,15 +402,17 @@ class TestFallbackRateLimitService:
         assert fallback_service.redis_available is False
         assert hasattr(fallback_service, "fallback_limiter")
         assert isinstance(
-            fallback_service.fallback_limiter,
-            SlidingWindowRateLimiter)
+            fallback_service.fallback_limiter, SlidingWindowRateLimiter
+        )
 
     def test_initialization_with_redis(
         self, fallback_service_with_redis, mock_redis_client
     ):
         """Test service initialization with Redis."""
         assert fallback_service_with_redis.redis_client == mock_redis_client
-        assert fallback_service_with_redis.redis_available is False  # Not checked yet
+        assert (
+            fallback_service_with_redis.redis_available is False
+        )  # Not checked yet
 
     @pytest.mark.asyncio
     async def test_check_redis_availability_no_client(self, fallback_service):
@@ -437,7 +441,8 @@ class TestFallbackRateLimitService:
     ):
         """Test Redis availability check with failed ping."""
         mock_redis_client.ping.side_effect = Exception(
-            "Redis connection failed")
+            "Redis connection failed"
+        )
 
         result = await fallback_service_with_redis.check_redis_availability()
 
@@ -564,7 +569,8 @@ class TestFallbackRateLimitService:
         endpoint = "custom_endpoint"
 
         fallback_service.set_custom_limit(
-            user_id, limit, window_seconds, endpoint)
+            user_id, limit, window_seconds, endpoint
+        )
 
         # Verify the limit was set in fallback limiter
         key = f"{user_id}:{endpoint}"
@@ -598,7 +604,9 @@ class TestFallbackRateLimitService:
         # Add Redis client attribute for testing
         fallback_service_with_redis._redis_client = mock_redis_client
 
-        result = await fallback_service_with_redis.reset_user_limits(user_id, endpoint)
+        result = await fallback_service_with_redis.reset_user_limits(
+            user_id, endpoint
+        )
 
         # Should attempt to reset both fallback and Redis
         assert result is True

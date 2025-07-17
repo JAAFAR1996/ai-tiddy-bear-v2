@@ -31,7 +31,9 @@ class ServerSettings(BaseSettings):
         65535,
         description="Maximum port for production environment.",
     )
-    UVICORN_BACKLOG: int = Field(2048, description="Uvicorn connection backlog.")
+    UVICORN_BACKLOG: int = Field(
+        2048, description="Uvicorn connection backlog."
+    )
     UVICORN_KEEPALIVE_TIMEOUT: int = Field(
         60,
         description="Uvicorn keep-alive timeout in seconds.",

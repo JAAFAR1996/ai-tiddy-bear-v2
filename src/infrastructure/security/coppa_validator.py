@@ -20,7 +20,9 @@ class COPPAComplianceLevel(Enum):
     """COPPA compliance levels based on age."""
 
     UNDER_COPPA = "under_coppa"  # Under 13 - Full COPPA protection required
-    COPPA_TRANSITION = "coppa_transition"  # 13-15 - Enhanced protection recommended
+    COPPA_TRANSITION = (
+        "coppa_transition"  # 13-15 - Enhanced protection recommended
+    )
     GENERAL_PROTECTION = "general_protection"  # 16+ - Standard protection
 
 
@@ -87,14 +89,17 @@ class COPPAValidator:
 
             # Still validate basic age range for system functionality
             if age < 1 or age > 18:
-                raise ValueError(f"Age {age} is outside acceptable range (1-18)")
+                raise ValueError(
+                    f"Age {age} is outside acceptable range (1-18)"
+                )
 
             # Return permissive result when COPPA disabled
             return COPPAValidationResult(
                 is_coppa_subject=False,  # Never subject to COPPA when disabled
                 compliance_level=COPPAComplianceLevel.GENERAL_PROTECTION,
                 parental_consent_required=False,  # No consent required when disabled
-                data_retention_days=365 * 2,  # Longer retention when COPPA disabled
+                data_retention_days=365
+                * 2,  # Longer retention when COPPA disabled
                 special_protections={
                     "enhanced_content_filtering": True,  # Still filter content for safety
                     "restricted_data_sharing": False,  # No COPPA restrictions
@@ -220,7 +225,10 @@ class COPPAValidator:
             result = self.validate_age_compliance(age, strict_validation=False)
             if result.compliance_level == COPPAComplianceLevel.UNDER_COPPA:
                 return "strict"
-            if result.compliance_level == COPPAComplianceLevel.COPPA_TRANSITION:
+            if (
+                result.compliance_level
+                == COPPAComplianceLevel.COPPA_TRANSITION
+            ):
                 return "moderate"
             return "standard"
         except ValueError:

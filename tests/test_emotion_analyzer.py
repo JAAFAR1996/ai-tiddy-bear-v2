@@ -87,5 +87,10 @@ class TestEmotionAnalyzer:
 
         assert isinstance(result, EmotionResult)
         assert result.primary_emotion in [
-            "happy", "sad", "angry", "excited", "calm"]
+            "happy",
+            "sad",
+            "angry",
+            "excited",
+            "calm",
+        ]
         assert 0 <= result.confidence <= 1

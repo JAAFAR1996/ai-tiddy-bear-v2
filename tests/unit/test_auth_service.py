@@ -4,17 +4,16 @@ Comprehensive Unit Tests for Production Auth Service
 
 import pytest
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from jose import jwt, JWTError
+from jose import jwt
 from fastapi import HTTPException, status
 
 from src.infrastructure.security.real_auth_service import (
     ProductionAuthService,
     LoginRequest,
     LoginResponse,
-    UserInfo,
 )
 
 
@@ -95,8 +94,9 @@ class TestPasswordHashing:
 
     def test_verify_password_invalid_hash(self, auth_service):
         """Test password verification with invalid hash."""
-        assert auth_service.verify_password(
-            "password", "invalid_hash") is False
+        assert (
+            auth_service.verify_password("password", "invalid_hash") is False
+        )
 
 
 class TestTokenManagement:
@@ -165,7 +165,9 @@ class TestTokenManagement:
         }
 
         expired_token = jwt.encode(
-            token_data, auth_service.secret_key, algorithm=auth_service.algorithm
+            token_data,
+            auth_service.secret_key,
+            algorithm=auth_service.algorithm,
         )
 
         payload = await auth_service.verify_token(expired_token)
@@ -223,8 +225,9 @@ class TestRateLimiting:
         email = "test@example.com"
 
         # Lock the account
-        auth_service.locked_accounts[email] = datetime.utcnow(
-        ) - timedelta(hours=2)
+        auth_service.locked_accounts[email] = datetime.utcnow() - timedelta(
+            hours=2
+        )
 
         allowed = await auth_service.check_rate_limit(email)
         assert allowed is True
@@ -249,7 +252,9 @@ class TestAuthentication:
         """Test user authentication in development mode."""
         auth_service.settings.ENVIRONMENT = "development"
 
-        user = await auth_service.authenticate_user("parent@demo.com", "demo123")
+        user = await auth_service.authenticate_user(
+            "parent@demo.com", "demo123"
+        )
 
         assert user is not None
         assert user.email == "parent@demo.com"
@@ -261,7 +266,9 @@ class TestAuthentication:
         """Test authentication with invalid credentials."""
         auth_service.settings.ENVIRONMENT = "development"
 
-        user = await auth_service.authenticate_user("parent@demo.com", "wrong_password")
+        user = await auth_service.authenticate_user(
+            "parent@demo.com", "wrong_password"
+        )
 
         assert user is None
 
@@ -290,7 +297,8 @@ class TestLoginLogout:
         auth_service.redis_cache = mock_redis
 
         login_request = LoginRequest(
-            email="parent@demo.com", password="demo123")
+            email="parent@demo.com", password="demo123"
+        )
 
         response = await auth_service.login(login_request)
 
@@ -298,7 +306,10 @@ class TestLoginLogout:
         assert response.access_token is not None
         assert response.refresh_token is not None
         assert response.token_type == "bearer"
-        assert response.expires_in == auth_service.access_token_expire_minutes * 60
+        assert (
+            response.expires_in
+            == auth_service.access_token_expire_minutes * 60
+        )
         assert response.user_info["email"] == "parent@demo.com"
 
         # Verify session was stored
@@ -310,8 +321,8 @@ class TestLoginLogout:
         auth_service.settings.ENVIRONMENT = "development"
 
         login_request = LoginRequest(
-            email="parent@demo.com",
-            password="wrong_password")
+            email="parent@demo.com", password="wrong_password"
+        )
 
         with pytest.raises(HTTPException) as exc_info:
             await auth_service.login(login_request)
@@ -347,11 +358,14 @@ class TestTokenRefresh:
 
     @pytest.mark.asyncio
     async def test_refresh_access_token_success(
-            self, auth_service, sample_user):
+        self, auth_service, sample_user
+    ):
         """Test successful access token refresh."""
         refresh_token = auth_service.create_refresh_token(sample_user)
 
-        new_access_token = await auth_service.refresh_access_token(refresh_token)
+        new_access_token = await auth_service.refresh_access_token(
+            refresh_token
+        )
 
         assert new_access_token is not None
         assert isinstance(new_access_token, str)
@@ -364,12 +378,15 @@ class TestTokenRefresh:
     @pytest.mark.asyncio
     async def test_refresh_access_token_invalid(self, auth_service):
         """Test token refresh with invalid refresh token."""
-        new_token = await auth_service.refresh_access_token("invalid.refresh.token")
+        new_token = await auth_service.refresh_access_token(
+            "invalid.refresh.token"
+        )
         assert new_token is None
 
     @pytest.mark.asyncio
     async def test_refresh_access_token_wrong_type(
-            self, auth_service, sample_user):
+        self, auth_service, sample_user
+    ):
         """Test token refresh with access token instead of refresh token."""
         access_token = auth_service.create_access_token(sample_user)
 

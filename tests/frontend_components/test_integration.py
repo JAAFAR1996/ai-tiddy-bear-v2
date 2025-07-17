@@ -88,7 +88,9 @@ class TestIntegration:
                 "token": "jwt_token",
             }
         )
-        login_result = await auth_service.login("parent@example.com", "password")
+        login_result = await auth_service.login(
+            "parent@example.com", "password"
+        )
         assert login_result["token"] == "jwt_token"
 
         # 2. Get children
@@ -135,7 +137,8 @@ class TestIntegration:
         conversation_service.start_conversation = AsyncMock(
             return_value={
                 "conversationId": "conv1",
-                "sessionToken": "session_token"}
+                "sessionToken": "session_token",
+            }
         )
         conversation = await conversation_service.start_conversation("child1")
 
@@ -150,8 +153,10 @@ class TestIntegration:
         messages = [
             {"type": "audio_stream", "data": {"chunk": "audio1"}},
             {"type": "teddy_response", "data": {"text": "مرحباً!"}},
-            {"type": "emotion_update", "data": {
-                "emotion": "happy", "confidence": 0.9}},
+            {
+                "type": "emotion_update",
+                "data": {"emotion": "happy", "confidence": 0.9},
+            },
         ]
 
         for message in messages:

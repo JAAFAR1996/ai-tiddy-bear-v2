@@ -24,7 +24,9 @@ class AudioSession:
     processed: bool
 
     @classmethod
-    def create_new(cls, child_id: UUID, audio_data_path: str) -> "AudioSession":
+    def create_new(
+        cls, child_id: UUID, audio_data_path: str
+    ) -> "AudioSession":
         """Creates a new audio session.
 
         Args:

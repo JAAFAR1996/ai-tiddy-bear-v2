@@ -4,9 +4,8 @@ Testing API-level security including rate limiting and input sanitization.
 """
 
 import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 import time
-import html
 
 from src.infrastructure.security.api_security_manager import APISecurityManager
 
@@ -269,7 +268,8 @@ class TestAPISecurityManager:
             assert len(result["blocked_content"]) == 0
 
     def test_validate_child_input_sensitive_information(
-            self, security_manager):
+        self, security_manager
+    ):
         """Test child input validation with sensitive information."""
         sensitive_inputs = [
             "My password is secret123",
@@ -285,7 +285,8 @@ class TestAPISecurityManager:
 
             assert result["is_safe"] is False
             assert len(result["blocked_content"]) > 0
-            assert "sensitive information" in result["blocked_content"][0].lower(
+            assert (
+                "sensitive information" in result["blocked_content"][0].lower()
             )
 
     def test_validate_child_input_excessive_caps(self, security_manager):
@@ -371,7 +372,6 @@ class TestAPISecurityManager:
     def test_concurrent_rate_limiting(self, security_manager):
         """Test rate limiting under concurrent access."""
         import threading
-        import time
 
         ip_address = "192.168.1.201"
         results = []

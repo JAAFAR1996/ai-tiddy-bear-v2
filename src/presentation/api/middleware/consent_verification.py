@@ -27,7 +27,9 @@ class ConsentVerificationRoute(APIRoute):
         require_consent_types: Optional[list] = None,
         **kwargs,
     ) -> None:
-        self.require_consent_types = require_consent_types or ["data_collection"]
+        self.require_consent_types = require_consent_types or [
+            "data_collection"
+        ]
         super().__init__(path, endpoint, **kwargs)
 
     def get_route_handler(self) -> Callable[[Request], Awaitable[Response]]:
@@ -137,10 +139,14 @@ class ConsentVerificationRoute(APIRoute):
                 detail="Failed to verify parental consent",
             )
 
-    async def _log_data_collection(self, request: Request, child_id: str) -> None:
+    async def _log_data_collection(
+        self, request: Request, child_id: str
+    ) -> None:
         """Log the data collection event for audit trail."""
         try:
-            from src.infrastructure.security.coppa.data_models import AuditLogEntry
+            from src.infrastructure.security.coppa.data_models import (
+                AuditLogEntry,
+            )
 
             # Create audit log entry
             audit_entry = AuditLogEntry(
@@ -155,7 +161,9 @@ class ConsentVerificationRoute(APIRoute):
                     "method": request.method,
                     "path": request.url.path,
                     "user_agent": request.headers.get("user-agent"),
-                    "ip_address": request.client.host if request.client else "unknown",
+                    "ip_address": (
+                        request.client.host if request.client else "unknown"
+                    ),
                     "consent_types": self.require_consent_types,
                 },
             )

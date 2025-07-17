@@ -27,7 +27,9 @@ class VoiceService:
     with built-in COPPA compliance and content moderation.
     """
 
-    def __init__(self, settings: Settings, safety_monitor: SafetyMonitor) -> None:
+    def __init__(
+        self, settings: Settings, safety_monitor: SafetyMonitor
+    ) -> None:
         """Initializes the VoiceService with provided settings.
 
         Args:
@@ -37,12 +39,18 @@ class VoiceService:
         """
         self.settings = settings
         self.safety_monitor = safety_monitor
-        self.supported_formats = self.settings.audio.SUPPORTED_AUDIO_FORMATS.split(",")
-        self.max_audio_duration = self.settings.audio.MAX_AUDIO_DURATION_SECONDS
+        self.supported_formats = (
+            self.settings.audio.SUPPORTED_AUDIO_FORMATS.split(",")
+        )
+        self.max_audio_duration = (
+            self.settings.audio.MAX_AUDIO_DURATION_SECONDS
+        )
         self.max_file_size_mb = self.settings.audio.MAX_FILE_SIZE_MB
         self.logger = get_logger(__name__, component="voice_service")
 
-    async def validate_audio_file(self, file: UploadFile) -> AudioValidationResult:
+    async def validate_audio_file(
+        self, file: UploadFile
+    ) -> AudioValidationResult:
         """Validate uploaded audio file for child safety.
 
         Args:
@@ -52,7 +60,10 @@ class VoiceService:
             AudioValidationResult containing validation results.
 
         """
-        if not file.content_type or file.content_type not in self.supported_formats:
+        if (
+            not file.content_type
+            or file.content_type not in self.supported_formats
+        ):
             return AudioValidationResult(
                 valid=False,
                 error=f"Unsupported audio format: {file.content_type}",
@@ -98,11 +109,15 @@ class VoiceService:
             # Validate audio file first
             validation_result = await self.validate_audio_file(audio_file)
             if not validation_result.valid:
-                raise HTTPException(status_code=400, detail=validation_result.error)
+                raise HTTPException(
+                    status_code=400, detail=validation_result.error
+                )
 
             await audio_file.read()
             # Placeholder for actual STT service call
-            transcript = f"This is a placeholder transcript for audio from child aged {child_age}."
+            transcript = (
+                f"This is a placeholder transcript for audio from child aged {child_age}."
+            )
 
             # Perform content safety analysis on the transcript
             safety_result = await self.safety_monitor.check_content_safety(
@@ -115,7 +130,11 @@ class VoiceService:
                 SafetyLevel.POTENTIALLY_UNSAFE,
             ]:
                 self.logger.warning(
-                    f"STT content blocked: Unsafe content detected for child age {child_age}. Transcript: '{transcript[:50]}...' Reason: {safety_result.analysis_details}",
+                    "STT content blocked: Unsafe content detected for child age %s. "
+                    "Transcript: '%s...' Reason: %s",
+                    child_age,
+                    transcript[:50],
+                    safety_result.analysis_details,
                 )
                 return SpeechToTextResult(
                     success=False,
@@ -175,7 +194,11 @@ class VoiceService:
                 SafetyLevel.POTENTIALLY_UNSAFE,
             ]:
                 self.logger.warning(
-                    f"TTS content blocked: Unsafe content detected for child age {child_age}. Text: '{text[:50]}...' Reason: {safety_result.analysis_details}",
+                    "TTS content blocked: Unsafe content detected for child age %s. "
+                    "Text: '%s...' Reason: %s",
+                    child_age,
+                    text[:50],
+                    safety_result.analysis_details,
                 )
                 return TextToSpeechResult(
                     success=False,

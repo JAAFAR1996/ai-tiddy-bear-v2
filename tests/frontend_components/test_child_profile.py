@@ -124,11 +124,8 @@ class TestChildProfile:
         # Arrange
         updates = {
             "age": 6,
-            "preferences": {
-                "interests": [
-                    "animals",
-                    "space",
-                    "art"]}}
+            "preferences": {"interests": ["animals", "space", "art"]},
+        }
         child_service.update_child.return_value = {
             "id": "child1",
             "name": "أحمد",

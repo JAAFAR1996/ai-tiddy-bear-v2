@@ -127,7 +127,9 @@ class TestPerformanceAndScaling:
         # Assert high throughput
         assert len(results) == 100
         assert processed_count == 100
-        assert processing_time < 2.0  # Should process 100 chunks in under 2 seconds
+        assert (
+            processing_time < 2.0
+        )  # Should process 100 chunks in under 2 seconds
 
         # Calculate throughput
         throughput = processed_count / processing_time

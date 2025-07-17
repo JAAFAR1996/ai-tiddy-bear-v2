@@ -1,6 +1,5 @@
 from src.infrastructure.logging_config import get_logger
 import requests
-import logging
 import asyncio
 import sys
 from pathlib import Path

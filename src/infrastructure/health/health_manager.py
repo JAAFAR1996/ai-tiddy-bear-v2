@@ -28,7 +28,9 @@ class HealthCheckManager:
         self.config = config or {}
         self.start_time = datetime.utcnow()
         # Initialize health checks
-        self.database_check = DatabaseHealthCheck(self.config.get("database_session"))
+        self.database_check = DatabaseHealthCheck(
+            self.config.get("database_session")
+        )
         self.redis_check = RedisHealthCheck(self.config.get("redis_client"))
         self.system_check = SystemHealthCheck()
         # Cache for health check results with thread safety
@@ -125,7 +127,8 @@ class HealthCheckManager:
         """Check if system is ready to serve requests."""
         health = await self.check_health()
         return {
-            "ready": health.status in [HealthStatus.HEALTHY, HealthStatus.DEGRADED],
+            "ready": health.status
+            in [HealthStatus.HEALTHY, HealthStatus.DEGRADED],
             "status": health.status,
             "checks": {
                 check.name: {"status": check.status, "message": check.message}
@@ -140,7 +143,9 @@ class HealthCheckManager:
             return {
                 "alive": True,
                 "timestamp": datetime.utcnow().isoformat(),
-                "uptime_seconds": (datetime.utcnow() - self.start_time).total_seconds(),
+                "uptime_seconds": (
+                    datetime.utcnow() - self.start_time
+                ).total_seconds(),
             }
         except Exception as e:
             logger.error(f"Liveness check failed: {e}")
@@ -155,7 +160,9 @@ class HealthCheckManager:
 _health_manager: HealthCheckManager | None = None
 
 
-def get_health_manager(config: dict[str, Any] | None = None) -> HealthCheckManager:
+def get_health_manager(
+    config: dict[str, Any] | None = None,
+) -> HealthCheckManager:
     """Get or create health check manager instance."""
     global _health_manager
     if _health_manager is None:

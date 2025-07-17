@@ -1,4 +1,7 @@
-"""from typing import Listimport asyncioimport loggingfrom .data_models import ChaosMetric, SystemHealthSnapshot."""
+from typing import List
+import asyncio
+import logging
+from .data_models import ChaosMetric, SystemHealthSnapshot
 
 """Metrics Collector Implementation"""
 
@@ -19,7 +22,9 @@ class ChaosMetricsCollector:
     async def start_collection(self, experiment_id: str):
         """Start metrics collection for experiment."""
         self.is_collecting = True
-        logger.info(f"Starting metrics collection for experiment {experiment_id}")
+        logger.info(
+            f"Starting metrics collection for experiment {experiment_id}"
+        )
         while self.is_collecting:
             try:
                 # Collect system health snapshot

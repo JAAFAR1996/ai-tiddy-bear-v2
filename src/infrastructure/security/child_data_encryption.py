@@ -2,6 +2,7 @@ import base64
 import hashlib
 import json
 import os
+from datetime import datetime, timedelta
 from typing import Any
 
 # Production-only imports - no fallbacks allowed
@@ -15,16 +16,14 @@ except ImportError as e:
     sys.stderr.write(
         f"CRITICAL ERROR: cryptography is required for production use. Please install it: pip install cryptography. Details: {e}\n",
     )
-    sys.stderr.write("Child data encryption will be disabled - SECURITY RISK!\n")
+    sys.stderr.write(
+        "Child data encryption will be disabled - SECURITY RISK!\n"
+    )
     raise ImportError(
         "Missing required dependency for encryption: cryptography. Install with 'pip install cryptography'",
     ) from e
 
 from src.infrastructure.security.models import COPPAComplianceRecord
-
-"""AI Teddy Bear - Child Data Encryption System
-COPPA-compliant child data encryption system"""
-
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
@@ -64,7 +63,9 @@ class ChildDataEncryption:
         """Initialize encryption system."""
         self.encryption_key = encryption_key or os.getenv("ENCRYPTION_KEY")
         if not self.encryption_key:
-            raise ValueError("Encryption key is required for child data protection")
+            raise ValueError(
+                "Encryption key is required for child data protection"
+            )
 
         # Setup encryption key
         self.cipher = self._setup_encryption_cipher()
@@ -74,13 +75,17 @@ class ChildDataEncryption:
         self.min_parent_age = 18
         self.max_child_age = 13
 
-        logger.info("Child data encryption system initialized with COPPA compliance")
+        logger.info(
+            "Child data encryption system initialized with COPPA compliance"
+        )
 
     def _setup_encryption_cipher(self) -> Fernet:
         """Setup data cipher."""
         try:
             # Convert key to Fernet format
-            if len(self.encryption_key) == 44 and self.encryption_key.endswith(b"="):
+            if len(self.encryption_key) == 44 and self.encryption_key.endswith(
+                b"="
+            ):
                 # Pre-generated Fernet key
                 return Fernet(self.encryption_key.encode())
             # Generate Fernet key from custom key
@@ -96,7 +101,9 @@ class ChildDataEncryption:
             return Fernet(key)
         except Exception as e:
             logger.error(f"Failed to setup encryption cipher: {e}")
-            raise ValueError("Invalid encryption key for child data protection")
+            raise ValueError(
+                "Invalid encryption key for child data protection"
+            )
 
     def encrypt_child_data(self, child_data: dict[str, Any]) -> dict[str, Any]:
         """Encrypt sensitive child data."""
@@ -145,7 +152,9 @@ class ChildDataEncryption:
             logger.error(f"Failed to encrypt child data: {e}")
             raise ValueError("Child data encryption failed - data not saved")
 
-    def decrypt_child_data(self, encrypted_data: dict[str, Any]) -> dict[str, Any]:
+    def decrypt_child_data(
+        self, encrypted_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Decrypt child data."""
         try:
             if "_encrypted_data" not in encrypted_data:
@@ -155,20 +164,26 @@ class ChildDataEncryption:
             decrypted_data = encrypted_data.copy()
 
             # Decrypt sensitive data
-            encrypted_sensitive = base64.b64decode(encrypted_data["_encrypted_data"])
+            encrypted_sensitive = base64.b64decode(
+                encrypted_data["_encrypted_data"]
+            )
             decrypted_sensitive = self.cipher.decrypt(encrypted_sensitive)
             sensitive_data = json.loads(decrypted_sensitive.decode("utf-8"))
 
             # Verify data integrity
             metadata = encrypted_data.get("_encryption_metadata", {})
             if metadata.get("field_count") != len(sensitive_data):
-                raise ValueError("Data integrity check failed - field count mismatch")
+                raise ValueError(
+                    "Data integrity check failed - field count mismatch"
+                )
 
             checksum = self._calculate_checksum(
                 json.dumps(sensitive_data, ensure_ascii=False, default=str),
             )
             if metadata.get("checksum") != checksum:
-                logger.warning("Data integrity check failed - checksum mismatch")
+                logger.warning(
+                    "Data integrity check failed - checksum mismatch"
+                )
 
             # Merge decrypted data
             for field, value in sensitive_data.items():
@@ -182,7 +197,9 @@ class ChildDataEncryption:
             return decrypted_data
         except Exception as e:
             logger.error(f"Failed to decrypt child data: {e}")
-            raise ValueError("Child data decryption failed - data may be corrupted")
+            raise ValueError(
+                "Child data decryption failed - data may be corrupted"
+            )
 
     def validate_coppa_compliance(
         self,
@@ -200,20 +217,24 @@ class ChildDataEncryption:
         child_age = child_data.get("age", 0)
         if child_age > self.max_child_age:
             compliance_check["violations"].append(
-                f"Child age ({child_age}) exceeds COPPA limit ({self.max_child_age})",
+                f"Child age ({child_age}) exceeds COPPA limit ({self.max_child_age})"
             )
             compliance_check["compliant"] = False
 
         if not consent_record.parental_consent_given:
-            compliance_check["violations"].append("Parental consent not obtained")
+            compliance_check["violations"].append(
+                "Parental consent not obtained"
+            )
             compliance_check["compliant"] = False
 
         # Check data expiration
         if consent_record.data_retention_expires:
             if datetime.utcnow() > consent_record.data_retention_expires:
-                compliance_check["violations"].append("Data retention period expired")
+                compliance_check["violations"].append(
+                    "Data retention period expired"
+                )
                 compliance_check["required_actions"].append(
-                    "Delete child data immediately",
+                    "Delete child data immediately"
                 )
                 compliance_check["compliant"] = False
 
@@ -223,13 +244,15 @@ class ChildDataEncryption:
         ]
         if pii_fields_present and not consent_record.parental_consent_given:
             compliance_check["violations"].append(
-                f"PII data present without consent: {pii_fields_present}",
+                f"PII data present without consent: {pii_fields_present}"
             )
             compliance_check["compliant"] = False
 
         # Warnings
         if not consent_record.consent_ip_address:
-            compliance_check["warnings"].append("Consent IP address not recorded")
+            compliance_check["warnings"].append(
+                "Consent IP address not recorded"
+            )
         if not consent_record.audit_trail:
             compliance_check["warnings"].append("No audit trail available")
 
@@ -258,7 +281,7 @@ class ChildDataEncryption:
                     "timestamp": now.isoformat(),
                     "method": consent_method,
                     "ip_address": ip_address,
-                },
+                }
             ],
         )
 
@@ -279,16 +302,22 @@ class ChildDataEncryption:
         }
 
         consent_record.audit_trail.append(audit_entry)
-        logger.info(f"Added audit entry: {action} for child {consent_record.child_id}")
+        logger.info(
+            f"Added audit entry: {action} for child {consent_record.child_id}"
+        )
 
-    def should_delete_data(self, consent_record: COPPAComplianceRecord) -> bool:
+    def should_delete_data(
+        self, consent_record: COPPAComplianceRecord
+    ) -> bool:
         """Determine if data should be deleted."""
         if not consent_record.data_retention_expires:
             return False
 
         return datetime.utcnow() > consent_record.data_retention_expires
 
-    def anonymize_child_data(self, child_data: dict[str, Any]) -> dict[str, Any]:
+    def anonymize_child_data(
+        self, child_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Anonymize child data for statistical research."""
         anonymized = child_data.copy()
 
@@ -317,7 +346,7 @@ class ChildDataEncryption:
         # Add anonymization timestamp
         anonymized["anonymized_at"] = datetime.utcnow().isoformat()
         anonymized["original_id_hash"] = self._calculate_checksum(
-            str(child_data.get("id", "")),
+            str(child_data.get("id", ""))
         )
 
         return anonymized
@@ -334,7 +363,7 @@ class ChildDataEncryption:
             "deletion_method": "secure_overwrite",
             "compliance_reason": "COPPA_data_retention_expired",
             "verification_hash": self._calculate_checksum(
-                f"{child_id}_{datetime.utcnow().isoformat()}",
+                f"{child_id}_{datetime.utcnow().isoformat()}"
             ),
         }
 

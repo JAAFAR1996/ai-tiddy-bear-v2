@@ -1,12 +1,12 @@
-"""from typing import Any, Dict, List
+"""Hallucination Testing Module
+AI System Chaos Actions for Testing Hallucination Detection"""
+
 import asyncio
 import logging
 import random
-import httpx.
-"""
+from typing import Any, Dict, List
 
-"""Hallucination Testing Module
-AI System Chaos Actions for Testing Hallucination Detection"""
+import httpx
 
 from src.infrastructure.logging_config import get_logger
 
@@ -126,13 +126,17 @@ def _calculate_hallucination_metrics(
     }
 
 
-async def trigger_hallucination(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def trigger_hallucination(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
     """Trigger AI hallucination scenarios by sending various prompts."""
     tester = HallucinationTester()
     logger.info("🧠 Starting AI hallucination detection test")
 
     try:
-        results = await _execute_hallucination_tests(tester.hallucination_prompts)
+        results = await _execute_hallucination_tests(
+            tester.hallucination_prompts
+        )
         metrics = _calculate_hallucination_metrics(
             results,
             len(tester.hallucination_prompts),

@@ -3,10 +3,12 @@
 import os
 
 try:
-    from pydantic import BaseModel, Field, SecretStr
-    from pydantic_settings import BaseSettings, SettingsConfigDict
+    from pydantic import Field, SecretStr
+    from pydantic_settings import BaseSettings
 except ImportError as e:
-    logger.critical(f"CRITICAL ERROR: Pydantic is required for production use: {e}")
+    logger.critical(
+        f"CRITICAL ERROR: Pydantic is required for production use: {e}"
+    )
     logger.critical(
         "Install required dependencies: pip install pydantic pydantic-settings",
     )
@@ -23,8 +25,12 @@ class SecureAppSettings(BaseSettings):
     """إعدادات التطبيق الآمنة."""
 
     # Application Info
-    app_name: str = Field(default="AI Teddy Bear", description="Application name")
-    app_version: str = Field(default="1.0.0", description="Application version")
+    app_name: str = Field(
+        default="AI Teddy Bear", description="Application name"
+    )
+    app_version: str = Field(
+        default="1.0.0", description="Application version"
+    )
     environment: str = Field(
         default="development",
         description="Environment (development/staging/production)",
@@ -37,7 +43,9 @@ class SecureAppSettings(BaseSettings):
         min_length=32,
         description="Application secret key",
     )
-    jwt_secret: SecretStr = Field(..., min_length=32, description="JWT secret key")
+    jwt_secret: SecretStr = Field(
+        ..., min_length=32, description="JWT secret key"
+    )
     encryption_key: SecretStr = Field(
         ...,
         min_length=32,
@@ -75,7 +83,9 @@ class SecureAppSettings(BaseSettings):
         default=True,
         description="Enable security headers middleware",
     )
-    enable_rate_limiting: bool = Field(default=True, description="Enable rate limiting")
+    enable_rate_limiting: bool = Field(
+        default=True, description="Enable rate limiting"
+    )
 
     class Config:
         env_file = ".env"

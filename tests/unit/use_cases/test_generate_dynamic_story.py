@@ -1,7 +1,9 @@
 from domain.entities.child_profile import ChildProfile
 from application.dto.story_response import StoryResponse
 from application.dto.story_request import StoryRequest
-from application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
+from application.use_cases.generate_dynamic_story import (
+    GenerateDynamicStoryUseCase,
+)
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock
 import sys
@@ -137,7 +139,9 @@ class TestGenerateDynamicStoryUseCase:
         """Test successful story generation."""
         # Setup
         use_case.child_repository.get_by_id.return_value = child_profile
-        use_case.dynamic_story_service.generate_story.return_value = story_response
+        use_case.dynamic_story_service.generate_story.return_value = (
+            story_response
+        )
 
         # Execute
         result = await use_case.execute(story_request)
@@ -184,7 +188,9 @@ class TestGenerateDynamicStoryUseCase:
         )
 
         use_case.child_repository.get_by_id.return_value = child_profile
-        use_case.dynamic_story_service.generate_story.return_value = story_response
+        use_case.dynamic_story_service.generate_story.return_value = (
+            story_response
+        )
 
         # Execute
         result = await use_case.execute(story_request)
@@ -247,7 +253,9 @@ class TestGenerateDynamicStoryUseCase:
         )
 
         use_case.child_repository.get_by_id.return_value = child_profile
-        use_case.dynamic_story_service.generate_story.return_value = story_response
+        use_case.dynamic_story_service.generate_story.return_value = (
+            story_response
+        )
 
         # Execute
         result = await use_case.execute(story_request)
@@ -290,7 +298,8 @@ class TestGenerateDynamicStoryUseCase:
 
     @pytest.mark.asyncio
     async def test_execute_story_length_preferences(
-            self, use_case, child_profile):
+        self, use_case, child_profile
+    ):
         """Test story generation with different length preferences."""
         # Test short story
         short_request = StoryRequest(
@@ -309,7 +318,9 @@ class TestGenerateDynamicStoryUseCase:
         )
 
         use_case.child_repository.get_by_id.return_value = child_profile
-        use_case.dynamic_story_service.generate_story.return_value = short_story
+        use_case.dynamic_story_service.generate_story.return_value = (
+            short_story
+        )
 
         # Execute
         result = await use_case.execute(short_request)
@@ -343,7 +354,9 @@ class TestGenerateDynamicStoryUseCase:
         )
 
         use_case.child_repository.get_by_id.return_value = child_profile
-        use_case.dynamic_story_service.generate_story.return_value = spanish_story
+        use_case.dynamic_story_service.generate_story.return_value = (
+            spanish_story
+        )
 
         # Execute
         result = await use_case.execute(story_request)
@@ -376,7 +389,9 @@ class TestGenerateDynamicStoryUseCase:
         )
 
         use_case.child_repository.get_by_id.return_value = child_profile
-        use_case.dynamic_story_service.generate_story.return_value = moral_story
+        use_case.dynamic_story_service.generate_story.return_value = (
+            moral_story
+        )
 
         # Execute
         result = await use_case.execute(story_request)

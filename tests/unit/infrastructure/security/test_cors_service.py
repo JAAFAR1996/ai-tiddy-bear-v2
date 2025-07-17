@@ -4,12 +4,7 @@ Testing CORS policies, origin validation, and security headers.
 """
 
 import pytest
-from unittest.mock import patch, Mock, MagicMock
-from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, List, Optional, Set, Union
-import urllib.parse
-import re
+from unittest.mock import patch
 
 from src.infrastructure.security.cors_service import (
     CORSSecurityService,
@@ -72,7 +67,8 @@ class TestCORSConfiguration:
         assert config.allowed_origins == {"https://example.com"}
 
     def test_cors_configuration_validation_invalid_wildcard_with_credentials(
-            self):
+        self,
+    ):
         """Test CORSConfiguration validation fails with wildcard and credentials."""
         with pytest.raises(
             ValueError, match="Cannot allow credentials with wildcard origins"
@@ -129,7 +125,8 @@ class TestCORSSecurityService:
         assert cors_service.max_cache_size == 1000
 
     def test_cors_service_initialization_with_policy(
-            self, cors_service_moderate):
+        self, cors_service_moderate
+    ):
         """Test CORSSecurityService initialization with custom policy."""
         assert cors_service_moderate.default_policy == CORSPolicy.MODERATE
         assert len(cors_service_moderate.configurations) == 3
@@ -188,7 +185,8 @@ class TestCORSSecurityService:
         assert result["origin"] == "https://ai-teddy.com"
         assert "headers" in result
         assert (
-            result["headers"]["Access-Control-Allow-Origin"] == "https://ai-teddy.com"
+            result["headers"]["Access-Control-Allow-Origin"]
+            == "https://ai-teddy.com"
         )
         assert result["policy"] == "strict"
 
@@ -203,7 +201,8 @@ class TestCORSSecurityService:
     def test_validate_origin_allowed_moderate(self, cors_service_moderate):
         """Test origin validation with allowed origin in moderate policy."""
         result = cors_service_moderate.validate_origin(
-            "https://localhost:3000")
+            "https://localhost:3000"
+        )
 
         assert result["allowed"] is True
         assert result["origin"] == "https://localhost:3000"
@@ -212,7 +211,8 @@ class TestCORSSecurityService:
     def test_validate_origin_allowed_permissive(self, cors_service_permissive):
         """Test origin validation with allowed origin in permissive policy."""
         result = cors_service_permissive.validate_origin(
-            "http://localhost:3000")
+            "http://localhost:3000"
+        )
 
         assert result["allowed"] is True
         assert result["origin"] == "http://localhost:3000"
@@ -264,9 +264,12 @@ class TestCORSSecurityService:
         assert result["security_violation"] is True
 
     def test_validate_origin_security_localhost_http_allowed(
-            self, cors_service):
+        self, cors_service
+    ):
         """Test origin validation allows HTTP for localhost."""
-        with patch.object(cors_service, "_is_origin_allowed", return_value=True):
+        with patch.object(
+            cors_service, "_is_origin_allowed", return_value=True
+        ):
             result = cors_service.validate_origin("http://localhost:3000")
 
             # Should pass security validation
@@ -289,7 +292,9 @@ class TestCORSSecurityService:
     def test_handle_preflight_request_invalid_origin(self, cors_service):
         """Test preflight request handling with invalid origin."""
         result = cors_service.handle_preflight_request(
-            origin="https://malicious.com", method="POST", headers="Content-Type"
+            origin="https://malicious.com",
+            method="POST",
+            headers="Content-Type",
         )
 
         assert result["allowed"] is False
@@ -387,7 +392,8 @@ class TestCORSSecurityService:
     def test_validate_origin_security_valid_localhost_http(self, cors_service):
         """Test origin security validation with localhost HTTP."""
         result = cors_service._validate_origin_security(
-            "http://localhost:3000")
+            "http://localhost:3000"
+        )
 
         assert result["secure"] is True
 
@@ -408,7 +414,8 @@ class TestCORSSecurityService:
     def test_validate_origin_security_suspicious_chars(self, cors_service):
         """Test origin security validation with suspicious characters."""
         result = cors_service._validate_origin_security(
-            "https://example.com<script>")
+            "https://example.com<script>"
+        )
 
         assert result["secure"] is False
         assert result["reason"] == "Suspicious characters in origin"
@@ -422,9 +429,12 @@ class TestCORSSecurityService:
 
     def test_validate_origin_security_exception_handling(self, cors_service):
         """Test origin security validation exception handling."""
-        with patch("urllib.parse.urlparse", side_effect=Exception("Parse error")):
+        with patch(
+            "urllib.parse.urlparse", side_effect=Exception("Parse error")
+        ):
             result = cors_service._validate_origin_security(
-                "https://example.com")
+                "https://example.com"
+            )
 
             assert result["secure"] is False
             assert result["reason"] == "Origin validation error"
@@ -433,7 +443,8 @@ class TestCORSSecurityService:
         """Test origin allowed check with exact match."""
         config = cors_service.configurations[CORSPolicy.STRICT]
         result = cors_service._is_origin_allowed(
-            "https://ai-teddy.com", config)
+            "https://ai-teddy.com", config
+        )
 
         assert result is True
 
@@ -441,7 +452,8 @@ class TestCORSSecurityService:
         """Test origin allowed check with origin not in list."""
         config = cors_service.configurations[CORSPolicy.STRICT]
         result = cors_service._is_origin_allowed(
-            "https://malicious.com", config)
+            "https://malicious.com", config
+        )
 
         assert result is False
 
@@ -451,11 +463,14 @@ class TestCORSSecurityService:
         config.allowed_origins.add("*.example.com")
 
         result1 = cors_service._is_origin_allowed(
-            "https://sub.example.com", config)
+            "https://sub.example.com", config
+        )
         result2 = cors_service._is_origin_allowed(
-            "https://example.com", config)
+            "https://example.com", config
+        )
         result3 = cors_service._is_origin_allowed(
-            "https://malicious.com", config)
+            "https://malicious.com", config
+        )
 
         assert result1 is True
         assert result2 is True
@@ -465,7 +480,8 @@ class TestCORSSecurityService:
         """Test CORS headers generation."""
         config = cors_service.configurations[CORSPolicy.STRICT]
         headers = cors_service._generate_cors_headers(
-            "https://ai-teddy.com", config)
+            "https://ai-teddy.com", config
+        )
 
         assert headers["Access-Control-Allow-Origin"] == "https://ai-teddy.com"
         assert "Access-Control-Allow-Methods" in headers
@@ -480,7 +496,8 @@ class TestCORSSecurityService:
         config = cors_service.configurations[CORSPolicy.STRICT]
         config.allow_credentials = False
         headers = cors_service._generate_cors_headers(
-            "https://ai-teddy.com", config)
+            "https://ai-teddy.com", config
+        )
 
         assert "Access-Control-Allow-Credentials" not in headers
 
@@ -489,7 +506,8 @@ class TestCORSSecurityService:
         config = cors_service.configurations[CORSPolicy.STRICT]
         config.expose_headers = set()
         headers = cors_service._generate_cors_headers(
-            "https://ai-teddy.com", config)
+            "https://ai-teddy.com", config
+        )
 
         assert "Access-Control-Expose-Headers" not in headers
 
@@ -544,7 +562,9 @@ class TestCORSSecurityService:
 
     def test_log_cors_violation(self, cors_service):
         """Test CORS violation logging."""
-        with patch("src.infrastructure.security.cors_service.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.cors_service.logger"
+        ) as mock_logger:
             cors_service._log_cors_violation(
                 "https://malicious.com", "Origin not allowed"
             )
@@ -554,7 +574,9 @@ class TestCORSSecurityService:
 
     def test_log_cors_violation_repeated(self, cors_service):
         """Test repeated CORS violation logging."""
-        with patch("src.infrastructure.security.cors_service.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.cors_service.logger"
+        ) as mock_logger:
             origin = "https://malicious.com"
 
             # Log 5 violations
@@ -581,7 +603,8 @@ class TestCORSSecurityService:
         # Fill cache beyond limit
         for i in range(10):
             cors_service._update_origin_cache(
-                f"https://example{i}.com:strict", True)
+                f"https://example{i}.com:strict", True
+            )
 
         assert len(cors_service.origin_cache) <= 5
 
@@ -623,7 +646,9 @@ class TestCORSSecurityService:
         assert result is False
         assert (
             "http://malicious.com"
-            not in cors_service.configurations[CORSPolicy.STRICT].allowed_origins
+            not in cors_service.configurations[
+                CORSPolicy.STRICT
+            ].allowed_origins
         )
 
     def test_add_allowed_origin_clears_cache(self, cors_service):
@@ -658,13 +683,19 @@ class TestCORSSecurityService:
         origin = "https://ai-teddy.com"
 
         # Verify origin is initially present
-        assert origin in cors_service.configurations[CORSPolicy.STRICT].allowed_origins
+        assert (
+            origin
+            in cors_service.configurations[CORSPolicy.STRICT].allowed_origins
+        )
 
         result = cors_service.remove_allowed_origin(origin, CORSPolicy.STRICT)
 
         assert result is True
         assert (
-            origin not in cors_service.configurations[CORSPolicy.STRICT].allowed_origins
+            origin
+            not in cors_service.configurations[
+                CORSPolicy.STRICT
+            ].allowed_origins
         )
 
     def test_remove_allowed_origin_clears_cache(self, cors_service):
@@ -715,7 +746,8 @@ class TestCORSServiceIntegration:
         """Test complete CORS flow for allowed origin."""
         # First validate origin
         validation_result = cors_service.validate_origin(
-            "https://ai-teddy.com")
+            "https://ai-teddy.com"
+        )
         assert validation_result["allowed"] is True
 
         # Then handle preflight
@@ -734,12 +766,15 @@ class TestCORSServiceIntegration:
         """Test complete CORS flow for blocked origin."""
         # First validate origin
         validation_result = cors_service.validate_origin(
-            "https://malicious.com")
+            "https://malicious.com"
+        )
         assert validation_result["allowed"] is False
 
         # Preflight should also be blocked
         preflight_result = cors_service.handle_preflight_request(
-            origin="https://malicious.com", method="POST", headers="Content-Type"
+            origin="https://malicious.com",
+            method="POST",
+            headers="Content-Type",
         )
         assert preflight_result["allowed"] is False
 
@@ -777,7 +812,8 @@ class TestCORSServiceIntegration:
 
         # Different policy should not be cached
         result3 = cors_service.validate_origin(
-            origin, policy=CORSPolicy.MODERATE)
+            origin, policy=CORSPolicy.MODERATE
+        )
         assert result3["allowed"] is True
         assert "cached" not in result3
 
@@ -807,7 +843,8 @@ class TestCORSServiceIntegration:
 
         # Add origin
         add_result = cors_service.add_allowed_origin(
-            new_origin, CORSPolicy.STRICT)
+            new_origin, CORSPolicy.STRICT
+        )
         assert add_result is True
 
         # Now should be allowed
@@ -833,7 +870,8 @@ class TestCORSServiceIntegration:
 
         # Test moderate policy headers
         moderate_headers = cors_service.get_security_headers(
-            CORSPolicy.MODERATE)
+            CORSPolicy.MODERATE
+        )
         assert "X-Child-Safety" not in moderate_headers
         assert "Strict-Transport-Security" not in moderate_headers
 

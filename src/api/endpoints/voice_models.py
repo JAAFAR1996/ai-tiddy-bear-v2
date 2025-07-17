@@ -1,33 +1,14 @@
 from pydantic import BaseModel, Field
 
-from src.common.constants import (
-    MAX_CHILD_AGE,
-    MAX_CHILD_ID_LENGTH,
-    MIN_CHILD_AGE,
-)
-
 
 class VoiceResponse(BaseModel):
     """Response model for voice processing."""
 
     success: bool
     message: str
-    audio_url: str | None = None
     transcript: str | None = None
     safety_score: float = Field(ge=0, le=1)
     processing_time_ms: int
-
-
-class VoiceProcessingRequest(BaseModel):
-    """Request model for voice processing."""
-
-    child_id: str = Field(..., min_length=1, max_length=MAX_CHILD_ID_LENGTH)
-    child_age: int = Field(..., ge=MIN_CHILD_AGE, le=MAX_CHILD_AGE)
-    message_text: str | None = None
-    voice_preference: str = Field(
-        default="friendly",
-        description="Preferred voice style for the AI response.",
-    )
 
 
 class AudioValidationResult(BaseModel):

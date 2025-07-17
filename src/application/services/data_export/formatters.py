@@ -1,4 +1,7 @@
-"""from datetime import datetime
+"""Data Export Formatters
+Provides different formatters for exporting child data in various formats."""
+
+from datetime import datetime
 from typing import Dict, List, Any, Optional
 import base64
 import csv
@@ -7,11 +10,7 @@ import logging
 import xml.etree.ElementTree as ET
 from io import StringIO, BytesIO
 import zipfile
-from .types import ExportFormat, ExportMetadata.
-"""
-
-"""Data Export Formatters
-Provides different formatters for exporting child data in various formats."""
+from .types import ExportFormat, ExportMetadata
 
 from src.infrastructure.logging_config import get_logger
 
@@ -31,7 +30,9 @@ class BaseFormatter:
 
     def get_file_extension(self) -> str:
         """Get file extension for this format."""
-        raise NotImplementedError("Subclasses must implement get_file_extension")
+        raise NotImplementedError(
+            "Subclasses must implement get_file_extension"
+        )
 
     def get_mime_type(self) -> str:
         """Get MIME type for this format."""
@@ -58,7 +59,9 @@ class JSONFormatter(BaseFormatter):
                 "data": data,
             }
             # Convert datetime objects to ISO format
-            json_str = json.dumps(export_data, indent=2, default=self._json_serializer)
+            json_str = json.dumps(
+                export_data, indent=2, default=self._json_serializer
+            )
             return json_str.encode("utf-8")
         except Exception as e:
             logger.error(f"Error formatting JSON data: {e}")
@@ -129,7 +132,9 @@ class CSVFormatter(BaseFormatter):
                     for key, value in records.items():
                         if isinstance(value, datetime):
                             value = value.isoformat()
-                        writer.writerow([key, str(value) if value is not None else ""])
+                        writer.writerow(
+                            [key, str(value) if value is not None else ""]
+                        )
 
                 output.write("\n")
 
@@ -157,18 +162,25 @@ class XMLFormatter(BaseFormatter):
             # Add metadata
             metadata_elem = ET.SubElement(root, "metadata")
             ET.SubElement(
-                metadata_elem, "export_timestamp",
+                metadata_elem,
+                "export_timestamp",
             ).text = self.metadata.export_timestamp.isoformat()
-            ET.SubElement(metadata_elem, "child_id").text = self.metadata.child_id
-            ET.SubElement(metadata_elem, "parent_id").text = self.metadata.parent_id
+            ET.SubElement(metadata_elem, "child_id").text = (
+                self.metadata.child_id
+            )
+            ET.SubElement(metadata_elem, "parent_id").text = (
+                self.metadata.parent_id
+            )
             ET.SubElement(
-                metadata_elem, "data_version",
+                metadata_elem,
+                "data_version",
             ).text = self.metadata.data_version
             ET.SubElement(metadata_elem, "total_records").text = str(
                 self.metadata.total_records,
             )
             ET.SubElement(
-                metadata_elem, "retention_policy",
+                metadata_elem,
+                "retention_policy",
             ).text = self.metadata.retention_policy
 
             # Add COPPA compliance notes
@@ -209,7 +221,9 @@ class XMLFormatter(BaseFormatter):
                 self._add_dict_to_element(child_elem, value)
             elif isinstance(value, list):
                 for i, item in enumerate(value):
-                    item_elem = ET.SubElement(parent, str(key), {"index": str(i)})
+                    item_elem = ET.SubElement(
+                        parent, str(key), {"index": str(i)}
+                    )
                     if isinstance(item, dict):
                         self._add_dict_to_element(item_elem, item)
                     else:
@@ -244,7 +258,9 @@ class ArchiveFormatter(BaseFormatter):
         """Create ZIP archive with multiple format files."""
         try:
             buffer = BytesIO()
-            with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            with zipfile.ZipFile(
+                buffer, "w", zipfile.ZIP_DEFLATED
+            ) as zip_file:
                 # Add a README file
                 readme_content = self._generate_readme()
                 zip_file.writestr("README.txt", readme_content)
@@ -269,21 +285,26 @@ class ArchiveFormatter(BaseFormatter):
 
     def _generate_readme(self) -> str:
         """Generate README content for the archive."""
-        return f"""Child Data Export == == == == == == == ==
+        return f"""Child Data Export
+================
+
 Export Date: {self.metadata.export_timestamp.isoformat()}
 Child ID: {self.metadata.child_id}
 Parent ID: {self.metadata.parent_id}
 Data Version: {self.metadata.data_version}
 Total Records: {self.metadata.total_records}
 
-COPPA Compliance == == == == == == == ==
-This export complies with the Children's Online Privacy Protection Act(COPPA).
+COPPA Compliance
+================
+This export complies with the Children's Online Privacy Protection Act (COPPA).
 {chr(10).join(self.metadata.coppa_compliance_notes)}
 
-Data Retention Policy == == == == == == == == == ==
+Data Retention Policy
+=====================
 {self.metadata.retention_policy}
 
-Files Included == == == == == == ==
+Files Included
+==============
 - child_data_{self.metadata.child_id}.json - Complete data in JSON format
 - child_data_{self.metadata.child_id}.csv - Data in CSV format
 - child_data_{self.metadata.child_id}.xml - Data in XML format

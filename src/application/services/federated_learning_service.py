@@ -9,7 +9,10 @@ improvement of AI models in a distributed environment.
 import logging
 from typing import Any
 
-from src.application.interfaces.read_model_interfaces import IEventBus, get_event_bus
+from src.application.interfaces.read_model_interfaces import (
+    IEventBus,
+    get_event_bus,
+)
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="federated_learning_service")
@@ -52,9 +55,14 @@ class FederatedLearningService:
             True if the update passes privacy validation, False otherwise.
 
         """
-        self.logger.debug("Performing privacy validation on local model update...")
+        self.logger.debug(
+            "Performing privacy validation on local model update..."
+        )
         # Placeholder for actual robust privacy validation logic
-        if "weights" not in local_model_update or "bias" not in local_model_update:
+        if (
+            "weights" not in local_model_update
+            or "bias" not in local_model_update
+        ):
             self.logger.warning(
                 "Model update missing 'weights' or 'bias'. Privacy validation failed.",
             )
@@ -113,7 +121,9 @@ class FederatedLearningService:
         # await self.event_bus.publish(ModelUpdateProcessed(device_id,
         # local_model_update))
 
-    def _aggregate_model_update(self, local_model_update: dict[str, Any]) -> None:
+    def _aggregate_model_update(
+        self, local_model_update: dict[str, Any]
+    ) -> None:
         """Aggregates the local model update into the global model.
 
         Args:

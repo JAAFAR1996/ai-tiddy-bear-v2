@@ -4,15 +4,12 @@ Ensures all security measures are properly implemented and effective
 """
 
 import pytest
-import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.infrastructure.security.hardening.rate_limiter import (
     RedisRateLimiter,
     ChildSafetyRateLimiter,
     RateLimitConfig,
-    RateLimitResult,
 )
 from src.infrastructure.security.hardening.csrf_protection import (
     CSRFProtection,
@@ -27,7 +24,6 @@ from src.infrastructure.security.hardening.security_headers import (
 from src.infrastructure.security.hardening.input_validation import (
     InputSanitizer,
     InputValidationConfig,
-    ValidationSeverity,
 )
 
 
@@ -124,7 +120,8 @@ class TestCSRFProtection:
         user_id = "user_456"
 
         token = csrf_protection.token_manager.generate_token(
-            session_id, user_id)
+            session_id, user_id
+        )
 
         assert token is not None
         assert len(token) > 20
@@ -137,7 +134,8 @@ class TestCSRFProtection:
 
         # Generate token
         token = csrf_protection.token_manager.generate_token(
-            session_id, user_id)
+            session_id, user_id
+        )
 
         # Validate token
         is_valid = csrf_protection.token_manager.validate_token(
@@ -153,7 +151,8 @@ class TestCSRFProtection:
 
         # Generate token for one session
         token = csrf_protection.token_manager.generate_token(
-            session_id, user_id)
+            session_id, user_id
+        )
 
         # Try to validate with different session
         is_valid = csrf_protection.token_manager.validate_token(
@@ -170,16 +169,20 @@ class TestCSRFProtection:
         token = csrf_protection.token_manager.generate_token(session_id)
 
         # Validate it works
-        assert csrf_protection.token_manager.validate_token(
-            token, session_id) is True
+        assert (
+            csrf_protection.token_manager.validate_token(token, session_id)
+            is True
+        )
 
         # Invalidate token
         success = csrf_protection.token_manager.invalidate_token(token)
         assert success is True
 
         # Should no longer be valid
-        assert csrf_protection.token_manager.validate_token(
-            token, session_id) is False
+        assert (
+            csrf_protection.token_manager.validate_token(token, session_id)
+            is False
+        )
 
     def test_session_token_cleanup(self, csrf_protection):
         """Test session-based token cleanup"""
@@ -195,7 +198,8 @@ class TestCSRFProtection:
 
         # Invalidate all tokens for session
         count = csrf_protection.token_manager.invalidate_session_tokens(
-            session_id)
+            session_id
+        )
         assert count == 3
 
         # All tokens should be invalid
@@ -214,7 +218,8 @@ class TestSecurityHeaders:
     @pytest.fixture
     def security_config(self):
         return SecurityHeadersConfig(
-            child_safety_mode=True, hsts_max_age=31536000)
+            child_safety_mode=True, hsts_max_age=31536000
+        )
 
     def test_security_headers_configuration(self, security_config):
         """Test security headers configuration"""
@@ -287,7 +292,8 @@ class TestInputValidation:
         safe_text = "Hello, I want to hear a story about animals!"
 
         result = input_sanitizer.sanitize_string(
-            safe_text, is_child_input=True)
+            safe_text, is_child_input=True
+        )
 
         assert result["is_safe"] is True
         assert result["sanitized"] == safe_text
@@ -298,7 +304,8 @@ class TestInputValidation:
         unsafe_text = "Hello <script>alert('xss')</script>"
 
         result = input_sanitizer.sanitize_string(
-            unsafe_text, is_child_input=True)
+            unsafe_text, is_child_input=True
+        )
 
         assert result["is_safe"] is False
         assert len(result["violations"]) > 0
@@ -309,23 +316,27 @@ class TestInputValidation:
         long_text = "a" * 600  # Exceeds child limit of 500
 
         result = input_sanitizer.sanitize_string(
-            long_text, is_child_input=True)
+            long_text, is_child_input=True
+        )
 
         assert result["is_safe"] is False
         assert len(result["sanitized"]) == 500
         assert any(
-            v["type"] == "length_exceeded" for v in result["violations"])
+            v["type"] == "length_exceeded" for v in result["violations"]
+        )
 
     def test_child_safe_characters(self, input_sanitizer):
         """Test child-safe character validation"""
         unsafe_child_text = "Hello @#$%^&* world!"
 
         result = input_sanitizer.sanitize_string(
-            unsafe_child_text, is_child_input=True)
+            unsafe_child_text, is_child_input=True
+        )
 
         assert result["is_safe"] is False
         assert any(
-            v["type"] == "unsafe_characters" for v in result["violations"])
+            v["type"] == "unsafe_characters" for v in result["violations"]
+        )
         # Unsafe characters should be removed
         assert "@#$%^&*" not in result["sanitized"]
 
@@ -346,12 +357,14 @@ class TestInputValidation:
         email_text = "My email is test@example.com"
 
         result = input_sanitizer.sanitize_string(
-            email_text, is_child_input=True)
+            email_text, is_child_input=True
+        )
 
         # Should detect email and either block or sanitize
         violations_and_warnings = result["violations"] + result["warnings"]
-        assert any("email" in v["message"].lower()
-                   for v in violations_and_warnings)
+        assert any(
+            "email" in v["message"].lower() for v in violations_and_warnings
+        )
 
     def test_json_sanitization(self, input_sanitizer):
         """Test JSON data sanitization"""
@@ -374,12 +387,14 @@ class TestInputValidation:
         large_array = ["item"] * 150  # Exceeds child limit of 100
 
         result = input_sanitizer.sanitize_json(
-            large_array, is_child_input=True)
+            large_array, is_child_input=True
+        )
 
         assert result["is_safe"] is False
         assert len(result["sanitized"]) == 100
         assert any(
-            v["type"] == "array_size_exceeded" for v in result["violations"])
+            v["type"] == "array_size_exceeded" for v in result["violations"]
+        )
 
     def test_object_depth_limits(self, input_sanitizer):
         """Test object depth limit enforcement"""
@@ -391,7 +406,8 @@ class TestInputValidation:
             current = current["nested"]
 
         result = input_sanitizer.sanitize_json(
-            deep_object, is_child_input=True)
+            deep_object, is_child_input=True
+        )
 
         assert result["is_safe"] is False
         assert any(v["type"] == "depth_exceeded" for v in result["violations"])
@@ -454,7 +470,8 @@ class TestSecurityIntegration:
 
         # CSRF config
         csrf_config = CSRFConfig(
-            secret_key="secure_key_for_csrf_protection_testing", require_https=True
+            secret_key="secure_key_for_csrf_protection_testing",
+            require_https=True,
         )
         assert csrf_config.require_https is True
 
@@ -483,7 +500,8 @@ class TestSecurityIntegration:
 
         # Test CSRF with invalid token
         csrf_config = CSRFConfig(
-            secret_key="test_key_for_error_handling_validation")
+            secret_key="test_key_for_error_handling_validation"
+        )
         csrf_manager = CSRFTokenManager(csrf_config)
 
         # Invalid token should return False, not raise exception

@@ -169,7 +169,8 @@ class MutationTestingFramework:
         ]
 
     async def run_mutation_testing(
-            self, target_files: List[str]) -> Dict[str, Any]:
+        self, target_files: List[str]
+    ) -> Dict[str, Any]:
         """تشغيل اختبارات الطفرة على الملفات المستهدفة"""
         logger.info("🧬 بدء اختبارات الطفرة...")
 
@@ -241,8 +242,9 @@ class MutationTestingFramework:
 
         return suite
 
-    def _find_mutable_lines(self, tree: ast.AST,
-                            content: str) -> List[Tuple[int, str]]:
+    def _find_mutable_lines(
+        self, tree: ast.AST, content: str
+    ) -> List[Tuple[int, str]]:
         """العثور على الأسطر القابلة للطفرة"""
         lines = content.split("\n")
         mutable_lines = []
@@ -270,14 +272,17 @@ class MutationTestingFramework:
             # Create mutated content
             lines = original_content.split("\n")
             mutated_line = line_content.replace(
-                operator.pattern, operator.replacement)
+                operator.pattern, operator.replacement
+            )
             lines[line_num - 1] = lines[line_num - 1].replace(
                 line_content, mutated_line
             )
             mutated_content = "\n".join(lines)
 
             # Create temporary file with mutation
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as f:
                 f.write(mutated_content)
                 temp_file = f.name
 
@@ -339,7 +344,9 @@ class MutationTestingFramework:
         )
 
         overall_score = (
-            (total_killed / total_mutations * 100) if total_mutations > 0 else 0
+            (total_killed / total_mutations * 100)
+            if total_mutations > 0
+            else 0
         )
 
         return {
@@ -358,7 +365,8 @@ class MutationTestingFramework:
 
         if overall_results["mutation_score"] < 80:
             recommendations.append(
-                "🔴 معدل قتل الطفرات منخفض - تحتاج اختبارات إضافية")
+                "🔴 معدل قتل الطفرات منخفض - تحتاج اختبارات إضافية"
+            )
 
         if overall_results["survived_mutations"] > 0:
             recommendations.append(
@@ -373,7 +381,8 @@ class MutationTestingFramework:
 
         if not recommendations:
             recommendations.append(
-                "✅ معدل قتل الطفرات ممتاز - الاختبارات قوية")
+                "✅ معدل قتل الطفرات ممتاز - الاختبارات قوية"
+            )
 
         return recommendations
 
@@ -397,7 +406,8 @@ async def test_mutation_framework():
     print("🧬 نتائج اختبارات الطفرة:")
     print(f"إجمالي الطفرات: {results['overall_results']['total_mutations']}")
     print(
-        f"الطفرات المقتولة: {results['overall_results']['killed_mutations']}")
+        f"الطفرات المقتولة: {results['overall_results']['killed_mutations']}"
+    )
     print(f"معدل القتل: {results['overall_results']['mutation_score']:.1f}%")
 
     print("\n📋 التوصيات:")

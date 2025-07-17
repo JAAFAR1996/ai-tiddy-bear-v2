@@ -4,7 +4,6 @@ Tests emotion detection from text and voice for child safety monitoring.
 """
 
 import pytest
-from typing import Dict, Any
 
 from src.domain.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 
@@ -29,21 +28,31 @@ class TestEmotionResult:
     def test_emotion_result_defaults(self):
         """Test emotion result with default values."""
         result = EmotionResult(
-            primary_emotion="neutral", confidence=0.5, all_emotions={"neutral": 0.5}
+            primary_emotion="neutral",
+            confidence=0.5,
+            all_emotions={"neutral": 0.5},
         )
         assert result.sentiment_score == 0.0
         assert result.arousal_score == 0.0
 
     def test_invalid_confidence(self):
         """Test emotion result with invalid confidence."""
-        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
+        with pytest.raises(
+            ValueError, match="Confidence must be between 0.0 and 1.0"
+        ):
             EmotionResult(
-                primary_emotion="happy", confidence=1.5, all_emotions={"happy": 1.5}
+                primary_emotion="happy",
+                confidence=1.5,
+                all_emotions={"happy": 1.5},
             )
 
-        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
+        with pytest.raises(
+            ValueError, match="Confidence must be between 0.0 and 1.0"
+        ):
             EmotionResult(
-                primary_emotion="happy", confidence=-0.1, all_emotions={"happy": -0.1}
+                primary_emotion="happy",
+                confidence=-0.1,
+                all_emotions={"happy": -0.1},
             )
 
     def test_invalid_sentiment_score(self):
@@ -179,7 +188,8 @@ class TestEmotionAnalyzer:
         worried_texts = [
             "I'm scared",
             "I feel afraid",
-            "I'm worried about this"]
+            "I'm worried about this",
+        ]
 
         for text in worried_texts:
             result = analyzer.analyze_text(text)
@@ -206,7 +216,8 @@ class TestEmotionAnalyzer:
         curious_texts = [
             "I'm curious about this",
             "I wonder why",
-            "I have a question"]
+            "I have a question",
+        ]
 
         for text in curious_texts:
             result = analyzer.analyze_text(text)
@@ -221,7 +232,8 @@ class TestEmotionAnalyzer:
         neutral_texts = [
             "The sky is blue",
             "I went to school today",
-            "This is a book"]
+            "This is a book",
+        ]
 
         for text in neutral_texts:
             result = analyzer.analyze_text(text)
@@ -362,7 +374,8 @@ class TestEmotionAnalyzer:
         assert analyzer.requires_attention(emotion_result) is True
 
     def test_requires_attention_high_arousal_negative_sentiment(
-            self, analyzer):
+        self, analyzer
+    ):
         """Test attention requirement for high arousal with negative sentiment."""
         emotion_result = EmotionResult(
             primary_emotion="frustrated",

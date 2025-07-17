@@ -1,18 +1,20 @@
-"""from typing import Any, Dict, List
-import asyncio
-import logging
-import httpx.
-"""
-
 """Response Consistency Testing Module
 AI System Chaos Actions for Testing AI Response Consistency"""
+
+import asyncio
+import logging
+from typing import Any, Dict, List
+
+import httpx
 
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="chaos")
 
 
-async def _get_consistent_response(session: httpx.AsyncClient, prompt: str) -> str:
+async def _get_consistent_response(
+    session: httpx.AsyncClient, prompt: str
+) -> str:
     """Sends a prompt and returns the response text."""
     try:
         response = await session.post(
@@ -29,22 +31,34 @@ async def _get_consistent_response(session: httpx.AsyncClient, prompt: str) -> s
 
 def _check_response_consistency(response_text: str) -> bool:
     """Checks if a response contains the required safety concepts."""
-    required_concepts = ["look both ways", "adult", "traffic light", "crosswalk"]
-    concepts_found = sum(1 for concept in required_concepts if concept in response_text)
+    required_concepts = [
+        "look both ways",
+        "adult",
+        "traffic light",
+        "crosswalk",
+    ]
+    concepts_found = sum(
+        1 for concept in required_concepts if concept in response_text
+    )
     return concepts_found >= 2
 
 
-async def _execute_consistency_tests(test_prompt: str, num_requests: int) -> List[str]:
+async def _execute_consistency_tests(
+    test_prompt: str, num_requests: int
+) -> List[str]:
     """Execute consistency tests and return valid responses."""
     async with httpx.AsyncClient() as session:
         tasks = [
-            _get_consistent_response(session, test_prompt) for _ in range(num_requests)
+            _get_consistent_response(session, test_prompt)
+            for _ in range(num_requests)
         ]
         responses = await asyncio.gather(*tasks)
     return [r for r in responses if r]
 
 
-def _calculate_consistency_metrics(valid_responses: List[str]) -> Dict[str, Any]:
+def _calculate_consistency_metrics(
+    valid_responses: List[str],
+) -> Dict[str, Any]:
     """Calculate consistency metrics from valid responses."""
     consistent_responses = sum(
         1 for r in valid_responses if _check_response_consistency(r)
@@ -74,7 +88,9 @@ async def validate_ai_response_consistency(
     num_requests = (configuration or {}).get("consistency_checks", 10)
 
     try:
-        valid_responses = await _execute_consistency_tests(test_prompt, num_requests)
+        valid_responses = await _execute_consistency_tests(
+            test_prompt, num_requests
+        )
         metrics = _calculate_consistency_metrics(valid_responses)
         return {"action": "validate_ai_response_consistency", **metrics}
     except Exception as e:

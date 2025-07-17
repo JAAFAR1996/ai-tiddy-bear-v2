@@ -86,7 +86,11 @@ class TestReports:
             "metrics": {
                 "conversationCount": 14,
                 "totalInteractionTime": 5400,
-                "emotionalDistribution": {"happy": 0.5, "excited": 0.3, "neutral": 0.2},
+                "emotionalDistribution": {
+                    "happy": 0.5,
+                    "excited": 0.3,
+                    "neutral": 0.2,
+                },
             },
             "insights": [
                 {

@@ -40,7 +40,9 @@ class UserModel(Base):
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     last_login = Column(DateTime, nullable=True)
 
     # Preferences and settings

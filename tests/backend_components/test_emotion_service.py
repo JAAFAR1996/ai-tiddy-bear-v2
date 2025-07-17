@@ -114,7 +114,8 @@ class TestEmotionService:
         """Test emotion analysis from audio"""
         # Mock audio data
         audio_data = np.random.random(16000).astype(
-            np.float32)  # 1 second at 16kHz
+            np.float32
+        )  # 1 second at 16kHz
 
         # Setup
         emotion_service.analyze_audio_emotion.return_value = {

@@ -4,29 +4,37 @@ Handles all verification methods for parental identity confirmation
 required for COPPA compliance.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
-import logging
+from datetime import datetime
+from typing import Dict, Any
 import re
 import secrets
-from .consent_models import VerificationMethod, VerificationStatus, VerificationAttempt
+from .consent_models import (
+    VerificationMethod,
+    VerificationStatus,
+    VerificationAttempt,
+)
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="services")
+
 
 class VerificationService:
     """
     Handles verification workflows with proper security measures and comprehensive audit trails for COPPA compliance.
     """
+
     def __init__(self) -> None:
         """Initialize verification service."""
         self.verification_attempts: Dict[str, VerificationAttempt] = {}
         self.verification_codes: Dict[str, Dict[str, Any]] = {}
 
-    async def send_email_verification(self, email: str, consent_id: str) -> Dict[str, Any]:
+    async def send_email_verification(
+        self, email: str, consent_id: str
+    ) -> Dict[str, Any]:
         """
         Send email verification code to parent.
-        Args: 
+        Args:
             email: Parent's email address
             consent_id: Associated consent request ID
         Returns:
@@ -36,8 +44,12 @@ class VerificationService:
             return {"status": "error", "message": "Invalid email format"}
         verification_code = self._generate_verification_code()
         attempt_id = f"verify_{consent_id}_{secrets.token_urlsafe(8)}"
-        masked_email = email[:2] + "***@" + email.split('@')[1] if '@' in email else "***"
-        logger.info(f"Email verification code sent to {masked_email}: [REDACTED]")
+        masked_email = (
+            email[:2] + "***@" + email.split("@")[1] if "@" in email else "***"
+        )
+        logger.info(
+            f"Email verification code sent to {masked_email}: [REDACTED]"
+        )
         # Store verification attempt
         self.verification_attempts[attempt_id] = VerificationAttempt(
             attempt_id=attempt_id,
@@ -45,15 +57,17 @@ class VerificationService:
             method=VerificationMethod.EMAIL_VERIFICATION,
             status=VerificationStatus.PENDING,
             attempted_at=datetime.utcnow().isoformat(),
-            verification_code=verification_code
+            verification_code=verification_code,
         )
         return {
             "status": "success",
             "attempt_id": attempt_id,
-            "message": "Verification code sent to email"
+            "message": "Verification code sent to email",
         }
 
-    async def send_sms_verification(self, phone: str, consent_id: str) -> Dict[str, Any]:
+    async def send_sms_verification(
+        self, phone: str, consent_id: str
+    ) -> Dict[str, Any]:
         """
         Send SMS verification code to parent.
         Args:
@@ -65,26 +79,30 @@ class VerificationService:
             return {"status": "error", "message": "Invalid phone format"}
         verification_code = self._generate_verification_code()
         attempt_id = f"sms_{consent_id}_{secrets.token_urlsafe(8)}"
-        masked_phone = phone[:3] + "***" + phone[-2:] if len(phone) > 5 else "***"
-        logger.info(f"SMS verification code sent to {masked_phone}: [REDACTED]")
+        masked_phone = (
+            phone[:3] + "***" + phone[-2:] if len(phone) > 5 else "***"
+        )
+        logger.info(
+            f"SMS verification code sent to {masked_phone}: [REDACTED]"
+        )
         self.verification_attempts[attempt_id] = VerificationAttempt(
             attempt_id=attempt_id,
             consent_id=consent_id,
             method=VerificationMethod.SMS_VERIFICATION,
             status=VerificationStatus.PENDING,
             attempted_at=datetime.utcnow().isoformat(),
-            verification_code=verification_code
+            verification_code=verification_code,
         )
         return {
             "status": "success",
             "attempt_id": attempt_id,
-            "message": "Verification code sent via SMS"
+            "message": "Verification code sent via SMS",
         }
 
     async def verify_code(self, attempt_id: str, code: str) -> Dict[str, Any]:
         """
         Verify the submitted verification code.
-        Args: 
+        Args:
             attempt_id: Verification attempt identifier
             code: Code submitted by parent
         Returns: Verification result
@@ -96,23 +114,23 @@ class VerificationService:
         if attempt.verification_code == code:
             attempt.status = VerificationStatus.VERIFIED
             attempt.completed_at = datetime.utcnow().isoformat()
-            logger.info(f"Verification successful for attempt: [REDACTED]")
+            logger.info(f"Verification successful for attempt: {attempt_id}")
             return {"status": "success", "message": "Verification successful"}
         else:
             attempt.status = VerificationStatus.FAILED
             attempt.failure_reason = "Invalid verification code"
-            logger.warning(f"Verification failed for attempt: [REDACTED]")
+            logger.warning(f"Verification failed for attempt: {attempt_id}")
             return {"status": "error", "message": "Invalid verification code"}
 
     def _validate_email(self, email: str) -> bool:
         """Validate email format."""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return re.match(pattern, email) is not None
 
     def _validate_phone(self, phone: str) -> bool:
         """Validate phone number format."""
         # Remove all non-digits
-        digits_only = re.sub(r'\D', '', phone)
+        digits_only = re.sub(r"\D", "", phone)
         # Check if it's a valid length (between 10-15 digits)
         return 10 <= len(digits_only) <= 15
 

@@ -4,10 +4,7 @@ Testing backwards compatibility imports and child safety rate limiting.
 """
 
 import pytest
-from unittest.mock import patch, Mock, MagicMock
-from collections import defaultdict
-from datetime import datetime, timedelta
-from typing import Dict, Any
+from unittest.mock import patch
 
 from src.infrastructure.security.comprehensive_rate_limiter import (
     RateLimitType,
@@ -103,7 +100,9 @@ class TestComprehensiveRateLimiterImports:
 
     def test_all_exports_available(self):
         """Test that all expected exports are available."""
-        from src.infrastructure.security.comprehensive_rate_limiter import __all__
+        from src.infrastructure.security.comprehensive_rate_limiter import (
+            __all__,
+        )
 
         expected_exports = [
             "RateLimitType",
@@ -349,7 +348,8 @@ class TestRateLimiterIntegration:
 
             for interaction_type in interaction_types:
                 result = check_child_interaction_limit(
-                    "test_child", interaction_type)
+                    "test_child", interaction_type
+                )
                 assert result is not None
 
         except Exception as e:
@@ -397,7 +397,9 @@ class TestRateLimiterLogging:
 
     def test_rate_limiter_logging_setup(self):
         """Test that rate limiter has proper logging setup."""
-        from src.infrastructure.security.comprehensive_rate_limiter import logger
+        from src.infrastructure.security.comprehensive_rate_limiter import (
+            logger,
+        )
 
         assert logger is not None
         assert hasattr(logger, "info")
@@ -475,7 +477,8 @@ class TestRateLimiterMockCompatibility:
 
             for child_id, interaction_type in params:
                 result = check_child_interaction_limit(
-                    child_id, interaction_type)
+                    child_id, interaction_type
+                )
                 assert result is not None or result is False
 
         except Exception as e:
@@ -495,7 +498,8 @@ class TestRateLimiterMockCompatibility:
 
             for child_id, interaction_type in edge_cases:
                 result = check_child_interaction_limit(
-                    child_id, interaction_type)
+                    child_id, interaction_type
+                )
                 # Should handle gracefully
                 assert result is not None or result is False
 
@@ -550,7 +554,9 @@ class TestRateLimiterDocumentation:
 
     def test_rate_limiter_exports_documentation(self):
         """Test rate limiter exports are properly documented."""
-        from src.infrastructure.security.comprehensive_rate_limiter import __all__
+        from src.infrastructure.security.comprehensive_rate_limiter import (
+            __all__,
+        )
 
         assert __all__ is not None
         assert isinstance(__all__, list)

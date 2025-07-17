@@ -5,8 +5,8 @@ Comprehensive unit tests for SafetyRepository with child safety and alert functi
 """
 
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import datetime
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 from src.infrastructure.persistence.repositories.safety_repository import (
@@ -35,7 +35,8 @@ class TestSafetyEventRecording:
 
     @pytest.mark.asyncio
     async def test_record_safety_event_success(
-            self, safety_repository, mock_database):
+        self, safety_repository, mock_database
+    ):
         """Test successful safety event recording."""
         # Arrange
         child_id = str(uuid4())
@@ -165,7 +166,8 @@ class TestSafetyScoreUpdate:
 
     @pytest.mark.asyncio
     async def test_update_safety_score_success(
-            self, safety_repository, mock_database):
+        self, safety_repository, mock_database
+    ):
         """Test successful safety score update."""
         # Arrange
         child_id = str(uuid4())
@@ -229,13 +231,17 @@ class TestSafetyScoreUpdate:
         with pytest.raises(
             ValueError, match="Safety score must be between 0.0 and 1.0"
         ):
-            await safety_repository.update_safety_score(child_id, -0.1, "Invalid score")
+            await safety_repository.update_safety_score(
+                child_id, -0.1, "Invalid score"
+            )
 
         # Test score above 1.0
         with pytest.raises(
             ValueError, match="Safety score must be between 0.0 and 1.0"
         ):
-            await safety_repository.update_safety_score(child_id, 1.1, "Invalid score")
+            await safety_repository.update_safety_score(
+                child_id, 1.1, "Invalid score"
+            )
 
     @pytest.mark.asyncio
     async def test_update_safety_score_security_violation(
@@ -261,7 +267,8 @@ class TestSafetyEventRetrieval:
 
     @pytest.mark.asyncio
     async def test_get_safety_events_success(
-            self, safety_repository, mock_database):
+        self, safety_repository, mock_database
+    ):
         """Test successful safety event retrieval."""
         # Arrange
         child_id = str(uuid4())
@@ -281,7 +288,8 @@ class TestSafetyEventRetrieval:
 
     @pytest.mark.asyncio
     async def test_get_safety_events_with_limit(
-            self, safety_repository, mock_database):
+        self, safety_repository, mock_database
+    ):
         """Test safety event retrieval with custom limit."""
         # Arrange
         child_id = str(uuid4())
@@ -300,15 +308,21 @@ class TestSafetyEventRetrieval:
         child_id = str(uuid4())
 
         # Test zero limit
-        with pytest.raises(ValueError, match="Limit must be between 1 and 1000"):
+        with pytest.raises(
+            ValueError, match="Limit must be between 1 and 1000"
+        ):
             await safety_repository.get_safety_events(child_id, limit=0)
 
         # Test negative limit
-        with pytest.raises(ValueError, match="Limit must be between 1 and 1000"):
+        with pytest.raises(
+            ValueError, match="Limit must be between 1 and 1000"
+        ):
             await safety_repository.get_safety_events(child_id, limit=-1)
 
         # Test excessive limit
-        with pytest.raises(ValueError, match="Limit must be between 1 and 1000"):
+        with pytest.raises(
+            ValueError, match="Limit must be between 1 and 1000"
+        ):
             await safety_repository.get_safety_events(child_id, limit=1001)
 
     @pytest.mark.asyncio
@@ -335,7 +349,8 @@ class TestSafetyAlerts:
 
     @pytest.mark.asyncio
     async def test_send_safety_alert_success(
-            self, safety_repository, mock_database):
+        self, safety_repository, mock_database
+    ):
         """Test successful safety alert sending."""
         # Arrange
         alert_data = {
@@ -367,7 +382,9 @@ class TestSafetyAlerts:
             "severity": "low",
             "message": "Test message",
         }
-        with pytest.raises(ValueError, match="Missing required field: child_id"):
+        with pytest.raises(
+            ValueError, match="Missing required field: child_id"
+        ):
             await safety_repository.send_safety_alert(alert_data)
 
         # Test missing alert_type
@@ -376,7 +393,9 @@ class TestSafetyAlerts:
             "severity": "low",
             "message": "Test message",
         }
-        with pytest.raises(ValueError, match="Missing required field: alert_type"):
+        with pytest.raises(
+            ValueError, match="Missing required field: alert_type"
+        ):
             await safety_repository.send_safety_alert(alert_data)
 
         # Test missing severity
@@ -385,16 +404,20 @@ class TestSafetyAlerts:
             "alert_type": "test",
             "message": "Test message",
         }
-        with pytest.raises(ValueError, match="Missing required field: severity"):
+        with pytest.raises(
+            ValueError, match="Missing required field: severity"
+        ):
             await safety_repository.send_safety_alert(alert_data)
 
         # Test missing message
         alert_data = {
-            "child_id": str(
-                uuid4()),
+            "child_id": str(uuid4()),
             "alert_type": "test",
-            "severity": "low"}
-        with pytest.raises(ValueError, match="Missing required field: message"):
+            "severity": "low",
+        }
+        with pytest.raises(
+            ValueError, match="Missing required field: message"
+        ):
             await safety_repository.send_safety_alert(alert_data)
 
     @pytest.mark.asyncio
@@ -430,7 +453,9 @@ class TestSafetyAlerts:
                 return_value={"data": alert_data},
             ):
                 # Act
-                alert_id = await safety_repository.send_safety_alert(alert_data)
+                alert_id = await safety_repository.send_safety_alert(
+                    alert_data
+                )
 
                 # Assert
                 assert alert_id is not None
@@ -497,7 +522,8 @@ class TestSafetyRepositoryEdgeCases:
 
     @pytest.mark.asyncio
     async def test_safety_score_rapid_updates(
-            self, safety_repository, mock_database):
+        self, safety_repository, mock_database
+    ):
         """Test rapid safety score updates (rate limiting scenario)."""
         # Arrange
         child_id = str(uuid4())

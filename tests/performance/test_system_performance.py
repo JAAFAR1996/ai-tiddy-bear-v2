@@ -1,6 +1,5 @@
 from src.infrastructure.logging_config import get_logger
 import random
-import logging
 import asyncio
 import gc
 import time
@@ -164,10 +163,12 @@ class TestSystemPerformance(PerformanceTestCase):
                     op_duration = (time.perf_counter() - op_start) * 1000
                     operation_times.append(op_duration)
                     self.record_operation(
-                        f"user_{user.id}_interaction", op_duration)
+                        f"user_{user.id}_interaction", op_duration
+                    )
                 except Exception:
                     self.record_operation(
-                        f"user_{user.id}_interaction_failed", -1)
+                        f"user_{user.id}_interaction_failed", -1
+                    )
                 await asyncio.sleep((random.randint(100, 500)) / 1000.0)
             return operation_times
 
@@ -176,10 +177,11 @@ class TestSystemPerformance(PerformanceTestCase):
         metrics = self.stop_performance_tracking()
         duration = time.time() - start_time
         successful_users = sum(
-            1 for r in results if not isinstance(
-                r, Exception))
-        total_operations = sum(len(r)
-                               for r in results if not isinstance(r, Exception))
+            1 for r in results if not isinstance(r, Exception)
+        )
+        total_operations = sum(
+            len(r) for r in results if not isinstance(r, Exception)
+        )
         error_rate = (len(results) - successful_users) / len(results)
         assert duration < 30, f"Test took {duration}s, expected < 30s"
         assert error_rate < 0.01, f"Error rate {error_rate * 100}% exceeds 1%"
@@ -189,7 +191,9 @@ class TestSystemPerformance(PerformanceTestCase):
         cpu_percent = psutil.cpu_percent(interval=1)
         memory_percent = psutil.virtual_memory().percent
         assert cpu_percent < 80, f"CPU usage {cpu_percent}% exceeds 80%"
-        assert memory_percent < 85, f"Memory usage {memory_percent}% exceeds 85%"
+        assert (
+            memory_percent < 85
+        ), f"Memory usage {memory_percent}% exceeds 85%"
         self.assert_performance_within_limits(metrics)
         logger.info("\nPerformance Summary:")
         logger.info(f"- Total Users: {num_users}")
@@ -220,10 +224,18 @@ class TestSystemPerformance(PerformanceTestCase):
         p95_latency = np.percentile(latencies, 95)
         p99_latency = np.percentile(latencies, 99)
         max_latency = np.max(latencies)
-        assert avg_latency < 50, f"Average latency {avg_latency:.2f}ms exceeds 50ms"
-        assert p95_latency < 100, f"P95 latency {p95_latency:.2f}ms exceeds 100ms"
-        assert p99_latency < 200, f"P99 latency {p99_latency:.2f}ms exceeds 200ms"
-        assert max_latency < 500, f"Max latency {max_latency:.2f}ms exceeds 500ms"
+        assert (
+            avg_latency < 50
+        ), f"Average latency {avg_latency:.2f}ms exceeds 50ms"
+        assert (
+            p95_latency < 100
+        ), f"P95 latency {p95_latency:.2f}ms exceeds 100ms"
+        assert (
+            p99_latency < 200
+        ), f"P99 latency {p99_latency:.2f}ms exceeds 200ms"
+        assert (
+            max_latency < 500
+        ), f"Max latency {max_latency:.2f}ms exceeds 500ms"
         jitter = np.std(latencies)
         assert jitter < 20, f"Latency jitter {jitter:.2f}ms too high"
         logger.info("\nAudio Streaming Latency:")
@@ -279,12 +291,15 @@ class TestSystemPerformance(PerformanceTestCase):
     async def test_database_query_performance(self):
         """اختبار أداء استعلامات قاعدة البيانات"""
         num_children = 100
-        children = [self.test_data_builder.create_child()
-                    for _ in range(num_children)]
+        children = [
+            self.test_data_builder.create_child() for _ in range(num_children)
+        ]
         query_tests = [
             {
                 "name": "Single child lookup",
-                "query": lambda: self.data_repository.get_child(children[0].id),
+                "query": lambda: self.data_repository.get_child(
+                    children[0].id
+                ),
                 "expected_ms": 10,
             },
             {
@@ -323,9 +338,11 @@ class TestSystemPerformance(PerformanceTestCase):
                 avg_latency < test["expected_ms"]
             ), f"{test['name']} avg latency {avg_latency:.2f}ms exceeds {test['expected_ms']}ms"
             results.append(
-                {"query": test["name"],
-                 "avg_ms": avg_latency,
-                 "p95_ms": p95_latency}
+                {
+                    "query": test["name"],
+                    "avg_ms": avg_latency,
+                    "p95_ms": p95_latency,
+                }
             )
         logger.info("\nDatabase Query Performance:")
         for result in results:
@@ -361,10 +378,14 @@ class TestSystemPerformance(PerformanceTestCase):
                 start = time.perf_counter()
                 if test["method"] == "POST":
                     await self.simulate_api_call(
-                        test["endpoint"], method="POST", data=test.get("data", {})
+                        test["endpoint"],
+                        method="POST",
+                        data=test.get("data", {}),
                     )
                 else:
-                    await self.simulate_api_call(test["endpoint"], method="GET")
+                    await self.simulate_api_call(
+                        test["endpoint"], method="GET"
+                    )
                 response_time = (time.perf_counter() - start) * 1000
                 response_times.append(response_time)
             avg_time = np.mean(response_times)

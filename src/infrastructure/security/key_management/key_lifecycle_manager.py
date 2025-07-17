@@ -5,7 +5,9 @@ Manages the creation, expiration, and deletion of cryptographic keys.
 from datetime import datetime, timedelta
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.key_management.key_generator import KeyGenerator
+from src.infrastructure.security.key_management.key_generator import (
+    KeyGenerator,
+)
 from src.infrastructure.security.key_rotation_service import (
     KeyMetadata,
     KeyStorageInterface,
@@ -18,7 +20,9 @@ logger = get_logger(__name__, component="security")
 class KeyLifecycleManager:
     """Manages key lifecycle operations."""
 
-    def __init__(self, storage: KeyStorageInterface, generator: KeyGenerator) -> None:
+    def __init__(
+        self, storage: KeyStorageInterface, generator: KeyGenerator
+    ) -> None:
         """Initialize lifecycle manager.
 
         Args:
@@ -38,7 +42,9 @@ class KeyLifecycleManager:
             KeyType.JWT: timedelta(days=30),
             KeyType.SESSION: timedelta(days=7),
             KeyType.DATABASE: timedelta(days=180),
-            KeyType.CHILD_DATA: timedelta(days=30),  # More frequent for child data
+            KeyType.CHILD_DATA: timedelta(
+                days=30
+            ),  # More frequent for child data
         }
 
     def create_key(
@@ -109,7 +115,9 @@ class KeyLifecycleManager:
             logger.error(f"Failed to deactivate key {key_id}: {e}")
             return False
 
-    def cleanup_old_keys(self, older_than: timedelta = timedelta(days=30)) -> int:
+    def cleanup_old_keys(
+        self, older_than: timedelta = timedelta(days=30)
+    ) -> int:
         """Clean up old inactive keys.
 
         Args:
@@ -122,7 +130,10 @@ class KeyLifecycleManager:
         cleaned_count = 0
 
         for key_metadata in self.storage.list_keys():
-            if not key_metadata.is_active and key_metadata.created_at < cutoff_time:
+            if (
+                not key_metadata.is_active
+                and key_metadata.created_at < cutoff_time
+            ):
                 if self.storage.delete_key(key_metadata.key_id):
                     cleaned_count += 1
                     logger.info(f"Cleaned up old key: {key_metadata.key_id}")

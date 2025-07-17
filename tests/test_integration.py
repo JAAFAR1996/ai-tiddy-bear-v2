@@ -1,5 +1,4 @@
 from src.infrastructure.logging_config import get_logger
-import logging
 import sys
 from pathlib import Path
 
@@ -83,7 +82,9 @@ class TestIntegration:
         """Test full audio interaction flow"""
         from config.settings import Config
 
-        from application.services.ai_teddy_bear_service import AITeddyBearService
+        from application.services.ai_teddy_bear_service import (
+            AITeddyBearService,
+        )
 
         config = Config()
         service = AITeddyBearService(config.__dict__)
@@ -95,7 +96,6 @@ class TestIntegration:
 
     def test_database_integration(self):
         """اختبار تكامل قاعدة البيانات"""
-        pass
 
     def test_security_integration(self):
         """اختبار تكامل الأمان"""

@@ -1,16 +1,13 @@
 from datetime import datetime, timedelta
 from typing import Any
 
+from fastapi import Depends
 from jose import JWTError, jwt
 
-from src.infrastructure.config.settings import get_settings
+from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
-
-from fastapi import Depends
-
-from src.infrastructure.config.settings import Settings
 
 
 class TokenService:
@@ -42,7 +39,9 @@ class TokenService:
                 "exp": datetime.utcnow()
                 + timedelta(minutes=self.access_token_expire_minutes),
             }
-            return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
+            return jwt.encode(
+                to_encode, self.secret_key, algorithm=self.algorithm
+            )
         except (KeyError, TypeError) as e:
             logger.error(f"Invalid user data for token creation: {e}")
             raise ValueError("Failed to create access token")
@@ -61,26 +60,10 @@ class TokenService:
                 "exp": datetime.utcnow()
                 + timedelta(days=self.refresh_token_expire_days),
             }
-            return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
+            return jwt.encode(
+                to_encode, self.secret_key, algorithm=self.algorithm
+            )
         except (KeyError, TypeError) as e:
             logger.error(f"Invalid user data for refresh token: {e}")
             raise ValueError("Failed to create refresh token")
-        except JWTError as e:
-            logger.error(f"JWT encoding error for refresh token: {e}")
-            raise ValueError("Failed to create refresh token")
-
-    async def verify_token(self, token: str) -> dict[str, Any] | None:
-        """Verify JWT token and check blacklist (if Redis cache is provided)."""
-        try:
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
-            # Blacklist check would typically be done by the calling service (e.g., AuthService)
-            return payload
-        except jwt.ExpiredSignatureError:
-            logger.debug("Token has expired")
-            return None
-        except JWTError as e:
-            logger.debug(f"Token validation failed: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Token verification error: {e}")
-            return None
+        except JWTError a

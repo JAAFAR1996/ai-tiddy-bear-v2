@@ -1,7 +1,8 @@
 from .security_headers import (
     SecurityHeadersMiddleware,
     ChildSafetyMiddleware,
-    RateLimitingMiddleware)
+    RateLimitingMiddleware,
+)
 from .request_logging import RequestLoggingMiddleware
 from .error_handling import ErrorHandlingMiddleware
 
@@ -10,5 +11,5 @@ __all__ = [
     "ChildSafetyMiddleware",
     "RateLimitingMiddleware",
     "RequestLoggingMiddleware",
-    "ErrorHandlingMiddleware"
+    "ErrorHandlingMiddleware",
 ]

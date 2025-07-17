@@ -64,7 +64,6 @@ class SessionManager:
         self.session_config = session_config
         self.session_repository = session_repository
         self.logger = get_logger(__name__, component="session_manager")
-        # self.sessions: dict[str, SessionData] = {}
 
     async def create_session(
         self,
@@ -93,7 +92,8 @@ class SessionManager:
             self.session_config.session_timeout_minutes,
         )
         self.logger.info(
-            f"Session created for child_id: {child_id}, session_id: {session.session_id}, IP: {client_ip}, UA: {user_agent}",
+            f"Session created for child_id: {child_id}, session_id: {session.session_id}, "
+            f"IP: {client_ip}, UA: {user_agent}",
         )
         return session
 
@@ -128,14 +128,22 @@ class SessionManager:
 
         if session.client_ip and client_ip and session.client_ip != client_ip:
             self.logger.warning(
-                f"Session hijacking attempt detected for session {session_id}. IP mismatch: stored {session.client_ip}, current {client_ip}. Invalidating session.",
+                f"Session hijacking attempt detected for session {session_id}. "
+                f"IP mismatch: stored {session.client_ip}, current {client_ip}. "
+                f"Invalidating session.",
             )
             await self.session_repository.delete(session_id)
             return None
 
-        if session.user_agent and user_agent and session.user_agent != user_agent:
+        if (
+            session.user_agent
+            and user_agent
+            and session.user_agent != user_agent
+        ):
             self.logger.warning(
-                f"Session hijacking attempt detected for session {session_id}. User-Agent mismatch: stored '{session.user_agent}', current '{user_agent}'. Invalidating session.",
+                f"Session hijacking attempt detected for session {session_id}. "
+                f"User-Agent mismatch: stored '{session.user_agent}', current '{user_agent}'. "
+                f"Invalidating session.",
             )
             await self.session_repository.delete(session_id)
             return None
@@ -145,7 +153,9 @@ class SessionManager:
             session,
             self.session_config.session_timeout_minutes,
         )
-        self.logger.debug(f"Session {session_id} retrieved and activity updated.")
+        self.logger.debug(
+            f"Session {session_id} retrieved and activity updated."
+        )
         return session
 
     async def end_session(self, session_id: str) -> bool:

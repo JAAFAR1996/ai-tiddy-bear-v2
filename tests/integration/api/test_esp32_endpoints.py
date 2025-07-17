@@ -1,6 +1,4 @@
-from domain.value_objects.safety_level import SafetyLevel
 from application.dto.ai_response import AIResponse
-from application.dto.esp32_request import ESP32Request
 import json
 from httpx import AsyncClient
 from uuid import uuid4
@@ -47,7 +45,11 @@ class TestESP32Endpoints:
             "child_id": str(uuid4()),
             "audio_data": "fake_base64_audio_data",
             "language_code": "en",
-            "metadata": {"duration": 3.5, "sample_rate": 16000, "format": "wav"},
+            "metadata": {
+                "duration": 3.5,
+                "sample_rate": 16000,
+                "format": "wav",
+            },
         }
 
     @pytest.fixture
@@ -74,12 +76,15 @@ class TestESP32Endpoints:
             mock_use_case_instance.execute.return_value = mock_ai_response
             mock_use_case.return_value = mock_use_case_instance
 
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
 
             assert response.status_code == 200
             data = response.json()
             assert (
-                data["response_text"] == "Hello! That's a great question about animals."
+                data["response_text"]
+                == "Hello! That's a great question about animals."
             )
             assert data["emotion"] == "curious"
             assert data["sentiment"] == 0.7
@@ -87,11 +92,14 @@ class TestESP32Endpoints:
 
     @pytest.mark.asyncio
     async def test_process_audio_invalid_child_id(
-            self, client, audio_request_data):
+        self, client, audio_request_data
+    ):
         """Test audio processing with invalid child ID."""
         audio_request_data["child_id"] = "invalid-uuid"
 
-        response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+        response = await client.post(
+            "/api/v1/esp32/audio", json=audio_request_data
+        )
 
         assert response.status_code == 422  # Validation error
         data = response.json()
@@ -105,21 +113,22 @@ class TestESP32Endpoints:
             # Missing audio_data and language_code
         }
 
-        response = await client.post("/api/v1/esp32/audio", json=incomplete_data)
+        response = await client.post(
+            "/api/v1/esp32/audio", json=incomplete_data
+        )
 
         assert response.status_code == 422  # Validation error
 
     @pytest.mark.asyncio
     async def test_process_audio_child_not_found(
-            self, client, audio_request_data):
+        self, client, audio_request_data
+    ):
         """Test audio processing when child profile not found."""
         try:
-            from fastapi import FastAPI, HTTPException
+            from fastapi import HTTPException
         except ImportError:
-            from common.mock_fastapi import FastAPI, HTTPException
+            from common.mock_fastapi import HTTPException
 
-            pass
-        pass
 
         with patch(
             "application.use_cases.process_esp32_audio.ProcessESP32AudioUseCase"
@@ -130,7 +139,9 @@ class TestESP32Endpoints:
             )
             mock_use_case.return_value = mock_use_case_instance
 
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
 
             assert response.status_code == 404
             data = response.json()
@@ -138,7 +149,8 @@ class TestESP32Endpoints:
 
     @pytest.mark.asyncio
     async def test_process_audio_safety_violation(
-            self, client, audio_request_data):
+        self, client, audio_request_data
+    ):
         """Test audio processing with safety violation."""
         unsafe_response = AIResponse(
             response_text="I'm sorry, I can't process that. Let's talk about something else.",
@@ -156,7 +168,9 @@ class TestESP32Endpoints:
             mock_use_case_instance.execute.return_value = unsafe_response
             mock_use_case.return_value = mock_use_case_instance
 
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
 
             assert (
                 response.status_code == 200
@@ -167,7 +181,8 @@ class TestESP32Endpoints:
 
     @pytest.mark.asyncio
     async def test_process_audio_large_payload(
-            self, client, audio_request_data):
+        self, client, audio_request_data
+    ):
         """Test audio processing with large audio payload."""
         # Simulate large audio data
         audio_request_data["audio_data"] = "x" * 10000  # Large base64 string
@@ -187,13 +202,16 @@ class TestESP32Endpoints:
             )
             mock_use_case.return_value = mock_use_case_instance
 
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
 
             assert response.status_code == 200
 
     @pytest.mark.asyncio
     async def test_process_audio_different_languages(
-            self, client, audio_request_data):
+        self, client, audio_request_data
+    ):
         """Test audio processing in different languages."""
         languages = ["en", "es", "fr", "ar", "zh"]
 
@@ -237,12 +255,21 @@ class TestESP32Endpoints:
     async def test_esp32_configuration_endpoint(self, client):
         """Test ESP32 configuration endpoint."""
         config_data = {
-            "audio_settings": {"sample_rate": 16000, "bit_depth": 16, "channels": 1},
-            "safety_settings": {"content_filtering": True, "safety_threshold": 0.8},
+            "audio_settings": {
+                "sample_rate": 16000,
+                "bit_depth": 16,
+                "channels": 1,
+            },
+            "safety_settings": {
+                "content_filtering": True,
+                "safety_threshold": 0.8,
+            },
             "device_settings": {"led_brightness": 75, "volume_level": 60},
         }
 
-        response = await client.post("/api/v1/esp32/configure", json=config_data)
+        response = await client.post(
+            "/api/v1/esp32/configure", json=config_data
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -261,7 +288,9 @@ class TestESP32Endpoints:
             "uptime_seconds": 3600,
         }
 
-        response = await client.post("/api/v1/esp32/heartbeat", json=device_data)
+        response = await client.post(
+            "/api/v1/esp32/heartbeat", json=device_data
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -290,7 +319,9 @@ class TestESP32Endpoints:
             "checksum": "sha256:abcd1234...",
         }
 
-        response = await client.post("/api/v1/esp32/firmware-update", json=update_data)
+        response = await client.post(
+            "/api/v1/esp32/firmware-update", json=update_data
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -304,7 +335,9 @@ class TestESP32Endpoints:
         responses = []
 
         for i in range(15):  # Exceed typical rate limit
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
             responses.append(response)
 
         # Should have some rate limited responses
@@ -315,7 +348,9 @@ class TestESP32Endpoints:
     async def test_authentication_required(self, client, audio_request_data):
         """Test that authentication is required for protected endpoints."""
         # Test without authentication headers
-        response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+        response = await client.post(
+            "/api/v1/esp32/audio", json=audio_request_data
+        )
 
         # Should require authentication (depending on configuration)
         # This test would need to be adjusted based on actual auth requirements
@@ -347,7 +382,9 @@ class TestESP32Endpoints:
         # Test with invalid audio format
         audio_request_data["metadata"]["format"] = "invalid_format"
 
-        response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+        response = await client.post(
+            "/api/v1/esp32/audio", json=audio_request_data
+        )
 
         assert response.status_code == 422  # Should validate audio format
 
@@ -371,7 +408,9 @@ class TestESP32Endpoints:
 
         # All should complete successfully
         successful_responses = [
-            r for r in responses if hasattr(r, "status_code") and r.status_code == 200
+            r
+            for r in responses
+            if hasattr(r, "status_code") and r.status_code == 200
         ]
         assert len(successful_responses) > 0
 
@@ -387,7 +426,9 @@ class TestESP32Endpoints:
             )
             mock_use_case.return_value = mock_use_case_instance
 
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
 
             assert response.status_code == 500  # Internal server error
             data = response.json()
@@ -410,7 +451,9 @@ class TestESP32Endpoints:
             mock_use_case.return_value = mock_use_case_instance
 
             # This test would need actual timeout configuration
-            response = await client.post("/api/v1/esp32/audio", json=audio_request_data)
+            response = await client.post(
+                "/api/v1/esp32/audio", json=audio_request_data
+            )
 
             # Should handle timeout gracefully
             assert response.status_code in [200, 408, 504]

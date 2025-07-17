@@ -9,10 +9,11 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from sqlalchemy.exc import IntegrityError, DataError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError
 
-from src.infrastructure.persistence.repositories.user_repository import UserRepository
+from src.infrastructure.persistence.repositories.user_repository import (
+    UserRepository,
+)
 from src.infrastructure.persistence.models.user_model import UserModel
 from src.infrastructure.persistence.database import Database
 from src.infrastructure.security.database_input_validator import SecurityError
@@ -56,7 +57,9 @@ class TestUserRepositoryCreate:
         mock_safe_session.safe_select = AsyncMock()
         mock_safe_session.safe_select.return_value.rowcount = 0
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.create_safe_database_session",
@@ -86,7 +89,9 @@ class TestUserRepositoryCreate:
         mock_safe_session.safe_select = AsyncMock()
         mock_safe_session.safe_select.return_value.rowcount = 1  # User exists
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.create_safe_database_session",
@@ -129,7 +134,9 @@ class TestUserRepositoryCreate:
         mock_safe_session.safe_select = AsyncMock()
         mock_safe_session.safe_select.return_value.rowcount = 0
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.create_safe_database_session",
@@ -140,7 +147,9 @@ class TestUserRepositoryCreate:
                 return_value={"data": sample_user_data},
             ):
                 # Act & Assert
-                with pytest.raises(ValueError, match="database constraint violation"):
+                with pytest.raises(
+                    ValueError, match="database constraint violation"
+                ):
                     await user_repository.create_user(**sample_user_data)
 
     @pytest.mark.asyncio
@@ -156,7 +165,9 @@ class TestUserRepositoryCreate:
         mock_safe_session.safe_select = AsyncMock()
         mock_safe_session.safe_select.return_value.rowcount = 0
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.create_safe_database_session",
@@ -176,7 +187,8 @@ class TestUserRepositoryRead:
 
     @pytest.mark.asyncio
     async def test_get_user_by_email_found(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test retrieving existing user by email."""
         # Arrange
         mock_user = MagicMock(spec=UserModel)
@@ -193,7 +205,9 @@ class TestUserRepositoryRead:
         mock_result.scalar_one_or_none.return_value = mock_user
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
         result = await user_repository.get_user_by_email("parent@example.com")
@@ -207,7 +221,8 @@ class TestUserRepositoryRead:
 
     @pytest.mark.asyncio
     async def test_get_user_by_email_not_found(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test retrieving non-existent user by email."""
         # Arrange
         mock_session = AsyncMock()
@@ -215,10 +230,14 @@ class TestUserRepositoryRead:
         mock_result.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act
-        result = await user_repository.get_user_by_email("nonexistent@example.com")
+        result = await user_repository.get_user_by_email(
+            "nonexistent@example.com"
+        )
 
         # Assert
         assert result is None
@@ -232,7 +251,9 @@ class TestUserRepositoryRead:
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Connection timeout")
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="Database error"):
@@ -254,7 +275,9 @@ class TestUserRepositoryUpdate:
         mock_result.rowcount = 1
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.validate_database_operation",
@@ -280,7 +303,9 @@ class TestUserRepositoryUpdate:
         mock_result.rowcount = 0  # No rows updated
         mock_session.execute.return_value = mock_result
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.validate_database_operation",
@@ -294,7 +319,8 @@ class TestUserRepositoryUpdate:
 
     @pytest.mark.asyncio
     async def test_update_user_security_violation(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test user update with security violation."""
         # Arrange
         user_id = str(uuid4())
@@ -310,7 +336,8 @@ class TestUserRepositoryUpdate:
 
     @pytest.mark.asyncio
     async def test_update_user_database_error(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test user update with database error."""
         # Arrange
         user_id = str(uuid4())
@@ -319,7 +346,9 @@ class TestUserRepositoryUpdate:
         mock_session = AsyncMock()
         mock_session.execute.side_effect = Exception("Database locked")
 
-        mock_database.get_session.return_value.__aenter__.return_value = mock_session
+        mock_database.get_session.return_value.__aenter__.return_value = (
+            mock_session
+        )
 
         with patch(
             "src.infrastructure.persistence.repositories.user_repository.validate_database_operation",
@@ -335,7 +364,8 @@ class TestUserRepositoryEdgeCases:
 
     @pytest.mark.asyncio
     async def test_create_user_empty_email(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test user creation with empty email."""
         # Act & Assert
         with pytest.raises(ValueError):
@@ -343,7 +373,8 @@ class TestUserRepositoryEdgeCases:
 
     @pytest.mark.asyncio
     async def test_create_user_invalid_role(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test user creation with invalid role."""
         # Arrange
         with patch(
@@ -358,7 +389,8 @@ class TestUserRepositoryEdgeCases:
 
     @pytest.mark.asyncio
     async def test_update_user_empty_updates(
-            self, user_repository, mock_database):
+        self, user_repository, mock_database
+    ):
         """Test user update with empty updates dictionary."""
         # Arrange
         user_id = str(uuid4())

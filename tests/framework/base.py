@@ -1,8 +1,5 @@
 """Test Framework Base Classes"""
 
-import logging
-from typing import Dict, Any, List
-from unittest.mock import Mock
 
 
 # Mock structlog
@@ -28,8 +25,8 @@ except ImportError:
     import sys
 
     sys.modules["structlog"] = type(
-        "MockStructlog", (), {
-            "get_logger": get_logger})
+        "MockStructlog", (), {"get_logger": get_logger}
+    )
     structlog = sys.modules["structlog"]
 
 
@@ -41,11 +38,9 @@ class BaseTestCase:
 
     def setup_method(self):
         """Setup method for each test"""
-        pass
 
     def teardown_method(self):
         """Teardown method for each test"""
-        pass
 
 
 class ChildSafetyTestCase(BaseTestCase):

@@ -38,7 +38,9 @@ class COPPADataRetentionService:
         self.deletion_queue: List[Dict[str, Any]] = []
         self.audit_logs: List[Dict[str, Any]] = []
         self.default_retention_days = 90
-        self.notification_days_before = 7  # Notify parents 7 days before deletion
+        self.notification_days_before = (
+            7  # Notify parents 7 days before deletion
+        )
 
     async def register_child_data(
         self,
@@ -107,10 +109,15 @@ class COPPADataRetentionService:
             if record["status"] != RetentionStatus.ACTIVE.value:
                 continue
 
-            deletion_time = datetime.fromisoformat(record["deletion_scheduled_at"])
+            deletion_time = datetime.fromisoformat(
+                record["deletion_scheduled_at"]
+            )
 
             # Check if notification should be sent
-            if deletion_time <= notification_cutoff and not record["notification_sent"]:
+            if (
+                deletion_time <= notification_cutoff
+                and not record["notification_sent"]
+            ):
                 pending_notifications.append(record)
 
             # Check if deletion is due
@@ -129,7 +136,9 @@ class COPPADataRetentionService:
             f"Retention check completed: {len(pending_notifications)} notifications, {len(pending_deletions)} deletions",
         )
 
-    async def _send_deletion_notification(self, record: Dict[str, Any]) -> None:
+    async def _send_deletion_notification(
+        self, record: Dict[str, Any]
+    ) -> None:
         """Send notification to parent about upcoming data deletion."""
         try:
             notification_data = {
@@ -152,13 +161,17 @@ class COPPADataRetentionService:
                 },
             )
 
-            logger.info(f"Deletion notification sent: {record['retention_id']}")
+            logger.info(
+                f"Deletion notification sent: {record['retention_id']}"
+            )
         except Exception as e:
             logger.error(
                 f"Failed to send deletion notification: {record['retention_id']}, {e}",
             )
 
-    async def _send_email_notification(self, notification_data: Dict[str, Any]) -> None:
+    async def _send_email_notification(
+        self, notification_data: Dict[str, Any]
+    ) -> None:
         """Send email notification to parent."""
         f"""Subject: Important: Your Child's Data Will Be Deleted in {self.notification_days_before} Days
 Dear Parent/Guardian,
@@ -184,7 +197,9 @@ Thank you for using AI Teddy Bear responsibly."""
         await asyncio.sleep(0.1)
         logger.info(f"Email sent to {notification_data['parent_email']}")
 
-    async def _process_scheduled_deletion(self, record: Dict[str, Any]) -> None:
+    async def _process_scheduled_deletion(
+        self, record: Dict[str, Any]
+    ) -> None:
         """Process scheduled data deletion with export and audit."""
         try:
             retention_id = record["retention_id"]
@@ -217,7 +232,9 @@ Thank you for using AI Teddy Bear responsibly."""
                 f"Failed to process scheduled deletion: {record['retention_id']}, {e}",
             )
 
-    async def _export_child_data(self, record: Dict[str, Any]) -> Dict[str, Any]:
+    async def _export_child_data(
+        self, record: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Export child data before deletion for parent access."""
         try:
             {
@@ -237,7 +254,9 @@ Thank you for using AI Teddy Bear responsibly."""
                 "export_id": export_id,
                 "download_token": download_token,
                 "download_url": f"https://secure-downloads.aiteddybear.com/exports/{export_id}?token={download_token}",
-                "expires_at": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+                "expires_at": (
+                    datetime.utcnow() + timedelta(days=30)
+                ).isoformat(),
                 "file_size_mb": 2.5,
                 "exported_at": datetime.utcnow().isoformat(),
             }
@@ -246,9 +265,14 @@ Thank you for using AI Teddy Bear responsibly."""
             return export_result
         except Exception as e:
             logger.error(f"Data export failed: {record['retention_id']}, {e}")
-            return {"error": str(e), "exported_at": datetime.utcnow().isoformat()}
+            return {
+                "error": str(e),
+                "exported_at": datetime.utcnow().isoformat(),
+            }
 
-    async def _delete_child_data(self, record: Dict[str, Any]) -> Dict[str, Any]:
+    async def _delete_child_data(
+        self, record: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Safely delete child data from all systems."""
         try:
             child_id = record["child_id"]
@@ -264,7 +288,9 @@ Thank you for using AI Teddy Bear responsibly."""
                 self._delete_from_analytics(child_id),
             ]
 
-            results = await asyncio.gather(*deletion_tasks, return_exceptions=True)
+            results = await asyncio.gather(
+                *deletion_tasks, return_exceptions=True
+            )
 
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
@@ -282,43 +308,86 @@ Thank you for using AI Teddy Bear responsibly."""
             logger.info(f"Child data deletion completed: {child_id}")
             return deletion_result
         except Exception as e:
-            logger.error(f"Child data deletion failed: {record['retention_id']}, {e}")
-            return {"error": str(e), "attempted_at": datetime.utcnow().isoformat()}
+            logger.error(
+                f"Child data deletion failed: {record['retention_id']}, {e}"
+            )
+            return {
+                "error": str(e),
+                "attempted_at": datetime.utcnow().isoformat(),
+            }
 
-    async def _delete_from_conversations(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_conversations(
+        self, child_id: str
+    ) -> Dict[str, Any]:
         """Delete conversation data."""
-        return {"table": "conversations", "deleted_count": 45, "child_id": child_id}
+        return {
+            "table": "conversations",
+            "deleted_count": 45,
+            "child_id": child_id,
+        }
 
-    async def _delete_from_user_profiles(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_user_profiles(
+        self, child_id: str
+    ) -> Dict[str, Any]:
         """Delete user profile data."""
-        return {"table": "user_profiles", "deleted_count": 1, "child_id": child_id}
+        return {
+            "table": "user_profiles",
+            "deleted_count": 1,
+            "child_id": child_id,
+        }
 
-    async def _delete_from_interaction_logs(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_interaction_logs(
+        self, child_id: str
+    ) -> Dict[str, Any]:
         """Delete interaction logs."""
-        return {"table": "interaction_logs", "deleted_count": 128, "child_id": child_id}
+        return {
+            "table": "interaction_logs",
+            "deleted_count": 128,
+            "child_id": child_id,
+        }
 
-    async def _delete_from_learning_data(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_learning_data(
+        self, child_id: str
+    ) -> Dict[str, Any]:
         """Delete learning progress data."""
-        return {"table": "learning_progress", "deleted_count": 23, "child_id": child_id}
+        return {
+            "table": "learning_progress",
+            "deleted_count": 23,
+            "child_id": child_id,
+        }
 
     async def _delete_from_preferences(self, child_id: str) -> Dict[str, Any]:
         """Delete preference data."""
-        return {"table": "preferences", "deleted_count": 1, "child_id": child_id}
+        return {
+            "table": "preferences",
+            "deleted_count": 1,
+            "child_id": child_id,
+        }
 
     async def _delete_from_audio_files(self, child_id: str) -> Dict[str, Any]:
         """Delete audio recordings."""
-        return {"table": "audio_files", "deleted_count": 67, "child_id": child_id}
+        return {
+            "table": "audio_files",
+            "deleted_count": 67,
+            "child_id": child_id,
+        }
 
     async def _delete_from_analytics(self, child_id: str) -> Dict[str, Any]:
         """Delete analytics data."""
-        return {"table": "analytics", "deleted_count": 234, "child_id": child_id}
+        return {
+            "table": "analytics",
+            "deleted_count": 234,
+            "child_id": child_id,
+        }
 
     def _generate_deletion_hash(self, child_id: str) -> str:
         """Generate verification hash for deletion completion."""
         data = f"{child_id}:{datetime.utcnow().isoformat()}:COPPA_DELETION_VERIFIED"
         return hashlib.sha256(data.encode()).hexdigest()
 
-    async def _send_deletion_confirmation(self, record: Dict[str, Any]) -> None:
+    async def _send_deletion_confirmation(
+        self, record: Dict[str, Any]
+    ) -> None:
         """Send deletion confirmation to parent."""
         try:
             confirmation_data = {
@@ -386,8 +455,12 @@ Thank you for using AI Teddy Bear responsibly."""
                 "error": f"Cannot extend: status is {record['status']}",
             }
 
-        current_deletion_date = datetime.fromisoformat(record["deletion_scheduled_at"])
-        new_deletion_date = current_deletion_date + timedelta(days=extension_days)
+        current_deletion_date = datetime.fromisoformat(
+            record["deletion_scheduled_at"]
+        )
+        new_deletion_date = current_deletion_date + timedelta(
+            days=extension_days
+        )
 
         creation_date = datetime.fromisoformat(record["created_at"])
         max_deletion_date = creation_date + timedelta(days=365)
@@ -422,7 +495,9 @@ Thank you for using AI Teddy Bear responsibly."""
             },
         )
 
-        logger.info(f"Retention extended: {retention_id}, {extension_days} days")
+        logger.info(
+            f"Retention extended: {retention_id}, {extension_days} days"
+        )
 
         return {
             "success": True,

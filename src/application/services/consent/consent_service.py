@@ -4,26 +4,30 @@ File reduced from 557 lines to < 200 lines for better maintainability.
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
-import logging
-from .consent_models import ConsentRecord, VerificationMethod, VerificationStatus
+from typing import Dict, Any, Optional
+from .consent_models import (
+    ConsentRecord,
+)
 from .verification_service import VerificationService
 
 from src.infrastructure.logging_config import get_logger
+
 logger = get_logger(__name__, component="services")
+
 
 class ConsentService:
     """
-    This service manages the entire consent lifecycle with proper audit trails and compliance validation. 
+    This service manages the entire consent lifecycle with proper audit trails and compliance validation.
     Refactored into modular architecture for maintainability and scalability.
-    
-    Features: 
-    - Consent request and grant workflows 
-    - Comprehensive audit trails 
-    - COPPA compliance validation 
-    - Integration with verification service 
+
+    Features:
+    - Consent request and grant workflows
+    - Comprehensive audit trails
+    - COPPA compliance validation
+    - Integration with verification service
     - Clean separation of concerns
     """
+
     def __init__(self) -> None:
         """Initialize the consent service with verification integration."""
         self.consents: Dict[str, ConsentRecord] = {}
@@ -34,11 +38,11 @@ class ConsentService:
         parent_id: str,
         child_id: str,
         feature: str,
-        expiry_days: int = 365
+        expiry_days: int = 365,
     ) -> Dict[str, Any]:
         """
         Request parental consent for a specific feature or data collection.
-        Args: 
+        Args:
             parent_id: Unique identifier for the parent / guardian
             child_id: Unique identifier for the child
             feature: Specific feature or data collection requiring consent
@@ -53,20 +57,20 @@ class ConsentService:
             feature=feature,
             status="pending",
             requested_at=datetime.utcnow().isoformat(),
-            expiry_date=(datetime.utcnow() + timedelta(days=expiry_days)).isoformat()
+            expiry_date=(
+                datetime.utcnow() + timedelta(days=expiry_days)
+            ).isoformat(),
         )
         self.consents[consent_id] = consent_record
         logger.info(f"Consent requested for feature: {feature}")
         return {"consent_id": consent_id, "status": "pending"}
 
     async def grant_consent(
-        self,
-        consent_id: str,
-        verification_method: str
+        self, consent_id: str, verification_method: str
     ) -> Dict[str, Any]:
         """
         Grant a pending consent request after proper verification.
-        Args: 
+        Args:
             consent_id: Unique identifier for the consent request
             verification_method: Method used to verify parent identity
         Returns: Dictionary with consent_id and updated status
@@ -83,7 +87,7 @@ class ConsentService:
     async def revoke_consent(self, consent_id: str) -> Dict[str, Any]:
         """
         Revoke a previously granted consent.
-        Args: 
+        Args:
             consent_id: Unique identifier for the consent request
         Returns: Dictionary with consent_id and updated status
         """
@@ -98,7 +102,7 @@ class ConsentService:
     async def check_consent_status(self, consent_id: str) -> Dict[str, Any]:
         """
         Check the current status of a consent request.
-        Args: 
+        Args:
             consent_id: Unique identifier for the consent request
         Returns: Dictionary with consent details and current status
         """
@@ -116,18 +120,15 @@ class ConsentService:
             "requested_at": consent.requested_at,
             "expiry_date": consent.expiry_date,
             "granted_at": consent.granted_at,
-            "verification_method": consent.verification_method
+            "verification_method": consent.verification_method,
         }
 
     async def verify_parental_consent(
-        self,
-        parent_id: str,
-        child_id: str,
-        consent_type: str
+        self, parent_id: str, child_id: str, consent_type: str
     ) -> bool:
         """
         Verify that valid parental consent exists for a specific action.
-        Args: 
+        Args:
             parent_id: Parent identifier
             child_id: Child identifier
             consent_type: Type of consent to verify
@@ -147,24 +148,22 @@ class ConsentService:
         return True
 
     async def initiate_email_verification(
-        self,
-        consent_id: str,
-        email: str
+        self, consent_id: str, email: str
     ) -> Dict[str, Any]:
         """
         Initiate email verification for consent.
-        Args: 
+        Args:
             consent_id: Consent request identifier
             email: Parent's email address
         Returns:
             Verification initiation result
         """
-        return await self.verification_service.send_email_verification(email, consent_id)
+        return await self.verification_service.send_email_verification(
+            email, consent_id
+        )
 
     async def initiate_sms_verification(
-        self,
-        consent_id: str,
-        phone: str
+        self, consent_id: str, phone: str
     ) -> Dict[str, Any]:
         """
         Initiate SMS verification for consent.
@@ -173,26 +172,30 @@ class ConsentService:
             phone: Parent's phone number
         Returns: Verification initiation result
         """
-        return await self.verification_service.send_sms_verification(phone, consent_id)
+        return await self.verification_service.send_sms_verification(
+            phone, consent_id
+        )
 
     async def complete_verification(
-        self,
-        attempt_id: str,
-        verification_code: str
+        self, attempt_id: str, verification_code: str
     ) -> Dict[str, Any]:
         """
         Complete verification with submitted code.
-        Args: 
+        Args:
             attempt_id: Verification attempt identifier
             verification_code: Code submitted by parent
         Returns: Verification completion result
         """
-        return await self.verification_service.verify_code(attempt_id, verification_code)
+        return await self.verification_service.verify_code(
+            attempt_id, verification_code
+        )
 
-    def get_consent_audit_trail(self, consent_id: str) -> Optional[Dict[str, Any]]:
+    def get_consent_audit_trail(
+        self, consent_id: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Get complete audit trail for a consent request.
-        Args: 
+        Args:
             consent_id: Consent request identifier
         Returns: Complete audit trail or None if not found
         """
@@ -210,5 +213,5 @@ class ConsentService:
             "revoked_at": consent.revoked_at,
             "expiry_date": consent.expiry_date,
             "verification_method": consent.verification_method,
-            "metadata": consent.metadata
+            "metadata": consent.metadata,
         }

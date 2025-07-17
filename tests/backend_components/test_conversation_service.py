@@ -1,5 +1,5 @@
 from domain.entities.conversation import Conversation
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 from datetime import datetime, timedelta
 import sys
 from pathlib import Path
@@ -90,7 +90,9 @@ class TestConversationService:
             )
         )
 
-        conversation = await conversation_service.start_conversation("child456")
+        conversation = await conversation_service.start_conversation(
+            "child456"
+        )
         assert conversation.id == "conv123"
         assert conversation.is_active() is True
 
@@ -112,7 +114,9 @@ class TestConversationService:
             "conv123", "محادثة ودية مع طلب قصة", "positive", 0.8
         )
         assert ended_conversation.is_active() is False
-        assert ended_conversation.duration_minutes() == pytest.approx(600 / 60.0)
+        assert ended_conversation.duration_minutes() == pytest.approx(
+            600 / 60.0
+        )
         assert ended_conversation.summary is not None
 
     @pytest.mark.asyncio

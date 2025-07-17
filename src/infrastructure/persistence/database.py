@@ -1,7 +1,11 @@
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.exc import DatabaseError, DataError, IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import declarative_base
 
 from src.infrastructure.logging_config import get_logger
@@ -50,7 +54,9 @@ class Database:
             self.config.pool_timeout = pool_timeout
 
         # Log database configuration
-        logger.info(f"Initializing database for {self.config.environment} environment")
+        logger.info(
+            f"Initializing database for {self.config.environment} environment"
+        )
         logger.info(f"Database engine: {self.config.engine_type}")
 
         # Validate production requirements
@@ -62,7 +68,9 @@ class Database:
             # Get engine configuration from config
             engine_kwargs = self.config.get_engine_kwargs()
             # Create async engine with production configuration
-            self.engine = create_async_engine(self.database_url, **engine_kwargs)
+            self.engine = create_async_engine(
+                self.database_url, **engine_kwargs
+            )
             # Create session maker with optimized settings
             session_kwargs = {
                 "expire_on_commit": False,
@@ -71,14 +79,18 @@ class Database:
                 != "production",  # Manual control in production
                 "autocommit": False,  # Always explicit transaction control
             }
-            self.async_session = async_sessionmaker(self.engine, **session_kwargs)
+            self.async_session = async_sessionmaker(
+                self.engine, **session_kwargs
+            )
             # Log successful initialization (without exposing credentials)
             safe_url = self._get_safe_url_for_logging(self.database_url)
             logger.info(f"Database engine created successfully: {safe_url}")
         except Exception as e:
             logger.critical(f"Failed to create database engine: {e}")
             safe_url = self._get_safe_url_for_logging(self.database_url)
-            raise ConnectionError(f"Database connection failed: {safe_url}") from e
+            raise ConnectionError(
+                f"Database connection failed: {safe_url}"
+            ) from e
 
     def _get_safe_url_for_logging(self, url: str) -> str:
         """Create safe URL for logging (without exposing passwords)."""
@@ -88,7 +100,9 @@ class Database:
             parsed = urlparse(url)
             if parsed.password or parsed.username:
                 if parsed.username and parsed.password:
-                    safe_netloc = f"{parsed.username}:[REDACTED]@{parsed.hostname}"
+                    safe_netloc = (
+                        f"{parsed.username}:[REDACTED]@{parsed.hostname}"
+                    )
                 elif parsed.username:
                     safe_netloc = f"{parsed.username}@{parsed.hostname}"
                 else:
@@ -111,7 +125,9 @@ class Database:
             if self.config.validate_connection:
                 validator = DatabaseConnectionValidator(self.config)
                 if not await validator.validate_connection():
-                    raise ConnectionError("Database connection validation failed")
+                    raise ConnectionError(
+                        "Database connection validation failed"
+                    )
             async with self.engine.begin() as conn:
                 # Register all models using the model registry
                 from src.infrastructure.persistence.model_registry import (
@@ -175,9 +191,13 @@ class Database:
             except (IntegrityError, DataError, DatabaseError) as db_error:
                 logger.error(f"Database error during transaction: {db_error}")
                 await session.rollback()
-                raise DatabaseError(f"Transaction failed: {db_error}") from db_error
+                raise DatabaseError(
+                    f"Transaction failed: {db_error}"
+                ) from db_error
             except (ConnectionError, TimeoutError) as conn_error:
-                logger.error(f"Connection error during transaction: {conn_error}")
+                logger.error(
+                    f"Connection error during transaction: {conn_error}"
+                )
                 await session.rollback()
                 raise ConnectionError(
                     f"Database connection failed: {conn_error}",

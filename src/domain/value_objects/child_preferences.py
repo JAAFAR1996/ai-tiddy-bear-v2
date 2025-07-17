@@ -31,7 +31,9 @@ class ChildPreferences:
     learning_level: int = 1  # 1-5, for adaptive complexity
     vocabulary_size: int = 0  # Estimated vocabulary size
     preferred_learning_style: str | None = None  # e.g., "auditory", "visual"
-    interaction_history_summary: str | None = None  # Summary of past interactions
+    interaction_history_summary: str | None = (
+        None  # Summary of past interactions
+    )
     emotional_tendencies: dict[str, float] = field(
         default_factory=dict,
     )  # e.g., {"happy": 0.7, "sad": 0.1}

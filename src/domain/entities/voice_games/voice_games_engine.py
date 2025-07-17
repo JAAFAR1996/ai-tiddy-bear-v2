@@ -24,7 +24,9 @@ class GameType(Enum):
 class GameSession:
     """Represents an active game session."""
 
-    def __init__(self, game_id: str, game_type: GameType, child_id: str) -> None:
+    def __init__(
+        self, game_id: str, game_type: GameType, child_id: str
+    ) -> None:
         self.game_id = game_id
         self.game_type = game_type
         self.child_id = child_id
@@ -86,7 +88,10 @@ class VoiceGameEngine:
                 {
                     "scenario": "You are in a magical forest and meet a wise rabbit",
                     "choices": [
-                        {"text": "Ask him about the way", "outcome": "positive"},
+                        {
+                            "text": "Ask him about the way",
+                            "outcome": "positive",
+                        },
                         {"text": "Walk away from him", "outcome": "neutral"},
                         {"text": "Ask him for help", "outcome": "positive"},
                     ],
@@ -95,7 +100,9 @@ class VoiceGameEngine:
             ],
         }
 
-    async def start_game(self, game_type: GameType, child_id: str) -> dict[str, Any]:
+    async def start_game(
+        self, game_type: GameType, child_id: str
+    ) -> dict[str, Any]:
         """Start a new game session."""
         try:
             game_id = str(uuid.uuid4())
@@ -136,7 +143,9 @@ class VoiceGameEngine:
                 "message": "Sorry, an error occurred while starting the game. Please try again.",
             }
 
-    async def process_game_input(self, game_id: str, user_input: str) -> dict[str, Any]:
+    async def process_game_input(
+        self, game_id: str, user_input: str
+    ) -> dict[str, Any]:
         """Process user input for an active game."""
         try:
             if game_id not in self.active_sessions:
@@ -155,14 +164,18 @@ class VoiceGameEngine:
                 }
 
             # Process input based on game type
-            result = await self._process_input_by_type(session, user_input.strip())
+            result = await self._process_input_by_type(
+                session, user_input.strip()
+            )
 
             # Check if game should continue
             if session.current_question_index >= len(session.questions):
                 session.is_active = False
                 result["game_ended"] = True
                 result["final_score"] = session.score
-                result["congratulations"] = self._generate_completion_message(session)
+                result["congratulations"] = self._generate_completion_message(
+                    session
+                )
 
                 # Clean up session
                 del self.active_sessions[game_id]
@@ -198,7 +211,8 @@ class VoiceGameEngine:
         current_question = session.questions[session.current_question_index]
         correct_answer = current_question["correct_answer"].lower()
         is_correct = (
-            user_input.lower() in correct_answer or correct_answer in user_input.lower()
+            user_input.lower() in correct_answer
+            or correct_answer in user_input.lower()
         )
 
         if is_correct:
@@ -206,7 +220,9 @@ class VoiceGameEngine:
             message = "Well done! Correct answer!"
             feedback = "Excellent!"
         else:
-            message = f"The correct answer is: {current_question['correct_answer']}"
+            message = (
+                f"The correct answer is: {current_question['correct_answer']}"
+            )
             feedback = "Try again on the next question"
 
         session.current_question_index += 1
@@ -238,7 +254,8 @@ class VoiceGameEngine:
         current_riddle = session.questions[session.current_question_index]
         correct_answer = current_riddle["answer"].lower()
         is_correct = (
-            user_input.lower() in correct_answer or correct_answer in user_input.lower()
+            user_input.lower() in correct_answer
+            or correct_answer in user_input.lower()
         )
 
         if is_correct:
@@ -299,7 +316,9 @@ class VoiceGameEngine:
 
         result = {
             "success": True,
-            "choice_made": chosen_choice["text"] if chosen_choice else "unclear",
+            "choice_made": (
+                chosen_choice["text"] if chosen_choice else "unclear"
+            ),
             "message": message,
             "score": session.score,
         }
@@ -342,7 +361,9 @@ class VoiceGameEngine:
         total_possible = (
             len(session.questions) * MAX_SCORE_PER_QUESTION
         )  # Max score per question
-        percentage = (session.score / total_possible) * 100 if total_possible > 0 else 0
+        percentage = (
+            (session.score / total_possible) * 100 if total_possible > 0 else 0
+        )
 
         if percentage >= EXCELLENT_SCORE_THRESHOLD:
             return "Excellent! You are a real star!"

@@ -4,11 +4,9 @@ Testing comprehensive audit logging system for COPPA compliance and security.
 """
 
 import pytest
-from unittest.mock import patch, Mock, AsyncMock, mock_open
-from datetime import datetime, timedelta
+from unittest.mock import patch, mock_open
+from datetime import datetime
 import asyncio
-import json
-import hashlib
 import os
 import tempfile
 import shutil
@@ -78,7 +76,10 @@ class TestAuditLogger:
         assert AuditEventType.LOGOUT.value == "logout"
 
         # Child safety events
-        assert AuditEventType.CHILD_INTERACTION_START.value == "child_interaction_start"
+        assert (
+            AuditEventType.CHILD_INTERACTION_START.value
+            == "child_interaction_start"
+        )
         assert AuditEventType.SAFETY_INCIDENT.value == "safety_incident"
         assert AuditEventType.CONTENT_FILTERED.value == "content_filtered"
 
@@ -89,13 +90,16 @@ class TestAuditLogger:
 
         # COPPA compliance events
         assert (
-            AuditEventType.PARENTAL_CONSENT_REQUEST.value == "parental_consent_request"
+            AuditEventType.PARENTAL_CONSENT_REQUEST.value
+            == "parental_consent_request"
         )
         assert (
-            AuditEventType.PARENTAL_CONSENT_GRANTED.value == "parental_consent_granted"
+            AuditEventType.PARENTAL_CONSENT_GRANTED.value
+            == "parental_consent_granted"
         )
         assert (
-            AuditEventType.PARENTAL_CONSENT_REVOKED.value == "parental_consent_revoked"
+            AuditEventType.PARENTAL_CONSENT_REVOKED.value
+            == "parental_consent_revoked"
         )
 
     def test_audit_severity_enum_values(self):
@@ -287,7 +291,9 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_log_event_critical_handling(self, audit_logger):
         """Test handling of critical events."""
-        with patch.object(audit_logger, "_handle_critical_event") as mock_handle:
+        with patch.object(
+            audit_logger, "_handle_critical_event"
+        ) as mock_handle:
             await audit_logger.log_event(
                 event_type=AuditEventType.SAFETY_INCIDENT,
                 severity=AuditSeverity.CRITICAL,
@@ -331,7 +337,9 @@ class TestAuditLogger:
         assert len(audit_logger.audit_entries) == 1
 
         logged_event = audit_logger.audit_entries[0]
-        assert logged_event.event_type == AuditEventType.CHILD_INTERACTION_START
+        assert (
+            logged_event.event_type == AuditEventType.CHILD_INTERACTION_START
+        )
         assert logged_event.category == AuditCategory.CHILD_SAFETY
         assert logged_event.context.child_id == "child_789"
         assert logged_event.context.user_id == "parent_123"
@@ -355,7 +363,8 @@ class TestAuditLogger:
 
     @pytest.mark.asyncio
     async def test_log_child_interaction_medium_safety_score(
-            self, audit_logger):
+        self, audit_logger
+    ):
         """Test child interaction logging with medium safety score."""
         event_id = await audit_logger.log_child_interaction(
             child_id="child_medium",
@@ -483,7 +492,9 @@ class TestAuditLogger:
         )
 
         logged_event = audit_logger.audit_entries[0]
-        assert logged_event.event_type == AuditEventType.PARENTAL_CONSENT_GRANTED
+        assert (
+            logged_event.event_type == AuditEventType.PARENTAL_CONSENT_GRANTED
+        )
         assert logged_event.category == AuditCategory.COPPA_COMPLIANCE
         assert logged_event.severity == AuditSeverity.INFO
         assert logged_event.context.child_id == "coppa_child"
@@ -503,7 +514,9 @@ class TestAuditLogger:
         )
 
         with patch.object(audit_logger, "_write_events_to_file") as mock_write:
-            with patch.object(audit_logger, "_send_security_alert") as mock_alert:
+            with patch.object(
+                audit_logger, "_send_security_alert"
+            ) as mock_alert:
                 await audit_logger._handle_critical_event(critical_event)
 
                 mock_write.assert_called_once_with([critical_event])
@@ -521,7 +534,9 @@ class TestAuditLogger:
             description="Security alert test",
         )
 
-        with patch("src.infrastructure.security.audit_logger.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.audit_logger.logger"
+        ) as mock_logger:
             await audit_logger._send_security_alert(critical_event)
 
             mock_logger.critical.assert_called()
@@ -553,7 +568,8 @@ class TestAuditLogger:
 
         # Mock aiofiles.open
         with patch(
-            "src.infrastructure.security.audit_logger.aiofiles.open", mock_open()
+            "src.infrastructure.security.audit_logger.aiofiles.open",
+            mock_open(),
         ) as mock_file:
             await audit_logger._write_events_to_file(events)
 
@@ -701,12 +717,15 @@ class TestAuditLogger:
         # Simulate batch flush
         with patch.object(audit_logger, "_write_events_to_file") as mock_write:
             async with audit_logger.buffer_lock:
-                if len(audit_logger.audit_entries) >= audit_logger.config.batch_size:
+                if (
+                    len(audit_logger.audit_entries)
+                    >= audit_logger.config.batch_size
+                ):
                     events_to_write = audit_logger.audit_entries[
                         : audit_logger.config.batch_size
                     ]
                     audit_logger.audit_entries = audit_logger.audit_entries[
-                        audit_logger.config.batch_size:
+                        audit_logger.config.batch_size :
                     ]
                     await audit_logger._write_events_to_file(events_to_write)
 
@@ -726,18 +745,29 @@ class TestAuditLogger:
         # Simulate complete COPPA workflow
         events = [
             # 1. Consent request
-            (AuditEventType.PARENTAL_CONSENT_REQUEST, "Parental consent requested"),
+            (
+                AuditEventType.PARENTAL_CONSENT_REQUEST,
+                "Parental consent requested",
+            ),
             # 2. Parent verification
             (AuditEventType.LOGIN_SUCCESS, "Parent authentication successful"),
             # 3. Consent granted
-            (AuditEventType.PARENTAL_CONSENT_GRANTED, "Parental consent granted"),
+            (
+                AuditEventType.PARENTAL_CONSENT_GRANTED,
+                "Parental consent granted",
+            ),
             # 4. Child interaction
-            (AuditEventType.CHILD_INTERACTION_START, "Child interaction began"),
+            (
+                AuditEventType.CHILD_INTERACTION_START,
+                "Child interaction began",
+            ),
             # 5. Data access
             (AuditEventType.DATA_ACCESS, "Child data accessed"),
             # 6. Data retention trigger
-            (AuditEventType.DATA_RETENTION_TRIGGERED,
-             "Data retention policy applied"),
+            (
+                AuditEventType.DATA_RETENTION_TRIGGERED,
+                "Data retention policy applied",
+            ),
         ]
 
         event_ids = []

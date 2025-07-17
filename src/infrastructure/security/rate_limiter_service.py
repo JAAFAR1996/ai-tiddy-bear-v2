@@ -60,7 +60,9 @@ class RateLimiterService:
         # Check attempts from this email
         if len(self.login_attempts[email]) >= self.max_login_attempts:
             self.locked_accounts[email] = now
-            logger.warning(f"Account locked due to too many failed attempts: {email}")
+            logger.warning(
+                f"Account locked due to too many failed attempts: {email}"
+            )
             return {
                 "allowed": False,
                 "reason": "account_locked",
@@ -70,7 +72,9 @@ class RateLimiterService:
 
         return {"allowed": True}
 
-    async def record_failed_login(self, email: str, ip_address: str | None = None) -> None:
+    async def record_failed_login(
+        self, email: str, ip_address: str | None = None
+    ) -> None:
         """Record a failed login attempt."""
         self.login_attempts[email].append(datetime.utcnow())
         logger.info(f"Failed login attempt recorded for: {email}")

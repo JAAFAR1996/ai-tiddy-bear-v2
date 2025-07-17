@@ -89,15 +89,21 @@ class EmergencyContactValidator:
         if not relationship_result["valid"]:
             errors.append(f"Relationship: {relationship_result['reason']}")
         else:
-            validated_data["relationship"] = relationship_result["relationship"]
+            validated_data["relationship"] = relationship_result[
+                "relationship"
+            ]
 
         # Validate phone number
-        phone_result = self._validate_phone_number(contact_data.get("phone_number", ""))
+        phone_result = self._validate_phone_number(
+            contact_data.get("phone_number", "")
+        )
         if not phone_result["valid"]:
             errors.append(f"Phone: {phone_result['reason']}")
         else:
             validated_data["phone_number"] = phone_result["formatted_number"]
-            validated_data["phone_country_code"] = phone_result.get("country_code", "")
+            validated_data["phone_country_code"] = phone_result.get(
+                "country_code", ""
+            )
 
         # Validate email if provided
         email = contact_data.get("email", "").strip()
@@ -118,7 +124,9 @@ class EmergencyContactValidator:
                 validated_data["address"] = address_result["sanitized_address"]
 
         # Set primary contact flag
-        validated_data["is_primary"] = bool(contact_data.get("is_primary", False))
+        validated_data["is_primary"] = bool(
+            contact_data.get("is_primary", False)
+        )
 
         return {
             "valid": len(errors) == 0,
@@ -158,7 +166,10 @@ class EmergencyContactValidator:
             result = self.validate_emergency_contact(contact)
             if not result["valid"]:
                 global_errors.extend(
-                    [f"Contact {i + 1}: {error}" for error in result["errors"]],
+                    [
+                        f"Contact {i + 1}: {error}"
+                        for error in result["errors"]
+                    ],
                 )
                 continue
 
@@ -167,7 +178,9 @@ class EmergencyContactValidator:
             # Check for duplicate phone numbers
             phone = validated_contact["phone_number"]
             if phone in phone_numbers:
-                global_errors.append(f"Contact {i + 1}: Duplicate phone number {phone}")
+                global_errors.append(
+                    f"Contact {i + 1}: Duplicate phone number {phone}"
+                )
             else:
                 phone_numbers.add(phone)
 
@@ -179,12 +192,16 @@ class EmergencyContactValidator:
 
         # Validate primary contact rules
         if primary_contacts == 0:
-            global_errors.append("At least one contact must be marked as primary")
+            global_errors.append(
+                "At least one contact must be marked as primary"
+            )
         elif primary_contacts > 1:
             global_errors.append("Only one contact can be marked as primary")
 
         # Check for diverse relationships (recommended)
-        relationships = {contact["relationship"] for contact in validated_contacts}
+        relationships = {
+            contact["relationship"] for contact in validated_contacts
+        }
         if len(relationships) == 1 and len(validated_contacts) > 1:
             global_errors.append(
                 "Recommended: Include contacts with different relationships for redundancy",
@@ -205,14 +222,23 @@ class EmergencyContactValidator:
 
         name = name.strip()
         if len(name) < 2:
-            return {"valid": False, "reason": "Name must be at least 2 characters"}
+            return {
+                "valid": False,
+                "reason": "Name must be at least 2 characters",
+            }
 
         if len(name) > 100:
-            return {"valid": False, "reason": "Name too long (maximum 100 characters)"}
+            return {
+                "valid": False,
+                "reason": "Name too long (maximum 100 characters)",
+            }
 
         # Allow letters, spaces, hyphens, apostrophes, and periods
         if not re.match(r"^[a-zA-Z\s\-'.]+$", name):
-            return {"valid": False, "reason": "Name contains invalid characters"}
+            return {
+                "valid": False,
+                "reason": "Name contains invalid characters",
+            }
 
         # Sanitize name
         sanitized_name = " ".join(name.split())  # Normalize whitespace
@@ -249,7 +275,9 @@ class EmergencyContactValidator:
                 # Extract components and format consistently
                 if phone.startswith("+"):
                     # International format
-                    formatted = self._format_international_number(cleaned_phone)
+                    formatted = self._format_international_number(
+                        cleaned_phone
+                    )
                     country_code = (
                         cleaned_phone[1:2] if len(cleaned_phone) > 10 else None
                     )
@@ -273,7 +301,10 @@ class EmergencyContactValidator:
     def _validate_email(self, email: str) -> Dict[str, Any]:
         """Validate email address format."""
         if not email or not isinstance(email, str):
-            return {"valid": False, "reason": "Email is required when provided"}
+            return {
+                "valid": False,
+                "reason": "Email is required when provided",
+            }
 
         email = email.strip().lower()
 
@@ -287,7 +318,10 @@ class EmergencyContactValidator:
     def _validate_address(self, address: str) -> Dict[str, Any]:
         """Validate physical address."""
         if not address or not isinstance(address, str):
-            return {"valid": False, "reason": "Address is required when provided"}
+            return {
+                "valid": False,
+                "reason": "Address is required when provided",
+            }
 
         address = address.strip()
         if len(address) < 10:
@@ -312,9 +346,7 @@ class EmergencyContactValidator:
         if len(cleaned_number) == 10:
             return f"({cleaned_number[:3]}) {cleaned_number[3:6]}-{cleaned_number[6:]}"
         if len(cleaned_number) == 11 and cleaned_number[0] == "1":
-            return (
-                f"+1 ({cleaned_number[1:4]}) {cleaned_number[4:7]}-{cleaned_number[7:]}"
-            )
+            return f"+1 ({cleaned_number[1:4]}) {cleaned_number[4:7]}-{cleaned_number[7:]}"
         return cleaned_number
 
     def _format_international_number(self, cleaned_number: str) -> str:
@@ -344,7 +376,9 @@ class EmergencyContactValidator:
         recommendations = []
 
         # Base score for having contacts
-        score += 20.0 * min(len(contacts), 3) / 3  # Max 20 points for up to 3 contacts
+        score += (
+            20.0 * min(len(contacts), 3) / 3
+        )  # Max 20 points for up to 3 contacts
 
         # Primary contact exists
         primary_contacts = [c for c in contacts if c.get("is_primary", False)]
@@ -368,15 +402,21 @@ class EmergencyContactValidator:
             score += 15.0
 
         # Email availability
-        contacts_with_email = [c for c in contacts if c.get("email", "").strip()]
+        contacts_with_email = [
+            c for c in contacts if c.get("email", "").strip()
+        ]
         if contacts_with_email:
             score += 10.0 * min(len(contacts_with_email), 2) / 2
         else:
-            recommendations.append("Add email addresses for backup communication")
+            recommendations.append(
+                "Add email addresses for backup communication"
+            )
 
         # Relationship diversity
         relationships = {
-            c.get("relationship", "") for c in contacts if c.get("relationship", "")
+            c.get("relationship", "")
+            for c in contacts
+            if c.get("relationship", "")
         }
         if len(relationships) > 1:
             score += 15.0
@@ -386,7 +426,9 @@ class EmergencyContactValidator:
             )
 
         # Address availability
-        contacts_with_address = [c for c in contacts if c.get("address", "").strip()]
+        contacts_with_address = [
+            c for c in contacts if c.get("address", "").strip()
+        ]
         if contacts_with_address:
             score += 10.0
 

@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 # Production-only imports with proper error handling
 try:
-    import openai
     from openai import AsyncOpenAI
 
     OPENAI_AVAILABLE = True
@@ -43,7 +42,9 @@ class ResponseGenerator:
     Integrates with OpenAI GPT while maintaining strict content filtering and age - appropriateness.
     """
 
-    def __init__(self, api_key: str | None = None, model: str = "gpt-4") -> None:
+    def __init__(
+        self, api_key: str | None = None, model: str = "gpt-4"
+    ) -> None:
         self.model = model
         self.max_response_length = 500
         self.max_input_length = 1000
@@ -57,7 +58,9 @@ class ResponseGenerator:
             except Exception as e:
                 logger.error(f"Failed to initialize OpenAI client: {e}")
         else:
-            logger.warning("OpenAI not available - using safe fallback responses")
+            logger.warning(
+                "OpenAI not available - using safe fallback responses"
+            )
         # Child safety prompts
         self.safety_system_prompts = {
             SafetyLevel.STRICT: """You are a kind and loving teddy bear for young children(3 - 6 years). Speak simply and lovingly.
@@ -173,7 +176,9 @@ class ResponseGenerator:
         except Exception as e:
             logger.error(f"Response generation failed: {e}")
             # Return safe fallback on any error
-            return await self._generate_emergency_fallback(safety_level, child_name)
+            return await self._generate_emergency_fallback(
+                safety_level, child_name
+            )
 
     def _get_safety_level(self, child_age: int) -> SafetyLevel:
         """Determine appropriate safety level based on child's age."""
@@ -229,7 +234,9 @@ class ResponseGenerator:
             system_prompt = self.safety_system_prompts[safety_level]
             # Add response type specific instructions
             if response_type == ResponseType.EDUCATIONAL:
-                system_prompt += " ركز على التعليم والمعلومات المفيدة بطريقة ممتعة."
+                system_prompt += (
+                    " ركز على التعليم والمعلومات المفيدة بطريقة ممتعة."
+                )
             elif response_type == ResponseType.STORY:
                 system_prompt += " احك قصة قصيرة وآمنة ومناسبة للعمر."
             elif response_type == ResponseType.GAME:
@@ -258,7 +265,9 @@ class ResponseGenerator:
         except Exception as e:
             logger.warning(f"OpenAI generation failed: {e}")
             # Fallback to safe response
-            return await self._generate_fallback_response(text, safety_level, "صديقي")
+            return await self._generate_fallback_response(
+                text, safety_level, "صديقي"
+            )
 
     async def _generate_fallback_response(
         self,
@@ -274,15 +283,17 @@ class ResponseGenerator:
         # Simple keyword-based response selection
         if any(word in text.lower() for word in ["قصة", "حكاية", "story"]):
             if safety_level == SafetyLevel.STRICT:
-                response = (
-                    "كان يا ما كان، في قديم الزمان، كان هناك أرنب صغير يحب الجزر..."
-                )
+                response = "كان يا ما كان، في قديم الزمان، كان هناك أرنب صغير يحب الجزر..."
             else:
                 response = "دعني أحكي لك قصة جميلة عن صداقة بين قطة ودبدوب..."
         elif any(word in text.lower() for word in ["لعب", "لعبة", "game"]):
-            response = "هيا نلعب! يمكننا أن نعد الأرقام أو نسمي الألوان. ما رأيك؟"
+            response = (
+                "هيا نلعب! يمكننا أن نعد الأرقام أو نسمي الألوان. ما رأيك؟"
+            )
         elif any(word in text.lower() for word in ["تعلم", "اريد", "learn"]):
-            response = "رائع! أحب التعلم معك. ما الموضوع الذي تريد أن نتعلمه اليوم؟"
+            response = (
+                "رائع! أحب التعلم معك. ما الموضوع الذي تريد أن نتعلمه اليوم؟"
+            )
         else:
             response = random.choice(responses)
         # Personalize with child's name if appropriate

@@ -83,9 +83,13 @@ class DynamicContentService:
                 SafetyLevel.POTENTIALLY_UNSAFE,
             ]:
                 self.logger.warning(
-                    f"Unsafe story generated for child {child_profile.id}: {story[:100]}... Returning fallback.",
+                    "Unsafe story generated for child "
+                    f"{child_profile.id}: {story[:100]}... Returning fallback.",
                 )
-                return "I'm sorry, I can't tell that story right now. How about a different one?"
+                return (
+                    "I'm sorry, I can't tell that story right now. "
+                    "How about a different one?"
+                )
         return story
 
     async def generate_educational_content(
@@ -126,9 +130,14 @@ class DynamicContentService:
                 SafetyLevel.POTENTIALLY_UNSAFE,
             ]:
                 self.logger.warning(
-                    f"Unsafe educational content generated for child {child_profile.id}: {educational_text[:100]}... Returning fallback.",
+                    "Unsafe educational content generated for child "
+                    f"{child_profile.id}: {educational_text[:100]}... "
+                    "Returning fallback.",
                 )
-                return "I'm sorry, I can't provide information on that topic right now. Is there something else you'd like to learn?"
+                return (
+                    "I'm sorry, I can't provide information on that topic right now. "
+                    "Is there something else you'd like to learn?"
+                )
         return educational_text
 
     async def get_interactive_activity(
@@ -168,7 +177,9 @@ class DynamicContentService:
                 SafetyLevel.POTENTIALLY_UNSAFE,
             ]:
                 self.logger.warning(
-                    f"Unsafe activity generated for child {child_profile.id}: {activity_response[:100]}... Returning empty activity.",
+                    "Unsafe activity generated for child "
+                    f"{child_profile.id}: {activity_response[:100]}... "
+                    "Returning empty activity.",
                 )
                 return {"error": "Content blocked due to safety concerns."}
         return activity_response

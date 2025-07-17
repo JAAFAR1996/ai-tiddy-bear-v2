@@ -28,7 +28,9 @@ async def create_child_endpoint(
     coppa_integration: COPPAIntegration = Depends(
         Provide[container.coppa_integration_service],
     ),
-    safety_monitor: SafetyMonitorService = Depends(Provide[container.safety_monitor]),
+    safety_monitor: SafetyMonitorService = Depends(
+        Provide[container.safety_monitor]
+    ),
 ) -> ChildResponse:
     """إنشاء ملف طفل جديد مع الامتثال لـ COPPA."""
     try:
@@ -46,7 +48,9 @@ async def create_child_endpoint(
         logger.info("COPPA consent obtained for new child profile")
 
         # إنشاء الطفل
-        child = await manage_child_profile_use_case.create_child(request, parent_id)
+        child = await manage_child_profile_use_case.create_child(
+            request, parent_id
+        )
 
         # تسجيل حدث الإنشاء
         await safety_monitor.record_safety_event(

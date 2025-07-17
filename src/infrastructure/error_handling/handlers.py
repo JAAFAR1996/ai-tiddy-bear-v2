@@ -4,15 +4,16 @@ Error handling utilities and standardized response formatting.
 
 from datetime import datetime
 from typing import Dict, Any, Optional, Union
-import logging
 import traceback
 from .exceptions import AITeddyError
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
 
+
 class ErrorHandler:
     """Centralized error handling and response formatting."""
+
     def __init__(self, log_errors: bool = True, include_details: bool = False):
         """
         Initialize error handler.
@@ -29,7 +30,7 @@ class ErrorHandler:
         error: Exception,
         context: Optional[Dict[str, Any]] = None,
         user_id: Optional[str] = None,
-        child_id: Optional[str] = None
+        child_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Handle an error and return a standardized response.
@@ -60,7 +61,7 @@ class ErrorHandler:
             "error_code": error.error_code,
             "message": error.message,
             "timestamp": datetime.utcnow().isoformat(),
-            "http_status": error.http_status
+            "http_status": error.http_status,
         }
         if self.include_details and error.details:
             response["details"] = error.details
@@ -73,12 +74,12 @@ class ErrorHandler:
             "error_code": "INTERNAL_SERVER_ERROR",
             "message": "An unexpected error occurred. Our team has been notified.",
             "timestamp": datetime.utcnow().isoformat(),
-            "http_status": 500
+            "http_status": 500,
         }
         if self.include_details:
             response["details"] = {
                 "error_type": type(error).__name__,
-                "error_message": str(error)
+                "error_message": str(error),
             }
         return response
 
@@ -87,29 +88,39 @@ class ErrorHandler:
         error: Exception,
         context: Optional[Dict[str, Any]],
         user_id: Optional[str],
-        child_id: Optional[str]
+        child_id: Optional[str],
     ):
         """Log error details."""
-        log_level = "error" if not isinstance(error, AITeddyError) or error.http_status >= 500 else "warning"
+        log_level = (
+            "error"
+            if not isinstance(error, AITeddyError) or error.http_status >= 500
+            else "warning"
+        )
 
         log_data = {
             "error_type": type(error).__name__,
             "error_message": str(error),
             "context": context or {},
             "user_id": user_id,
-            "child_id": f"child_{hash(child_id)}" if child_id else None, # Anonymize child ID
-            "traceback": traceback.format_exc() if log_level == "error" else None
+            "child_id": (
+                f"child_{hash(child_id)}" if child_id else None
+            ),  # Anonymize child ID
+            "traceback": (
+                traceback.format_exc() if log_level == "error" else None
+            ),
         }
 
         if isinstance(error, AITeddyError):
             log_data["error_code"] = error.error_code
             log_data["details"] = error.details
 
-        getattr(logger, log_level)(f"Error handled: {type(error).__name__}", extra=log_data)
+        getattr(logger, log_level)(
+            f"Error handled: {type(error).__name__}", extra=log_data
+        )
+
 
 def get_error_response(
-    error: Union[AITeddyError, Exception],
-    include_details: bool = False
+    error: Union[AITeddyError, Exception], include_details: bool = False
 ) -> Dict[str, Any]:
     """
     Generate a standardized error response dictionary.

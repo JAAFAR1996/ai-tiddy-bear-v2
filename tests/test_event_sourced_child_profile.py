@@ -4,8 +4,7 @@ from infrastructure.repositories.event_sourced_child_repository import (
 from domain.repositories.event_store import InMemoryEventStore
 from domain.events.child_profile_updated import ChildProfileUpdated
 from domain.entities.child_profile import ChildProfile
-from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 import asyncio
 import sys
 from pathlib import Path
@@ -110,7 +109,8 @@ class TestChildProfileEventSourcing:
             # Simulate events being loaded from an event store
             events = [
                 ChildProfileUpdated.create(
-                    child_id=child_id, name="First Update"),
+                    child_id=child_id, name="First Update"
+                ),
                 ChildProfileUpdated.create(child_id=child_id, age=4),
                 ChildProfileUpdated.create(
                     child_id=child_id, preferences={"color": "blue"}

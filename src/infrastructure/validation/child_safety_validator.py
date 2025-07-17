@@ -27,10 +27,16 @@ class ChildSafetyValidator:
         self.coppa_age_threshold: int = config.get("coppa_age_threshold", 13)
 
         # Enhanced security configuration
-        self.enable_pii_detection: bool = config.get("enable_pii_detection", True)
-        self.enable_content_scoring: bool = config.get("enable_content_scoring", True)
+        self.enable_pii_detection: bool = config.get(
+            "enable_pii_detection", True
+        )
+        self.enable_content_scoring: bool = config.get(
+            "enable_content_scoring", True
+        )
         self.strict_mode: bool = config.get("strict_mode", True)
-        self.max_validation_time_ms: int = config.get("max_validation_time_ms", 1000)
+        self.max_validation_time_ms: int = config.get(
+            "max_validation_time_ms", 1000
+        )
 
         # Prohibited content patterns
         self.prohibited_patterns = [
@@ -77,7 +83,9 @@ class ChildSafetyValidator:
 
         logger.info("Child safety validator initialized with COPPA compliance")
 
-    def validate_child_age(self, age: Union[int, str, None]) -> ValidationResult:
+    def validate_child_age(
+        self, age: Union[int, str, None]
+    ) -> ValidationResult:
         """Validate child age for COPPA compliance.
         Args: age: Child's age as integer or string
         Returns:
@@ -104,7 +112,10 @@ class ChildSafetyValidator:
                 return ValidationResult(
                     valid=False,
                     errors=[f"Age {age_int} is not realistic (must be 0-150)"],
-                    metadata={"code": "AGE_UNREALISTIC", "security_issue": True},
+                    metadata={
+                        "code": "AGE_UNREALISTIC",
+                        "security_issue": True,
+                    },
                     security_flags=["unrealistic_age_value"],
                 )
 

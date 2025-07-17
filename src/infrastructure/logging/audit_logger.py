@@ -15,7 +15,9 @@ from enum import Enum
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.path_validator import get_secure_file_operations
+from src.infrastructure.security.path_validator import (
+    get_secure_file_operations,
+)
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -182,7 +184,9 @@ class AuditLogger:
             )
 
             # Use JSON format for structured logging
-            formatter = logging.Formatter("%(message)s")  # Just the JSON message
+            formatter = logging.Formatter(
+                "%(message)s"
+            )  # Just the JSON message
             handler.setFormatter(formatter)
             self.audit_logger.addHandler(handler)
         except Exception as e:
@@ -287,7 +291,9 @@ class AuditLogger:
 
         # Add integrity hash
         event_dict = event.to_dict()
-        event_dict["integrity_hash"] = self._calculate_integrity_hash(event_dict)
+        event_dict["integrity_hash"] = self._calculate_integrity_hash(
+            event_dict
+        )
 
         # Log the event
         self.audit_logger.info(json.dumps(event_dict, ensure_ascii=False))
@@ -421,7 +427,9 @@ class AuditLogger:
         data_copy.pop("integrity_hash", None)
 
         # Create deterministic string representation
-        event_string = json.dumps(data_copy, sort_keys=True, ensure_ascii=False)
+        event_string = json.dumps(
+            data_copy, sort_keys=True, ensure_ascii=False
+        )
 
         # Calculate HMAC hash
         import hmac
@@ -527,11 +535,17 @@ def log_audit_event(event_type: AuditEventType, **kwargs) -> str:
     return get_audit_logger().log_event(event_type, **kwargs)
 
 
-def log_child_data_access(child_id: str, user_id: str, action: str, **kwargs) -> str:
+def log_child_data_access(
+    child_id: str, user_id: str, action: str, **kwargs
+) -> str:
     """Convenience function to log child data access."""
-    return get_audit_logger().log_child_data_access(child_id, user_id, action, **kwargs)
+    return get_audit_logger().log_child_data_access(
+        child_id, user_id, action, **kwargs
+    )
 
 
-def log_security_event(event_type: AuditEventType, message: str, **kwargs) -> str:
+def log_security_event(
+    event_type: AuditEventType, message: str, **kwargs
+) -> str:
     """Convenience function to log security events."""
     return get_audit_logger().log_security_event(event_type, message, **kwargs)

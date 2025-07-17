@@ -137,7 +137,6 @@ class TestAPIEndpoints:
             from fastapi import FastAPI
         except ImportError:
             from common.mock_fastapi.testclient import TestClient
-        pass
 
         from main import app
 

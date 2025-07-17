@@ -39,5 +39,7 @@ class InputValidationResult:
         self.threats = threats or []
         self.errors = errors or []
         self.child_safety_violations = child_safety_violations or []
-        self.has_critical_threats = any(t.severity == "critical" for t in self.threats)
+        self.has_critical_threats = any(
+            t.severity == "critical" for t in self.threats
+        )
         self.has_child_safety_issues = len(self.child_safety_violations) > 0

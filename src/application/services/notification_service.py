@@ -13,16 +13,23 @@ from typing import Any
 from uuid import uuid4
 
 from src.application.interfaces.safety_monitor import SafetyMonitor
-from src.domain.exceptions.service_unavailable_error import ServiceUnavailableError
+from src.domain.exceptions.service_unavailable_error import (
+    ServiceUnavailableError,
+)
 from src.domain.interfaces.notification_clients import (
     IEmailClient,
     IInAppNotifier,
     IPushNotifier,
     ISMSClient,
 )
-from src.domain.interfaces.notification_repository import INotificationRepository
+from src.domain.interfaces.notification_repository import (
+    INotificationRepository,
+)
 from src.domain.safety.models import SafetyLevel
-from src.domain.value_objects.notification import NotificationRecord, NotificationStatus
+from src.domain.value_objects.notification import (
+    NotificationRecord,
+    NotificationStatus,
+)
 from src.infrastructure.config.notification_config import NotificationConfig
 from src.infrastructure.logging_config import get_logger
 
@@ -82,8 +89,6 @@ class NotificationService:
         self.push_notifier = push_notifier
         self.logger = logger
         self.safety_monitor = safety_monitor
-        # self.notification_queue: list[dict[str, Any]] = []
-        # self.notification_history: dict[str, list[dict[str, Any]]] = {}
 
     async def send_notification(
         self,
@@ -108,18 +113,24 @@ class NotificationService:
         """
         try:
             if self.safety_monitor:
-                safety_result = await self.safety_monitor.check_content_safety(message)
+                safety_result = await self.safety_monitor.check_content_safety(
+                    message
+                )
                 if safety_result.risk_level in [
                     SafetyLevel.UNSAFE,
                     SafetyLevel.POTENTIALLY_UNSAFE,
                 ]:
                     self.logger.warning(
-                        f"Notification blocked: Unsafe content detected for recipient {recipient}. Message: '{message[:50]}...' Reason: {safety_result.analysis_details}",
+                        "Notification blocked: Unsafe content detected for recipient "
+                        f"{recipient}. Message: '{message[:50]}...' Reason: "
+                        f"{safety_result.analysis_details}",
                     )
                     return {
                         "id": None,
                         "status": NotificationStatus.BLOCKED.value,
-                        "message": "Notification content blocked due to safety concerns.",
+                        "message": (
+                            "Notification content blocked due to safety concerns."
+                        ),
                     }
 
             notification_id = uuid4()
@@ -152,7 +163,9 @@ class NotificationService:
             notification_record.attempts += 1
             notification_record.last_attempt_at = datetime.now(UTC)
             notification_record.status = (
-                NotificationStatus.SENT if success else NotificationStatus.FAILED
+                NotificationStatus.SENT
+                if success
+                else NotificationStatus.FAILED
             )
             notification_record.error_message = (
                 None if success else "Failed to send via channel"
@@ -160,7 +173,12 @@ class NotificationService:
 
             await self.repository.save_notification(notification_record)
             self.logger.info(
-                f"Notification {notification_id} sent to {recipient} via {channel.value} with status {notification_record.status.value}.",
+                "Notification {nid} sent to {rcpt} via {chnl} with status {status}.".format(
+                    nid=notification_id,
+                    rcpt=recipient,
+                    chnl=channel.value,
+                    status=notification_record.status.value,
+                )
             )
             return {
                 "id": str(notification_id),
@@ -190,7 +208,9 @@ class NotificationService:
             return {
                 "id": str(notification_id),
                 "status": NotificationStatus.FAILED.value,
-                "message": "An unexpected critical error occurred during notification sending.",
+                "message": (
+                    "An unexpected critical error occurred during notification sending."
+                ),
             }
 
     async def _send_by_channel(self, notification: NotificationRecord) -> bool:
@@ -210,8 +230,7 @@ class NotificationService:
 
         try:
             if channel == NotificationChannel.EMAIL.value:
-                # Assuming recipient is an email address for email
-                # notifications
+                # Assuming recipient is an email address for email notifications
                 return await self.email_client.send_email(
                     recipient,
                     f"AI Teddy Bear Notification: {notification.notification_type}",
@@ -232,7 +251,10 @@ class NotificationService:
                 # For simplicity, using recipient as device_token here.
                 return await self.push_notifier.send_push_notification(
                     recipient,
-                    f"AI Teddy Bear: {notification.notification_type.replace('_', ' ').title()}",
+                    (
+                        "AI Teddy Bear: "
+                        f"{notification.notification_type.replace('_', ' ').title()}"
+                    ),
                     message,
                     {"notification_id": str(notification_id)},
                 )
@@ -242,7 +264,8 @@ class NotificationService:
             return False
         except Exception as e:
             self.logger.error(
-                f"Notification {notification_id}: Failed to send via {channel} to {recipient}: {e}",
+                f"Notification {notification_id}: Failed to send via {channel} "
+                f"to {recipient}: {e}",
                 exc_info=True,
             )
             return False
@@ -260,8 +283,12 @@ class NotificationService:
             A list of NotificationRecord objects.
 
         """
-        self.logger.debug(f"Retrieving notification history for recipient: {recipient}")
-        history = await self.repository.get_notifications_for_recipient(recipient)
+        self.logger.debug(
+            f"Retrieving notification history for recipient: {recipient}"
+        )
+        history = await self.repository.get_notifications_for_recipient(
+            recipient
+        )
         self.logger.info(
             f"Retrieved {len(history)} notifications for recipient: {recipient}",
         )

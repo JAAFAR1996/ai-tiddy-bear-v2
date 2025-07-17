@@ -1,12 +1,20 @@
-"""from .chaos_metrics.data_models import ChaosMetric, SystemHealthSnapshotfrom .chaos_metrics.metrics_collector import ChaosMetricsCollector."""
+from .data_models import ChaosMetric, SystemHealthSnapshot
+from .metrics_collector import ChaosMetricsCollector
 
-"""Chaos Engineering Metrics and MonitoringRe - export from the modular implementation"""
+"""
+Chaos Engineering Metrics and Monitoring
+Re-export from the modular implementation
+"""
 
 # Re-export main classes for backward compatibility
-__all__ = ["ChaosMetric", "ChaosMetricsCollector", "SystemHealthSnapshot"]
+__all__ = [
+    "ChaosMetric",
+    "ChaosMetricsCollector",
+    "SystemHealthSnapshot",
+]
 
 
 # Main entry point
-def create_metrics_collector() -> MetricsCollector:
+def create_metrics_collector() -> ChaosMetricsCollector:
     """Create and return a metrics collector instance."""
     return ChaosMetricsCollector()

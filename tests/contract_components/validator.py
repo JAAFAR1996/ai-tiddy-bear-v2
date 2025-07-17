@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict
 
 from pydantic import ValidationError
@@ -15,7 +14,8 @@ def _validate_string(value: Any, schema: Dict, field_name: str):
         raise ValidationError(f"Field {field_name} must be a string")
     if "enum" in schema and value not in schema["enum"]:
         raise ValidationError(
-            f"Field {field_name} must be one of {schema['enum']}")
+            f"Field {field_name} must be one of {schema['enum']}"
+        )
 
 
 def _validate_integer(value: Any, schema: Dict, field_name: str):
@@ -23,10 +23,12 @@ def _validate_integer(value: Any, schema: Dict, field_name: str):
         raise ValidationError(f"Field {field_name} must be an integer")
     if "minimum" in schema and value < schema["minimum"]:
         raise ValidationError(
-            f"Field {field_name} must be >= {schema['minimum']}")
+            f"Field {field_name} must be >= {schema['minimum']}"
+        )
     if "maximum" in schema and value > schema["maximum"]:
         raise ValidationError(
-            f"Field {field_name} must be <= {schema['maximum']}")
+            f"Field {field_name} must be <= {schema['maximum']}"
+        )
 
 
 def _validate_number(value: Any, schema: Dict, field_name: str):
@@ -62,7 +64,8 @@ _validation_functions.update(
 
 
 def _validate_field(
-        value: Any, schema: Dict[str, Any], field_name: str) -> None:
+    value: Any, schema: Dict[str, Any], field_name: str
+) -> None:
     """Dispatches validation to the correct function based on field type."""
     field_type = schema.get("type")
     validation_function = _validation_functions.get(field_type)

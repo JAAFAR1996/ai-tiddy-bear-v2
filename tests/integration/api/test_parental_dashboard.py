@@ -116,7 +116,8 @@ class TestParentalDashboardEndpoints:
         ) as mock_use_case:
             mock_use_case_instance = AsyncMock()
             mock_use_case_instance.get_children_for_parent.return_value = [
-                child_data]
+                child_data
+            ]
             mock_use_case.return_value = mock_use_case_instance
 
             response = await client.get(
@@ -152,7 +153,9 @@ class TestParentalDashboardEndpoints:
                 age=5,
                 preferences=child_data_input["preferences"],
             )
-            mock_use_case_instance.create_child_profile.return_value = created_child
+            mock_use_case_instance.create_child_profile.return_value = (
+                created_child
+            )
             mock_use_case.return_value = mock_use_case_instance
 
             response = await client.post(
@@ -169,13 +172,16 @@ class TestParentalDashboardEndpoints:
 
     @pytest.mark.asyncio
     async def test_update_child_profile(
-            self, client, auth_headers, child_data):
+        self, client, auth_headers, child_data
+    ):
         """Test updating child profile."""
         child_id = str(child_data.id)
         update_data = {
             "name": "Emma Rose",
             "age": 8,
-            "preferences": {"interests": ["animals", "stories", "music", "art"]},
+            "preferences": {
+                "interests": ["animals", "stories", "music", "art"]
+            },
         }
 
         with patch(
@@ -188,7 +194,9 @@ class TestParentalDashboardEndpoints:
                 age=8,
                 preferences=update_data["preferences"],
             )
-            mock_use_case_instance.update_child_profile.return_value = updated_child
+            mock_use_case_instance.update_child_profile.return_value = (
+                updated_child
+            )
             mock_use_case.return_value = mock_use_case_instance
 
             response = await client.put(
@@ -205,7 +213,8 @@ class TestParentalDashboardEndpoints:
 
     @pytest.mark.asyncio
     async def test_delete_child_profile(
-            self, client, auth_headers, child_data):
+        self, client, auth_headers, child_data
+    ):
         """Test deleting child profile."""
         child_id = str(child_data.id)
 
@@ -224,7 +233,8 @@ class TestParentalDashboardEndpoints:
 
     @pytest.mark.asyncio
     async def test_get_conversation_history(
-            self, client, auth_headers, child_data):
+        self, client, auth_headers, child_data
+    ):
         """Test getting conversation history for child."""
         child_id = str(child_data.id)
         mock_conversations = [
@@ -232,7 +242,9 @@ class TestParentalDashboardEndpoints:
                 "id": str(uuid4()),
                 "child_id": child_id,
                 "started_at": datetime.utcnow().isoformat(),
-                "ended_at": (datetime.utcnow() + timedelta(minutes=5)).isoformat(),
+                "ended_at": (
+                    datetime.utcnow() + timedelta(minutes=5)
+                ).isoformat(),
                 "message_count": 8,
                 "summary": "Conversation about favorite animals",
                 "safety_score": 0.95,
@@ -241,9 +253,13 @@ class TestParentalDashboardEndpoints:
             {
                 "id": str(uuid4()),
                 "child_id": child_id,
-                "started_at": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
+                "started_at": (
+                    datetime.utcnow() - timedelta(hours=2)
+                ).isoformat(),
                 "ended_at": (
-                    datetime.utcnow() - timedelta(hours=2) + timedelta(minutes=10)
+                    datetime.utcnow()
+                    - timedelta(hours=2)
+                    + timedelta(minutes=10)
                 ).isoformat(),
                 "message_count": 15,
                 "summary": "Story time about brave knights",
@@ -285,7 +301,11 @@ class TestParentalDashboardEndpoints:
             "total_interactions": 45,
             "safety_violations": 0,
             "average_safety_score": 0.96,
-            "content_categories": {"educational": 25, "entertainment": 15, "social": 5},
+            "content_categories": {
+                "educational": 25,
+                "entertainment": 15,
+                "social": 5,
+            },
             "emotion_analysis": {
                 "happy": 60,
                 "curious": 25,
@@ -352,11 +372,14 @@ class TestParentalDashboardEndpoints:
             "application.services.analytics_service.AnalyticsService"
         ) as mock_service:
             mock_service_instance = AsyncMock()
-            mock_service_instance.get_child_analytics.return_value = mock_analytics
+            mock_service_instance.get_child_analytics.return_value = (
+                mock_analytics
+            )
             mock_service.return_value = mock_service_instance
 
             response = await client.get(
-                f"/api/v1/dashboard/children/{child_id}/analytics", headers=auth_headers
+                f"/api/v1/dashboard/children/{child_id}/analytics",
+                headers=auth_headers,
             )
 
             assert response.status_code == 200
@@ -367,7 +390,8 @@ class TestParentalDashboardEndpoints:
 
     @pytest.mark.asyncio
     async def test_update_parental_controls(
-            self, client, auth_headers, child_data):
+        self, client, auth_headers, child_data
+    ):
         """Test updating parental controls."""
         child_id = str(child_data.id)
         controls_data = {
@@ -429,7 +453,9 @@ class TestParentalDashboardEndpoints:
             "application.services.esp32_device_service.ESP32DeviceService"
         ) as mock_service:
             mock_service_instance = AsyncMock()
-            mock_service_instance.get_device_status.return_value = mock_device_status
+            mock_service_instance.get_device_status.return_value = (
+                mock_device_status
+            )
             mock_service.return_value = mock_service_instance
 
             response = await client.get(
@@ -481,7 +507,9 @@ class TestParentalDashboardEndpoints:
         }
 
         response = await client.post(
-            "/api/v1/dashboard/children", json=invalid_child_data, headers=auth_headers
+            "/api/v1/dashboard/children",
+            json=invalid_child_data,
+            headers=auth_headers,
         )
 
         assert response.status_code == 422  # Validation error
@@ -505,7 +533,8 @@ class TestParentalDashboardEndpoints:
 
     @pytest.mark.asyncio
     async def test_filtering_and_sorting(
-            self, client, auth_headers, child_data):
+        self, client, auth_headers, child_data
+    ):
         """Test filtering and sorting in analytics."""
         child_id = str(child_data.id)
 

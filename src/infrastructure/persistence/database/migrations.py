@@ -33,10 +33,16 @@ class DatabaseMigrationManager:
             )
             async with engine.begin() as conn:
                 # Enable necessary PostgreSQL extensions
-                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
-                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
                 await conn.execute(
-                    text('CREATE EXTENSION IF NOT EXISTS "pg_stat_statements"'),
+                    text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+                )
+                await conn.execute(
+                    text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"')
+                )
+                await conn.execute(
+                    text(
+                        'CREATE EXTENSION IF NOT EXISTS "pg_stat_statements"'
+                    ),
                 )
 
                 # Create audit function for COPPA compliance
@@ -69,7 +75,9 @@ class DatabaseMigrationManager:
                 for setting in security_settings:
                     await conn.execute(text(setting))
 
-                logger.info("Production PostgreSQL schema optimizations applied")
+                logger.info(
+                    "Production PostgreSQL schema optimizations applied"
+                )
 
             await engine.dispose()
             return True
@@ -109,7 +117,9 @@ class DatabaseMigrationManager:
                             await conn.execute(text(policy))
                         except Exception as e:
                             if "already exists" not in str(e):
-                                logger.warning(f"Failed to create security policy: {e}")
+                                logger.warning(
+                                    f"Failed to create security policy: {e}"
+                                )
 
                 # Create indexes for performance
                 performance_indexes = [

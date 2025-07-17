@@ -4,12 +4,13 @@ Defines the core data structures for COPPA - compliant consent management.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from typing import Dict, Any, Optional
 
+
 class VerificationMethod(Enum):
     """Supported parental verification methods for COPPA compliance."""
+
     EMAIL_VERIFICATION = "email_verification"
     SMS_VERIFICATION = "sms_verification"
     CREDIT_CARD_VERIFICATION = "credit_card_verification"
@@ -17,17 +18,21 @@ class VerificationMethod(Enum):
     VIDEO_CALL_VERIFICATION = "video_call_verification"
     GOVERNMENT_ID_VERIFICATION = "government_id_verification"
 
+
 class VerificationStatus(Enum):
     """Verification status states."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     VERIFIED = "verified"
     FAILED = "failed"
     EXPIRED = "expired"
 
+
 @dataclass
 class ConsentRecord:
     """Core consent record structure."""
+
     consent_id: str
     parent_id: str
     child_id: str
@@ -40,9 +45,11 @@ class ConsentRecord:
     verification_method: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
+
 @dataclass
 class VerificationAttempt:
     """Verification attempt tracking."""
+
     attempt_id: str
     consent_id: str
     method: VerificationMethod

@@ -39,7 +39,9 @@ class VerificationStatus(Enum):
 
 class COPPAConsentManager:
     """Real COPPA-compliant parental verification and consent management.
-    Implements FTC guidelines for verifiable parental consent with comprehensive audit trails and security measures.
+    
+    Implements FTC guidelines for verifiable parental consent with comprehensive 
+    audit trails and security measures.
     """
 
     def __init__(self) -> None:
@@ -69,9 +71,9 @@ class COPPAConsentManager:
             child_name: Child's name for verification context
             verification_method: FTC-approved verification method
             verification_data: Method-specific verification data
+            
         Returns:
             Verification session details and next steps
-
         """
         verification_id = f"verify_{secrets.token_urlsafe(16)}"
 
@@ -84,7 +86,9 @@ class COPPAConsentManager:
             "method": verification_method.value,
             "status": VerificationStatus.PENDING.value,
             "created_at": datetime.utcnow().isoformat(),
-            "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat(),
+            "expires_at": (
+                datetime.utcnow() + timedelta(hours=24)
+            ).isoformat(),
             "attempts": 0,
             "max_attempts": 3,
             "verification_data": verification_data,
@@ -109,7 +113,9 @@ class COPPAConsentManager:
                 {
                     "action": "verification_started",
                     "timestamp": datetime.utcnow().isoformat(),
-                    "details": result.get("next_steps", "Processing verification"),
+                    "details": result.get(
+                        "next_steps", "Processing verification"
+                    ),
                 },
             )
 
@@ -124,7 +130,9 @@ class COPPAConsentManager:
         except Exception as e:
             session["status"] = VerificationStatus.FAILED.value
             session["error"] = str(e)
-            logger.error(f"Verification initiation failed: {verification_id}, {e}")
+            logger.error(
+                f"Verification initiation failed: {verification_id}, {e}"
+            )
 
             return {
                 "verification_id": verification_id,
@@ -138,7 +146,9 @@ class COPPAConsentManager:
         verification_data: dict[str, Any],
     ) -> dict[str, Any]:
         """COPPA Method 1: Credit card verification with $0.01 charge.
-        Validates parent identity through credit card ownership with minimal charge authorization.
+        
+        Validates parent identity through credit card ownership with minimal 
+        charge authorization.
         """
         required_fields = [
             "card_number",
@@ -168,7 +178,10 @@ class COPPAConsentManager:
         return {
             "verification_token": verification_token,
             "masked_card": masked_card,
-            "next_steps": "A $0.01 authorization charge has been placed. Please confirm the charge amount to complete verification.",
+            "next_steps": (
+                "A $0.01 authorization charge has been placed. "
+                "Please confirm the charge amount to complete verification."
+            ),
             "charge_amount": "0.01",
             "processor": "stripe_test",  # Production: actual processor
         }
@@ -179,7 +192,9 @@ class COPPAConsentManager:
         verification_data: dict[str, Any],
     ) -> dict[str, Any]:
         """COPPA Method 2: Government-issued ID verification.
-        Validates parent identity through official government ID with AI-assisted or manual review process.
+        
+        Validates parent identity through official government ID with AI-assisted 
+        or manual review process.
         """
         required_fields = ["id_type", "id_number", "id_image", "selfie_image"]
         for field in required_fields:
@@ -187,9 +202,16 @@ class COPPAConsentManager:
                 raise ValueError(f"Missing required field: {field}")
 
         id_type = verification_data["id_type"].lower()
-        valid_id_types = ["drivers_license", "passport", "state_id", "military_id"]
+        valid_id_types = [
+            "drivers_license",
+            "passport",
+            "state_id",
+            "military_id",
+        ]
         if id_type not in valid_id_types:
-            raise ValueError(f"Invalid ID type. Must be one of: {valid_id_types}")
+            raise ValueError(
+                f"Invalid ID type. Must be one of: {valid_id_types}"
+            )
 
         # Generate secure upload token for ID images
         upload_token = secrets.token_urlsafe(32)
@@ -202,7 +224,10 @@ class COPPAConsentManager:
         return {
             "upload_token": upload_token,
             "id_type": id_type,
-            "next_steps": "ID documents uploaded for verification. Review typically takes 1-2 business hours.",
+            "next_steps": (
+                "ID documents uploaded for verification. "
+                "Review typically takes 1-2 business hours."
+            ),
             "review_time": "1-2 hours",
             "verification_service": "id_verification_ai",
         }
@@ -213,7 +238,9 @@ class COPPAConsentManager:
         verification_data: dict[str, Any],
     ) -> dict[str, Any]:
         """COPPA Method 3: Knowledge-based authentication (KBA).
-        Validates parent identity through credit history and personal information questions.
+        
+        Validates parent identity through credit history and personal 
+        information questions.
         """
         required_fields = ["ssn_last4", "date_of_birth", "address"]
         for field in required_fields:
@@ -248,7 +275,12 @@ class COPPAConsentManager:
             },
             {
                 "question": "Which bank issued your first credit card?",
-                "options": ["Chase", "Bank of America", "Wells Fargo", "Capital One"],
+                "options": [
+                    "Chase",
+                    "Bank of America",
+                    "Wells Fargo",
+                    "Capital One",
+                ],
                 "correct_answer": 1,
             },
         ]
@@ -259,7 +291,9 @@ class COPPAConsentManager:
                 {"question": q["question"], "options": q["options"]}
                 for q in sample_questions
             ],
-            "next_steps": "Please answer the knowledge-based questions to verify your identity.",
+            "next_steps": (
+                "Please answer the knowledge-based questions to verify your identity."
+            ),
             "time_limit": "10 minutes",
             "questions_required": len(sample_questions),
         }
@@ -270,8 +304,9 @@ class COPPAConsentManager:
         verification_data: dict[str, Any],
     ) -> dict[str, Any]:
         """COPPA Method 4: Digital signature verification.
-        Validates parent consent through legally binding
-        digital signature with document integrity.
+        
+        Validates parent consent through legally binding digital signature 
+        with document integrity.
         """
         required_fields = ["full_name", "email", "consent_text"]
         for field in required_fields:
@@ -312,7 +347,7 @@ class COPPAConsentManager:
 Parent/Guardian Information:
 Name: {parent_name}
 Email: {parent_email}
-Date: {datetime.utcnow().strftime(" % B % d, % Y")}
+Date: {datetime.utcnow().strftime("%B %d, %Y")}
 
 Child Information:
 Name: {child_name}
@@ -341,19 +376,25 @@ Digital Signature Required Below"""
         Args:
             verification_id: Verification session identifier
             completion_data: Method-specific completion data
+            
         Returns:
             Verification result and consent token if successful
-
         """
         if verification_id not in self.verifications:
-            return {"status": "not_found", "error": "Verification session not found"}
+            return {
+                "status": "not_found",
+                "error": "Verification session not found",
+            }
 
         session = self.verifications[verification_id]
 
         # Check expiration
         if datetime.utcnow() > datetime.fromisoformat(session["expires_at"]):
             session["status"] = VerificationStatus.EXPIRED.value
-            return {"status": "expired", "error": "Verification session expired"}
+            return {
+                "status": "expired",
+                "error": "Verification session expired",
+            }
 
         # Check attempt limit
         session["attempts"] += 1
@@ -382,7 +423,9 @@ Digital Signature Required Below"""
                 session["consent_token"] = consent_token
 
                 # Create formal consent record
-                consent_id = await self._create_consent_record(session, consent_token)
+                consent_id = await self._create_consent_record(
+                    session, consent_token
+                )
 
                 session["audit_trail"].append(
                     {
@@ -392,7 +435,9 @@ Digital Signature Required Below"""
                     },
                 )
 
-                logger.info(f"Parental verification completed: {verification_id}")
+                logger.info(
+                    f"Parental verification completed: {verification_id}"
+                )
 
                 return {
                     "status": "verified",
@@ -401,6 +446,7 @@ Digital Signature Required Below"""
                     "parent_name": session["parent_name"],
                     "child_name": session["child_name"],
                 }
+            
             session["audit_trail"].append(
                 {
                     "action": "verification_failed",
@@ -411,13 +457,19 @@ Digital Signature Required Below"""
 
             return {
                 "status": "failed",
-                "attempts_remaining": session["max_attempts"] - session["attempts"],
-                "error": "Verification failed. Please check your information and try again.",
+                "attempts_remaining": session["max_attempts"]
+                - session["attempts"],
+                "error": (
+                    "Verification failed. Please check your information "
+                    "and try again."
+                ),
             }
         except Exception as e:
             session["status"] = VerificationStatus.FAILED.value
             session["error"] = str(e)
-            logger.error(f"Verification completion failed: {verification_id}, {e}")
+            logger.error(
+                f"Verification completion failed: {verification_id}, {e}"
+            )
             return {
                 "status": "error",
                 "error": "Verification process encountered an error",
@@ -480,7 +532,9 @@ Digital Signature Required Below"""
             "verification_method": session["method"],
             "verification_id": session["verification_id"],
             "granted_at": datetime.utcnow().isoformat(),
-            "expires_at": (datetime.utcnow() + timedelta(days=365)).isoformat(),
+            "expires_at": (
+                datetime.utcnow() + timedelta(days=365)
+            ).isoformat(),
             "status": "active",
             "permissions": [
                 "data_collection",
@@ -507,9 +561,9 @@ Digital Signature Required Below"""
         Args:
             consent_token: Consent token from verification
             required_permission: Permission being requested
+            
         Returns:
             Validation result with consent status
-
         """
         # Find consent by token
         consent_record = None
@@ -522,7 +576,9 @@ Digital Signature Required Below"""
             return {"valid": False, "error": "Invalid consent token"}
 
         # Check expiration
-        if datetime.utcnow() > datetime.fromisoformat(consent_record["expires_at"]):
+        if datetime.utcnow() > datetime.fromisoformat(
+            consent_record["expires_at"]
+        ):
             consent_record["status"] = "expired"
             return {"valid": False, "error": "Consent has expired"}
 
@@ -554,9 +610,9 @@ Digital Signature Required Below"""
 
         Args:
             consent_id: Consent record identifier
+            
         Returns:
             Revocation confirmation
-
         """
         if consent_id not in self.consents:
             return {"success": False, "error": "Consent record not found"}
@@ -571,5 +627,8 @@ Digital Signature Required Below"""
             "success": True,
             "consent_id": consent_id,
             "revoked_at": consent_record["revoked_at"],
-            "message": "Consent has been revoked. Child data will be deleted within 30 days.",
+            "message": (
+                "Consent has been revoked. Child data will be deleted "
+                "within 30 days."
+            ),
         }

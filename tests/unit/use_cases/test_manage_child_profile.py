@@ -1,7 +1,11 @@
-from infrastructure.read_models.child_profile_read_model import ChildProfileReadModel
+from infrastructure.read_models.child_profile_read_model import (
+    ChildProfileReadModel,
+)
 from domain.entities.child_profile import ChildProfile
 from application.dto.child_data import ChildData
-from application.use_cases.manage_child_profile import ManageChildProfileUseCase
+from application.use_cases.manage_child_profile import (
+    ManageChildProfileUseCase,
+)
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock
 import sys
@@ -132,7 +136,9 @@ class TestManageChildProfileUseCase:
             return_value=mock_profile,
         ):
             # Execute
-            result = await use_case.create_child_profile(name, age, preferences)
+            result = await use_case.create_child_profile(
+                name, age, preferences
+            )
 
             # Verify
             assert isinstance(result, ChildData)
@@ -142,7 +148,8 @@ class TestManageChildProfileUseCase:
 
             # Verify repository save was called
             use_case.child_repository.save.assert_called_once_with(
-                mock_profile)
+                mock_profile
+            )
 
     @pytest.mark.asyncio
     async def test_create_child_profile_with_events(self, use_case):
@@ -250,7 +257,8 @@ class TestManageChildProfileUseCase:
         # Verify
         assert isinstance(result, ChildData)
         child_profile.update_profile.assert_called_once_with(
-            new_name, None, None)
+            new_name, None, None
+        )
 
     @pytest.mark.asyncio
     async def test_update_child_profile_not_exists(self, use_case):
@@ -301,7 +309,8 @@ class TestManageChildProfileUseCase:
         assert result is True
         use_case.child_repository.delete.assert_called_once_with(child_id)
         use_case.child_profile_read_model_store.delete.assert_called_once_with(
-            child_id)
+            child_id
+        )
 
     @pytest.mark.asyncio
     async def test_delete_child_profile_not_exists(self, use_case):
@@ -342,7 +351,9 @@ class TestManageChildProfileUseCase:
             return_value=mock_profile,
         ):
             # Execute
-            result = await use_case.create_child_profile(name, age, preferences)
+            result = await use_case.create_child_profile(
+                name, age, preferences
+            )
 
             # Verify
             assert result.name == name

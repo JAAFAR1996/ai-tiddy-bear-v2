@@ -90,7 +90,9 @@ class APISecurityManager:
             # Limit input length
             if len(input_string) > self.max_input_length:
                 input_string = input_string[: self.max_input_length]
-                logger.warning(f"Input truncated to {self.max_input_length} characters")
+                logger.warning(
+                    f"Input truncated to {self.max_input_length} characters"
+                )
 
             # HTML escape to prevent XSS
             sanitized = html.escape(input_string)
@@ -179,9 +181,12 @@ class APISecurityManager:
             # Check for excessive caps (shouting)
             if (
                 len(sanitized) > 10
-                and sum(1 for c in sanitized if c.isupper()) / len(sanitized) > 0.7
+                and sum(1 for c in sanitized if c.isupper()) / len(sanitized)
+                > 0.7
             ):
-                result["warnings"].append("Input contains excessive capital letters")
+                result["warnings"].append(
+                    "Input contains excessive capital letters"
+                )
 
             # Check for repetitive content
             if (

@@ -8,9 +8,7 @@ content filtering, email services, settings, and event bus functionality.
 
 import pytest
 from abc import ABC
-from datetime import datetime
-from typing import List, Dict, Any, Optional
-from unittest.mock import Mock, AsyncMock, MagicMock
+from typing import List, Dict, Any
 
 from src.application.interfaces.infrastructure_services import (
     IEncryptionService,
@@ -61,8 +59,9 @@ class MockDataRetentionService(IDataRetentionService):
         self.exported_data = {}
         self.deleted_ids = []
 
-    async def schedule_deletion(self, child_id: str,
-                                retention_days: int) -> None:
+    async def schedule_deletion(
+        self, child_id: str, retention_days: int
+    ) -> None:
         self.schedule_deletion_called = True
         self.scheduled_deletions[child_id] = retention_days
 
@@ -115,7 +114,12 @@ class MockAuditLogger(IAuditLogger):
         self.logged_consent_events = []
 
     async def log_child_access(
-        self, parent_id: str, child_id: str, action: str, ip_address: str, success: bool
+        self,
+        parent_id: str,
+        child_id: str,
+        action: str,
+        ip_address: str,
+        success: bool,
     ) -> None:
         self.log_child_access_called = True
         self.logged_access_events.append(
@@ -181,7 +185,8 @@ class MockContentFilterService(IContentFilterService):
         self.validate_topic_called = False
         self.filter_result = {
             "is_safe": True,
-            "filtered_content": "safe content"}
+            "filtered_content": "safe content",
+        }
         self.topic_validation_result = True
 
     async def filter_content(
@@ -215,12 +220,21 @@ class MockEmailService(IEmailService):
     ) -> bool:
         self.send_email_called = True
         self.sent_emails.append(
-            {"to": to, "subject": subject, "template": template, "context": context}
+            {
+                "to": to,
+                "subject": subject,
+                "template": template,
+                "context": context,
+            }
         )
         return self.email_success
 
     async def send_deletion_warning(
-        self, parent_email: str, child_name: str, deletion_date: str, export_url: str
+        self,
+        parent_email: str,
+        child_name: str,
+        deletion_date: str,
+        export_url: str,
     ) -> bool:
         self.send_deletion_warning_called = True
         self.sent_emails.append(
@@ -274,13 +288,15 @@ class MockEventBus(IEventBus):
         self.published_events = []
         self.subscriptions = {}
 
-    async def publish_event(self, event_name: str,
-                            data: Dict[str, Any]) -> None:
+    async def publish_event(
+        self, event_name: str, data: Dict[str, Any]
+    ) -> None:
         self.publish_event_called = True
         self.published_events.append({"event_name": event_name, "data": data})
 
     async def subscribe_to_events(
-            self, event_names: List[str], handler) -> None:
+        self, event_names: List[str], handler
+    ) -> None:
         self.subscribe_to_events_called = True
         for event_name in event_names:
             if event_name not in self.subscriptions:
@@ -376,7 +392,8 @@ class TestInfrastructureServiceInterfaces:
         # Test verify_parent_identity
         verification_data = {
             "email": "parent@example.com",
-            "phone": "123-456-7890"}
+            "phone": "123-456-7890",
+        }
         result = await service.verify_parent_identity(
             "parent_123", "email", verification_data
         )
@@ -450,7 +467,9 @@ class TestInfrastructureServiceInterfaces:
         service = MockContentFilterService()
 
         # Test filter_content
-        result = await service.filter_content("test content", 8, "conversation")
+        result = await service.filter_content(
+            "test content", 8, "conversation"
+        )
         assert service.filter_content_called
         assert result == {"is_safe": True, "filtered_content": "safe content"}
         assert service.last_filter_request["content"] == "test content"
@@ -485,7 +504,10 @@ class TestInfrastructureServiceInterfaces:
 
         # Test send_deletion_warning
         result = await service.send_deletion_warning(
-            "parent@example.com", "Alice", "2024-01-01", "https://example.com/export"
+            "parent@example.com",
+            "Alice",
+            "2024-01-01",
+            "https://example.com/export",
         )
         assert service.send_deletion_warning_called
         assert result is True
@@ -536,8 +558,12 @@ class TestInfrastructureServiceInterfaces:
         assert published_event["data"] == event_data
 
         # Test subscribe_to_events
-        def handler(event): return None
-        await bus.subscribe_to_events(["child_registered", "child_updated"], handler)
+        def handler(event):
+            return None
+
+        await bus.subscribe_to_events(
+            ["child_registered", "child_updated"], handler
+        )
         assert bus.subscribe_to_events_called
         assert "child_registered" in bus.subscriptions
         assert "child_updated" in bus.subscriptions
@@ -668,8 +694,11 @@ class TestInfrastructureServiceInterfaces:
         bus = MockEventBus()
 
         # Subscribe multiple handlers to same event
-        def handler1(event): return "handler1"
-        def handler2(event): return "handler2"
+        def handler1(event):
+            return "handler1"
+
+        def handler2(event):
+            return "handler2"
 
         await bus.subscribe_to_events(["test_event"], handler1)
         await bus.subscribe_to_events(["test_event"], handler2)
@@ -779,7 +808,9 @@ class TestInfrastructureServiceInterfaces:
         filter_result = await content_filter.filter_content("test", 8)
         assert isinstance(filter_result, dict)
 
-        topic_result = await content_filter.validate_topic("animals", "child_123")
+        topic_result = await content_filter.validate_topic(
+            "animals", "child_123"
+        )
         assert isinstance(topic_result, bool)
 
         # Test email service return types

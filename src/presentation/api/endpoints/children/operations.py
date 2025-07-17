@@ -24,7 +24,9 @@ from .models import (
 
 logger = get_logger(__name__, component="api")
 
-from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
+from src.application.use_cases.manage_child_profile import (
+    ManageChildProfileUseCase,
+)
 
 
 class ChildOperations:
@@ -87,8 +89,10 @@ class ChildOperations:
                 pagination_request = PaginationRequest()
 
             # Create child-safe pagination
-            safe_pagination = self.pagination_service.create_child_safe_pagination(
-                pagination_request,
+            safe_pagination = (
+                self.pagination_service.create_child_safe_pagination(
+                    pagination_request,
+                )
             )
 
             # Get children from use case
@@ -116,7 +120,9 @@ class ChildOperations:
     async def get_child(self, child_id: str) -> ChildResponse:
         """Get detailed information for a specific child."""
         try:
-            child = await self.manage_child_profile_use_case.get_child_profile(child_id)
+            child = await self.manage_child_profile_use_case.get_child_profile(
+                child_id
+            )
             if not child:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -166,8 +172,12 @@ class ChildOperations:
     async def delete_child(self, child_id: str) -> dict[str, str]:
         """Delete a child profile with COPPA compliance."""
         try:
-            await self.manage_child_profile_use_case.delete_child_profile(child_id)
-            return {"message": "Child and all associated data deleted successfully"}
+            await self.manage_child_profile_use_case.delete_child_profile(
+                child_id
+            )
+            return {
+                "message": "Child and all associated data deleted successfully"
+            }
         except HTTPException:
             raise
         except Exception as e:
@@ -202,12 +212,16 @@ class ChildValidationService:
             raise ValueError("Child name is required")
 
         # Use coppa_compliance_service for age validation
-        coppa_result = self.coppa_compliance_service.validate_child_age(request.age)
+        coppa_result = self.coppa_compliance_service.validate_child_age(
+            request.age
+        )
         if coppa_result.parental_consent_required:
             # This check is now handled by the create_child method in ChildOperations
             pass
 
-    def validate_child_update(self, request: ChildUpdateRequest, child_id: str) -> None:
+    def validate_child_update(
+        self, request: ChildUpdateRequest, child_id: str
+    ) -> None:
         """Validate child update request for compliance and data integrity."""
         if not child_id or not child_id.strip():
             raise ValueError("Child ID is required")
@@ -226,7 +240,9 @@ class ChildValidationService:
         if not has_updates:
             raise ValueError("At least one field must be provided for update")
 
-    def validate_parent_permission(self, parent_id: str, child_id: str) -> None:
+    def validate_parent_permission(
+        self, parent_id: str, child_id: str
+    ) -> None:
         """Validate parent's authorization to access child data."""
         # In production, we need to verify from database
         # that the child belongs to this parent
@@ -237,7 +253,9 @@ class ChildValidationService:
 class ChildDataTransformer:
     """Data transformer for child profile operations."""
 
-    def transform_create_request(self, request: ChildCreateRequest) -> dict[str, Any]:
+    def transform_create_request(
+        self, request: ChildCreateRequest
+    ) -> dict[str, Any]:
         """Transform creation request to database-ready format."""
         return {
             "name": request.name.strip(),
@@ -250,7 +268,9 @@ class ChildDataTransformer:
             "created_at": datetime.now().isoformat(),
         }
 
-    def transform_update_request(self, request: ChildUpdateRequest) -> dict[str, Any]:
+    def transform_update_request(
+        self, request: ChildUpdateRequest
+    ) -> dict[str, Any]:
         """Transform update request to database-ready format."""
         updates = {}
 
@@ -277,7 +297,9 @@ class ChildDataTransformer:
         updates["updated_at"] = datetime.now().isoformat()
         return updates
 
-    def transform_db_to_response(self, db_record: dict[str, Any]) -> ChildResponse:
+    def transform_db_to_response(
+        self, db_record: dict[str, Any]
+    ) -> ChildResponse:
         """Transform database record to API response format."""
         return ChildResponse.from_db_record(db_record)
 

@@ -26,7 +26,11 @@ class TestSecurity:
         def sanitize_input(text):
             # Simple sanitization simulation
             dangerous_patterns = [
-                "<script", "javascript:", "onerror=", "<iframe"]
+                "<script",
+                "javascript:",
+                "onerror=",
+                "<iframe",
+            ]
             for pattern in dangerous_patterns:
                 if pattern in text.lower():
                     return ""

@@ -18,7 +18,9 @@ class AuditService:
 
     def __init__(
         self,
-        logger: logging.Logger = get_logger(__name__, component="audit_service"),
+        logger: logging.Logger = get_logger(
+            __name__, component="audit_service"
+        ),
     ) -> None:
         """Initializes the audit service."""
         self.audit_logs: list[dict[str, Any]] = []
@@ -48,7 +50,10 @@ class AuditService:
         audit_data = {
             "type": "audit",
             "timestamp": self._sanitize_log_input(timestamp),
-            "event": f"{self._sanitize_log_input(request_info['method'])} {self._sanitize_log_input(request_info['path'])}",
+            "event": (
+                f"{self._sanitize_log_input(request_info['method'])} "
+                f"{self._sanitize_log_input(request_info['path'])}"
+            ),
             "client_ip": self._sanitize_log_input(request_info["client_ip"]),
             "user_agent": self._sanitize_log_input(request_info["user_agent"])[
                 :100
@@ -59,7 +64,9 @@ class AuditService:
             "coppa_compliant": True,
         }
         # Add child-specific information if present
-        if "child_id" in request_info.get("body", {}) or "child_id" in request_info.get(
+        if "child_id" in request_info.get(
+            "body", {}
+        ) or "child_id" in request_info.get(
             "query_params",
             {},
         ):

@@ -24,7 +24,9 @@ class ElevenLabsClient:
             "voice_settings": {"stability": 0.5, "similarity_boost": 0.5},
         }
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=self.headers, json=payload)
+            response = await client.post(
+                url, headers=self.headers, json=payload
+            )
             response.raise_for_status()
             # Raise an exception for bad status codes
             return response.content

@@ -5,7 +5,6 @@ import tempfile
 import subprocess
 import re
 import os
-import logging
 import ast
 import sys
 from pathlib import Path
@@ -99,7 +98,8 @@ class TestValidator:
             return False
 
     async def comprehensive_validation(
-            self, test_code: str) -> ValidationResult:
+        self, test_code: str
+    ) -> ValidationResult:
         """
         Perform comprehensive validation of test code
 
@@ -127,7 +127,9 @@ class TestValidator:
         import_errors = await self._check_imports(test_code)
         if import_errors:
             result.import_errors = import_errors
-            if not result.syntax_errors:  # Only mark invalid if no syntax errors
+            if (
+                not result.syntax_errors
+            ):  # Only mark invalid if no syntax errors
                 result.is_valid = False
 
         # Check test structure
@@ -191,7 +193,10 @@ class TestValidator:
         errors = []
 
         # Check for usage without imports
-        if "Mock" in test_code and "from unittest.mock import" not in test_code:
+        if (
+            "Mock" in test_code
+            and "from unittest.mock import" not in test_code
+        ):
             errors.append("Missing import: from unittest.mock import Mock")
 
         if "@given" in test_code and "from hypothesis import" not in test_code:
@@ -226,15 +231,19 @@ class TestValidator:
         # Check for empty test methods
         if "pass" in test_code and "assert" not in test_code:
             errors.append(
-                "Test method appears to be empty (only contains 'pass')")
+                "Test method appears to be empty (only contains 'pass')"
+            )
 
         # Check for proper indentation
         lines = test_code.split("\n")
         for i, line in enumerate(lines, 1):
-            if line.strip().startswith("def test_") and not line.startswith("    "):
+            if line.strip().startswith("def test_") and not line.startswith(
+                "    "
+            ):
                 if i > 1:  # Not the first line
                     errors.append(
-                        f"Line {i}: Test method not properly indented")
+                        f"Line {i}: Test method not properly indented"
+                    )
 
         return errors
 
@@ -251,12 +260,14 @@ class TestValidator:
         # Suggest better assertions
         if "assert True" in test_code:
             suggestions.append(
-                "Replace 'assert True' with meaningful assertions")
+                "Replace 'assert True' with meaningful assertions"
+            )
 
         # Suggest setup/teardown if needed
         if "Mock" in test_code and "setUp" not in test_code:
             suggestions.append(
-                "Consider using setUp/tearDown for mock initialization")
+                "Consider using setUp/tearDown for mock initialization"
+            )
 
         # Suggest async/await usage
         if "async def" in test_code and "await" not in test_code:
@@ -276,14 +287,16 @@ class TestValidator:
 
         # Fix missing colons in function definitions
         fixed_code = re.sub(
-            r"def\s+(\w+)\s*\([^)]*\)\s*$", r"def \1():", fixed_code, flags=re.MULTILINE
+            r"def\s+(\w+)\s*\([^)]*\)\s*$",
+            r"def \1():",
+            fixed_code,
+            flags=re.MULTILINE,
         )
 
         # Fix missing 'self' parameter in test methods
         fixed_code = re.sub(
-            r"def\s+(test_\w+)\s*\(\s*\)",
-            r"def \1(self)",
-            fixed_code)
+            r"def\s+(test_\w+)\s*\(\s*\)", r"def \1(self)", fixed_code
+        )
 
         # Fix basic indentation issues
         lines = fixed_code.split("\n")
@@ -331,7 +344,9 @@ class TestValidator:
         lines = test_code.split("\n")
         insert_index = 0
         for i, line in enumerate(lines):
-            if line.strip().startswith("class ") or line.strip().startswith("def "):
+            if line.strip().startswith("class ") or line.strip().startswith(
+                "def "
+            ):
                 insert_index = i
                 break
 
@@ -414,7 +429,9 @@ class TestValidator:
         """
         try:
             # Create temporary file
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as f:
                 f.write(test_code)
                 temp_file = f.name
 

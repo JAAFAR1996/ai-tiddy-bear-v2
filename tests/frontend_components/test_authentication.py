@@ -83,7 +83,8 @@ class TestAuthentication:
 
         # Act
         result = await auth_service.login(
-            TEST_CONFIG["test_user"]["email"], TEST_CONFIG["test_user"]["password"]
+            TEST_CONFIG["test_user"]["email"],
+            TEST_CONFIG["test_user"]["password"],
         )
 
         # Assert

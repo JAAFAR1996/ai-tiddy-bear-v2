@@ -5,9 +5,7 @@ Tests that verify the system can start and operate without mocks.
 
 import pytest
 import os
-import sys
 from unittest.mock import patch
-from fastapi.testclient import TestClient
 
 
 class TestProductionReadiness:
@@ -15,20 +13,25 @@ class TestProductionReadiness:
 
     def test_startup_validator_fails_without_dependencies(self):
         """Test that startup validation fails when dependencies are missing."""
-        from src.infrastructure.config.startup_validator import StartupValidator
+        from src.infrastructure.config.startup_validator import (
+            StartupValidator,
+        )
 
         validator = StartupValidator()
 
         # Mock missing pydantic
         with patch(
-            "builtins.__import__", side_effect=ImportError("No module named 'pydantic'")
+            "builtins.__import__",
+            side_effect=ImportError("No module named 'pydantic'"),
         ):
             assert not validator.validate_dependencies()
             assert any("Pydantic" in error for error in validator.errors)
 
     def test_startup_validator_fails_without_environment(self):
         """Test that startup validation fails when environment vars are missing."""
-        from src.infrastructure.config.startup_validator import StartupValidator
+        from src.infrastructure.config.startup_validator import (
+            StartupValidator,
+        )
 
         validator = StartupValidator()
 
@@ -40,7 +43,9 @@ class TestProductionReadiness:
 
     def test_startup_validator_fails_with_insecure_secrets(self):
         """Test that startup validation fails with insecure secrets."""
-        from src.infrastructure.config.startup_validator import StartupValidator
+        from src.infrastructure.config.startup_validator import (
+            StartupValidator,
+        )
 
         validator = StartupValidator()
 
@@ -58,7 +63,6 @@ class TestProductionReadiness:
 
     def test_no_mock_imports_in_production_code(self):
         """Test that no production code imports mock modules."""
-        import subprocess
         import glob
 
         # Find all Python files in src/ (excluding tests)
@@ -75,7 +79,10 @@ class TestProductionReadiness:
                     if "from.*mock" in content or "import.*mock" in content:
                         # Exclude legitimate test fixtures in conftest.py or
                         # test files
-                        if "conftest.py" not in file_path and "test_" not in file_path:
+                        if (
+                            "conftest.py" not in file_path
+                            and "test_" not in file_path
+                        ):
                             mock_imports.append(file_path)
             except (UnicodeDecodeError, FileNotFoundError):
                 pass
@@ -92,7 +99,7 @@ class TestProductionReadiness:
                 "builtins.__import__",
                 side_effect=ImportError("No module named 'infrastructure'"),
             ):
-                from src.common.container import Container
+                pass
 
     def test_settings_require_real_values(self):
         """Test that settings require real values, not defaults."""
@@ -105,7 +112,9 @@ class TestProductionReadiness:
 
     def test_database_service_uses_sqlalchemy_orm(self):
         """Test that database service uses proper ORM (no string interpolation)."""
-        from src.infrastructure.persistence.real_database_service import DatabaseService
+        from src.infrastructure.persistence.real_database_service import (
+            DatabaseService,
+        )
         import inspect
         import ast
 
@@ -113,7 +122,8 @@ class TestProductionReadiness:
         methods_to_check = [
             "get_child",
             "get_children_by_parent",
-            "create_child"]
+            "create_child",
+        ]
 
         for method_name in methods_to_check:
             if hasattr(DatabaseService, method_name):
@@ -129,7 +139,12 @@ class TestProductionReadiness:
                             parent = getattr(node, "parent", None)
                             if parent and any(
                                 keyword in source
-                                for keyword in ["SELECT", "INSERT", "UPDATE", "DELETE"]
+                                for keyword in [
+                                    "SELECT",
+                                    "INSERT",
+                                    "UPDATE",
+                                    "DELETE",
+                                ]
                             ):
                                 pytest.fail(
                                     f"Potential SQL injection in {method_name}: f-string usage detected"
@@ -160,7 +175,9 @@ class TestProductionReadiness:
 
     def test_auth_service_uses_real_jwt(self):
         """Test that auth service uses real JWT implementation."""
-        from src.infrastructure.security.real_auth_service import ProductionAuthService
+        from src.infrastructure.security.real_auth_service import (
+            ProductionAuthService,
+        )
         import jwt
 
         import secrets
@@ -168,7 +185,8 @@ class TestProductionReadiness:
         auth_service = ProductionAuthService()
         # Generate secure test key dynamically - never hardcode
         auth_service.secret_key = secrets.token_urlsafe(
-            32)  # - مفتاح ديناميكي آمن
+            32
+        )  # - مفتاح ديناميكي آمن
 
         # Create test user data
         user_data = {"id": "test_user", "email": "test@example.com"}
@@ -182,9 +200,8 @@ class TestProductionReadiness:
 
         # Verify it can be decoded with real JWT library
         decoded = jwt.decode(
-            token,
-            auth_service.secret_key,
-            algorithms=["HS256"])
+            token, auth_service.secret_key, algorithms=["HS256"]
+        )
         assert decoded["id"] == "test_user"
 
     def test_ai_service_requires_real_openai_key(self):
@@ -215,8 +232,9 @@ class TestProductionReadiness:
                 with open(file_path, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                     for i, line in enumerate(lines):
-                        if "print(" in line and not line.strip(
-                        ).startswith("#"):
+                        if "print(" in line and not line.strip().startswith(
+                            "#"
+                        ):
                             files_with_prints.append(f"{file_path}:{i+1}")
             except (UnicodeDecodeError, FileNotFoundError):
                 pass
@@ -255,7 +273,8 @@ class TestProductionReadiness:
                 # environment
                 if "pydantic" in str(e) or "fastapi" in str(e):
                     pytest.skip(
-                        f"Dependencies not available in test environment: {e}")
+                        f"Dependencies not available in test environment: {e}"
+                    )
                 else:
                     raise
 
@@ -306,9 +325,8 @@ class TestSecurityCompliance:
         test_data = {
             "name": "Test Child",
             "age": 7,
-            "interests": [
-                "toys",
-                "games"]}
+            "interests": ["toys", "games"],
+        }
 
         # Encrypt
         encrypted = service.encrypt_child_data(test_data)
@@ -322,7 +340,9 @@ class TestSecurityCompliance:
     def test_rate_limiting_configuration(self):
         """Test that rate limiting is properly configured."""
         try:
-            from src.infrastructure.security.rate_limiter import setup_rate_limiter
+            from src.infrastructure.security.rate_limiter import (
+                setup_rate_limiter,
+            )
 
             assert callable(setup_rate_limiter)
         except ImportError:

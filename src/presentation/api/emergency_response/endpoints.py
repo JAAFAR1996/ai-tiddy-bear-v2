@@ -71,7 +71,9 @@ class EmergencyEndpoints:
             # تحويل البيانات إلى نموذج التنبيه
             emergency_alert = EmergencyAlert(
                 id=f"alert_{datetime.now().timestamp()}",
-                severity=alert_data.get("labels", {}).get("severity", "unknown"),
+                severity=alert_data.get("labels", {}).get(
+                    "severity", "unknown"
+                ),
                 description=alert_data.get("annotations", {}).get(
                     "summary",
                     "No description",
@@ -131,7 +133,9 @@ class EmergencyEndpoints:
         if not self._verify_token(credentials.credentials):
             raise HTTPException(status_code=401, detail="Invalid token")
         try:
-            success = await self.notification_service.send_notification(request)
+            success = await self.notification_service.send_notification(
+                request
+            )
             if success:
                 return {"status": "sent", "message": "تم إرسال الإشعار بنجاح"}
             raise HTTPException(status_code=500, detail="فشل في إرسال الإشعار")

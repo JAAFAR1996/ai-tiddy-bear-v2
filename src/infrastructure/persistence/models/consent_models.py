@@ -66,17 +66,28 @@ class ConsentModel(Base):
         default=lambda: datetime.now(UTC),
         nullable=False,
     )
-    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     # Verification
-    verification_method: Mapped[str] = mapped_column(String(100), nullable=False)
+    verification_method: Mapped[str] = mapped_column(
+        String(100), nullable=False
+    )
     verification_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
 
-    __table_args__ = (Index("idx_consent_parent_type", "parent_id", "consent_type"),)
+    __table_args__ = (
+        Index("idx_consent_parent_type", "parent_id", "consent_type"),
+    )
 
     def __repr__(self) -> str:
-        return f"<ConsentModel(id={self.id}, parent_id={self.parent_id}, type='{self.consent_type.value}', granted={self.granted})>"
+        return (
+            f"<ConsentModel(id={self.id}, parent_id={self.parent_id}, "
+            f"type='{self.consent_type.value}', granted={self.granted})>"
+        )
 
 
 class SafetyEventModel(Base):
@@ -125,4 +136,7 @@ class SafetyEventModel(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<SafetyEventModel(id={self.id}, child_id={self.child_id}, type='{self.event_type.value}')>"
+        return (
+            f"<SafetyEventModel(id={self.id}, child_id={self.child_id}, "
+            f"type='{self.event_type.value}')>"
+        )

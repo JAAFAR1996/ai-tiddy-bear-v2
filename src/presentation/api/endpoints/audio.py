@@ -1,33 +1,39 @@
 # Standard library imports
-import io
 from typing import Any, Dict, Optional
 
 # Optional imports
-import magic
 
 # Third-party imports
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import StreamingResponse
-from fastapi.security import HTTPBearer
 
 # Local imports (صحح المسارات حسب مشروعك)
-from src.application.services.ai_orchestration_service import AIOrchestrationService
-from src.application.services.audio_processing_service import AudioProcessingService
+from src.application.services.audio_processing_service import (
+    AudioProcessingService,
+)
 from src.infrastructure.di.container import container
-from src.infrastructure.security.real_auth_service import get_current_user, UserInfo
+from src.infrastructure.security.real_auth_service import (
+    get_current_user,
+    UserInfo,
+)
 
 router = APIRouter()
+
 
 @router.post(
     "/transcribe",
     summary="Transcribe audio input and return a child-safe response",
-    response_description="A streaming audio response or an error message."
+    response_description="A streaming audio response or an error message.",
 )
 async def transcribe_audio(
-    audio_file: UploadFile = File(..., description="The audio file to transcribe (e.g., WAV, MP3)."),
+    audio_file: UploadFile = File(
+        ..., description="The audio file to transcribe (e.g., WAV, MP3)."
+    ),
     child_context: Optional[Dict[str, Any]] = None,
-    voice_service: AudioProcessingService = Depends(container.audio_processing_service),
-    current_user: UserInfo = Depends(get_current_user)
+    voice_service: AudioProcessingService = Depends(
+        container.audio_processing_service
+    ),
+    current_user: UserInfo = Depends(get_current_user),
 ) -> StreamingResponse:
     """
     Transcribes an uploaded audio file and processes it to generate a child-safe AI response.

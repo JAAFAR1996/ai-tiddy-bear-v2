@@ -1,11 +1,14 @@
 """
 Encryption Service Adapter
-Implements the domain encryption interface using infrastructure encryption services, 
+Implements the domain encryption interface using infrastructure encryption services,
 maintaining Hexagonal Architecture separation of concerns.
 """
 
 from typing import Optional
-from src.domain.interfaces.encryption_interface import EncryptionServiceInterface
+from src.domain.interfaces.encryption_interface import (
+    EncryptionServiceInterface,
+)
+
 
 class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
     """
@@ -13,6 +16,7 @@ class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
     This adapter allows the domain layer to use encryption without coupling
     to specific infrastructure implementations.
     """
+
     def __init__(self) -> None:
         """Initialize adapter with lazy loading of infrastructure service."""
         self._service = None
@@ -22,7 +26,10 @@ class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
         """Lazy load the infrastructure encryption service."""
         if not self._initialized:
             try:
-                from ..security.encryption_service import get_encryption_service
+                from ..security.encryption_service import (
+                    get_encryption_service,
+                )
+
                 self._service = get_encryption_service()
                 self._initialized = True
             except ImportError:
@@ -52,10 +59,12 @@ class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
     def is_available(self) -> bool:
         """Check if infrastructure encryption service is available."""
         service = self._get_service()
-        return service is not None and hasattr(service, 'encrypt')
+        return service is not None and hasattr(service, "encrypt")
+
 
 # Global adapter instance
 _encryption_adapter: Optional[InfrastructureEncryptionAdapter] = None
+
 
 def get_encryption_adapter() -> InfrastructureEncryptionAdapter:
     """Get or create global encryption adapter instance."""

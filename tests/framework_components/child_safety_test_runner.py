@@ -4,7 +4,8 @@ from .models import TestResult, TestSuite
 async def run_child_safety_tests(framework):
     """تشغيل اختبارات أمان الأطفال"""
     suite = TestSuite(
-        name="Child Safety Tests", description="اختبارات أمان الأطفال والمراقبة"
+        name="Child Safety Tests",
+        description="اختبارات أمان الأطفال والمراقبة",
     )
 
     # Content filtering tests

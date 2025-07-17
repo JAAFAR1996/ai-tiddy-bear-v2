@@ -133,7 +133,10 @@ class COPPAAgeValidator:
             "age": age,
             "validation_result": validation_result.value,
             "is_valid": validation_result
-            not in [AgeValidationResult.TOO_YOUNG, AgeValidationResult.INVALID_AGE],
+            not in [
+                AgeValidationResult.TOO_YOUNG,
+                AgeValidationResult.INVALID_AGE,
+            ],
             "requires_parental_consent": (
                 cls.requires_parental_consent(age) if age else False
             ),
