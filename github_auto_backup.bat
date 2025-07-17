@@ -1,32 +1,29 @@
 @echo off
 chcp 65001 >nul
 
-REM إعداد Git credentials مرة واحدة (إذا لم تفعلها سابقًا)
+REM Configure git credentials once if not set
 git config --global credential.helper store
 
-REM التقاط التاريخ والوقت بشكل موثوق (yyyy-mm-dd_hh-mm)
+REM Get current datetime in yyyy-mm-dd_hh-mm format
 for /f "tokens=2 delims==" %%I in ('"wmic os get localdatetime /value"') do set datetime=%%I
 set TIMESTAMP=%datetime:~0,4%-%datetime:~4,2%-%datetime:~6,2%_%datetime:~8,2%-%datetime:~10,2%
 
-REM انتقل لمجلد المشروع الجديد
+REM Change directory to your project
 cd /d "C:\Users\jaafa\Desktop\5555\ai-teddy\ai-tiddy-bear--main"
 
-echo 🔁 Running auto-backup for: %CD%
+echo Running auto-backup for: %CD%
 
-REM تحديث المشروع من الريموت (لحل أي تعارض قبل الدفع)
-git pull origin main
+REM Add all files (new/modified/deleted)
+git add --all .
 
-REM إضافة كل التغييرات
-git add -A
-
-REM التحقق هل هناك تغييرات
+REM Check for staged changes
 git diff --cached --quiet
 if %ERRORLEVEL% EQU 0 (
-    echo ✅ لا توجد تغييرات لرفعها. %TIMESTAMP%
+    echo No new changes to commit. %TIMESTAMP%
 ) else (
     git commit -m "Auto-backup %TIMESTAMP%"
     git push origin main
-    echo ✅ التغييرات تم رفعها.
+    echo All changes pushed. %TIMESTAMP%
     git log -1 --oneline
 )
 
