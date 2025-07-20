@@ -32,27 +32,11 @@ def get_sql_injection_prevention():
     return DummyPrevention()
 
 
-def database_input_validation(table):
-    def decorator(func):
-        return func
-
-    return decorator
 
 
 def validate_database_operation(*args, **kwargs):
     return {"data": args[2]}
 
-
-def create_safe_database_session(session):
-    class DummySession:
-        async def safe_select(self, *args, **kwargs):
-            class Result:
-                rowcount = 0
-
-                def first(self_inner):
-                    return None
-
-            return Result()
 
     return DummySession()
 

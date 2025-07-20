@@ -121,9 +121,3 @@ def get_settings_provider() -> ISettingsProvider:
     raise NotImplementedError("Must be implemented by infrastructure layer")
 
 
-def get_consent_manager() -> IConsentManager:
-    """Factory function for getting consent manager
-    This will be implemented by the infrastructure layer.
-    """
-    # This is a placeholder - actual implementation injected by DI container
-    raise NotImplementedError("Must be implemented by infrastructure layer")

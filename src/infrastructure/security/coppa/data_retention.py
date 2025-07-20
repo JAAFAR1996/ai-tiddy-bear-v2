@@ -11,7 +11,8 @@ from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
-from ...config.coppa_config import get_data_retention_days, is_coppa_enabled
+from ..coppa_validator import get_data_retention_days
+from ...config.coppa_config import is_coppa_enabled
 from .data_models import ChildData, DataDeletionRequest, DataRetentionPolicy
 
 logger = get_logger(__name__, component="security")

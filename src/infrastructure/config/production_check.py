@@ -74,12 +74,4 @@ def enforce_production_safety() -> None:
         check_production_requirements()
     else:
         logger.info(f"Running in {settings.ENVIRONMENT} mode - skipping production checks")
-
-def enforce_production_safety() -> None:
-    """Enforce production safety requirements."""
-    settings = get_settings()
-    
-    if settings.ENVIRONMENT == "production":
-        check_production_requirements()
-    else:
         logger.info(f"Running in {settings.ENVIRONMENT} mode - skipping production checks")

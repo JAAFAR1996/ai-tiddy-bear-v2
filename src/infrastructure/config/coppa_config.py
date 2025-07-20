@@ -84,11 +84,4 @@ def is_coppa_enabled() -> bool:
     return config.enabled
 
 
-def get_data_retention_days() -> int:
-    """Get the number of days to retain child data.
-    
-    Returns:
-        Number of days for data retention (default 30 days for COPPA compliance).
-    """
-    # COPPA requires deletion within reasonable time, typically 30 days
     return int(os.getenv("DATA_RETENTION_DAYS", "30"))

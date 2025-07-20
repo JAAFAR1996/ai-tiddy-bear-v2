@@ -142,9 +142,6 @@ def create_auth_service() -> ProductionAuthService:
     return ProductionAuthService()
 
 
-def get_auth_service() -> ProductionAuthService:
-    """Get authentication service instance."""
-    return auth_service
 
 
 # Service instance
@@ -162,6 +159,5 @@ __all__ = [
     "require_parent_auth", 
     "require_admin_auth",
     "create_auth_service",
-    "get_auth_service",
     "auth_service"
 ]

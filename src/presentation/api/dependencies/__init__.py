@@ -31,7 +31,6 @@ def get_data_retention_manager():
 
 __all__ = [
     "get_audio_processing_service",
-    "get_compliance_validator", 
     "get_coppa_integration",
     "get_data_retention_manager",
     "get_parental_consent_manager",

@@ -12,6 +12,7 @@ from src.infrastructure.security.coppa_validator import (
     requires_parental_consent
 )
 from src.infrastructure.config.settings import Settings, get_settings
+from src.infrastructure.security.coppa import COPPAConsentManager
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -63,28 +64,6 @@ class ComplianceValidator:
             "disallowed_types": []
         }
 
-class ParentalConsentManager:
-    """Parental consent management."""
-    
-    def __init__(self, coppa_service: COPPAValidator):
-        self.coppa = coppa_service
-    
-    async def create_consent_record(
-        self,
-        child_id: str,
-        parent_id: str,
-        data_types: List[str]
-    ) -> str:
-        """Create consent record."""
-        return await self.coppa.request_parental_consent(
-            child_id, parent_id, data_types
-        )
-    
-    async def revoke_consent(self, consent_id: str) -> bool:
-        """Revoke existing consent."""
-        # Implementation would update consent status
-        return True
-
 class DataRetentionManager:
     """Data retention management."""
     
@@ -111,10 +90,10 @@ def get_compliance_validator(
     """Get compliance validator instance."""
     return ComplianceValidator(settings)
 
-def get_consent_manager() -> ParentalConsentManager:
+def get_consent_manager() -> COPPAConsentManager:
     """Get consent manager instance."""
     coppa = COPPAValidator()
-    return ParentalConsentManager(coppa)
+    return COPPAConsentManager()
 
 def get_retention_manager() -> DataRetentionManager:
     """Get data retention manager instance."""
@@ -125,7 +104,7 @@ def get_retention_manager() -> DataRetentionManager:
 @router.post("/consent", response_model=ConsentResponse)
 async def request_consent(
     request: ConsentRequest,
-    consent_manager: ParentalConsentManager = Depends(get_consent_manager)
+    consent_manager: COPPAConsentManager = Depends(get_consent_manager)
 ) -> ConsentResponse:
     """Request parental consent for data collection."""
     consent_id = await consent_manager.create_consent_record(

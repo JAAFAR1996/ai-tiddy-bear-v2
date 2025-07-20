@@ -214,6 +214,3 @@ def get_child_safety_limiter():
     """Get child safety rate limiter instance."""
     return ChildSafetyRateLimiter()
 
-def get_rate_limiter():
-    """Get general rate limiter instance."""
-    return RedisRateLimiter(RateLimitConfig())

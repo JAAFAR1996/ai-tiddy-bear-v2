@@ -1,54 +1,52 @@
 @echo off
 chcp 65001 >nul
 
-REM إعداد المستخدم
+REM إعداد متغيرات المشروع
 set "PROJECT_DIR=C:\Users\jaafa\Desktop\5555\ai-teddy\ai-tiddy-bear--main"
 set "GIT_BRANCH=main"
+set "GIT_REMOTE=https://github.com/JAAFAR1996/ai-tiddy-bear-v2.git"
 
-REM انتقل إلى مجلد المشروع
 cd /d "%PROJECT_DIR%"
 if errorlevel 1 (
-    echo [خطأ] لا يمكن الوصول إلى %PROJECT_DIR%
+    echo [ERROR] Cannot access %PROJECT_DIR%
     pause
     exit /b 1
 )
 
-REM تحقق من وجود git
+REM Ensure this is a git repo
 if not exist ".git" (
-    echo [خطأ] هذا المجلد ليس مستودع git!
+    echo [ERROR] Not a git repository!
     pause
     exit /b 1
 )
 
-REM احصل على التاريخ والوقت
+git remote set-url origin %GIT_REMOTE%
+
+REM Get datetime for commit message
 for /f "tokens=2 delims==" %%I in ('"wmic os get localdatetime /value"') do set datetime=%%I
 set TIMESTAMP=%datetime:~0,4%-%datetime:~4,2%-%datetime:~6,2%_%datetime:~8,2%-%datetime:~10,2%
 
-echo ====== بدأ النسخ الاحتياطي [%TIMESTAMP%] ======
-echo Working directory: %CD%
+git add .
 
-REM أضف جميع الملفات
-git add --all .
-
-REM تحقق من وجود تغييرات
+REM Check if there are staged changes
 git diff --cached --quiet
 if errorlevel 1 (
     git commit -m "Auto-backup %TIMESTAMP%"
     if errorlevel 1 (
-        echo [خطأ] فشل الـ commit. (قد لا توجد تغييرات أو هناك خطأ)
+        echo [ERROR] Commit failed.
         pause
         exit /b 1
     )
     git push origin %GIT_BRANCH%
     if errorlevel 1 (
-        echo [خطأ] فشل push! تحقق من إعدادات الريموت أو الفرع أو الانترنت أو المصادقة.
+        echo [ERROR] Push failed!
         pause
         exit /b 1
     )
-    echo [تم] كل التغييرات رفعت بنجاح [%TIMESTAMP%]
+    echo [SUCCESS] All changes pushed. [%TIMESTAMP%]
     git log -1 --oneline
 ) else (
-    echo لا توجد تغييرات جديدة لرفعها [%TIMESTAMP%]
+    echo No new changes to commit. [%TIMESTAMP%]
 )
 
 git status
