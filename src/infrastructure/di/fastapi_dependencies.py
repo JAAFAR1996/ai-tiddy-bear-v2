@@ -8,11 +8,11 @@ from src.infrastructure.caching.redis_cache import RedisCacheManager as RedisCac
 
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.security.main_security_service import (
+from src.infrastructure.security.core.main_security_service import (
     MainSecurityService,
     get_security_service,
 )
-from src.infrastructure.security.real_auth_service import ProductionAuthService
+from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
 
 """FastAPI Dependency Injection Utilities"""
 

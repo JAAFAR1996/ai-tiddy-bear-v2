@@ -4,7 +4,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.infrastructure.logging_config import get_logger
-from src.presentation.api.validators import ChildValidationMixin
+from src.presentation.validators.api_validators import ChildValidationMixin
 
 logger = get_logger(__name__, component="api")
 
@@ -15,7 +15,7 @@ and responses with comprehensive validation and COPPA compliance."""
 DEFAULT_LANGUAGE = "en"
 
 
-class ChildPreferences(BaseModel):
+class ChildPreferencesModel(BaseModel):
     """Model for child-specific preferences, ensuring structured data."""
 
     favorite_color: str | None = Field(None, max_length=50)

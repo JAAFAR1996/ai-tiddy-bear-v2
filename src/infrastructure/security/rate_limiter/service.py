@@ -5,7 +5,7 @@ import time
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.comprehensive_audit_integration import (
+from src.infrastructure.security.audit.comprehensive_audit_integration import (
     get_audit_integration,
 )
 

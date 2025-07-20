@@ -7,9 +7,9 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 
-from src.application.services.audit_service import AuditService
+from src.application.services.data.audit_service import AuditService
 from src.infrastructure.config.settings import get_settings
-from src.infrastructure.security.request_security_detector import (
+from src.infrastructure.security.web.request_security_detector import (
     RequestSecurityDetector,
 )
 

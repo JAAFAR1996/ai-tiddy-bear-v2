@@ -7,12 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from src.domain.entities.user import User
-from src.infrastructure.config.coppa_config import (
+from src.infrastructure.config.security.coppa_config import (
     is_coppa_enabled,
     should_show_coppa_notices,
 )
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.jwt_auth import get_current_user
+from src.infrastructure.security.auth.jwt_auth import get_current_user
 
 logger = get_logger(__name__, component="api")
 

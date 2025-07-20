@@ -5,7 +5,7 @@ from .base import LazyServiceProvider
 def _create_coppa_integration():
     from src.presentation.api.endpoints.children.compliance import COPPAIntegration
     from src.infrastructure.config.settings import get_settings
-    from src.infrastructure.security.coppa_validator import (
+    from src.infrastructure.validators.security.coppa_validator import (
     COPPAValidator,
     coppa_validator,
     is_coppa_subject,
@@ -18,7 +18,7 @@ def _create_coppa_integration():
 
 def _create_parental_consent_manager():
     from src.presentation.api.endpoints.children.compliance import ParentalConsentManager
-    from src.infrastructure.security.coppa_validator import (
+    from src.infrastructure.validators.security.coppa_validator import (
     COPPAValidator,
     coppa_validator,
     is_coppa_subject,
@@ -36,8 +36,8 @@ def _create_compliance_validator():
     return ComplianceValidator(settings)
 
 def _create_data_retention_manager():
-    from src.presentation.api.endpoints.children.compliance import DataRetentionManager
-    from src.infrastructure.security.coppa_validator import (
+    from src.presentation.api.endpoints.children.compliance import LocalRetentionManager
+    from src.infrastructure.validators.security.coppa_validator import (
     COPPAValidator,
     coppa_validator,
     is_coppa_subject,
@@ -45,10 +45,10 @@ def _create_data_retention_manager():
 )
     
     coppa_service = COPPAValidator()
-    return DataRetentionManager(coppa_service)
+    return LocalRetentionManager(coppa_service)
 
 def _create_audio_processing_service():
-    from src.application.services.audio_processing_service import AudioProcessingService
+    from src.application.services.device.audio_processing_service import AudioProcessingService
     return AudioProcessingService()
 
 # Service providers

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from src.infrastructure.config.application_settings import ApplicationSettings
+from src.infrastructure.config.core.application_settings import ApplicationSettings
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
 from src.presentation.api.middleware.error_handling import ErrorHandlingMiddleware

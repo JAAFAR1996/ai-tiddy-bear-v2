@@ -16,15 +16,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from redis.asyncio import Redis
 
-from src.domain.exceptions.base import (  # Moved to central exceptions module
+from src.common.exceptions import (  # Moved to central exceptions module
     StartupValidationException,
 )
 
 # Local imports
-from src.infrastructure.config.production_check import (
+from src.infrastructure.config.core.production_check import (
     enforce_production_safety,
 )
-from src.infrastructure.config.startup_validator import validate_startup
+from src.infrastructure.validators.config.startup_validator import validate_startup
 from src.infrastructure.di.container import container
 from src.infrastructure.di.di_components.wiring_config import FullWiringConfig
 from src.infrastructure.logging_config import configure_logging, get_logger

@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.domain.safety.models.conversation_context import ConversationContext
+from src.domain.safety.bias_models.bias_models import ConversationContext
 from src.domain.safety.models.risk_level import RiskLevel
 from src.domain.safety.models.safety_analysis_result import SafetyAnalysisResult
 

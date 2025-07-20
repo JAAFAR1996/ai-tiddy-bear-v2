@@ -5,14 +5,14 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from src.infrastructure.security.coppa_validator import (
+from src.infrastructure.validators.security.coppa_validator import (
     COPPAValidator,
     coppa_validator,
     is_coppa_subject,
     requires_parental_consent
 )
 from src.infrastructure.config.settings import Settings, get_settings
-from src.infrastructure.security.coppa import COPPAConsentManager, get_consent_manager
+from src.infrastructure.security.child_safety import COPPAConsentManager, get_consent_manager
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -64,7 +64,7 @@ class ComplianceValidator:
             "disallowed_types": []
         }
 
-class DataRetentionManager:
+class LocalRetentionManager:
     """Data retention management."""
     
     def __init__(self, coppa_service: COPPAValidator):
@@ -136,7 +136,7 @@ class COPPAIntegration:
         self.settings = settings
         self.compliance_validator = ComplianceValidator(settings)
         self.consent_manager = ParentalConsentManager(coppa_service)
-        self.retention_manager = DataRetentionManager(settings)
+        self.retention_manager = LocalRetentionManager(settings)
         logger.info("COPPAIntegration initialized with all compliance components")
     
     def validate_child_creation(self, age: int, data_types: List[str]) -> dict:

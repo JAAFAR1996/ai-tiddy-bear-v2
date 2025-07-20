@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.security.database_input_validator import (
+from src.infrastructure.validators.security.database_input_validator import (
     SecurityError,
     database_input_validation,
     validate_database_operation,

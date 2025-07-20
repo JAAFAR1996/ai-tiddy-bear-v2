@@ -31,7 +31,7 @@ class SystemHealthSnapshot:
 
 
 @dataclass
-class AlertRule:
+class ChaosAlertRule:
     """Alert rule configuration."""
 
     name: str
@@ -50,5 +50,5 @@ class ChaosExperimentResult:
     end_time: datetime
     success: bool
     metrics: list[ChaosMetric]
-    alerts_triggered: list[AlertRule]
+    alerts_triggered: list[ChaosAlertRule]
     recovery_time: float

@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, validator, field_validator
 
 
 class ChildAgeGroup(str, Enum):
@@ -58,7 +58,9 @@ class MessageRequest(BaseModel):
         default=ContentSafetyLevel.STRICT, description="Content safety filtering level"
     )
 
-    @validator("message")
+    @classmethod
+    @field_validator("message")
+    @classmethod
     def validate_message_content(cls, v) -> str:
         """Validate message content for child safety."""
         if not v or not v.strip():
@@ -120,7 +122,9 @@ class ChildRegistrationRequest(BaseModel):
         None, max_length=20, description="Emergency contact phone"
     )
 
-    @validator("name")
+    @classmethod
+    @field_validator("name")
+    @classmethod
     def validate_name(cls, v) -> str:
         """Validate child name."""
         if not v or not v.strip():
@@ -141,8 +145,10 @@ class ChildRegistrationRequest(BaseModel):
             raise ValueError("Name is too long")
 
         return name
+    @classmethod
 
-    @validator("age")
+    @field_validator("age")
+    @classmethod
     def validate_coppa_age(cls, v) -> int:
         """Validate age for COPPA compliance."""
         if v < 3:
@@ -152,8 +158,8 @@ class ChildRegistrationRequest(BaseModel):
                 "COPPA compliance: Children over 13 require different consent procedures"
             )
         return v
-
-    @validator("date_of_birth")
+    @field_validator("date_of_birth")
+    @classmethod
     def validate_birth_date(cls, v, values) -> date | None:
         """Validate birth date consistency with age."""
         if v and "age" in values:
@@ -163,9 +169,9 @@ class ChildRegistrationRequest(BaseModel):
             )
             if abs(calculated_age - values["age"]) > 1:
                 raise ValueError("Birth date does not match provided age")
-        return v
 
-    @validator("personality_traits")
+    @field_validator("personality_traits")
+    @classmethod
     def validate_personality_traits(cls, v) -> list[str]:
         """Validate personality traits."""
         if not v:
@@ -199,7 +205,8 @@ class AudioMessageRequest(BaseModel):
     )
     audio_format: str = Field(default="wav", description="Audio format (wav, mp3, ogg)")
 
-    @validator("audio_data")
+    @field_validator("audio_data")
+    @classmethod
     def validate_audio_data(cls, v) -> str:
         """Validate base64 audio data."""
         if not v:
@@ -219,7 +226,8 @@ class AudioMessageRequest(BaseModel):
 
         return v
 
-    @validator("audio_format")
+    @field_validator("audio_format")
+    @classmethod
     def validate_audio_format(cls, v) -> str:
         """Validate audio format."""
         allowed_formats = ["wav", "mp3", "ogg", "m4a", "webm"]
@@ -238,7 +246,8 @@ class EmergencyContactRequest(BaseModel):
     is_primary: bool = Field(default=False)
     can_authorize_emergency: bool = Field(default=True)
 
-    @validator("phone")
+    @field_validator("phone")
+    @classmethod
     def validate_phone(cls, v) -> str:
         """Validate phone number format."""
         # Remove all non-digits
@@ -249,7 +258,8 @@ class EmergencyContactRequest(BaseModel):
             raise ValueError("Phone number too long")
         return digits_only
 
-    @validator("relationship")
+    @field_validator("relationship")
+    @classmethod
     def validate_relationship(cls, v) -> str:
         """Validate relationship type."""
         valid_relationships = [
@@ -280,7 +290,8 @@ class ParentConsentRequest(BaseModel):
         default=90, ge=1, le=365, description="Consent validity period"
     )
 
-    @validator("consent_type")
+    @field_validator("consent_type")
+    @classmethod
     def validate_consent_type(cls, v) -> str:
         """Validate consent type."""
         valid_types = [
@@ -298,7 +309,8 @@ class ParentConsentRequest(BaseModel):
             raise ValueError(f"Invalid consent type. Must be one of: {valid_types}")
         return v
 
-    @validator("verification_method")
+    @field_validator("verification_method")
+    @classmethod
     def validate_verification_method(cls, v) -> str:
         """Validate verification method."""
         valid_methods = [
@@ -344,7 +356,8 @@ class PaginationRequest(BaseModel):
         description="Sort order",
     )
 
-    @validator("limit")
+    @field_validator("limit")
+    @classmethod
     def validate_child_safe_limit(cls, v) -> int:
         """Ensure pagination limits are child-safe."""
         # For child data, limit to smaller pages for safety and performance
@@ -352,7 +365,8 @@ class PaginationRequest(BaseModel):
             raise ValueError("Page limit too high for child data (max 50)")
         return v
 
-    @validator("sort_by")
+    @field_validator("sort_by")
+    @classmethod
     def validate_sort_field(cls, v) -> str | None:
         """Validate sort field for security."""
         if v is None:
@@ -386,7 +400,8 @@ class FileUploadRequest(BaseModel):
     )
     child_id: UUID | None = Field(None, description="Associated child ID if applicable")
 
-    @validator("filename")
+    @field_validator("filename")
+    @classmethod
     def validate_filename_safety(cls, v) -> str:
         """Validate filename for path traversal and safety."""
         # Remove any path separators
@@ -421,7 +436,8 @@ class FileUploadRequest(BaseModel):
 
         return filename
 
-    @validator("content_type")
+    @field_validator("content_type")
+    @classmethod
     def validate_content_type(cls, v) -> str:
         """Validate allowed content types."""
         allowed_types = [
@@ -450,7 +466,8 @@ class ConversationRequest(BaseModel):
     context: dict[str, Any] | None = Field(default_factory=dict)
     safety_level: ContentSafetyLevel = Field(default=ContentSafetyLevel.STRICT)
 
-    @validator("message")
+    @field_validator("message")
+    @classmethod
     def validate_conversation_message(cls, v) -> str:
         """Validate conversation message content."""
         if not v or not v.strip():

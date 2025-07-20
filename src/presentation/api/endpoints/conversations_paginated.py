@@ -222,7 +222,7 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query(None, description="Sort field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
         search: str | None = Query(None, description="Search term"),
         parent_id: str | None = Query(
             None,
@@ -260,7 +260,7 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query("timestamp", description="Sort field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     ):
         """Get conversation history for specified number of days."""
         # Create pagination request
@@ -292,7 +292,7 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query("timestamp", description="Sort field"),
-        sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     ):
         """Search conversations with pagination."""
         # Create pagination request

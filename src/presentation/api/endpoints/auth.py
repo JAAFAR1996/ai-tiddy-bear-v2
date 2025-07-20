@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.rate_limiter_service import RateLimiterService
-from src.infrastructure.security.real_auth_service import (
+from src.infrastructure.security.auth.real_auth_service import (
     ProductionAuthService,
 )
 from src.presentation.api.decorators.rate_limit import moderate_limit, strict_limit

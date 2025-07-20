@@ -20,7 +20,7 @@ from src.infrastructure.security.key_management.rotation_policy_manager import (
 from src.infrastructure.security.key_management.rotation_statistics import (
     RotationStatistics,
 )
-from src.infrastructure.security.key_rotation_service import (
+from src.infrastructure.security.key_management.key_rotation_service import (
     FileKeyStorage,
     KeyStorageInterface,
     KeyType,

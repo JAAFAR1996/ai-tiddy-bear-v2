@@ -2,7 +2,7 @@
 
 from .cache_config import CacheConfig
 from .redis_cache import RedisCacheManager as RedisCache, get_cache_manager
-from .strategies.invalidation_strategy import CacheInvalidationStrategy
+from src.infrastructure.caching.strategies.invalidation_strategy import CacheInvalidationStrategy
 
 __all__ = [
     "CacheConfig",

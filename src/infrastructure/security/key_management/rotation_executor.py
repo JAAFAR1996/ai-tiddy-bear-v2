@@ -17,7 +17,7 @@ from src.infrastructure.security.key_management.key_lifecycle_manager import (
 from src.infrastructure.security.key_management.rotation_policy_manager import (
     RotationPolicyManager,
 )
-from src.infrastructure.security.key_rotation_service import (
+from src.infrastructure.security.key_management.key_rotation_service import (
     KeyStorageInterface,
     RotationResult,
     RotationTrigger,

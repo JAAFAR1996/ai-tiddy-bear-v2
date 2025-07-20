@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
-from src.application.services.ai_orchestration_service import (
+from src.application.services.ai.ai_orchestration_service import (
     AIOrchestrationService,
 )
 from src.infrastructure.di.container import Container
@@ -28,7 +28,7 @@ async def get_current_user_esp32(
 ) -> dict[str, Any]:
     """Verify user authentication for ESP32 endpoints"""
     try:
-        from src.infrastructure.security.real_auth_service import (
+        from src.infrastructure.security.auth.real_auth_service import (
             create_auth_service,
         )
 
@@ -97,7 +97,7 @@ async def process_audio(
     """Process audio from ESP32 device"""
     try:
         # Verify parental consent before processing child data
-        from src.infrastructure.security.coppa import get_consent_manager
+        from src.infrastructure.security.child_safety import get_consent_manager
 
         consent_manager = get_consent_manager()
 

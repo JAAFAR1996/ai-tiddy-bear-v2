@@ -16,12 +16,8 @@ from src.infrastructure.dependencies import (
     get_generate_dynamic_story_use_case,
     get_manage_child_profile_use_case,
 )
-from src.infrastructure.security.coppa import get_consent_manager
-from src.infrastructure.security.error_handler import get_secure_error_handler
-from src.infrastructure.security.real_auth_service import (
-    UserInfo,
-    get_current_parent,
-)
+from src.infrastructure.security.child_safety import get_consent_manager
+# TODO: error_handler needs to be implemented or removed
 
 router = APIRouter()
 

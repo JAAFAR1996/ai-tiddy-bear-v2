@@ -7,7 +7,7 @@ from src.infrastructure.logging_config import get_logger
 logger = get_logger(__name__, component="infrastructure")
 
 
-class ServiceFactory:
+class ConcreteServiceFactory:
     """Factory for creating service implementations with proper error handling for missing services."""
 
     def __init__(self, use_mocks: bool = False) -> None:

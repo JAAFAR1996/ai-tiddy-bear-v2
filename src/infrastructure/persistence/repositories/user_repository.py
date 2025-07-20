@@ -14,7 +14,7 @@ from sqlalchemy.future import select
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.models.user_model import UserModel
-from src.infrastructure.security.database_input_validator import (
+from src.infrastructure.validators.security.database_input_validator import (
     SecurityError,
     create_safe_database_session,
     database_input_validation,

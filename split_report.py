@@ -1,28 +1,30 @@
-def split_report_precise(file_path):
+import re
+
+def sanitize_filename(name):
+    # استبدال أي رمز غير مسموح به في اسم الملف بـ "_"
+    return re.sub(r'[\\/:"*?<>|]+', '_', name)
+
+def split_problems_by_section(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
-    parts = {}
-    current_part = None
-    allowed_parts = ['مشاكل الأمان', 'مشاكل جودة الكود', 'مشاكل بيئة الفحص']
+    sections = {}
+    current_section = None
 
     for line in lines:
         if line.startswith('## '):
-            title = line.strip().strip('# ').strip()
-            if title in allowed_parts:
-                current_part = title
-                parts[current_part] = []
-            else:
-                current_part = None
-        if current_part:
-            parts[current_part].append(line)
+            section_title = line.strip().replace('## ', '').replace(' ', '_')
+            section_title = sanitize_filename(section_title)
+            current_section = section_title
+            sections[current_section] = []
+        if current_section:
+            sections[current_section].append(line)
 
-    for part_name, content in parts.items():
-        filename = part_name.replace(' ', '_') + '.md'
+    for section, content in sections.items():
+        filename = f"{section}.md"
         with open(filename, 'w', encoding='utf-8') as f:
             f.writelines(content)
-        print(f'Created file: {filename}')
-
+        print(f"✅ كتب القسم: {filename}")
 
 if __name__ == '__main__':
-    split_report_precise('audit_report_ai_teddy_20250719_124802.md')
+    split_problems_by_section('audit_report_ai_teddy_20250720_113809.md')

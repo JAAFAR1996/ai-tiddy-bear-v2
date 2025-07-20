@@ -10,7 +10,7 @@ from fastapi import HTTPException, Request, Response
 from fastapi.routing import APIRoute
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.coppa import get_consent_manager
+from src.infrastructure.security.child_safety import get_consent_manager
 
 logger = get_logger(__name__, component="middleware")
 
@@ -139,7 +139,7 @@ class ConsentVerificationRoute(APIRoute):
     async def _log_data_collection(self, request: Request, child_id: str) -> None:
         """Log the data collection event for audit trail."""
         try:
-            from src.infrastructure.security.coppa.data_models import (
+            from src.infrastructure.security.child_safety.data_models import (
                 AuditLogEntry,
             )
 

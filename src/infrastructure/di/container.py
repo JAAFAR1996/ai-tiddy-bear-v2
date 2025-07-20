@@ -31,7 +31,7 @@ __all__ = [
 # Legacy service registration
 def register_legacy_services():
     """Register legacy services for backward compatibility."""
-    from src.infrastructure.security.coppa_validator import (
+    from src.infrastructure.validators.security.coppa_validator import (
         COPPAValidator,
         coppa_validator,
         is_coppa_subject,
@@ -52,7 +52,7 @@ register_legacy_services()
 # Add required service attributes
 from src.infrastructure import dependencies
 from src.infrastructure.pagination import PaginationService
-from src.infrastructure.security.coppa_validator import COPPAValidator
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 from src.application.services.coppa.coppa_compliance_service import COPPAComplianceService
 
 # Register services as attributes

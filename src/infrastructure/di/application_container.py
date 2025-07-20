@@ -8,7 +8,7 @@ from functools import lru_cache
 
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure import dependencies
-from src.infrastructure.config.startup_validator import StartupValidator
+from src.infrastructure.validators.config.startup_validator import StartupValidator
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)

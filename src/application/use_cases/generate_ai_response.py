@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from src.application.exceptions import ConsentError
+from src.common.exceptions import ConsentError
 from src.application.interfaces.read_model_interfaces import IConsentManager
 
-from src.application.services.ai_orchestration_service import AIOrchestrationService
-from src.application.services.audio_processing_service import AudioProcessingService
+from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
+from src.application.services.device.audio_processing_service import AudioProcessingService
 from src.application.dto.ai_response import AIResponse
 
 

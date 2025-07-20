@@ -4,10 +4,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from src.application.services.ai_orchestration_service import (
+from src.application.services.ai.ai_orchestration_service import (
     AIOrchestrationService,
 )
-from src.application.services.audio_processing_service import (
+from src.application.services.device.audio_processing_service import (
     AudioProcessingService,
 )
 from src.infrastructure.dependencies import (

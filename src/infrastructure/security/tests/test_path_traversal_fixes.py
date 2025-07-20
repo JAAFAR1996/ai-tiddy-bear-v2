@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.path_validator import (
+from src.infrastructure.validators.security.path_validator import (
     PathPolicy,
     PathValidator,
     SecureFileOperations,

@@ -9,10 +9,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.application.services.ai_orchestration_service import (
+from src.application.services.ai.ai_orchestration_service import (
     AIOrchestrationService,
 )
-from src.application.services.audio_processing_service import (
+from src.application.services.device.audio_processing_service import (
     AudioProcessingService,
 )
 from src.infrastructure.caching.redis_cache import RedisCache
@@ -29,7 +29,7 @@ from src.presentation.api.error_handlers import (
 )
 
 try:
-    from src.infrastructure.security.log_sanitizer import LogSanitizer
+    from src.infrastructure.security.audit.log_sanitizer import LogSanitizer
 
     _log_sanitizer = LogSanitizer()
 except ImportError:
@@ -53,7 +53,7 @@ async def get_authenticated_user(
 ) -> dict[str, Any]:
     """Verify authentication for dashboard access - COPPA compliance required."""
     try:
-        from src.infrastructure.security.real_auth_service import (
+        from src.infrastructure.security.auth.real_auth_service import (
             create_auth_service,
         )
 

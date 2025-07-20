@@ -11,7 +11,7 @@ try:
 except ImportError as e:
     raise ImportError(f"Missing core dependencies: {e}") from e
 
-from src.application.services.ai_orchestration_service import (
+from src.application.services.ai.ai_orchestration_service import (
     AIOrchestrationService,
 )
 from src.infrastructure.di.container import container

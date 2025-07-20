@@ -4,7 +4,7 @@ from fastapi import Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.comprehensive_rate_limiter import (
+from src.infrastructure.security.rate_limiter.comprehensive_rate_limiter import (
     RateLimitResult,
     get_rate_limiter,
 )

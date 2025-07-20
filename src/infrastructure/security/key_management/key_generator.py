@@ -6,7 +6,7 @@ import secrets
 from datetime import datetime
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.key_rotation_service import KeyType
+from src.infrastructure.security.key_management.key_rotation_service import KeyType
 
 logger = get_logger(__name__, component="security")
 

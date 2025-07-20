@@ -7,17 +7,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, field_validator
 
-from src.application.services.ai_orchestration_service import (
+from src.application.services.ai.ai_orchestration_service import (
     AIOrchestrationService,
 )
-from src.application.services.conversation_service import ConversationService
+from src.application.services.core.conversation_service import ConversationService
 from src.application.use_cases.manage_child_profile import (
     ManageChildProfileUseCase,
 )
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.real_auth_service import ProductionAuthService
-from src.infrastructure.security.safety_monitor_service import (
+from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
+from src.infrastructure.security.child_safety.safety_monitor_service import (
     SafetyMonitorService,
 )
 

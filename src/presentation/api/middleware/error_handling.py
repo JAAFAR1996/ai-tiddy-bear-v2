@@ -68,7 +68,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             content=error_response
         )
 
-    async def _handle_validation_error(self, request: Request, exc: ValidationError) -> JSONResponse:
+    async def _handle_validation_error(self, request: Request, exc: InvalidInputError) -> JSONResponse:
         """Handle Pydantic validation errors with child-appropriate messages."""
         if self._is_child_related_request(request):
             message = "Some information wasn't filled in correctly. Please check and try again!"

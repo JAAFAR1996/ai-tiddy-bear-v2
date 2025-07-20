@@ -19,7 +19,7 @@ from src.infrastructure.pagination import (
     PaginationRequest,
     PaginationService,
 )
-from src.infrastructure.security.coppa_validator import COPPAValidator
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 
 from .models import (
     ChildCreateRequest,

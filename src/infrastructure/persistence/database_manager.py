@@ -10,7 +10,7 @@ from sqlalchemy.orm import declarative_base
 from src.infrastructure.persistence.models.base import Base
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
-from src.infrastructure.persistence.database.validators import (
+from src.infrastructure.validators.database_validators import (
     DatabaseConnectionValidator,
 )
 

@@ -1,5 +1,6 @@
-"""Application services for the AI Teddy Bear backend.
+"""Application services organized by domain."""
 
-This package contains the high-level business logic and orchestration services
-that coordinate operations across different domains and interact with infrastructure.
-"""
+# Note: Import specific services from their submodules to avoid circular imports
+# Example: from src.application.services.core.base_service import BaseService
+
+__all__ = []

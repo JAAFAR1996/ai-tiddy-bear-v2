@@ -9,7 +9,7 @@ from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.key_management.rotation_policy_manager import (
     RotationPolicyManager,
 )
-from src.infrastructure.security.key_rotation_service import (
+from src.infrastructure.security.key_management.key_rotation_service import (
     KeyMetadata,
     KeyStorageInterface,
     KeyType,

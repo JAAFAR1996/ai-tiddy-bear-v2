@@ -9,7 +9,7 @@ from typing import Any
 
 from cryptography.fernet import Fernet
 
-from src.infrastructure.security.path_validator import (
+from src.infrastructure.validators.security.path_validator import (
     get_secure_file_operations,
 )
 

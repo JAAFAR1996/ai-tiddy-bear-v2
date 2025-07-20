@@ -22,7 +22,7 @@ from src.infrastructure.persistence.repositories.usage_repository import (
 from src.infrastructure.persistence.repositories.user_repository import (
     UserRepository,
 )
-from src.infrastructure.security.sql_injection_prevention import (
+from src.infrastructure.security.validation.sql_injection_protection import (
     get_sql_injection_prevention,
 )
 

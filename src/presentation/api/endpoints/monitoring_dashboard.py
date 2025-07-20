@@ -374,7 +374,7 @@ if FASTAPI_AVAILABLE:
     async def get_metrics_dashboard(
         time_range: str = Query(
             "1h",
-            regex="^(1h|6h|12h|24h|7d|30d)$",
+            pattern="^(1h|6h|12h|24h|7d|30d)$",
             description="Time range for metrics",
         )
     ):
@@ -400,7 +400,7 @@ if FASTAPI_AVAILABLE:
     async def get_active_alerts(
         severity: str | None = Query(
             None,
-            regex="^(low|medium|high|critical|emergency)$",
+            pattern="^(low|medium|high|critical|emergency)$",
             description="Filter by alert severity",
         )
     ):

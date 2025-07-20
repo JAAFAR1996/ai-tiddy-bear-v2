@@ -5,7 +5,7 @@ Manages key rotation policies and determines when keys need rotation.
 from datetime import datetime, timedelta
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.key_rotation_service import (
+from src.infrastructure.security.key_management.key_rotation_service import (
     KeyMetadata,
     KeyStorageInterface,
     KeyType,

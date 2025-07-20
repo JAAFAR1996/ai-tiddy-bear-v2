@@ -20,6 +20,23 @@ class NotificationStatus(Enum):
 class NotificationRecord:
     """Represents a single notification record for persistence and tracking."""
 
+    # Required fields (no defaults) first
+    recipient: str
+    message: str
+    notification_type: str
+    channel: str
+    urgent: bool
+    
+    # Fields with defaults last
+    id: UUID = field(default_factory=uuid4)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    sent_at: datetime | None = None
+    read_at: datetime | None = None
+    error_message: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    """Represents a single notification record for persistence and tracking."""
+
     id: UUID = field(default_factory=uuid4)
     recipient: str
     message: str

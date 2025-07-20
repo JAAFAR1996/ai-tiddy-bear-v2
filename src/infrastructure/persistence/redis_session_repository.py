@@ -5,7 +5,7 @@ from redis.asyncio import Redis
 
 from src.application.services.session_manager import SessionData
 from src.domain.interfaces.session_repository import ISessionRepository
-from src.infrastructure.config.session_config import SessionConfig
+from src.infrastructure.config.services.session_config import SessionConfig
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="redis_session_repository")

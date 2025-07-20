@@ -4,8 +4,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import StreamingResponse
 # Local imports
-from src.application.services.audio_processing_service import AudioProcessingService
-from src.infrastructure.security.real_auth_service import UserInfo, get_current_user
+from src.application.services.device.audio_processing_service import AudioProcessingService
+from src.infrastructure.security.auth.real_auth_service import UserInfo, get_current_user
 from src.presentation.api.dependencies import get_audio_processing_service
 
 router = APIRouter()

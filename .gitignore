@@ -1,91 +1,55 @@
-
-# 🔒 CRITICAL SECURITY - Never commit these files!
-# Environment files containing secrets
-.env  
-.env.*  
-.env.local
-.env.production
-.env.staging
-.secrets.*
-*.key
-*.pem
-*.p12
-*.pfx
-*.crt
-*.cert
-private_key*  
-secret*  
-
-# API Keys and sensitive configuration
-config/api_keys.json
-**/api_keys.json
-**/*secrets*
-**/*credentials*
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-ai_teddy.db
-
-# Logs that might contain sensitive data
-logs/
-*.log
-*.log.*
-
-# Virtual environments  
-.venv/
-venv/
-env/
-ENV/
-.env/
-*/.venv/
-*/venv/
-
-# Temporary and cache files
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
-*.egg-info/
-.coverage
-.pytest_cache/
-.mypy_cache/
-.tox/
+env/
+venv/
+ENV/
+.venv/
 
-# IDE and editor files
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
+.claude/
 
-# OS generated files
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Backup files
-*.backup
-*.bak
-*.tmp
+# Build
+build/
+dist/
+*.egg-info/
 
-# Ignore vscode AI rules
-.github/copilot-instructions.md
+# Documentation
+docs/_build/
+site/
 
-# Ignore cursor AI rules
-.cursor/rules/codacy.mdc
-
-
-#Ignore vscode AI rules
-.github\copilot-instructions.md
-
-
-#Ignore cursor AI rules
-.cursor\rules\codacy.mdc
-.env
+# Temporary
+tmp/
+temp/
