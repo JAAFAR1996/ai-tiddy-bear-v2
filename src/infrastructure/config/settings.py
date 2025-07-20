@@ -1,15 +1,13 @@
-"""Application settings and configuration."""
-
+"""
+src/infrastructure/config/settings.py
+"""
 from functools import lru_cache
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.infrastructure.config.ai_settings import AISettings
 from src.infrastructure.config.application_settings import ApplicationSettings
 from src.infrastructure.config.audio_settings import AudioSettings
-from src.infrastructure.config.content_moderation_settings import (
-    ContentModerationSettings,
-)
+from src.infrastructure.config.content_moderation_settings import ContentModerationSettings
 from src.infrastructure.config.database_settings import DatabaseSettings
 from src.infrastructure.config.kafka_settings import KafkaSettings
 from src.infrastructure.config.privacy_settings import PrivacySettings
@@ -32,21 +30,43 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=True,
         validate_assignment=True,
-        extra="forbid",
+        # تغيير مهم: السماح بالمتغيرات الإضافية
+        extra="ignore",
     )
-    application: ApplicationSettings = ApplicationSettings()
-    database: DatabaseSettings = DatabaseSettings()
-    kafka: KafkaSettings = KafkaSettings()
-    redis: RedisSettings = RedisSettings()
-    security: SecuritySettings = SecuritySettings()
-    sentry: SentrySettings = SentrySettings()
-    prometheus: PrometheusSettings = PrometheusSettings()
-    voice: VoiceSettings = VoiceSettings()
-    audio: AudioSettings = AudioSettings()
-    ai: AISettings = AISettings()
-    privacy: PrivacySettings = PrivacySettings()
-    content_moderation: ContentModerationSettings = ContentModerationSettings()
-    server: ServerSettings = ServerSettings()
+    
+    # إنشاء الإعدادات الفرعية بدون تمرير المتغيرات
+    application: ApplicationSettings
+    database: DatabaseSettings
+    kafka: KafkaSettings
+    redis: RedisSettings
+    security: SecuritySettings
+    sentry: SentrySettings
+    prometheus: PrometheusSettings
+    voice: VoiceSettings
+    audio: AudioSettings
+    ai: AISettings
+    privacy: PrivacySettings
+    content_moderation: ContentModerationSettings
+    server: ServerSettings
+
+    def __init__(self, **kwargs):
+        # إنشاء الإعدادات الفرعية بشكل منفصل
+        self.application = ApplicationSettings()
+        self.database = DatabaseSettings()
+        self.kafka = KafkaSettings()
+        self.redis = RedisSettings()
+        self.security = SecuritySettings()
+        self.sentry = SentrySettings()
+        self.prometheus = PrometheusSettings()
+        self.voice = VoiceSettings()
+        self.audio = AudioSettings()
+        self.ai = AISettings()
+        self.privacy = PrivacySettings()
+        self.content_moderation = ContentModerationSettings()
+        self.server = ServerSettings()
+        
+        # استدعاء __init__ للفئة الأساسية
+        super().__init__(**kwargs)
 
     def model_post_init(self, __context) -> None:
         """Perform additional validation after model initialization."""
@@ -60,10 +80,7 @@ class Settings(BaseSettings):
                 )
 
             # Critical security and infrastructure keys
-            if (
-                not self.security.SECRET_KEY
-                or len(self.security.SECRET_KEY) < 32
-            ):
+            if not self.security.SECRET_KEY or len(self.security.SECRET_KEY) < 32:
                 raise ValueError(
                     "SECRET_KEY must be set and at least 32 characters long in production.",
                 )
@@ -87,11 +104,8 @@ class Settings(BaseSettings):
                 raise ValueError("DATABASE_URL must be set in production.")
             if not self.redis.REDIS_URL:
                 raise ValueError("REDIS_URL must be set in production.")
-            if (
-                not self.ai.OPENAI_API_KEY
-                or not self.ai.OPENAI_API_KEY.startswith(
-                    "sk-",
-                )
+            if not self.ai.OPENAI_API_KEY or not self.ai.OPENAI_API_KEY.startswith(
+                "sk-",
             ):
                 raise ValueError(
                     "OPENAI_API_KEY must be a valid OpenAI API key in production.",

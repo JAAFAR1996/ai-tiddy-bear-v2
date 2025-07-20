@@ -1,7 +1,9 @@
-from domain.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
-import numpy as np
+"""Test emotion analysis service"""
+
 import sys
 from pathlib import Path
+
+from domain.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -12,6 +14,9 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import after path setup
+
+# Import numpy with fallback
 try:
     import numpy as np
 except ImportError:

@@ -1,6 +1,6 @@
-from unittest.mock import Mock
 import sys
 from pathlib import Path
+from unittest.mock import Mock
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -73,9 +73,7 @@ class TestHealthCheck:
     """Test voice service health check functionality"""
 
     @pytest.mark.asyncio
-    async def test_health_check_returns_comprehensive_status(
-        self, voice_service
-    ):
+    async def test_health_check_returns_comprehensive_status(self, voice_service):
         """Test health check returns comprehensive system status"""
         health = await voice_service.health_check()
 

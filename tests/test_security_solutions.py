@@ -1,12 +1,7 @@
-from infrastructure.security.secrets_manager import (
-    SecretProvider,
-    SecretType,
-    create_secrets_manager,
-)
-from infrastructure.security.safe_expression_parser import (
-    SecurityLevel,
-    create_safe_parser,
-)
+import ast
+import sys
+from pathlib import Path
+
 from infrastructure.exception_handling.global_exception_handler import (
     ChildSafetyException,
     CircuitBreakerStrategy,
@@ -17,9 +12,15 @@ from infrastructure.exception_handling.global_exception_handler import (
     TeddyBearException,
     handle_exceptions,
 )
-import ast
-import sys
-from pathlib import Path
+from infrastructure.security.safe_expression_parser import (
+    SecurityLevel,
+    create_safe_parser,
+)
+from infrastructure.security.secrets_manager import (
+    SecretProvider,
+    SecretType,
+    create_secrets_manager,
+)
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -31,61 +32,61 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 
+# Import pytest with fallback to mock
+pytest = None
 try:
     import pytest
 except ImportError:
     try:
         from common.mock_pytest import pytest
     except ImportError:
-        pass
-
-    # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+        # Mock pytest when not available
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
 
-    pytest = MockPytest()
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
+
+        pytest = MockPytest()
 
 
 """
@@ -486,9 +487,7 @@ class TestSecurityIntegration:
         """Test complete secure API call flow"""
         # Setup secrets manager
         secrets_manager = create_secrets_manager("testing")
-        local_provider = secrets_manager.providers[
-            SecretProvider.LOCAL_ENCRYPTED
-        ]
+        local_provider = secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
         local_provider.secrets_dir = tmp_path / "secrets"
         local_provider.secrets_dir.mkdir()
 
@@ -575,9 +574,7 @@ class TestSecurityPerformance:
         # import time
 
         secrets_manager = create_secrets_manager("testing")
-        local_provider = secrets_manager.providers[
-            SecretProvider.LOCAL_ENCRYPTED
-        ]
+        local_provider = secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
         local_provider.secrets_dir = tmp_path / "secrets"
         local_provider.secrets_dir.mkdir()
 
@@ -585,16 +582,12 @@ class TestSecurityPerformance:
 
         # First access - no cache
         # start = time.time()
-        value1 = await secrets_manager.get_secret(
-            "perf_test_key", use_cache=False
-        )
+        value1 = await secrets_manager.get_secret("perf_test_key", use_cache=False)
         # time_no_cache = time.time() - start
 
         # Second access - with cache
         # start = time.time()
-        value2 = await secrets_manager.get_secret(
-            "perf_test_key", use_cache=True
-        )
+        value2 = await secrets_manager.get_secret("perf_test_key", use_cache=True)
         # time_with_cache = time.time() - start
 
         assert value1 == value2

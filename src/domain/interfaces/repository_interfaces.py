@@ -1,13 +1,14 @@
 """Repository interfaces for the domain layer.
 These interfaces define contracts for data persistence without
-creating dependencies on specific database implementations."""
+creating dependencies on specific database implementations.
+"""
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
 from ..entities.child import Child
-from ..entities.user import User
+from src.domain.entities.user import User
+
 
 
 class IChildRepository(ABC):
@@ -18,11 +19,11 @@ class IChildRepository(ABC):
         """Create a new child record."""
 
     @abstractmethod
-    async def get_by_id(self, child_id: UUID) -> Optional[Child]:
+    async def get_by_id(self, child_id: UUID) -> Child | None:
         """Get a child by ID."""
 
     @abstractmethod
-    async def get_by_parent_id(self, parent_id: UUID) -> List[Child]:
+    async def get_by_parent_id(self, parent_id: UUID) -> list[Child]:
         """Get all children for a parent."""
 
     @abstractmethod
@@ -42,11 +43,11 @@ class IUserRepository(ABC):
         """Create a new user record."""
 
     @abstractmethod
-    async def get_by_id(self, user_id: UUID) -> Optional[User]:
+    async def get_by_id(self, user_id: UUID) -> User | None:
         """Get a user by ID."""
 
     @abstractmethod
-    async def get_by_email(self, email: str) -> Optional[User]:
+    async def get_by_email(self, email: str) -> User | None:
         """Get a user by email address."""
 
     @abstractmethod

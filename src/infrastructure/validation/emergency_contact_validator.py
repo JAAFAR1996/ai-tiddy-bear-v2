@@ -1,12 +1,11 @@
-"""from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
-import logging
-import re.
-"""
-
 """Emergency Contact Validator
+
 Validates emergency contact information for child safety compliance.
 """
+
+import re
+from dataclasses import dataclass
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -20,14 +19,20 @@ class EmergencyContact:
     name: str
     relationship: str
     phone_number: str
-    email: Optional[str] = None
-    address: Optional[str] = None
+    email: str | None = None
+    address: str | None = None
     is_primary: bool = False
 
 
 class EmergencyContactValidator:
     """Validator for emergency contact information.
-    Features: - Phone number format validation - Relationship validation - Contact accessibility validation - Duplicate detection - Primary contact verification.
+
+    Features:
+    - Phone number format validation
+    - Relationship validation
+    - Contact accessibility validation
+    - Duplicate detection
+    - Primary contact verification
     """
 
     def __init__(self) -> None:
@@ -51,10 +56,14 @@ class EmergencyContactValidator:
 
         # Phone number patterns for different formats
         self.phone_patterns = [
-            r"^\\+?1?[-.\s]?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})$",  # US format
-            r"^\\+?([1-9]\d{0,3})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,9})$",  # International
-            r"^(\d{3})[-.\s]?(\d{3})[-.\s]?(\d{4})$",  # Simple US format
-            r"^(\d{10})$",  # 10 digits no formatting
+            # US format
+            r"^\+?1?[-.\s]?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})$",
+            # International
+            r"^\+?([1-9]\d{0,3})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,9})$",
+            # Simple US format
+            r"^(\d{3})[-.\s]?(\d{3})[-.\s]?(\d{4})$",
+            # 10 digits no formatting
+            r"^(\d{10})$",
         ]
 
         # Compile patterns for performance
@@ -66,11 +75,15 @@ class EmergencyContactValidator:
 
     def validate_emergency_contact(
         self,
-        contact_data: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        contact_data: dict[str, Any],
+    ) -> dict[str, Any]:
         """Validate a single emergency contact.
-        Args: contact_data: Dictionary containing contact information
-        Returns: Dict with validation results.
+
+        Args:
+            contact_data: Dictionary containing contact information
+
+        Returns:
+            Dict with validation results.
         """
         errors = []
         validated_data = {}
@@ -89,21 +102,15 @@ class EmergencyContactValidator:
         if not relationship_result["valid"]:
             errors.append(f"Relationship: {relationship_result['reason']}")
         else:
-            validated_data["relationship"] = relationship_result[
-                "relationship"
-            ]
+            validated_data["relationship"] = relationship_result["relationship"]
 
         # Validate phone number
-        phone_result = self._validate_phone_number(
-            contact_data.get("phone_number", "")
-        )
+        phone_result = self._validate_phone_number(contact_data.get("phone_number", ""))
         if not phone_result["valid"]:
             errors.append(f"Phone: {phone_result['reason']}")
         else:
             validated_data["phone_number"] = phone_result["formatted_number"]
-            validated_data["phone_country_code"] = phone_result.get(
-                "country_code", ""
-            )
+            validated_data["phone_country_code"] = phone_result.get("country_code", "")
 
         # Validate email if provided
         email = contact_data.get("email", "").strip()
@@ -124,9 +131,7 @@ class EmergencyContactValidator:
                 validated_data["address"] = address_result["sanitized_address"]
 
         # Set primary contact flag
-        validated_data["is_primary"] = bool(
-            contact_data.get("is_primary", False)
-        )
+        validated_data["is_primary"] = bool(contact_data.get("is_primary", False))
 
         return {
             "valid": len(errors) == 0,
@@ -136,11 +141,15 @@ class EmergencyContactValidator:
 
     def validate_emergency_contacts_list(
         self,
-        contacts: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
-        """Validate a list of emergency contacts with cross - validation.
-        Args: contacts: List of contact dictionaries
-        Returns: Dict with validation results for the entire list.
+        contacts: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Validate a list of emergency contacts with cross-validation.
+
+        Args:
+            contacts: List of contact dictionaries
+
+        Returns:
+            Dict with validation results for the entire list.
         """
         if not contacts:
             return {
@@ -166,10 +175,7 @@ class EmergencyContactValidator:
             result = self.validate_emergency_contact(contact)
             if not result["valid"]:
                 global_errors.extend(
-                    [
-                        f"Contact {i + 1}: {error}"
-                        for error in result["errors"]
-                    ],
+                    [f"Contact {i + 1}: {error}" for error in result["errors"]],
                 )
                 continue
 
@@ -178,9 +184,7 @@ class EmergencyContactValidator:
             # Check for duplicate phone numbers
             phone = validated_contact["phone_number"]
             if phone in phone_numbers:
-                global_errors.append(
-                    f"Contact {i + 1}: Duplicate phone number {phone}"
-                )
+                global_errors.append(f"Contact {i + 1}: Duplicate phone number {phone}")
             else:
                 phone_numbers.add(phone)
 
@@ -192,19 +196,16 @@ class EmergencyContactValidator:
 
         # Validate primary contact rules
         if primary_contacts == 0:
-            global_errors.append(
-                "At least one contact must be marked as primary"
-            )
+            global_errors.append("At least one contact must be marked as primary")
         elif primary_contacts > 1:
             global_errors.append("Only one contact can be marked as primary")
 
         # Check for diverse relationships (recommended)
-        relationships = {
-            contact["relationship"] for contact in validated_contacts
-        }
+        relationships = {contact["relationship"] for contact in validated_contacts}
         if len(relationships) == 1 and len(validated_contacts) > 1:
             global_errors.append(
-                "Recommended: Include contacts with different relationships for redundancy",
+                "Recommended: Include contacts with different relationships "
+                "for redundancy",
             )
 
         return {
@@ -215,7 +216,7 @@ class EmergencyContactValidator:
             "primary_contact_count": primary_contacts,
         }
 
-    def _validate_name(self, name: str) -> Dict[str, Any]:
+    def _validate_name(self, name: str) -> dict[str, Any]:
         """Validate emergency contact name."""
         if not name or not isinstance(name, str):
             return {"valid": False, "reason": "Name is required"}
@@ -246,7 +247,7 @@ class EmergencyContactValidator:
 
         return {"valid": True, "sanitized_name": sanitized_name}
 
-    def _validate_relationship(self, relationship: str) -> Dict[str, Any]:
+    def _validate_relationship(self, relationship: str) -> dict[str, Any]:
         """Validate relationship to child."""
         if not relationship or not isinstance(relationship, str):
             return {"valid": False, "reason": "Relationship is required"}
@@ -255,12 +256,15 @@ class EmergencyContactValidator:
         if relationship not in self.valid_relationships:
             return {
                 "valid": False,
-                "reason": f"Invalid relationship. Must be one of: {', '.join(sorted(self.valid_relationships))}",
+                "reason": (
+                    f"Invalid relationship. Must be one of: "
+                    f"{', '.join(sorted(self.valid_relationships))}"
+                ),
             }
 
         return {"valid": True, "relationship": relationship}
 
-    def _validate_phone_number(self, phone: str) -> Dict[str, Any]:
+    def _validate_phone_number(self, phone: str) -> dict[str, Any]:
         """Validate phone number format."""
         if not phone or not isinstance(phone, str):
             return {"valid": False, "reason": "Phone number is required"}
@@ -275,9 +279,7 @@ class EmergencyContactValidator:
                 # Extract components and format consistently
                 if phone.startswith("+"):
                     # International format
-                    formatted = self._format_international_number(
-                        cleaned_phone
-                    )
+                    formatted = self._format_international_number(cleaned_phone)
                     country_code = (
                         cleaned_phone[1:2] if len(cleaned_phone) > 10 else None
                     )
@@ -295,10 +297,13 @@ class EmergencyContactValidator:
 
         return {
             "valid": False,
-            "reason": "Invalid phone number format. Use formats like: (555) 123-4567, 555-123-4567, or +1-555-123-4567",
+            "reason": (
+                "Invalid phone number format. Use formats like: "
+                "(555) 123-4567, 555-123-4567, or +1-555-123-4567"
+            ),
         }
 
-    def _validate_email(self, email: str) -> Dict[str, Any]:
+    def _validate_email(self, email: str) -> dict[str, Any]:
         """Validate email address format."""
         if not email or not isinstance(email, str):
             return {
@@ -309,13 +314,13 @@ class EmergencyContactValidator:
         email = email.strip().lower()
 
         # Basic email regex
-        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
             return {"valid": False, "reason": "Invalid email format"}
 
         return {"valid": True, "email": email}
 
-    def _validate_address(self, address: str) -> Dict[str, Any]:
+    def _validate_address(self, address: str) -> dict[str, Any]:
         """Validate physical address."""
         if not address or not isinstance(address, str):
             return {
@@ -344,9 +349,14 @@ class EmergencyContactValidator:
     def _format_us_number(self, cleaned_number: str) -> str:
         """Format US phone number."""
         if len(cleaned_number) == 10:
-            return f"({cleaned_number[:3]}) {cleaned_number[3:6]}-{cleaned_number[6:]}"
+            return (
+                f"({cleaned_number[:3]}) {cleaned_number[3:6]}-" f"{cleaned_number[6:]}"
+            )
         if len(cleaned_number) == 11 and cleaned_number[0] == "1":
-            return f"+1 ({cleaned_number[1:4]}) {cleaned_number[4:7]}-{cleaned_number[7:]}"
+            return (
+                f"+1 ({cleaned_number[1:4]}) {cleaned_number[4:7]}-"
+                f"{cleaned_number[7:]}"
+            )
         return cleaned_number
 
     def _format_international_number(self, cleaned_number: str) -> str:
@@ -357,11 +367,15 @@ class EmergencyContactValidator:
 
     def get_contact_accessibility_score(
         self,
-        contacts: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        contacts: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """Calculate accessibility score for emergency contacts.
-        Args: contacts: List of validated emergency contacts
-        Returns: Dict with accessibility analysis.
+
+        Args:
+            contacts: List of validated emergency contacts
+
+        Returns:
+            Dict with accessibility analysis.
         """
         if not contacts:
             return {
@@ -376,9 +390,7 @@ class EmergencyContactValidator:
         recommendations = []
 
         # Base score for having contacts
-        score += (
-            20.0 * min(len(contacts), 3) / 3
-        )  # Max 20 points for up to 3 contacts
+        score += 20.0 * min(len(contacts), 3) / 3  # Max 20 points for up to 3 contacts
 
         # Primary contact exists
         primary_contacts = [c for c in contacts if c.get("is_primary", False)]
@@ -402,21 +414,15 @@ class EmergencyContactValidator:
             score += 15.0
 
         # Email availability
-        contacts_with_email = [
-            c for c in contacts if c.get("email", "").strip()
-        ]
+        contacts_with_email = [c for c in contacts if c.get("email", "").strip()]
         if contacts_with_email:
             score += 10.0 * min(len(contacts_with_email), 2) / 2
         else:
-            recommendations.append(
-                "Add email addresses for backup communication"
-            )
+            recommendations.append("Add email addresses for backup communication")
 
         # Relationship diversity
         relationships = {
-            c.get("relationship", "")
-            for c in contacts
-            if c.get("relationship", "")
+            c.get("relationship", "") for c in contacts if c.get("relationship", "")
         }
         if len(relationships) > 1:
             score += 15.0
@@ -426,9 +432,7 @@ class EmergencyContactValidator:
             )
 
         # Address availability
-        contacts_with_address = [
-            c for c in contacts if c.get("address", "").strip()
-        ]
+        contacts_with_address = [c for c in contacts if c.get("address", "").strip()]
         if contacts_with_address:
             score += 10.0
 

@@ -1,5 +1,4 @@
 import pytest
-from src.main import app  # Assuming app is the FastAPI instance
 
 # You'll likely need to import fixtures from conftest.py or define them here
 # Example fixtures you might need:
@@ -18,8 +17,7 @@ async def test_end_to_end_voice_interaction_flow(
     # sample_child: dict,
     # auth_headers: dict,
 ):
-    """
-    Tests the complete end-to-end voice interaction flow:
+    """Tests the complete end-to-end voice interaction flow:
     1. Child registration/profile retrieval.
     2. Sending child's voice input (simulated).
     3. Receiving and validating AI response (text and audio).
@@ -39,9 +37,7 @@ async def test_end_to_end_voice_interaction_flow(
     # assert response.status_code == 201
     # child_profile = response.json()
     # child_id = child_profile["id"]
-    child_id = (
-        "mock_child_id_from_fixture_or_setup"  # Placeholder if no API call
-    )
+    child_id = "mock_child_id_from_fixture_or_setup"  # Placeholder if no API call
 
     # Step 2: Simulate sending child's voice input to the AI
     # This would typically be a WebSocket or gRPC endpoint.

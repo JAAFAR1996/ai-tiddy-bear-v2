@@ -6,13 +6,22 @@ for different environments, Uvicorn-specific settings (backlog, keep-alive
 timeout, worker recycling), and worker counts. It ensures consistent and
 optimized server configurations for both development and production.
 """
-
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from src.infrastructure.config.base_settings import BaseApplicationSettings
 
+class ServerSettings(BaseApplicationSettings):
+    """Configuration settings for server and CORS."""
 
-class ServerSettings(BaseSettings):
-    """Server-specific settings for Uvicorn and FastAPI."""
+    # إعدادات CORS
+    ALLOWED_ORIGINS: list[str] = Field(
+        ["https://app.aiteddybear.com", "https://api.aiteddybear.com"], 
+        env="ALLOWED_ORIGINS"
+    )
+    ALLOWED_METHODS: list[str] = Field(
+        ["GET", "POST", "PUT", "DELETE"], 
+        env="ALLOWED_METHODS"
+    )
+    ALLOWED_HEADERS: list[str] = Field(["*"], env="ALLOWED_HEADERS")
 
     DEFAULT_PORT: int = Field(8000, description="Default application port.")
     DEV_PORT_MIN: int = Field(
@@ -31,9 +40,7 @@ class ServerSettings(BaseSettings):
         65535,
         description="Maximum port for production environment.",
     )
-    UVICORN_BACKLOG: int = Field(
-        2048, description="Uvicorn connection backlog."
-    )
+    UVICORN_BACKLOG: int = Field(2048, description="Uvicorn connection backlog.")
     UVICORN_KEEPALIVE_TIMEOUT: int = Field(
         60,
         description="Uvicorn keep-alive timeout in seconds.",

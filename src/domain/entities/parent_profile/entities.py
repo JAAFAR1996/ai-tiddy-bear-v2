@@ -1,10 +1,9 @@
 """Parent entity with comprehensive profile management and validation"""
 
-import logging
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -13,16 +12,16 @@ class Parent:
     Handles parent profile information with comprehensive validation and privacy controls.
     """
 
-    id: Optional[str] = None
+    id: str | None = None
     name: str = ""
-    email: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone_number: Optional[str] = None
-    created_at: Optional[datetime] = None
-    last_login: Optional[datetime] = None
-    preferences: Dict[str, Any] = field(default_factory=dict)
-    child_ids: List[str] = field(default_factory=list)
+    email: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone_number: str | None = None
+    created_at: datetime | None = None
+    last_login: datetime | None = None
+    preferences: dict[str, Any] = field(default_factory=dict)
+    child_ids: list[str] = field(default_factory=list)
     is_active: bool = True
     email_verified: bool = False
     phone_verified: bool = False
@@ -143,9 +142,7 @@ class Parent:
         if key == "session_timeout_minutes" and (
             not isinstance(value, int) or value < 5 or value > 480
         ):
-            raise ValueError(
-                "Session timeout must be between 5 and 480 minutes"
-            )
+            raise ValueError("Session timeout must be between 5 and 480 minutes")
 
         self.preferences[key] = value
 
@@ -161,7 +158,7 @@ class Parent:
         """Check if parent can manage children (must be verified and active)."""
         return self.is_active and self.email_verified
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert parent entity to dictionary for serialization."""
         return {
             "id": self.id,
@@ -170,12 +167,8 @@ class Parent:
             "first_name": self.first_name,
             "last_name": self.last_name,
             "phone_number": self.phone_number,
-            "created_at": (
-                self.created_at.isoformat() if self.created_at else None
-            ),
-            "last_login": (
-                self.last_login.isoformat() if self.last_login else None
-            ),
+            "created_at": (self.created_at.isoformat() if self.created_at else None),
+            "last_login": (self.last_login.isoformat() if self.last_login else None),
             "preferences": self.preferences,
             "child_count": len(self.child_ids),
             "is_active": self.is_active,

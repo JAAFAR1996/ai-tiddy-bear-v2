@@ -32,14 +32,10 @@ class DatabaseConnectionValidator:
                     # Use text() for proper SQL handling even for simple queries
                     result = await conn.execute(text("SELECT version()"))
                     version_info = result.scalar()
-                    logger.info(
-                        f"PostgreSQL connection validated: {version_info}"
-                    )
+                    logger.info(f"PostgreSQL connection validated: {version_info}")
                 elif self.config.engine_type == "sqlite":
                     # Use text() for proper SQL handling
-                    result = await conn.execute(
-                        text("SELECT sqlite_version()")
-                    )
+                    result = await conn.execute(text("SELECT sqlite_version()"))
                     version_info = result.scalar()
                     logger.info(f"SQLite connection validated: {version_info}")
             await engine.dispose()
@@ -47,9 +43,7 @@ class DatabaseConnectionValidator:
         except Exception as e:
             logger.error(f"Database connection validation failed: {e}")
             if self.config.environment == "production":
-                raise RuntimeError(
-                    f"Production database connection failed: {e}"
-                )
+                raise RuntimeError(f"Production database connection failed: {e}")
             return False
 
     async def validate_schema_compatibility(self) -> bool:

@@ -1,10 +1,8 @@
-"""
-Response Enhancer for ChatGPT - Child-Friendly Response Enhancement
-"""
+"""Response Enhancer for ChatGPT - Child-Friendly Response Enhancement"""
 
 import random
 import re
-from typing import Dict, Any
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -62,7 +60,7 @@ class ResponseEnhancer:
         ]
 
     def enhance_response_for_children(
-        self, response: str, child_age: int, preferences: Dict[str, Any] = None
+        self, response: str, child_age: int, preferences: dict[str, Any] = None
     ) -> str:
         """Enhance response for children with age-appropriate content."""
         preferences = preferences or {}
@@ -78,9 +76,7 @@ class ResponseEnhancer:
         enhanced = self._apply_child_preferences(enhanced, preferences)
         return enhanced
 
-    def _apply_age_specific_enhancements(
-        self, response: str, child_age: int
-    ) -> str:
+    def _apply_age_specific_enhancements(self, response: str, child_age: int) -> str:
         """تطبيق تحسينات خاصة بالعمر"""
         if child_age <= 4:
             # للأطفال الصغار: جمل قصيرة وكلمات بسيطة
@@ -205,7 +201,7 @@ class ResponseEnhancer:
         return response
 
     def _apply_child_preferences(
-        self, response: str, preferences: Dict[str, Any]
+        self, response: str, preferences: dict[str, Any]
     ) -> str:
         """تطبيق تفضيلات الطفل"""
         favorite_character = preferences.get("favorite_character")

@@ -20,13 +20,9 @@ security = HTTPBearer()
 try:
     from fastapi import APIRouter, HTTPException, status
 except ImportError as e:
-    logger.critical(
-        f"CRITICAL ERROR: FastAPI is required for production use: {e}"
-    )
+    logger.critical(f"CRITICAL ERROR: FastAPI is required for production use: {e}")
     logger.critical("Install required dependencies: pip install fastapi")
-    raise ImportError(
-        f"Missing required dependencies for children routes: {e}"
-    ) from e
+    raise ImportError(f"Missing required dependencies for children routes: {e}") from e
 
 
 def _setup_create_child_route(router: APIRouter) -> None:
@@ -42,9 +38,7 @@ def _setup_create_child_route(router: APIRouter) -> None:
         ),
     ):
         """Create a new child profile with COPPA compliance."""
-        return await child_route_handlers.create_child_handler(
-            request, current_user
-        )
+        return await child_route_handlers.create_child_handler(request, current_user)
 
 
 def _setup_get_children_route(router: APIRouter) -> None:
@@ -75,9 +69,7 @@ def _setup_get_child_route(router: APIRouter) -> None:
         ),
     ):
         """Get detailed information for a specific child."""
-        return await child_route_handlers.get_child_handler(
-            child_id, current_user
-        )
+        return await child_route_handlers.get_child_handler(child_id, current_user)
 
 
 def _setup_update_child_route(router: APIRouter) -> None:
@@ -114,9 +106,7 @@ def _setup_delete_child_route(router: APIRouter) -> None:
         ),
     ):
         """Delete a child profile with COPPA compliance checks."""
-        return await child_route_handlers.delete_child_handler(
-            child_id, current_user
-        )
+        return await child_route_handlers.delete_child_handler(child_id, current_user)
 
 
 def _setup_safety_routes(router: APIRouter) -> None:

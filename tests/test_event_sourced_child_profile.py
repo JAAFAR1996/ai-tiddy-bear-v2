@@ -1,13 +1,16 @@
-from infrastructure.repositories.event_sourced_child_repository import (
-    EventSourcedChildRepository,
-)
-from domain.repositories.event_store import InMemoryEventStore
-from domain.events.child_profile_updated import ChildProfileUpdated
-from domain.entities.child_profile import ChildProfile
-from uuid import uuid4
+"""Test event sourced child profile functionality"""
+
 import asyncio
 import sys
 from pathlib import Path
+from uuid import uuid4
+
+from domain.entities.child_profile import ChildProfile
+from domain.events.child_profile_updated import ChildProfileUpdated
+from domain.repositories.event_store import InMemoryEventStore
+from infrastructure.repositories.event_sourced_child_repository import (
+    EventSourcedChildRepository,
+)
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -17,6 +20,8 @@ src_path = src_path / "src"
 
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
+
+# Import after path setup
 
 try:
     import pytest
@@ -67,6 +72,9 @@ except ImportError:
 
             return decorator
 
+        def main(self, args):
+            return 0
+
     pytest = MockPytest()
 
 
@@ -89,11 +97,13 @@ class TestChildProfileEventSourcing:
     def test_child_profile_update_dispatches_event(self):
         async def _test():
             child = ChildProfile.create_new("Test Child", 5, {"toy": "bear"})
-            initial_event_count = len(
-                child.get_uncommitted_events()
-            )  # This will be 1 (ChildRegistered) and clear the list
+            # Clear any initial events (like ChildRegistered) from creation
+            child.get_uncommitted_events()
+
+            # Now update the profile
             child.update_profile(name="Updated Child")
             events = child.get_uncommitted_events()
+
             assert len(events) == 1  # Only the ChildProfileUpdated event
             assert isinstance(events[0], ChildProfileUpdated)
             assert events[0].name == "Updated Child"
@@ -108,9 +118,7 @@ class TestChildProfileEventSourcing:
 
             # Simulate events being loaded from an event store
             events = [
-                ChildProfileUpdated.create(
-                    child_id=child_id, name="First Update"
-                ),
+                ChildProfileUpdated.create(child_id=child_id, name="First Update"),
                 ChildProfileUpdated.create(child_id=child_id, age=4),
                 ChildProfileUpdated.create(
                     child_id=child_id, preferences={"color": "blue"}

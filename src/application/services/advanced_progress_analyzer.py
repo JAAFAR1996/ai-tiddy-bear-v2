@@ -20,12 +20,8 @@ class ProgressMetrics:
 
     skill_level: str = "beginner"
     improvement_rate: float = 0.1
-    strengths: list[str] = field(
-        default_factory=lambda: ["listening", "vocabulary"]
-    )
-    areas_for_improvement: list[str] = field(
-        default_factory=lambda: ["pronunciation"]
-    )
+    strengths: list[str] = field(default_factory=lambda: ["listening", "vocabulary"])
+    areas_for_improvement: list[str] = field(default_factory=lambda: ["pronunciation"])
 
 
 class AdvancedProgressAnalyzer:

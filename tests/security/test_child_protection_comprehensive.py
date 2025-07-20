@@ -1,11 +1,13 @@
-from application.services.consent_service import ConsentService
-from hypothesis import strategies as st
-from hypothesis import given
-from datetime import datetime, timedelta
 import asyncio
-from tests.framework import ChildSafetyTestCase
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
+
+from src.application.services.consent.consent_service import ConsentService
+from hypothesis import given
+from hypothesis import strategies as st
+
+from tests.framework import ChildSafetyTestCase
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -430,10 +432,7 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             )
 
             # Layer 3: AI moderation (if passed previous checks)
-            if (
-                content_result["is_safe"]
-                and safety_result["action"] != "BLOCK"
-            ):
+            if content_result["is_safe"] and safety_result["action"] != "BLOCK":
                 ai_result = await self.safety_system.ai_moderation_check(
                     message=message, child_age=child.age
                 )
@@ -544,15 +543,14 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
         """Generate test content based on type"""
         if content_type == "educational":
             return self.generate_safe_content(5, "educational")
-        elif content_type == "storytelling":
+        if content_type == "storytelling":
             return self.generate_safe_content(5, "stories")
-        elif content_type == "simple_math":
+        if content_type == "simple_math":
             return "Let's add 2 + 2!"
-        elif content_type == "violence":
+        if content_type == "violence":
             return self.generate_unsafe_content("violence")
-        elif content_type == "adult_topics":
+        if content_type == "adult_topics":
             return self.generate_unsafe_content("adult_content")
-        elif content_type == "personal_info_request":
+        if content_type == "personal_info_request":
             return self.generate_unsafe_content("personal_info")
-        else:
-            return self.faker.sentence()
+        return self.faker.sentence()

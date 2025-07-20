@@ -1,20 +1,19 @@
-from typing import Callable, Optional
-from fastapi import Request, Response, status
-from fastapi.middleware.base import BaseHTTPMiddleware
-from src.infrastructure.security.comprehensive_rate_limiter import (
-    get_rate_limiter,
-    RateLimitResult,
-)
+from collections.abc import Callable
 
+from fastapi import Request, Response, status
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.comprehensive_rate_limiter import (
+    RateLimitResult,
+    get_rate_limiter,
+)
 
 logger = get_logger(__name__, component="middleware")
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Rate limiting middleware that applies different limits based on endpoint patterns.
+    """Rate limiting middleware that applies different limits based on endpoint patterns.
     Features:
     - Endpoint-specific rate limiting
     - IP-based and user-based limits
@@ -47,9 +46,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             "/api/voice": "child_interaction",
         }
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """Apply rate limiting to incoming requests."""
         # Extract request information
         client_ip = self._get_client_ip(request)
@@ -85,9 +82,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 response.headers["X-RateLimit-Remaining"] = str(
                     max(0, result.remaining)
                 )
-                response.headers["X-RateLimit-Reset"] = str(
-                    int(result.reset_time)
-                )
+                response.headers["X-RateLimit-Reset"] = str(int(result.reset_time))
 
                 if result.retry_after:
                     response.headers["Retry-After"] = str(result.retry_after)
@@ -143,7 +138,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         return "unknown"
 
-    def _get_user_id(self, request: Request) -> Optional[str]:
+    def _get_user_id(self, request: Request) -> str | None:
         """Extract user ID from request(from authentication)."""
         try:
             # Check if user is authenticated
@@ -151,7 +146,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 user = request.state.user
                 if hasattr(user, "id"):
                     return str(user.id)
-                elif hasattr(user, "email"):
+                if hasattr(user, "email"):
                     return user.email
 
             # Check for user ID in headers (from JWT or session)
@@ -167,7 +162,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             logger.error(f"Unexpected error extracting user ID: {e}")
             return None
 
-    def _get_child_id(self, request: Request) -> Optional[str]:
+    def _get_child_id(self, request: Request) -> str | None:
         """Extract child ID from request path or body."""
         try:
             # Check path parameters
@@ -212,9 +207,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Default configuration
         return self.default_config
 
-    def _generate_rate_limit_key(
-        self, request: Request, config_name: str
-    ) -> str:
+    def _generate_rate_limit_key(self, request: Request, config_name: str) -> str:
         """Generate rate limiting key based on request and configuration."""
         client_ip = self._get_client_ip(request)
         user_id = self._get_user_id(request)
@@ -225,10 +218,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return f"ip:{client_ip}"
 
         # For child-related endpoints, use child ID if available
-        if (
-            config_name in ["child_interaction", "child_data_access"]
-            and child_id
-        ):
+        if config_name in ["child_interaction", "child_data_access"] and child_id:
             return f"child:{child_id}"
 
         # For authenticated users, use user ID
@@ -252,7 +242,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Determine status code based on situation
         if result.child_safety_triggered:
             status_code = status.HTTP_429_TOO_MANY_REQUESTS
-            message = "Rate limit exceeded for child safety. Please wait before trying again."
+            message = (
+                "Rate limit exceeded for child safety. Please wait before trying again."
+            )
             error_type = "child_safety_rate_limit"
         elif result.blocked_reason:
             status_code = status.HTTP_429_TOO_MANY_REQUESTS

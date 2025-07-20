@@ -66,22 +66,14 @@ class ConsentModel(Base):
         default=lambda: datetime.now(UTC),
         nullable=False,
     )
-    revoked_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True)
-    )
-    expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True)
-    )
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Verification
-    verification_method: Mapped[str] = mapped_column(
-        String(100), nullable=False
-    )
+    verification_method: Mapped[str] = mapped_column(String(100), nullable=False)
     verification_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
 
-    __table_args__ = (
-        Index("idx_consent_parent_type", "parent_id", "consent_type"),
-    )
+    __table_args__ = (Index("idx_consent_parent_type", "parent_id", "consent_type"),)
 
     def __repr__(self) -> str:
         return (
@@ -121,7 +113,7 @@ class SafetyEventModel(Base):
         nullable=False,
     )
     details: Mapped[str] = mapped_column(Text, nullable=False)
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    event_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     # Tracking
     event_time: Mapped[datetime] = mapped_column(

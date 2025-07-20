@@ -25,7 +25,8 @@ from src.domain.interfaces.notification_clients import (
 from src.domain.interfaces.notification_repository import (
     INotificationRepository,
 )
-from src.domain.safety.models import SafetyLevel
+from src.domain.value_objects.safety_level import SafetyLevel
+
 from src.domain.value_objects.notification import (
     NotificationRecord,
     NotificationStatus,
@@ -113,9 +114,7 @@ class NotificationService:
         """
         try:
             if self.safety_monitor:
-                safety_result = await self.safety_monitor.check_content_safety(
-                    message
-                )
+                safety_result = await self.safety_monitor.check_content_safety(message)
                 if safety_result.risk_level in [
                     SafetyLevel.UNSAFE,
                     SafetyLevel.POTENTIALLY_UNSAFE,
@@ -163,9 +162,7 @@ class NotificationService:
             notification_record.attempts += 1
             notification_record.last_attempt_at = datetime.now(UTC)
             notification_record.status = (
-                NotificationStatus.SENT
-                if success
-                else NotificationStatus.FAILED
+                NotificationStatus.SENT if success else NotificationStatus.FAILED
             )
             notification_record.error_message = (
                 None if success else "Failed to send via channel"
@@ -173,12 +170,7 @@ class NotificationService:
 
             await self.repository.save_notification(notification_record)
             self.logger.info(
-                "Notification {nid} sent to {rcpt} via {chnl} with status {status}.".format(
-                    nid=notification_id,
-                    rcpt=recipient,
-                    chnl=channel.value,
-                    status=notification_record.status.value,
-                )
+                f"Notification {notification_id} sent to {recipient} via {channel.value} with status {notification_record.status.value}."
             )
             return {
                 "id": str(notification_id),
@@ -283,12 +275,8 @@ class NotificationService:
             A list of NotificationRecord objects.
 
         """
-        self.logger.debug(
-            f"Retrieving notification history for recipient: {recipient}"
-        )
-        history = await self.repository.get_notifications_for_recipient(
-            recipient
-        )
+        self.logger.debug(f"Retrieving notification history for recipient: {recipient}")
+        history = await self.repository.get_notifications_for_recipient(recipient)
         self.logger.info(
             f"Retrieved {len(history)} notifications for recipient: {recipient}",
         )

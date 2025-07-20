@@ -1,18 +1,17 @@
-"""
-Comprehensive Unit Tests for Production AI Service
-"""
+"""Comprehensive Unit Tests for Production AI Service"""
 
-import pytest
+import json
 from unittest.mock import AsyncMock
 from uuid import uuid4
-import json
 
+import pytest
+
+from src.domain.value_objects import ChildAge
 from src.infrastructure.ai.real_ai_service import (
-    ProductionAIService,
     AIResponse,
+    ProductionAIService,
     StoryRequest,
 )
-from src.domain.value_objects import ChildAge
 
 
 @pytest.fixture
@@ -230,9 +229,7 @@ class TestStoryGeneration:
     """Test story generation functionality."""
 
     @pytest.mark.asyncio
-    async def test_generate_story_success(
-        self, ai_service, mock_openai_client
-    ):
+    async def test_generate_story_success(self, ai_service, mock_openai_client):
         """Test successful story generation."""
         ai_service.client = mock_openai_client
 
@@ -263,9 +260,7 @@ class TestStoryGeneration:
         assert story["age_appropriate"] is True
 
     @pytest.mark.asyncio
-    async def test_generate_story_with_moral(
-        self, ai_service, mock_openai_client
-    ):
+    async def test_generate_story_with_moral(self, ai_service, mock_openai_client):
         """Test story generation with educational moral."""
         ai_service.client = mock_openai_client
 
@@ -296,9 +291,7 @@ class TestSafetyAnalysis:
     """Test content safety analysis."""
 
     @pytest.mark.asyncio
-    async def test_analyze_content_safety_safe(
-        self, ai_service, mock_openai_client
-    ):
+    async def test_analyze_content_safety_safe(self, ai_service, mock_openai_client):
         """Test safety analysis for safe content."""
         ai_service.client = mock_openai_client
 
@@ -323,9 +316,7 @@ class TestSafetyAnalysis:
             ]
         )
 
-        result = await ai_service.analyze_content_safety(
-            "Let's play a fun game!"
-        )
+        result = await ai_service.analyze_content_safety("Let's play a fun game!")
 
         assert result["safe"] is True
         assert result["safety_score"] > 0.95
@@ -333,9 +324,7 @@ class TestSafetyAnalysis:
         assert result["severity"] == "none"
 
     @pytest.mark.asyncio
-    async def test_analyze_content_safety_unsafe(
-        self, ai_service, mock_openai_client
-    ):
+    async def test_analyze_content_safety_unsafe(self, ai_service, mock_openai_client):
         """Test safety analysis for unsafe content."""
         ai_service.client = mock_openai_client
 
@@ -360,9 +349,7 @@ class TestSafetyAnalysis:
             ]
         )
 
-        result = await ai_service.analyze_content_safety(
-            "Inappropriate content here"
-        )
+        result = await ai_service.analyze_content_safety("Inappropriate content here")
 
         assert result["safe"] is False
         assert result["safety_score"] < 0.5
@@ -476,9 +463,7 @@ class TestErrorHandling:
         """Test handling of OpenAI API errors."""
         ai_service.client = mock_openai_client
 
-        mock_openai_client.chat.completions.create.side_effect = Exception(
-            "API Error"
-        )
+        mock_openai_client.chat.completions.create.side_effect = Exception("API Error")
 
         response = await ai_service.generate_response(
             message="Hello",
@@ -545,9 +530,7 @@ class TestTokenManagement:
             {"role": "assistant", "content": "Long response " * 100},
         ] * 10
 
-        truncated = ai_service._truncate_context(
-            large_context, max_tokens=1000
-        )
+        truncated = ai_service._truncate_context(large_context, max_tokens=1000)
 
         assert len(truncated) < len(large_context)
         assert ai_service._estimate_tokens(str(truncated)) <= 1000

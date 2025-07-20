@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, List
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -42,33 +42,33 @@ class CreateChildRequest(BaseModel):
         le=13,
         description="Child's age (COPPA compliance: 3-13 years)",
     )
-    preferences: Dict[str, Any] = Field(
+    preferences: dict[str, Any] = Field(
         default_factory=dict,
         description="Child preferences (validated dictionary)",
     )
 
 
 class UpdateChildRequest(BaseModel):
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None,
         min_length=1,
         max_length=100,
         pattern=r"^[A-Za-z\s\u0600-\u06FF]+$",
         description="Updated child's name (optional)",
     )
-    age: Optional[int] = Field(
+    age: int | None = Field(
         None,
         ge=3,
         le=13,
         description="Updated child's age (COPPA compliance: 3-13 years)",
     )
-    preferences: Optional[Dict[str, Any]] = Field(
+    preferences: dict[str, Any] | None = Field(
         None, description="Updated child preferences (optional)"
     )
 
 
 class ConsentRequest(BaseModel):
-    consent_types: List[str] = Field(
+    consent_types: list[str] = Field(
         ...,
         description="List of consent types to grant",
         example=["data_collection", "voice_recording", "usage_analytics"],
@@ -84,8 +84,8 @@ class ConsentRequest(BaseModel):
         max_length=10,
         description="Verification code received via chosen method",
     )
-    ip_address: Optional[str] = Field(None, description="Client IP address")
-    user_agent: Optional[str] = Field(None, description="Client user agent")
+    ip_address: str | None = Field(None, description="Client IP address")
+    user_agent: str | None = Field(None, description="Client user agent")
 
 
 class ConsentStatusResponse(BaseModel):
@@ -94,21 +94,17 @@ class ConsentStatusResponse(BaseModel):
     voice_recording: bool = False
     usage_analytics: bool = False
     safety_monitoring: bool = False
-    last_updated: Optional[str] = None
+    last_updated: str | None = None
     consent_valid: bool = False
 
 
 # --- API Endpoints ---
 
 
-@router.post(
-    "/children", response_model=ChildData, status_code=status.HTTP_201_CREATED
-)
+@router.post("/children", response_model=ChildData, status_code=status.HTTP_201_CREATED)
 async def create_child_profile_endpoint(
     request: CreateChildRequest,
-    use_case: ManageChildProfileUseCase = Depends(
-        get_manage_child_profile_use_case
-    ),
+    use_case: ManageChildProfileUseCase = Depends(get_manage_child_profile_use_case),
 ) -> ChildData:
     try:
         child_data = await use_case.create_child_profile(
@@ -127,9 +123,7 @@ async def create_child_profile_endpoint(
 @router.get("/children/{child_id}", response_model=ChildData)
 async def get_child_profile_endpoint(
     child_id: UUID,
-    use_case: ManageChildProfileUseCase = Depends(
-        get_manage_child_profile_use_case
-    ),
+    use_case: ManageChildProfileUseCase = Depends(get_manage_child_profile_use_case),
 ) -> ChildData:
     child_data = await use_case.get_child_profile(child_id)
     if not child_data:
@@ -143,9 +137,7 @@ async def get_child_profile_endpoint(
 async def update_child_profile_endpoint(
     child_id: UUID,
     request: UpdateChildRequest,
-    use_case: ManageChildProfileUseCase = Depends(
-        get_manage_child_profile_use_case
-    ),
+    use_case: ManageChildProfileUseCase = Depends(get_manage_child_profile_use_case),
 ) -> ChildData:
     updated_child = await use_case.update_child_profile(
         child_id, request.name, request.age, request.preferences
@@ -160,16 +152,13 @@ async def update_child_profile_endpoint(
 @router.delete("/children/{child_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_child_profile_endpoint(
     child_id: UUID,
-    use_case: ManageChildProfileUseCase = Depends(
-        get_manage_child_profile_use_case
-    ),
+    use_case: ManageChildProfileUseCase = Depends(get_manage_child_profile_use_case),
 ) -> None:
     success = await use_case.delete_child_profile(child_id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Child not found"
         )
-    return
 
 
 @router.post("/children/{child_id}/story", response_model=StoryResponse)
@@ -203,10 +192,10 @@ async def generate_child_story_endpoint(
 @router.post("/children/{child_id}/consent/request")
 async def request_consent_verification(
     child_id: UUID,
-    consent_types: List[str],
+    consent_types: list[str],
     verification_method: str = "email",
     current_user: UserInfo = Depends(get_current_parent),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         consent_manager = get_consent_manager()
         parent_id = current_user.id
@@ -236,7 +225,7 @@ async def grant_parental_consent(
     child_id: UUID,
     request: ConsentRequest,
     current_user: UserInfo = Depends(get_current_parent),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         consent_manager = get_consent_manager()
         parent_id = current_user.id
@@ -274,15 +263,11 @@ async def grant_parental_consent(
         )
 
 
-@router.get(
-    "/children/{child_id}/consent/status", response_model=ConsentStatusResponse
-)
+@router.get("/children/{child_id}/consent/status", response_model=ConsentStatusResponse)
 async def get_consent_status(child_id: UUID) -> ConsentStatusResponse:
     try:
         consent_manager = get_consent_manager()
-        consent_status = await consent_manager.get_child_consent_status(
-            str(child_id)
-        )
+        consent_status = await consent_manager.get_child_consent_status(str(child_id))
         return ConsentStatusResponse(
             child_id=str(child_id),
             data_collection=consent_status.get("data_collection", False),
@@ -306,7 +291,7 @@ async def revoke_consent(
     child_id: UUID,
     consent_type: str,
     current_user: UserInfo = Depends(get_current_parent),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         consent_manager = get_consent_manager()
         parent_id = current_user.id
@@ -322,11 +307,10 @@ async def revoke_consent(
                 "consent_type": consent_type,
                 "message": f"Consent for {consent_type} has been revoked",
             }
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Consent for {consent_type} not found",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Consent for {consent_type} not found",
+        )
     except HTTPException:
         raise
     except Exception as e:

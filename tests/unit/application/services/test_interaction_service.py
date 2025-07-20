@@ -1,11 +1,11 @@
-"""
-Tests for Interaction Service
+"""Tests for Interaction Service
 Testing child interaction processing with safety filters.
 """
 
-import pytest
 from datetime import datetime
 from unittest.mock import patch
+
+import pytest
 
 from src.application.services.interaction_service import InteractionService
 
@@ -37,9 +37,7 @@ class TestInteractionService:
             with patch(
                 "src.application.services.interaction_service.datetime"
             ) as mock_datetime:
-                mock_datetime.utcnow.return_value = datetime(
-                    2024, 1, 15, 10, 30, 0
-                )
+                mock_datetime.utcnow.return_value = datetime(2024, 1, 15, 10, 30, 0)
 
                 result = await service.process(child_id, message)
 
@@ -112,9 +110,7 @@ class TestInteractionService:
                 with patch(
                     "src.application.services.interaction_service.datetime"
                 ) as mock_datetime:
-                    mock_datetime.utcnow.return_value = datetime(
-                        2024, 1, 15, 10, 30, 0
-                    )
+                    mock_datetime.utcnow.return_value = datetime(2024, 1, 15, 10, 30, 0)
 
                     result = await service.process(child_id, message)
 
@@ -246,12 +242,8 @@ class TestInteractionService:
         # Test exact boundaries
         assert service._check_child_age(service.min_child_age) is True  # 3
         assert service._check_child_age(service.max_child_age) is True  # 13
-        assert (
-            service._check_child_age(service.min_child_age - 1) is False
-        )  # 2
-        assert (
-            service._check_child_age(service.max_child_age + 1) is False
-        )  # 14
+        assert service._check_child_age(service.min_child_age - 1) is False  # 2
+        assert service._check_child_age(service.max_child_age + 1) is False  # 14
 
     @pytest.mark.asyncio
     async def test_process_whitespace_only_message(self, service):
@@ -281,8 +273,7 @@ class TestInteractionService:
 
             # Process all interactions concurrently
             tasks = [
-                service.process(child_id, message)
-                for child_id, message in interactions
+                service.process(child_id, message) for child_id, message in interactions
             ]
             results = await asyncio.gather(*tasks)
 
@@ -375,9 +366,7 @@ class TestInteractionService:
                 results.append(result)
 
         # Each result should have correct child_id and message
-        for i, (expected_child_id, expected_message) in enumerate(
-            child_interactions
-        ):
+        for i, (expected_child_id, expected_message) in enumerate(child_interactions):
             assert results[i]["child_id"] == expected_child_id
             assert results[i]["processed_message"] == expected_message
 

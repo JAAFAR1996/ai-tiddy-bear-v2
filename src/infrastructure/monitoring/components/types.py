@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional
 
 # Monitoring types and data classes.
+
 
 class AlertSeverity(Enum):
     """Alert severity levels."""
@@ -41,8 +41,8 @@ class MetricValue:
     value: float
     metric_type: MetricType
     timestamp: datetime
-    tags: Dict[str, str]
-    labels: Optional[Dict[str, str]] = None
+    tags: dict[str, str]
+    labels: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         """Validate metric value after initialization."""
@@ -63,10 +63,10 @@ class Alert:
     metric_name: str
     current_value: float
     threshold_value: float
-    tags: Dict[str, str]
-    child_id: Optional[str] = None
-    resolved_at: Optional[datetime] = None
-    acknowledged_at: Optional[datetime] = None
+    tags: dict[str, str]
+    child_id: str | None = None
+    resolved_at: datetime | None = None
+    acknowledged_at: datetime | None = None
     escalated: bool = False
 
     def __post_init__(self) -> None:

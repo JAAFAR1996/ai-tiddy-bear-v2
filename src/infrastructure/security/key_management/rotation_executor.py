@@ -144,9 +144,7 @@ class RotationExecutor:
         results = []
 
         for key_metadata in keys_to_rotate:
-            result = self.rotate_key(
-                key_metadata.key_id, RotationTrigger.SCHEDULED
-            )
+            result = self.rotate_key(key_metadata.key_id, RotationTrigger.SCHEDULED)
             results.append(result)
 
         successful = sum(1 for r in results if r.success)

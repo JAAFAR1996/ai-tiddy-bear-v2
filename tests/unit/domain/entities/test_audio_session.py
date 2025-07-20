@@ -46,9 +46,7 @@ class TestAudioSession:
 
         assert session.transcription == transcription_text
         assert session.processed is True
-        assert (
-            session.start_time == original_start
-        )  # Start time should not change
+        assert session.start_time == original_start  # Start time should not change
         assert session.end_time > original_end  # End time should be updated
 
     def test_direct_initialization(self):
@@ -82,14 +80,11 @@ class TestAudioSession:
         """Test that multiple sessions have unique IDs."""
         child_id = uuid4()
         sessions = [
-            AudioSession.create_new(child_id, f"/path/audio_{i}.wav")
-            for i in range(10)
+            AudioSession.create_new(child_id, f"/path/audio_{i}.wav") for i in range(10)
         ]
 
         session_ids = [session.id for session in sessions]
-        assert len(set(session_ids)) == len(
-            session_ids
-        )  # All IDs should be unique
+        assert len(set(session_ids)) == len(session_ids)  # All IDs should be unique
 
     def test_empty_transcription_not_processed(self):
         """Test that new session starts with empty transcription and not processed."""

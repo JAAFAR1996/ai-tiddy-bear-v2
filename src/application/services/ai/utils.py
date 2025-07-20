@@ -1,14 +1,11 @@
-from typing import Dict, List, Optional
-
-
 class AIServiceUtils:
     """Utility class providing helper methods for AI service."""
 
     @staticmethod
     def calculate_safety_score(
         content: str,
-        moderation_result: Dict,
-        banned_topics: List[str],
+        moderation_result: dict,
+        banned_topics: list[str],
     ) -> float:
         """Calculate content safety score."""
         if not moderation_result.get("safe", True):
@@ -66,13 +63,12 @@ class AIServiceUtils:
 
         if score > 0:
             return "positive"
-        elif score < 0:
+        if score < 0:
             return "negative"
-        else:
-            return "neutral"
+        return "neutral"
 
     @staticmethod
-    def extract_topics(content: str) -> List[str]:
+    def extract_topics(content: str) -> list[str]:
         """Extract main topics from content (dummy implementation)."""
         topics = []
         keywords = ["adventure", "friendship", "magic", "school", "family"]
@@ -91,12 +87,11 @@ class AIServiceUtils:
         """Get age group classification."""
         if age <= 5:
             return "toddler"
-        elif age <= 8:
+        if age <= 8:
             return "young child"
-        elif age <= 13:
+        if age <= 13:
             return "preteen"
-        else:
-            return "adult"
+        return "adult"
 
     @staticmethod
     def generate_cache_key(message: str, age: int, name: str) -> str:

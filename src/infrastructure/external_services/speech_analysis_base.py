@@ -1,6 +1,5 @@
 from datetime import datetime
-from typing import Dict, Any, Optional, List
-import logging
+from typing import Any
 
 """Base Speech Analysis Components
 Core classes and utilities for speech disorder detection"""
@@ -52,7 +51,7 @@ class AudioValidator:
     def __init__(self, config: SpeechAnalysisConfig) -> None:
         self.config = config
 
-    async def validate_audio_data(self, audio_data: bytes) -> Dict[str, Any]:
+    async def validate_audio_data(self, audio_data: bytes) -> dict[str, Any]:
         """Validate audio data format and quality."""
         try:
             if not audio_data:
@@ -90,9 +89,7 @@ class FeatureExtractor:
     def __init__(self, config: SpeechAnalysisConfig) -> None:
         self.config = config
 
-    async def extract_audio_features(
-        self, audio_data: bytes
-    ) -> Dict[str, Any]:
+    async def extract_audio_features(self, audio_data: bytes) -> dict[str, Any]:
         """Extract features from audio data for analysis."""
         try:
             # Mock feature extraction (in real implementation would use librosa/pyaudio)
@@ -109,9 +106,7 @@ class FeatureExtractor:
                     "zero_crossing_rate": 0.15,
                 },
                 "temporal_features": {
-                    "duration": len(audio_data)
-                    / 44100
-                    / 2,  # Estimated duration
+                    "duration": len(audio_data) / 44100 / 2,  # Estimated duration
                     "silence_ratio": 0.12,
                     "speech_rate": 4.5,  # syllables per second
                 },
@@ -128,7 +123,7 @@ class FeatureExtractor:
             return {"error": f"Feature extraction failed: {e!s}"}
 
 
-def create_response_template() -> Dict[str, Any]:
+def create_response_template() -> dict[str, Any]:
     """Create standard response template."""
     return {
         "analysis_timestamp": datetime.now().isoformat(),

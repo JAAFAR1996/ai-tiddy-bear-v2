@@ -1,10 +1,10 @@
 """Hallucination Testing Module
-AI System Chaos Actions for Testing Hallucination Detection"""
+AI System Chaos Actions for Testing Hallucination Detection
+"""
 
 import asyncio
-import logging
 import random
-from typing import Any, Dict, List
+from typing import Any
 
 import httpx
 
@@ -33,7 +33,7 @@ async def _send_hallucination_prompt(
     session: httpx.AsyncClient,
     prompt: str,
     index: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Sends a single hallucination prompt and processes the result."""
     try:
         response = await session.post(
@@ -81,7 +81,7 @@ async def _send_hallucination_prompt(
             result["confidence"] = data.get("confidence", 0.0)
 
         return result
-    except (httpx.RequestError, asyncio.TimeoutError) as e:
+    except (TimeoutError, httpx.RequestError) as e:
         logger.warning(f"Request failed for prompt '{prompt}': {e}")
         return {
             "test_id": index + 1,
@@ -94,8 +94,8 @@ async def _send_hallucination_prompt(
 
 
 async def _execute_hallucination_tests(
-    hallucination_prompts: List[str],
-) -> List[Dict[str, Any]]:
+    hallucination_prompts: list[str],
+) -> list[dict[str, Any]]:
     """Execute hallucination tests concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = [
@@ -106,9 +106,9 @@ async def _execute_hallucination_tests(
 
 
 def _calculate_hallucination_metrics(
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
     total_prompts: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate hallucination detection metrics."""
     detected_count = sum(1 for r in results if r.get("detected"))
     detection_rate = detected_count / total_prompts if total_prompts else 0
@@ -127,16 +127,14 @@ def _calculate_hallucination_metrics(
 
 
 async def trigger_hallucination(
-    configuration: Dict[str, Any] = None,
-) -> Dict[str, Any]:
+    configuration: dict[str, Any] = None,
+) -> dict[str, Any]:
     """Trigger AI hallucination scenarios by sending various prompts."""
     tester = HallucinationTester()
     logger.info("🧠 Starting AI hallucination detection test")
 
     try:
-        results = await _execute_hallucination_tests(
-            tester.hallucination_prompts
-        )
+        results = await _execute_hallucination_tests(tester.hallucination_prompts)
         metrics = _calculate_hallucination_metrics(
             results,
             len(tester.hallucination_prompts),

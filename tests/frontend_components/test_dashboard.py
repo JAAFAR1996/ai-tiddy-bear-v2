@@ -12,6 +12,8 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 
+# Import pytest with fallback to mock
+pytest = None
 try:
     import pytest
 except ImportError:
@@ -21,7 +23,9 @@ except ImportError:
         pass
 
     # Mock pytest when not available
-    class MockPytest:
+    if pytest is None:
+        class MockPytest:
+
         def fixture(self, *args, **kwargs):
             def decorator(func):
                 return func

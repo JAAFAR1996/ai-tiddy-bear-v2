@@ -1,8 +1,8 @@
-from domain.value_objects.safety_level import SafetyLevel
-from domain.entities.child_profile import ChildProfile
-from application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
-from application.dto.ai_response import AIResponse
-from application.dto.esp32_request import ESP32Request
+from src.domain.value_objects.safety_level import SafetyLevel
+from src.domain.entities.child_profile import ChildProfile
+from src.application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
+from src.application.dto.ai_response import AIResponse
+from src.application.dto.esp32_request import ESP32Request
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock
 import sys

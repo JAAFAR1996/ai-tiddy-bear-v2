@@ -14,7 +14,8 @@ from src.application.interfaces.read_model_interfaces import (
 )
 from src.application.interfaces.safety_monitor import SafetyMonitor
 from src.domain.entities.child_profile import ChildProfile
-from src.domain.safety.models import SafetyLevel
+from src.domain.value_objects.safety_level import SafetyLevel
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="dynamic_content_service")

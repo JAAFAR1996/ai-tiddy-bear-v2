@@ -13,9 +13,7 @@ class DomainEvent:
         if isinstance(self.event_id, str):
             super().__setattr__("event_id", UUID(self.event_id))
         if isinstance(self.timestamp, str):
-            super().__setattr__(
-                "timestamp", datetime.fromisoformat(self.timestamp)
-            )
+            super().__setattr__("timestamp", datetime.fromisoformat(self.timestamp))
 
     @classmethod
     def new_event(cls) -> "DomainEvent":

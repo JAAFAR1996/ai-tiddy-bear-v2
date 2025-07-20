@@ -1,21 +1,21 @@
-"""
-Tests for Comprehensive Audit Integration
+"""Tests for Comprehensive Audit Integration
 Testing centralized audit logging service for all critical operations.
 """
 
-import pytest
-from unittest.mock import patch, Mock, AsyncMock
 from datetime import datetime
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 from src.infrastructure.security.comprehensive_audit_integration import (
-    ComprehensiveAuditIntegration,
     AuditableOperation,
-    get_audit_integration,
+    ComprehensiveAuditIntegration,
     audit_authentication,
     audit_authorization,
     audit_child_data_operation,
     audit_coppa_event,
     audit_security_event,
+    get_audit_integration,
 )
 
 
@@ -197,10 +197,7 @@ class TestComprehensiveAuditIntegration:
         call_kwargs = mock_audit_logger.log_event.call_args[1]
         assert call_kwargs["category"].value == "authorization"
         assert call_kwargs["severity"].value == "info"
-        assert (
-            "Access read on child_profile: granted"
-            in call_kwargs["description"]
-        )
+        assert "Access read on child_profile: granted" in call_kwargs["description"]
         assert call_kwargs["context"].user_id == "parent_123"
         assert call_kwargs["context"].child_id == "child_456"
         assert call_kwargs["details"]["granted"] is True
@@ -517,9 +514,7 @@ class TestComprehensiveAuditIntegration:
         assert integration1 is integration2
 
     @pytest.mark.asyncio
-    async def test_audit_authentication_convenience_function(
-        self, mock_audit_logger
-    ):
+    async def test_audit_authentication_convenience_function(self, mock_audit_logger):
         """Test audit_authentication convenience function."""
         # Clear global instance to ensure clean test
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
@@ -536,9 +531,7 @@ class TestComprehensiveAuditIntegration:
         assert result == "audit_event_123"
 
     @pytest.mark.asyncio
-    async def test_audit_authorization_convenience_function(
-        self, mock_audit_logger
-    ):
+    async def test_audit_authorization_convenience_function(self, mock_audit_logger):
         """Test audit_authorization convenience function."""
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
 
@@ -572,9 +565,7 @@ class TestComprehensiveAuditIntegration:
         assert result == "audit_event_123"
 
     @pytest.mark.asyncio
-    async def test_audit_coppa_event_convenience_function(
-        self, mock_audit_logger
-    ):
+    async def test_audit_coppa_event_convenience_function(self, mock_audit_logger):
         """Test audit_coppa_event convenience function."""
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
 
@@ -594,9 +585,7 @@ class TestComprehensiveAuditIntegration:
         assert result == "audit_event_123"
 
     @pytest.mark.asyncio
-    async def test_audit_security_event_convenience_function(
-        self, mock_audit_logger
-    ):
+    async def test_audit_security_event_convenience_function(self, mock_audit_logger):
         """Test audit_security_event convenience function."""
         import src.infrastructure.security.comprehensive_audit_integration as audit_module
 

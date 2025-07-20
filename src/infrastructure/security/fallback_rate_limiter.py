@@ -1,9 +1,7 @@
-from collections import defaultdict, deque
-from datetime import datetime
-from typing import Dict, Optional, Tuple
 import threading
 import time
-
+from collections import defaultdict, deque
+from datetime import datetime
 
 from src.infrastructure.logging_config import get_logger
 
@@ -12,20 +10,18 @@ logger = get_logger(__name__, component="security")
 
 class SlidingWindowRateLimiter:
 
-    def __init__(
-        self, default_limit: int = 100, window_seconds: int = 60
-    ) -> None:
+    def __init__(self, default_limit: int = 100, window_seconds: int = 60) -> None:
         """Initialize rate limiter with default settings."""
         self.default_limit = default_limit
         self.window_seconds = window_seconds
 
         # Thread-safe storage for rate limit windows
-        self._user_windows: Dict[str, deque] = defaultdict(deque)
+        self._user_windows: dict[str, deque] = defaultdict(deque)
         self._global_window: deque = deque()
         self._lock = threading.RLock()
 
         # Custom limits per user/endpoint
-        self._custom_limits: Dict[str, Tuple[int, int]] = {}
+        self._custom_limits: dict[str, tuple[int, int]] = {}
 
         # Cleanup tracking
         self._last_cleanup = time.time()
@@ -38,12 +34,12 @@ class SlidingWindowRateLimiter:
     async def is_allowed(
         self,
         user_id: str,
-        endpoint: Optional[str] = None,
-        custom_limit: Optional[int] = None,
-        custom_window: Optional[int] = None,
-    ) -> Dict[str, any]:
-        """
-        Check if request is allowed under rate limits.
+        endpoint: str | None = None,
+        custom_limit: int | None = None,
+        custom_window: int | None = None,
+    ) -> dict[str, any]:
+        """Check if request is allowed under rate limits.
+
         Args:
             user_id: Unique identifier for the user
             endpoint: Optional endpoint for granular limiting
@@ -56,9 +52,7 @@ class SlidingWindowRateLimiter:
         key = f"{user_id}:{endpoint}" if endpoint else user_id
 
         # Get rate limit configuration
-        limit, window = self._get_rate_limit_config(
-            key, custom_limit, custom_window
-        )
+        limit, window = self._get_rate_limit_config(key, custom_limit, custom_window)
 
         with self._lock:
             # Cleanup old entries periodically
@@ -78,9 +72,7 @@ class SlidingWindowRateLimiter:
             current_count = len(user_window)
             if current_count >= limit:
                 # Rate limit exceeded
-                oldest_request = (
-                    user_window[0] if user_window else current_time
-                )
+                oldest_request = user_window[0] if user_window else current_time
                 reset_time = oldest_request + window
                 retry_after = max(0, reset_time - current_time)
 
@@ -91,9 +83,7 @@ class SlidingWindowRateLimiter:
                 return {
                     "allowed": False,
                     "remaining": 0,
-                    "reset_time": datetime.fromtimestamp(
-                        reset_time
-                    ).isoformat(),
+                    "reset_time": datetime.fromtimestamp(reset_time).isoformat(),
                     "retry_after": int(retry_after) + 1,
                     "limit": limit,
                     "window_seconds": window,
@@ -107,9 +97,7 @@ class SlidingWindowRateLimiter:
             remaining = limit - (current_count + 1)
             reset_time = current_time + window
 
-            logger.debug(
-                f"Request allowed for {key}: {current_count + 1}/{limit}"
-            )
+            logger.debug(f"Request allowed for {key}: {current_count + 1}/{limit}")
 
             return {
                 "allowed": True,
@@ -124,8 +112,8 @@ class SlidingWindowRateLimiter:
         self,
         user_id: str,
         limit: int,
-        window_seconds: Optional[int] = None,
-        endpoint: Optional[str] = None,
+        window_seconds: int | None = None,
+        endpoint: str | None = None,
     ) -> None:
         """Set custom rate limit for specific user / endpoint."""
         key = f"{user_id}:{endpoint}" if endpoint else user_id
@@ -134,13 +122,9 @@ class SlidingWindowRateLimiter:
         with self._lock:
             self._custom_limits[key] = (limit, window)
 
-        logger.info(
-            f"Custom rate limit set for {key}: {limit} requests per {window}s"
-        )
+        logger.info(f"Custom rate limit set for {key}: {limit} requests per {window}s")
 
-    def remove_custom_limit(
-        self, user_id: str, endpoint: Optional[str] = None
-    ) -> None:
+    def remove_custom_limit(self, user_id: str, endpoint: str | None = None) -> None:
         """Remove custom rate limit for user / endpoint."""
         key = f"{user_id}:{endpoint}" if endpoint else user_id
 
@@ -152,9 +136,9 @@ class SlidingWindowRateLimiter:
     def _get_rate_limit_config(
         self,
         key: str,
-        custom_limit: Optional[int],
-        custom_window: Optional[int],
-    ) -> Tuple[int, int]:
+        custom_limit: int | None,
+        custom_window: int | None,
+    ) -> tuple[int, int]:
         """Get rate limit configuration for key."""
         # Priority: method params > stored custom limits > defaults
         if custom_limit is not None:
@@ -198,11 +182,9 @@ class SlidingWindowRateLimiter:
             cleanup_count += 1
 
         if cleanup_count > 0:
-            logger.debug(
-                f"Cleaned up {cleanup_count} expired rate limit entries"
-            )
+            logger.debug(f"Cleaned up {cleanup_count} expired rate limit entries")
 
-    async def get_statistics(self) -> Dict[str, any]:
+    async def get_statistics(self) -> dict[str, any]:
         """Get rate limiter statistics for monitoring."""
         current_time = time.time()
 
@@ -214,9 +196,7 @@ class SlidingWindowRateLimiter:
             for key, window in self._user_windows.items():
                 if window:
                     # Count requests in last window
-                    _, window_seconds = self._get_rate_limit_config(
-                        key, None, None
-                    )
+                    _, window_seconds = self._get_rate_limit_config(key, None, None)
                     cutoff_time = current_time - window_seconds
                     recent_requests = sum(
                         1 for req_time in window if req_time > cutoff_time
@@ -228,9 +208,7 @@ class SlidingWindowRateLimiter:
 
             # Global statistics
             global_requests_last_hour = sum(
-                1
-                for req_time in self._global_window
-                if req_time > current_time - 3600
+                1 for req_time in self._global_window if req_time > current_time - 3600
             )
 
             return {
@@ -251,13 +229,11 @@ class SlidingWindowRateLimiter:
                     "default_window_seconds": self.window_seconds,
                     "cleanup_interval_seconds": self._cleanup_interval,
                 },
-                "last_cleanup": datetime.fromtimestamp(
-                    self._last_cleanup
-                ).isoformat(),
+                "last_cleanup": datetime.fromtimestamp(self._last_cleanup).isoformat(),
             }
 
     async def reset_user_limits(
-        self, user_id: str, endpoint: Optional[str] = None
+        self, user_id: str, endpoint: str | None = None
     ) -> bool:
         """Reset rate limits for specific user(admin function)."""
         key = f"{user_id}:{endpoint}" if endpoint else user_id
@@ -271,8 +247,7 @@ class SlidingWindowRateLimiter:
 
 
 class FallbackRateLimitService:
-    """
-    High - level rate limiting service with Redis fallback.
+    """High - level rate limiting service with Redis fallback.
     Automatically falls back to in -memory limiting when Redis is unavailable.
     """
 
@@ -317,10 +292,10 @@ class FallbackRateLimitService:
     async def is_allowed(
         self,
         user_id: str,
-        endpoint: Optional[str] = None,
-        limit: Optional[int] = None,
-        window_seconds: Optional[int] = None,
-    ) -> Dict[str, any]:
+        endpoint: str | None = None,
+        limit: int | None = None,
+        window_seconds: int | None = None,
+    ) -> dict[str, any]:
         """Check if request is allowed under rate limits."""
         # Try Redis first if available
         if await self.check_redis_availability():
@@ -329,9 +304,7 @@ class FallbackRateLimitService:
                     user_id, endpoint, limit, window_seconds
                 )
             except Exception as e:
-                logger.error(
-                    f"Redis rate limiting failed, using fallback: {e}"
-                )
+                logger.error(f"Redis rate limiting failed, using fallback: {e}")
                 self.redis_available = False
 
         # Use fallback limiter
@@ -344,10 +317,10 @@ class FallbackRateLimitService:
     async def _redis_rate_limit(
         self,
         user_id: str,
-        endpoint: Optional[str],
-        limit: Optional[int],
-        window_seconds: Optional[int],
-    ) -> Dict[str, any]:
+        endpoint: str | None,
+        limit: int | None,
+        window_seconds: int | None,
+    ) -> dict[str, any]:
         """Implement Redis - based rate limiting(placeholder)."""
         # This would implement Redis sliding window rate limiting
         # For now, fall back to in-memory
@@ -356,7 +329,7 @@ class FallbackRateLimitService:
             user_id, endpoint, limit, window_seconds
         )
 
-    async def get_statistics(self) -> Dict[str, any]:
+    async def get_statistics(self) -> dict[str, any]:
         """Get comprehensive rate limiting statistics."""
         stats = await self.fallback_limiter.get_statistics()
         stats.update(
@@ -365,9 +338,7 @@ class FallbackRateLimitService:
                 "last_redis_check": datetime.fromtimestamp(
                     self.last_redis_check
                 ).isoformat(),
-                "service_type": (
-                    "redis" if self.redis_available else "fallback"
-                ),
+                "service_type": ("redis" if self.redis_available else "fallback"),
             }
         )
         return stats
@@ -376,16 +347,14 @@ class FallbackRateLimitService:
         self,
         user_id: str,
         limit: int,
-        window_seconds: Optional[int] = None,
-        endpoint: Optional[str] = None,
+        window_seconds: int | None = None,
+        endpoint: str | None = None,
     ) -> None:
         """Set custom rate limit(applies to fallback, Redis limits handled separately)."""
-        self.fallback_limiter.set_custom_limit(
-            user_id, limit, window_seconds, endpoint
-        )
+        self.fallback_limiter.set_custom_limit(user_id, limit, window_seconds, endpoint)
 
     async def reset_user_limits(
-        self, user_id: str, endpoint: Optional[str] = None
+        self, user_id: str, endpoint: str | None = None
     ) -> bool:
         """Reset rate limits for user across all systems."""
         # Reset fallback limits
@@ -402,9 +371,7 @@ class FallbackRateLimitService:
                 await self._redis_client.delete(redis_key)
                 redis_reset = True
             except Exception as e:
-                logger.warning(
-                    f"Failed to reset Redis rate limits for {user_id}: {e}"
-                )
+                logger.warning(f"Failed to reset Redis rate limits for {user_id}: {e}")
                 redis_reset = False
 
         return fallback_reset or redis_reset

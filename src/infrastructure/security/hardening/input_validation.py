@@ -1,20 +1,21 @@
 import warnings
+
 from .validation import (
+    InputSanitizer,
     InputValidationConfig,
+    InputValidationMiddleware,
     ValidationRule,
     ValidationSeverity,
-    InputSanitizer,
-    InputValidationMiddleware,
     create_input_validation_middleware,
 )
 
 # Re-export for backward compatibility
 __all__ = [
+    "InputSanitizer",
     "InputValidationConfig",
+    "InputValidationMiddleware",
     "ValidationRule",
     "ValidationSeverity",
-    "InputSanitizer",
-    "InputValidationMiddleware",
     "create_input_validation_middleware",
 ]
 # Deprecation warning for direct imports

@@ -1,14 +1,14 @@
-"""
-Comprehensive test suite for application/interfaces/speech_processor.py
+"""Comprehensive test suite for application/interfaces/speech_processor.py
 
 This test file validates the SpeechProcessor protocol interface including
 speech-to-text and text-to-speech functionality, error handling, and
 child-safe audio processing capabilities.
 """
 
-import pytest
 import asyncio
 from typing import Protocol
+
+import pytest
 
 from src.application.interfaces.speech_processor import SpeechProcessor
 
@@ -37,9 +37,7 @@ class MockSpeechProcessor:
 
         # Return mock transcription based on audio data
         key = (len(audio_data), language)
-        return self.speech_to_text_results.get(
-            key, f"Transcribed text in {language}"
-        )
+        return self.speech_to_text_results.get(key, f"Transcribed text in {language}")
 
     async def text_to_speech(self, text: str, voice_id: str) -> bytes:
         """Mock text-to-speech implementation."""
@@ -214,12 +212,8 @@ class TestSpeechProcessor:
         audio_data = b"special_audio"
         language = "en-US"
 
-        special_text = (
-            "Hello! How are you? I'm fine. Let's play: 1, 2, 3... Go!"
-        )
-        processor.speech_to_text_results[(len(audio_data), language)] = (
-            special_text
-        )
+        special_text = "Hello! How are you? I'm fine. Let's play: 1, 2, 3... Go!"
+        processor.speech_to_text_results[(len(audio_data), language)] = special_text
 
         result = await processor.speech_to_text(audio_data, language)
         assert result == special_text
@@ -261,12 +255,8 @@ class TestSpeechProcessor:
         text_1 = "Hello world"
         text_2 = "Goodbye world"
 
-        processor.speech_to_text_results[(len(audio_data_1), "en-US")] = (
-            "Result 1"
-        )
-        processor.speech_to_text_results[(len(audio_data_2), "es-ES")] = (
-            "Result 2"
-        )
+        processor.speech_to_text_results[(len(audio_data_1), "en-US")] = "Result 1"
+        processor.speech_to_text_results[(len(audio_data_2), "es-ES")] = "Result 2"
         processor.text_to_speech_results[(text_1, "voice1")] = b"audio1"
         processor.text_to_speech_results[(text_2, "voice2")] = b"audio2"
 

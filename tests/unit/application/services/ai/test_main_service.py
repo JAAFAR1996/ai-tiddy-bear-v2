@@ -1,10 +1,10 @@
-"""
-Tests for AI Main Service
+"""Tests for AI Main Service
 Testing production-grade AI service with OpenAI integration and child safety.
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 
 from src.application.services.ai.main_service import AITeddyBearService
 from src.application.services.ai.models import AIResponse
@@ -112,16 +112,12 @@ class TestAITeddyBearService:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message = Mock()
-        mock_response.choices[0].message.content = (
-            "Hello! I'm a friendly teddy bear."
-        )
+        mock_response.choices[0].message.content = "Hello! I'm a friendly teddy bear."
 
         service.client.chat.completions.create.return_value = mock_response
 
         # Mock utility methods
-        with patch.object(
-            service, "_post_process_response"
-        ) as mock_post_process:
+        with patch.object(service, "_post_process_response") as mock_post_process:
             mock_ai_response = AIResponse(
                 content="Hello! I'm a friendly teddy bear.",
                 safety_score=0.95,
@@ -157,9 +153,7 @@ class TestAITeddyBearService:
     async def test_generate_response_empty_message(self, service):
         """Test validation of empty messages."""
         with pytest.raises(ValueError, match="Message cannot be empty"):
-            await service.generate_response(
-                message="", child_age=6, child_name="Alice"
-            )
+            await service.generate_response(message="", child_age=6, child_name="Alice")
 
         with pytest.raises(ValueError, match="Message cannot be empty"):
             await service.generate_response(
@@ -172,27 +166,21 @@ class TestAITeddyBearService:
         # Setup mocks
         service.client.moderations.create.return_value = Mock()
         service.client.moderations.create.return_value.results = [Mock()]
-        service.client.moderations.create.return_value.results[0].flagged = (
-            False
-        )
-        service.client.moderations.create.return_value.results[
-            0
-        ].categories = Mock()
+        service.client.moderations.create.return_value.results[0].flagged = False
+        service.client.moderations.create.return_value.results[0].categories = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[
-            0
-        ].category_scores = Mock()
+        service.client.moderations.create.return_value.results[0].category_scores = (
+            Mock()
+        )
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
 
         service.client.chat.completions.create.return_value = Mock()
         service.client.chat.completions.create.return_value.choices = [Mock()]
-        service.client.chat.completions.create.return_value.choices[
-            0
-        ].message = Mock()
+        service.client.chat.completions.create.return_value.choices[0].message = Mock()
         service.client.chat.completions.create.return_value.choices[
             0
         ].message.content = "That's a great question!"
@@ -202,9 +190,7 @@ class TestAITeddyBearService:
             {"role": "assistant", "content": "I love all colors!"},
         ]
 
-        with patch.object(
-            service, "_post_process_response"
-        ) as mock_post_process:
+        with patch.object(service, "_post_process_response") as mock_post_process:
             mock_ai_response = AIResponse(
                 content="That's a great question!",
                 safety_score=0.95,
@@ -233,27 +219,21 @@ class TestAITeddyBearService:
         """Test response generation with parent guidelines."""
         service.client.moderations.create.return_value = Mock()
         service.client.moderations.create.return_value.results = [Mock()]
-        service.client.moderations.create.return_value.results[0].flagged = (
-            False
-        )
-        service.client.moderations.create.return_value.results[
-            0
-        ].categories = Mock()
+        service.client.moderations.create.return_value.results[0].flagged = False
+        service.client.moderations.create.return_value.results[0].categories = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[
-            0
-        ].category_scores = Mock()
+        service.client.moderations.create.return_value.results[0].category_scores = (
+            Mock()
+        )
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
 
         service.client.chat.completions.create.return_value = Mock()
         service.client.chat.completions.create.return_value.choices = [Mock()]
-        service.client.chat.completions.create.return_value.choices[
-            0
-        ].message = Mock()
+        service.client.chat.completions.create.return_value.choices[0].message = Mock()
         service.client.chat.completions.create.return_value.choices[
             0
         ].message.content = "Let's focus on learning!"
@@ -262,9 +242,7 @@ class TestAITeddyBearService:
             "Please focus on educational content and avoid any mention of toys"
         )
 
-        with patch.object(
-            service, "_post_process_response"
-        ) as mock_post_process:
+        with patch.object(service, "_post_process_response") as mock_post_process:
             mock_ai_response = AIResponse(
                 content="Let's focus on learning!",
                 safety_score=0.98,
@@ -383,12 +361,8 @@ class TestAITeddyBearService:
         content = "This is a safe and educational response for children."
         moderation_result = {"safe": True, "categories": [], "scores": {}}
 
-        with patch.object(
-            service, "_calculate_safety_score", return_value=0.95
-        ):
-            with patch.object(
-                service, "_check_age_appropriateness", return_value=True
-            ):
+        with patch.object(service, "_calculate_safety_score", return_value=0.95):
+            with patch.object(service, "_check_age_appropriateness", return_value=True):
                 with patch.object(
                     service, "_analyze_sentiment", return_value="positive"
                 ):
@@ -420,9 +394,7 @@ class TestAITeddyBearService:
             "scores": {},
         }
 
-        with patch.object(
-            service, "_calculate_safety_score", return_value=0.3
-        ):
+        with patch.object(service, "_calculate_safety_score", return_value=0.3):
             with patch.object(
                 service, "_check_age_appropriateness", return_value=False
             ):
@@ -446,12 +418,8 @@ class TestAITeddyBearService:
                             assert (
                                 len(result.moderation_flags) == 2
                             )  # low_safety_score, age_inappropriate
-                            assert (
-                                "low_safety_score" in result.moderation_flags
-                            )
-                            assert (
-                                "age_inappropriate" in result.moderation_flags
-                            )
+                            assert "low_safety_score" in result.moderation_flags
+                            assert "age_inappropriate" in result.moderation_flags
 
     @pytest.mark.asyncio
     async def test_caching_functionality(self, service, mock_redis_cache):
@@ -526,26 +494,20 @@ class TestAITeddyBearService:
         """Test response generation when OpenAI API fails."""
         service.client.moderations.create.return_value = Mock()
         service.client.moderations.create.return_value.results = [Mock()]
-        service.client.moderations.create.return_value.results[0].flagged = (
-            False
-        )
-        service.client.moderations.create.return_value.results[
-            0
-        ].categories = Mock()
+        service.client.moderations.create.return_value.results[0].flagged = False
+        service.client.moderations.create.return_value.results[0].categories = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[
-            0
-        ].category_scores = Mock()
+        service.client.moderations.create.return_value.results[0].category_scores = (
+            Mock()
+        )
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
 
         # Make API call fail
-        service.client.chat.completions.create.side_effect = Exception(
-            "API error"
-        )
+        service.client.chat.completions.create.side_effect = Exception("API error")
 
         result = await service.generate_response(
             message="Hello", child_age=6, child_name="Alice"
@@ -564,9 +526,7 @@ class TestAITeddyBearService:
         mock_moderation.results = [Mock()]
         mock_moderation.results[0].flagged = True
         mock_moderation.results[0].categories = Mock()
-        mock_moderation.results[0].categories.model_dump.return_value = {
-            "hate": True
-        }
+        mock_moderation.results[0].categories.model_dump.return_value = {"hate": True}
         mock_moderation.results[0].category_scores = Mock()
         mock_moderation.results[0].category_scores.model_dump.return_value = {}
 
@@ -587,34 +547,26 @@ class TestAITeddyBearService:
         # Setup mocks for successful responses
         service.client.moderations.create.return_value = Mock()
         service.client.moderations.create.return_value.results = [Mock()]
-        service.client.moderations.create.return_value.results[0].flagged = (
-            False
-        )
-        service.client.moderations.create.return_value.results[
-            0
-        ].categories = Mock()
+        service.client.moderations.create.return_value.results[0].flagged = False
+        service.client.moderations.create.return_value.results[0].categories = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[
-            0
-        ].category_scores = Mock()
+        service.client.moderations.create.return_value.results[0].category_scores = (
+            Mock()
+        )
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
 
         service.client.chat.completions.create.return_value = Mock()
         service.client.chat.completions.create.return_value.choices = [Mock()]
-        service.client.chat.completions.create.return_value.choices[
-            0
-        ].message = Mock()
+        service.client.chat.completions.create.return_value.choices[0].message = Mock()
         service.client.chat.completions.create.return_value.choices[
             0
         ].message.content = "Safe response"
 
-        with patch.object(
-            service, "_post_process_response"
-        ) as mock_post_process:
+        with patch.object(service, "_post_process_response") as mock_post_process:
             mock_ai_response = AIResponse(
                 content="Safe response",
                 safety_score=0.95,

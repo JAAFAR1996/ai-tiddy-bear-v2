@@ -1,8 +1,9 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from httpx import AsyncClient
-import uuid
 import sys
+import uuid
 from pathlib import Path
+
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -104,9 +105,7 @@ class TestConversationFlow:
         assert "welcome_message" in data
         assert "voice_url" in data
 
-    async def test_send_message(
-        self, async_client: AsyncClient, active_session: str
-    ):
+    async def test_send_message(self, async_client: AsyncClient, active_session: str):
         """Test sending message in active session"""
         response = await async_client.post(
             f"/api/v1/conversations/{active_session}/messages",

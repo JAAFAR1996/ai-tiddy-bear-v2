@@ -1,7 +1,8 @@
-"""from .validation_config import ValidationRule, ValidationSeverity."""
-
 """Validation Rules and Patterns
-Extracted from input_validation.py to reduce file size"""
+Extracted from input_validation.py to reduce file size
+"""
+
+from .validation_config import ValidationRule, ValidationSeverity
 
 
 def get_default_validation_rules() -> list[ValidationRule]:
@@ -69,7 +70,7 @@ def get_default_validation_rules() -> list[ValidationRule]:
 
 
 def get_profanity_words() -> set[str]:
-    """Get profanity words list(placeholder)
+    """Get profanity words list (placeholder)
     In production, load from external file or service.
     """
     return {

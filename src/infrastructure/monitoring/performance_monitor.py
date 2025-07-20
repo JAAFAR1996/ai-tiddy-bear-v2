@@ -6,9 +6,7 @@ from typing import Any
 from prometheus_client import Counter, Histogram
 
 # Prometheus metrics
-REQUEST_LATENCY = Histogram(
-    "request_latency_seconds", "Request latency", ["endpoint"]
-)
+REQUEST_LATENCY = Histogram("request_latency_seconds", "Request latency", ["endpoint"])
 REQUEST_COUNT = Counter(
     "request_count",
     "Request count",

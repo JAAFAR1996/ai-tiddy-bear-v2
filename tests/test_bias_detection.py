@@ -1,10 +1,12 @@
-from src.infrastructure.logging_config import get_logger
 import asyncio
 import os
-from domain.safety.bias_detector.bias_detector import AIBiasDetector
-from domain.safety.bias_models import ConversationContext
 import sys
 from pathlib import Path
+
+from domain.safety.bias_detector.bias_detector import AIBiasDetector
+from domain.safety.bias_models import ConversationContext
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -106,37 +108,31 @@ class TestAIBiasDetector:
     @pytest.mark.asyncio
     async def test_gender_bias_detection(self, bias_detector, sample_context):
         """Test detection of gender bias"""
-        biased_response = "Girls are naturally better at reading, while boys are better at math."
-        result = await bias_detector.detect_bias(
-            biased_response, sample_context
+        biased_response = (
+            "Girls are naturally better at reading, while boys are better at math."
         )
+        result = await bias_detector.detect_bias(biased_response, sample_context)
         assert result.has_bias
         assert result.bias_scores.get("gender", 0) > 0.3
         assert "gender" in result.bias_categories
         assert len(result.mitigation_suggestions) > 0
 
     @pytest.mark.asyncio
-    async def test_cultural_bias_detection(
-        self, bias_detector, sample_context
-    ):
+    async def test_cultural_bias_detection(self, bias_detector, sample_context):
         """Test detection of cultural bias"""
         biased_response = "Normal families celebrate Christmas, and everyone has a traditional dinner."
-        result = await bias_detector.detect_bias(
-            biased_response, sample_context
-        )
+        result = await bias_detector.detect_bias(biased_response, sample_context)
         assert result.has_bias
         assert result.bias_scores.get("cultural", 0) > 0.2
         assert "cultural" in result.bias_categories
 
     @pytest.mark.asyncio
-    async def test_socioeconomic_bias_detection(
-        self, bias_detector, sample_context
-    ):
+    async def test_socioeconomic_bias_detection(self, bias_detector, sample_context):
         """Test detection of socioeconomic bias"""
-        biased_response = "Ask your parents to buy you the expensive new toy for your big house."
-        result = await bias_detector.detect_bias(
-            biased_response, sample_context
+        biased_response = (
+            "Ask your parents to buy you the expensive new toy for your big house."
         )
+        result = await bias_detector.detect_bias(biased_response, sample_context)
         assert result.has_bias
         assert (
             result.bias_scores.get("socioeconomic", 0) > 0.2
@@ -149,30 +145,22 @@ class TestAIBiasDetector:
         biased_response = (
             "Look at the picture and listen to the music while you run around."
         )
-        result = await bias_detector.detect_bias(
-            biased_response, sample_context
-        )
+        result = await bias_detector.detect_bias(biased_response, sample_context)
         assert result.contextual_bias.get("ability_assumption", 0) > 0.0
 
     @pytest.mark.asyncio
     async def test_age_bias_detection(self, bias_detector, sample_context):
         """Test detection of age bias"""
         biased_response = "You're too young to understand this complex topic."
-        result = await bias_detector.detect_bias(
-            biased_response, sample_context
-        )
+        result = await bias_detector.detect_bias(biased_response, sample_context)
         assert result.has_bias
         assert result.bias_scores.get("age", 0) > 0.2
 
     @pytest.mark.asyncio
     async def test_unbiased_content(self, bias_detector, sample_context):
         """Test that unbiased content passes"""
-        unbiased_response = (
-            "Let's learn about colors! What's your favorite color?"
-        )
-        result = await bias_detector.detect_bias(
-            unbiased_response, sample_context
-        )
+        unbiased_response = "Let's learn about colors! What's your favorite color?"
+        result = await bias_detector.detect_bias(unbiased_response, sample_context)
         assert not result.has_bias
         assert result.overall_bias_score < 0.3
         assert result.risk_level in ["MINIMAL", "LOW"]
@@ -195,9 +183,7 @@ class TestAIBiasDetector:
     async def test_mitigation_suggestions(self, bias_detector, sample_context):
         """Test bias mitigation suggestions"""
         biased_response = "All girls love pink and dolls."
-        result = await bias_detector.detect_bias(
-            biased_response, sample_context
-        )
+        result = await bias_detector.detect_bias(biased_response, sample_context)
         assert len(result.mitigation_suggestions) > 0
         assert any(
             "gender-neutral" in suggestion.lower()
@@ -233,9 +219,7 @@ class TestAIBiasDetector:
         assert "system_accuracy" in stats
 
     @pytest.mark.asyncio
-    async def test_enhanced_pattern_detection(
-        self, bias_detector, sample_context
-    ):
+    async def test_enhanced_pattern_detection(self, bias_detector, sample_context):
         """Test enhanced pattern detection"""
         patterns_to_test = [
             ("She should be more gentle.", "gendered_expectation"),
@@ -249,13 +233,10 @@ class TestAIBiasDetector:
         for text, expected_pattern in patterns_to_test:
             result = await bias_detector.detect_bias(text, sample_context)
             pattern_detected = any(
-                expected_pattern in pattern
-                for pattern in result.detected_patterns
+                expected_pattern in pattern for pattern in result.detected_patterns
             )
             if not pattern_detected:
-                logger.info(
-                    f"Pattern '{expected_pattern}' not detected in: {text}"
-                )
+                logger.info(f"Pattern '{expected_pattern}' not detected in: {text}")
                 logger.info(f"Detected patterns: {result.detected_patterns}")
 
     @pytest.mark.asyncio
@@ -282,7 +263,7 @@ class TestAIBiasDetector:
             "Boys are naturally stronger.",
             "Rich kids get better education.",
         ]
-        for response, context in zip(responses, contexts):
+        for response, context in zip(responses, contexts, strict=False):
             result = await bias_detector.detect_bias(response, context)
             sample_results.append(result)
         report = await bias_detector.generate_bias_report(sample_results)
@@ -303,52 +284,42 @@ class TestBiasIntegrationScenarios:
     async def test_storytelling_scenario(self, bias_detector):
         """Test bias detection in storytelling"""
         story_with_bias = "Once upon a time, there was a brave prince who saved the helpless princess."
-        story_without_bias = "Once upon a time, there was a brave child who went on an adventure."
+        story_without_bias = (
+            "Once upon a time, there was a brave child who went on an adventure."
+        )
         context = ConversationContext(
             child_age=5, conversation_history=["Tell me a story"]
         )
-        biased_result = await bias_detector.detect_bias(
-            story_with_bias, context
-        )
-        unbiased_result = await bias_detector.detect_bias(
-            story_without_bias, context
-        )
+        biased_result = await bias_detector.detect_bias(story_with_bias, context)
+        unbiased_result = await bias_detector.detect_bias(story_without_bias, context)
         assert biased_result.has_bias or biased_result.overall_bias_score > 0.2
         assert not unbiased_result.has_bias
 
     @pytest.mark.asyncio
     async def test_educational_content_scenario(self, bias_detector):
         """Test bias detection in educational content"""
-        biased_education = (
-            "Boys are naturally better at science and math subjects."
-        )
-        inclusive_education = (
-            "Everyone can be good at science and math with practice."
-        )
+        biased_education = "Boys are naturally better at science and math subjects."
+        inclusive_education = "Everyone can be good at science and math with practice."
         context = ConversationContext(
             child_age=7, topics_discussed=["learning", "school"]
         )
-        biased_result = await bias_detector.detect_bias(
-            biased_education, context
-        )
-        inclusive_result = await bias_detector.detect_bias(
-            inclusive_education, context
-        )
+        biased_result = await bias_detector.detect_bias(biased_education, context)
+        inclusive_result = await bias_detector.detect_bias(inclusive_education, context)
         assert biased_result.has_bias
         assert not inclusive_result.has_bias
 
     @pytest.mark.asyncio
     async def test_career_guidance_scenario(self, bias_detector):
         """Test bias detection in career-related responses"""
-        biased_careers = "Girls should become teachers or nurses, while boys should be engineers."
-        inclusive_careers = "You can become anything you want - teacher, nurse, engineer, or artist!"
+        biased_careers = (
+            "Girls should become teachers or nurses, while boys should be engineers."
+        )
+        inclusive_careers = (
+            "You can become anything you want - teacher, nurse, engineer, or artist!"
+        )
         context = ConversationContext(child_age=8, child_gender="female")
-        biased_result = await bias_detector.detect_bias(
-            biased_careers, context
-        )
-        inclusive_result = await bias_detector.detect_bias(
-            inclusive_careers, context
-        )
+        biased_result = await bias_detector.detect_bias(biased_careers, context)
+        inclusive_result = await bias_detector.detect_bias(inclusive_careers, context)
         assert biased_result.has_bias
         assert biased_result.bias_scores.get("gender", 0) > 0.3
         assert not inclusive_result.has_bias
@@ -368,9 +339,7 @@ async def test_system_stress_bias_detection():
         "You're too young for complex topics.",
         "Rich people are more successful.",
     ]
-    contexts = [
-        ConversationContext(child_age=6) for _ in range(len(test_responses))
-    ]
+    contexts = [ConversationContext(child_age=6) for _ in range(len(test_responses))]
     results = await bias_detector.batch_analyze_bias(test_responses, contexts)
     assert len(results) == len(test_responses)
     assert not results[0].has_bias
@@ -402,9 +371,7 @@ if __name__ == "__main__":
         )
         logger.info(f"Gender bias detected: {gender_result.has_bias}")
         logger.info(f"Bias score: {gender_result.overall_bias_score:.2f}")
-        logger.info(
-            f"Suggestions: {len(gender_result.mitigation_suggestions)}"
-        )
+        logger.info(f"Suggestions: {len(gender_result.mitigation_suggestions)}")
         logger.info("\n🌍 Testing cultural bias...")
         cultural_result = await detector.detect_bias(
             "Normal families celebrate Christmas and eat traditional food.",

@@ -1,27 +1,25 @@
-"""
-Production ChatGPT API Client with Child Safety Filtering
+"""Production ChatGPT API Client with Child Safety Filtering
 
 Enterprise-grade OpenAI integration for AI Teddy Bear
 """
 
-from typing import Dict, List
 import asyncio
+
+from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
 
 # Production-only imports - no fallbacks allowed
 try:
-    from openai import AsyncOpenAI
     import openai
+    from openai import AsyncOpenAI
 except ImportError as e:
     logger.critical(
         f"CRITICAL ERROR: OpenAI library is required for production use: {e}"
     )
     logger.critical("Install required dependencies: pip install openai")
-    raise ImportError(f"Missing required dependency: openai") from e
-
-from src.infrastructure.config.settings import get_settings
+    raise ImportError("Missing required dependency: openai") from e
 
 
 class ProductionChatGPTClient:
@@ -85,13 +83,12 @@ class ProductionChatGPTClient:
 
     async def get_chat_completion(
         self,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         child_id: str,
         temperature: float = 0.7,
         max_tokens: int = 150,
     ) -> str:
-        """
-        Get a chat completion from OpenAI with child safety filters.
+        """Get a chat completion from OpenAI with child safety filters.
 
         Args:
             messages: A list of messages in the conversation.
@@ -125,9 +122,7 @@ class ProductionChatGPTClient:
         )
 
         # Construct the full list of messages for the API call
-        api_messages = [
-            {"role": "system", "content": system_prompt}
-        ] + messages
+        api_messages = [{"role": "system", "content": system_prompt}] + messages
 
         try:
             response = await self.client.chat.completions.create(
@@ -154,10 +149,8 @@ class ProductionChatGPTClient:
 
             return generated_text
 
-        except openai.APIError as e:
-            logger.error(
-                f"OpenAI API error: {e}", extra={"child_id": child_id}
-            )
+        except openai.AITeddyError as e:
+            logger.error(f"OpenAI API error: {e}", extra={"child_id": child_id})
             raise ConnectionError(f"Failed to connect to OpenAI: {e}") from e
         except Exception as e:
             logger.error(
@@ -200,9 +193,7 @@ async def main():
                 "content": "Tell me a story about a friendly dragon.",
             }
         ]
-        response = await client.get_chat_completion(
-            messages, child_id="test_child_123"
-        )
+        response = await client.get_chat_completion(messages, child_id="test_child_123")
         print(f"AI Teddy Bear says: {response}")
 
         # Example of a potentially unsafe question
@@ -220,9 +211,7 @@ async def main():
     except (ValueError, ImportError) as e:
         logger.error(f"Failed to run example: {e}")
     except Exception as e:
-        logger.error(
-            f"An unexpected error occurred during the example run: {e}"
-        )
+        logger.error(f"An unexpected error occurred during the example run: {e}")
 
 
 if __name__ == "__main__":

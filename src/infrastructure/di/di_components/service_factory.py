@@ -22,56 +22,33 @@ class ServiceFactory:
 
             return WhisperClient(model_name=settings.WHISPER_MODEL)
         except ImportError as e:
-            logger.critical(
-                f"CRITICAL ERROR: Whisper client dependency missing: {e}"
-            )
-            logger.critical(
-                "Install required dependencies: pip install whisper"
-            )
-            raise ImportError(
-                "Missing speech processor dependency: whisper"
-            ) from e
+            logger.critical(f"CRITICAL ERROR: Whisper client dependency missing: {e}")
+            logger.critical("Install required dependencies: pip install whisper")
+            raise ImportError("Missing speech processor dependency: whisper") from e
         except AttributeError as e:
-            logger.critical(
-                f"CRITICAL ERROR: Missing WHISPER_MODEL in settings: {e}"
-            )
+            logger.critical(f"CRITICAL ERROR: Missing WHISPER_MODEL in settings: {e}")
             raise ValueError("WHISPER_MODEL configuration required") from e
         except Exception as e:
-            logger.critical(
-                f"CRITICAL ERROR: Failed to create speech processor: {e}"
-            )
-            raise RuntimeError(
-                "Speech processor service creation failed"
-            ) from e
+            logger.critical(f"CRITICAL ERROR: Failed to create speech processor: {e}")
+            raise RuntimeError("Speech processor service creation failed") from e
 
     def create_openai_client(self, settings: Any) -> Any:
         """Create OpenAI client service with fallback handling."""
         try:
             from infrastructure.external_apis.openai_client import OpenAIClient
 
-            if (
-                not hasattr(settings, "OPENAI_API_KEY")
-                or not settings.OPENAI_API_KEY
-            ):
+            if not hasattr(settings, "OPENAI_API_KEY") or not settings.OPENAI_API_KEY:
                 raise ValueError("OPENAI_API_KEY is required")
             return OpenAIClient(api_key=settings.OPENAI_API_KEY)
         except ImportError as e:
-            logger.critical(
-                f"CRITICAL ERROR: OpenAI client dependency missing: {e}"
-            )
-            logger.critical(
-                "Install required dependencies: pip install openai"
-            )
+            logger.critical(f"CRITICAL ERROR: OpenAI client dependency missing: {e}")
+            logger.critical("Install required dependencies: pip install openai")
             raise ImportError("Missing OpenAI dependency: openai") from e
         except AttributeError as e:
-            logger.critical(
-                f"CRITICAL ERROR: Missing OPENAI_API_KEY in settings: {e}"
-            )
+            logger.critical(f"CRITICAL ERROR: Missing OPENAI_API_KEY in settings: {e}")
             raise ValueError("OPENAI_API_KEY configuration required") from e
         except Exception as e:
-            logger.critical(
-                f"CRITICAL ERROR: Failed to create OpenAI client: {e}"
-            )
+            logger.critical(f"CRITICAL ERROR: Failed to create OpenAI client: {e}")
             raise RuntimeError("OpenAI service creation failed") from e
 
     def create_tts_service(self, settings: Any) -> Any:
@@ -91,21 +68,15 @@ class ServiceFactory:
             logger.critical(
                 f"CRITICAL ERROR: ElevenLabs client dependency missing: {e}",
             )
-            logger.critical(
-                "Install required dependencies: pip install elevenlabs"
-            )
+            logger.critical("Install required dependencies: pip install elevenlabs")
             raise ImportError("Missing TTS dependency: elevenlabs") from e
         except AttributeError as e:
             logger.critical(
                 f"CRITICAL ERROR: Missing ELEVENLABS_API_KEY in settings: {e}",
             )
-            raise ValueError(
-                "ELEVENLABS_API_KEY configuration required"
-            ) from e
+            raise ValueError("ELEVENLABS_API_KEY configuration required") from e
         except Exception as e:
-            logger.critical(
-                f"CRITICAL ERROR: Failed to create TTS service: {e}"
-            )
+            logger.critical(f"CRITICAL ERROR: Failed to create TTS service: {e}")
             raise RuntimeError("TTS service creation failed") from e
 
     def create_database(self, settings: Any) -> Any:
@@ -113,13 +84,8 @@ class ServiceFactory:
         try:
             from infrastructure.persistence.database import Database
 
-            if (
-                not hasattr(settings, "database")
-                or not settings.database.DATABASE_URL
-            ):
-                raise ValueError(
-                    "DATABASE_URL is required in settings.database"
-                )
+            if not hasattr(settings, "database") or not settings.database.DATABASE_URL:
+                raise ValueError("DATABASE_URL is required in settings.database")
 
             # Pass connection pooling settings from main settings to Database
             # constructor
@@ -132,9 +98,7 @@ class ServiceFactory:
                 pool_timeout=settings.database.POOL_TIMEOUT,
             )
         except ImportError as e:
-            logger.critical(
-                f"CRITICAL ERROR: Database dependency missing: {e}"
-            )
+            logger.critical(f"CRITICAL ERROR: Database dependency missing: {e}")
             logger.critical(
                 "Install required dependencies: pip install sqlalchemy asyncpg",
             )

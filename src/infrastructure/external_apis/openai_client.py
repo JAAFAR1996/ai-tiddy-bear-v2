@@ -1,8 +1,8 @@
 from uuid import UUID
-from typing import List
-from src.infrastructure.logging_config import get_logger
+
 from src.application.interfaces.ai_provider import AIProvider
 from src.domain.value_objects.child_preferences import ChildPreferences
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -24,7 +24,7 @@ class OpenAIClient(AIProvider):
     async def generate_response(
         self,
         child_id: UUID,
-        conversation_history: List[str],
+        conversation_history: list[str],
         current_input: str,
         child_preferences: ChildPreferences,
     ) -> str:

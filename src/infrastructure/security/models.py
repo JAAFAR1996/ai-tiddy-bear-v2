@@ -15,7 +15,7 @@ class EncryptionMetadata:
 
 
 @dataclass
-class COPPAComplianceRecord:
+class COPPAValidatorRecord:
     """COPPA compliance record."""
 
     child_id: str

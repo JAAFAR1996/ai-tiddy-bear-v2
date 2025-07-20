@@ -37,9 +37,7 @@ try:
 except ImportError as e:
     logger.error(f"Failed to import API routers: {e}")
     # Set routers to None for graceful degradation
-    esp32_router = parental_router = health_router = chatgpt_router = (
-        auth_router
-    ) = None
+    esp32_router = parental_router = health_router = chatgpt_router = auth_router = None
 
 
 def setup_routing(app: FastAPI) -> None:

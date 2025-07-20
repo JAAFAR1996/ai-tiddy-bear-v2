@@ -1,16 +1,17 @@
 """AI System Chaos Actions
 SRE Team Implementation - Task 15
-Chaos actions for testing AI system resilience and safety"""
+Chaos actions for testing AI system resilience and safety
+"""
 
-import logging
-from typing import Any, Dict
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
 
 from .ai_model_recovery_testing import test_ai_model_recovery
 from .bias_detection_testing import test_bias_detection
 from .hallucination_testing import trigger_hallucination
 from .load_testing import simulate_ai_service_overload
 from .response_consistency_testing import validate_ai_response_consistency
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="chaos")
 
@@ -23,8 +24,8 @@ class AIChaosActions:
 
     async def run_all_tests(
         self,
-        configuration: Dict[str, Any] = None,
-    ) -> Dict[str, Any]:
+        configuration: dict[str, Any] = None,
+    ) -> dict[str, Any]:
         """Run all AI chaos tests and return aggregated results."""
         logger.info("🚀 Running all AI chaos tests")
         results = {}
@@ -32,26 +33,18 @@ class AIChaosActions:
         # Run all tests
         results["hallucination"] = await trigger_hallucination(configuration)
         results["bias_detection"] = await test_bias_detection(configuration)
-        results["load_testing"] = await simulate_ai_service_overload(
-            configuration
-        )
+        results["load_testing"] = await simulate_ai_service_overload(configuration)
         results["model_recovery"] = await test_ai_model_recovery(configuration)
-        results["response_consistency"] = (
-            await validate_ai_response_consistency(
-                configuration,
-            )
+        results["response_consistency"] = await validate_ai_response_consistency(
+            configuration,
         )
 
         # Calculate overall pass rate
         passed_tests = sum(
-            1
-            for test_result in results.values()
-            if test_result.get("passed", False)
+            1 for test_result in results.values() if test_result.get("passed", False)
         )
         total_tests = len(results)
-        overall_pass_rate = (
-            passed_tests / total_tests if total_tests > 0 else 0
-        )
+        overall_pass_rate = passed_tests / total_tests if total_tests > 0 else 0
 
         logger.info(
             f"🎯 Overall AI chaos test results: {passed_tests}/{total_tests} passed",

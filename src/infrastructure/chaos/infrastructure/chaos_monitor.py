@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 import requests
 
@@ -41,9 +41,7 @@ class ChaosMonitor:
                             logger.error(
                                 f"🚨 Too many safety violations, aborting {experiment_id}",
                             )
-                            await self.orchestrator._emergency_rollback(
-                                experiment_id
-                            )
+                            await self.orchestrator._emergency_rollback(experiment_id)
                             return
                 except Exception as e:
                     logger.error(f"Safety monitor error: {e}")
@@ -53,16 +51,12 @@ class ChaosMonitor:
 
         metrics.safety_violations = safety_violations
 
-    async def _collect_baseline_metrics(
-        self, targets: List[str]
-    ) -> Dict[str, Any]:
+    async def _collect_baseline_metrics(self, targets: list[str]) -> dict[str, Any]:
         """Collect baseline performance metrics."""
         baseline = {}
         for target in targets:
             try:
-                response = requests.get(
-                    f"http://{target}:8000/metrics", timeout=5
-                )
+                response = requests.get(f"http://{target}:8000/metrics", timeout=5)
                 if response.status_code == 200:
                     baseline[target] = response.json()
             except Exception as e:
@@ -74,15 +68,11 @@ class ChaosMonitor:
         """Collect performance metrics during experiment."""
         try:
             # This can be expanded with more detailed metric collection
-            logger.debug(
-                f"Collecting performance metrics for {metrics.experiment_id}"
-            )
+            logger.debug(f"Collecting performance metrics for {metrics.experiment_id}")
         except Exception as e:
             logger.error(f"Performance metrics collection failed: {e}")
 
-    async def validate_recovery(
-        self, targets: List[str], metrics: ExperimentMetrics
-    ):
+    async def validate_recovery(self, targets: list[str], metrics: ExperimentMetrics):
         """Validate system recovery after chaos."""
         recovery_start = time.time()
 
@@ -112,14 +102,10 @@ class ChaosMonitor:
                 logger.info(f"✅ {target} recovered successfully")
                 metrics.failures_detected += 1
             else:
-                logger.error(
-                    f"❌ {target} failed to recover within {max_wait}s"
-                )
+                logger.error(f"❌ {target} failed to recover within {max_wait}s")
 
         recovery_time = time.time() - recovery_start
         metrics.recovery_time_seconds = recovery_time
 
         if metrics.failures_injected > 0:
-            metrics.success_rate = (
-                metrics.failures_detected / metrics.failures_injected
-            )
+            metrics.success_rate = metrics.failures_detected / metrics.failures_injected

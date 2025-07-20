@@ -1,11 +1,10 @@
-"""
-اختبار بسيط للتحقق من سلامة المشروع بعد التنظيف
-"""
+"""اختبار بسيط للتحقق من سلامة المشروع بعد التنظيف"""
 
-from src.infrastructure.logging_config import get_logger
 import logging
 import sys
 from pathlib import Path
+
+from src.infrastructure.logging_config import get_logger
 
 # إضافة المسار للـ imports
 project_root = Path(__file__).parent.parent
@@ -92,9 +91,8 @@ def test_no_backup_folder():
     if not Path("backup_before_reorganization").exists():
         logger.info("  ✅ تم حذف backup_before_reorganization")
         return True
-    else:
-        logger.info("  ❌ لا يزال backup_before_reorganization موجوداً!")
-        return False
+    logger.info("  ❌ لا يزال backup_before_reorganization موجوداً!")
+    return False
 
 
 def test_imports():
@@ -126,9 +124,7 @@ def test_file_count():
     logger.info(f"  • ملفات Python في src: {len(py_files)}")
     logger.info(f"  • ملفات الاختبار: {len(test_files)}")
     logger.info(f"  • السكريبتات: {len(script_files)}")
-    logger.info(
-        f"  • الإجمالي: {len(py_files) + len(test_files) + len(script_files)}"
-    )
+    logger.info(f"  • الإجمالي: {len(py_files) + len(test_files) + len(script_files)}")
     return True
 
 

@@ -175,7 +175,7 @@ def create_app() -> FastAPI:
 
 
 if __name__ == "__main__":
-    app = create_app()
+    fast_app = create_app()
 
     # Retrieve server settings for Uvicorn execution
     server_settings = container.settings().server

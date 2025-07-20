@@ -1,15 +1,14 @@
-"""
-Comprehensive test suite for application/services/async_session_manager.py
+"""Comprehensive test suite for application/services/async_session_manager.py
 
 This test file validates the AsyncSessionManager including
 session creation, retrieval, updates, expiration handling, and
 background cleanup processes for child-safe session management.
 """
 
-import pytest
 import asyncio
 from datetime import datetime, timedelta
-from typing import List, Optional
+
+import pytest
 
 from src.application.services.async_session_manager import (
     AsyncSessionManager,
@@ -18,8 +17,8 @@ from src.application.services.async_session_manager import (
 )
 from src.application.services.session.session_models import (
     AsyncSessionData,
-    SessionStatus,
     SessionStats,
+    SessionStatus,
 )
 from src.application.services.session.session_storage import SessionStorage
 
@@ -45,18 +44,14 @@ class MockSessionStorage:
             raise Exception(self.exception_message)
         self.sessions[session.session_id] = session
 
-    async def retrieve_session(
-        self, session_id: str
-    ) -> Optional[AsyncSessionData]:
+    async def retrieve_session(self, session_id: str) -> AsyncSessionData | None:
         """Mock retrieve_session implementation."""
         self.retrieve_session_called = True
         if self.should_raise_exception:
             raise Exception(self.exception_message)
         return self.sessions.get(session_id)
 
-    async def get_child_sessions(
-        self, child_id: str
-    ) -> List[AsyncSessionData]:
+    async def get_child_sessions(self, child_id: str) -> list[AsyncSessionData]:
         """Mock get_child_sessions implementation."""
         self.get_child_sessions_called = True
         if self.should_raise_exception:
@@ -80,11 +75,7 @@ class MockSessionStorage:
         if self.should_raise_exception:
             raise Exception(self.exception_message)
         return len(
-            [
-                s
-                for s in self.sessions.values()
-                if s.status == SessionStatus.ACTIVE
-            ]
+            [s for s in self.sessions.values() if s.status == SessionStatus.ACTIVE]
         )
 
     async def cleanup_expired_sessions(self, timeout_minutes: int) -> int:
@@ -200,14 +191,10 @@ class TestAsyncSessionManager:
         assert session_manager.storage.store_session_called
 
     @pytest.mark.asyncio
-    async def test_create_session_with_defaults(
-        self, session_manager, sample_child_id
-    ):
+    async def test_create_session_with_defaults(self, session_manager, sample_child_id):
         """Test session creation with default values."""
         # Act
-        session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        session = await session_manager.create_session(child_id=sample_child_id)
 
         # Assert
         assert session.child_id == sample_child_id
@@ -216,9 +203,7 @@ class TestAsyncSessionManager:
         assert session.status == SessionStatus.ACTIVE
 
     @pytest.mark.asyncio
-    async def test_create_session_storage_error(
-        self, session_manager, sample_child_id
-    ):
+    async def test_create_session_storage_error(self, session_manager, sample_child_id):
         """Test handling of storage errors during session creation."""
         # Arrange
         session_manager.storage.should_raise_exception = True
@@ -268,9 +253,7 @@ class TestAsyncSessionManager:
     async def test_get_session_expired(self, session_manager, sample_child_id):
         """Test retrieval of expired session."""
         # Arrange
-        created_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        created_session = await session_manager.create_session(child_id=sample_child_id)
 
         # Manually expire the session
         past_time = datetime.utcnow() - timedelta(minutes=60)
@@ -292,14 +275,10 @@ class TestAsyncSessionManager:
         assert stored_session.status == SessionStatus.EXPIRED
 
     @pytest.mark.asyncio
-    async def test_update_session_success(
-        self, session_manager, sample_child_id
-    ):
+    async def test_update_session_success(self, session_manager, sample_child_id):
         """Test successful session update."""
         # Arrange
-        created_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        created_session = await session_manager.create_session(child_id=sample_child_id)
 
         data_updates = {"new_field": "new_value"}
         metadata_updates = {"updated_field": "updated_value"}
@@ -333,14 +312,10 @@ class TestAsyncSessionManager:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_update_session_expired(
-        self, session_manager, sample_child_id
-    ):
+    async def test_update_session_expired(self, session_manager, sample_child_id):
         """Test update of expired session."""
         # Arrange
-        created_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        created_session = await session_manager.create_session(child_id=sample_child_id)
 
         # Manually expire the session
         past_time = datetime.utcnow() - timedelta(minutes=60)
@@ -357,14 +332,10 @@ class TestAsyncSessionManager:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_update_session_data_only(
-        self, session_manager, sample_child_id
-    ):
+    async def test_update_session_data_only(self, session_manager, sample_child_id):
         """Test updating session data only."""
         # Arrange
-        created_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        created_session = await session_manager.create_session(child_id=sample_child_id)
 
         # Act
         result = await session_manager.update_session(
@@ -381,14 +352,10 @@ class TestAsyncSessionManager:
         assert updated_session.data["data_field"] == "data_value"
 
     @pytest.mark.asyncio
-    async def test_update_session_metadata_only(
-        self, session_manager, sample_child_id
-    ):
+    async def test_update_session_metadata_only(self, session_manager, sample_child_id):
         """Test updating session metadata only."""
         # Arrange
-        created_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        created_session = await session_manager.create_session(child_id=sample_child_id)
 
         # Act
         result = await session_manager.update_session(
@@ -408,9 +375,7 @@ class TestAsyncSessionManager:
     async def test_end_session_success(self, session_manager, sample_child_id):
         """Test successful session termination."""
         # Arrange
-        created_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        created_session = await session_manager.create_session(child_id=sample_child_id)
 
         # Act
         result = await session_manager.end_session(created_session.session_id)
@@ -434,23 +399,15 @@ class TestAsyncSessionManager:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_get_child_sessions_success(
-        self, session_manager, sample_child_id
-    ):
+    async def test_get_child_sessions_success(self, session_manager, sample_child_id):
         """Test retrieval of child sessions."""
         # Arrange
-        session1 = await session_manager.create_session(
-            child_id=sample_child_id
-        )
-        session2 = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        session1 = await session_manager.create_session(child_id=sample_child_id)
+        session2 = await session_manager.create_session(child_id=sample_child_id)
         session3 = await session_manager.create_session(child_id="other_child")
 
         # Act
-        child_sessions = await session_manager.get_child_sessions(
-            sample_child_id
-        )
+        child_sessions = await session_manager.get_child_sessions(sample_child_id)
 
         # Assert
         assert len(child_sessions) == 2
@@ -465,20 +422,14 @@ class TestAsyncSessionManager:
     ):
         """Test that get_child_sessions filters out inactive sessions."""
         # Arrange
-        active_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
-        ended_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        active_session = await session_manager.create_session(child_id=sample_child_id)
+        ended_session = await session_manager.create_session(child_id=sample_child_id)
 
         # End one session
         await session_manager.end_session(ended_session.session_id)
 
         # Act
-        child_sessions = await session_manager.get_child_sessions(
-            sample_child_id
-        )
+        child_sessions = await session_manager.get_child_sessions(sample_child_id)
 
         # Assert
         assert len(child_sessions) == 1
@@ -490,12 +441,8 @@ class TestAsyncSessionManager:
     ):
         """Test that get_child_sessions filters out expired sessions."""
         # Arrange
-        active_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
-        expired_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        active_session = await session_manager.create_session(child_id=sample_child_id)
+        expired_session = await session_manager.create_session(child_id=sample_child_id)
 
         # Manually expire one session
         past_time = datetime.utcnow() - timedelta(minutes=60)
@@ -503,18 +450,14 @@ class TestAsyncSessionManager:
         await session_manager.storage.store_session(expired_session)
 
         # Act
-        child_sessions = await session_manager.get_child_sessions(
-            sample_child_id
-        )
+        child_sessions = await session_manager.get_child_sessions(sample_child_id)
 
         # Assert
         assert len(child_sessions) == 1
         assert child_sessions[0].session_id == active_session.session_id
 
     @pytest.mark.asyncio
-    async def test_get_session_stats_success(
-        self, session_manager, sample_child_id
-    ):
+    async def test_get_session_stats_success(self, session_manager, sample_child_id):
         """Test retrieval of session statistics."""
         # Arrange
         await session_manager.create_session(child_id=sample_child_id)
@@ -538,12 +481,8 @@ class TestAsyncSessionManager:
     ):
         """Test manual cleanup of expired sessions."""
         # Arrange
-        active_session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
-        expired_session = await session_manager.create_session(
-            child_id="other_child"
-        )
+        active_session = await session_manager.create_session(child_id=sample_child_id)
+        expired_session = await session_manager.create_session(child_id="other_child")
 
         # Manually expire one session
         past_time = datetime.utcnow() - timedelta(minutes=60)
@@ -631,14 +570,10 @@ class TestAsyncSessionManager:
         assert len(set(s.session_id for s in sessions)) == 5  # All unique
 
     @pytest.mark.asyncio
-    async def test_session_activity_tracking(
-        self, session_manager, sample_child_id
-    ):
+    async def test_session_activity_tracking(self, session_manager, sample_child_id):
         """Test that session activity is properly tracked."""
         # Arrange
-        session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        session = await session_manager.create_session(child_id=sample_child_id)
         original_activity = session.last_activity
         original_count = session.interaction_count
 
@@ -646,23 +581,17 @@ class TestAsyncSessionManager:
         await asyncio.sleep(0.01)
 
         # Act
-        retrieved_session = await session_manager.get_session(
-            session.session_id
-        )
+        retrieved_session = await session_manager.get_session(session.session_id)
 
         # Assert
         assert retrieved_session.last_activity > original_activity
         assert retrieved_session.interaction_count == original_count + 1
 
     @pytest.mark.asyncio
-    async def test_session_timeout_behavior(
-        self, session_manager, sample_child_id
-    ):
+    async def test_session_timeout_behavior(self, session_manager, sample_child_id):
         """Test session timeout behavior with different timeout values."""
         # Arrange
-        session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        session = await session_manager.create_session(child_id=sample_child_id)
 
         # Set custom timeout
         session_manager.default_timeout = 1  # 1 minute timeout
@@ -673,9 +602,7 @@ class TestAsyncSessionManager:
         await session_manager.storage.store_session(session)
 
         # Act
-        retrieved_session = await session_manager.get_session(
-            session.session_id
-        )
+        retrieved_session = await session_manager.get_session(session.session_id)
 
         # Assert
         assert retrieved_session is None  # Should be expired
@@ -698,21 +625,15 @@ class TestAsyncSessionManager:
         )
 
         # Assert
-        retrieved_session1 = await session_manager.get_session(
-            session1.session_id
-        )
-        retrieved_session2 = await session_manager.get_session(
-            session2.session_id
-        )
+        retrieved_session1 = await session_manager.get_session(session1.session_id)
+        retrieved_session2 = await session_manager.get_session(session2.session_id)
 
         assert retrieved_session1.data["new_field"] == "value1"
         assert "new_field" not in retrieved_session2.data
         assert retrieved_session2.data["user_data"] == "data2"
 
     @pytest.mark.asyncio
-    async def test_large_session_data_handling(
-        self, session_manager, sample_child_id
-    ):
+    async def test_large_session_data_handling(self, session_manager, sample_child_id):
         """Test handling of large session data."""
         # Arrange
         large_data = {f"key_{i}": f"value_{i}" * 100 for i in range(100)}
@@ -723,9 +644,7 @@ class TestAsyncSessionManager:
         )
 
         # Assert
-        retrieved_session = await session_manager.get_session(
-            session.session_id
-        )
+        retrieved_session = await session_manager.get_session(session.session_id)
         assert retrieved_session.data == large_data
 
     @pytest.mark.asyncio
@@ -734,9 +653,7 @@ class TestAsyncSessionManager:
     ):
         """Test that session safety score is properly tracked."""
         # Arrange
-        session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        session = await session_manager.create_session(child_id=sample_child_id)
 
         # Act
         await session_manager.update_session(
@@ -745,9 +662,7 @@ class TestAsyncSessionManager:
         )
 
         # Assert
-        retrieved_session = await session_manager.get_session(
-            session.session_id
-        )
+        retrieved_session = await session_manager.get_session(session.session_id)
         assert retrieved_session.safety_score == 1.0  # Default safe score
 
     @pytest.mark.asyncio
@@ -756,9 +671,7 @@ class TestAsyncSessionManager:
     ):
         """Test that errors don't corrupt session manager state."""
         # Arrange
-        session = await session_manager.create_session(
-            child_id=sample_child_id
-        )
+        session = await session_manager.create_session(child_id=sample_child_id)
 
         # Cause storage error
         session_manager.storage.should_raise_exception = True
@@ -773,9 +686,7 @@ class TestAsyncSessionManager:
         session_manager.storage.should_raise_exception = False
 
         # Should still be able to retrieve session
-        retrieved_session = await session_manager.get_session(
-            session.session_id
-        )
+        retrieved_session = await session_manager.get_session(session.session_id)
         assert retrieved_session is not None
 
 
@@ -932,9 +843,7 @@ class TestIntegrationScenarios:
     """Test suite for integration scenarios."""
 
     @pytest.mark.asyncio
-    async def test_complete_session_lifecycle(
-        self, session_manager, sample_child_id
-    ):
+    async def test_complete_session_lifecycle(self, session_manager, sample_child_id):
         """Test complete session lifecycle."""
         # Create session
         session = await session_manager.create_session(
@@ -948,9 +857,7 @@ class TestIntegrationScenarios:
         )
 
         # Retrieve session
-        retrieved_session = await session_manager.get_session(
-            session.session_id
-        )
+        retrieved_session = await session_manager.get_session(session.session_id)
         assert retrieved_session.data["activity"] == "story_time"
         assert retrieved_session.data["progress"] == "chapter_1"
 
@@ -988,12 +895,8 @@ class TestIntegrationScenarios:
     async def test_session_cleanup_integration(self, session_manager):
         """Test session cleanup integration."""
         # Create sessions
-        active_session = await session_manager.create_session(
-            child_id="child1"
-        )
-        expired_session = await session_manager.create_session(
-            child_id="child2"
-        )
+        active_session = await session_manager.create_session(child_id="child1")
+        expired_session = await session_manager.create_session(child_id="child2")
 
         # Expire one session
         past_time = datetime.utcnow() - timedelta(minutes=60)

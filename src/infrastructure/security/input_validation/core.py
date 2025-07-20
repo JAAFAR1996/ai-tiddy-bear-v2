@@ -1,9 +1,6 @@
-"""from datetime import datetime
-from typing import List, Optional
-import re.
-"""
-
 """Core input validation models and threat detection classes."""
+
+from datetime import datetime
 
 
 class SecurityThreat:
@@ -31,15 +28,13 @@ class InputValidationResult:
     def __init__(
         self,
         is_valid: bool,
-        threats: Optional[List[SecurityThreat]] = None,
-        errors: Optional[List[str]] = None,
-        child_safety_violations: Optional[List[str]] = None,
+        threats: list[SecurityThreat] | None = None,
+        errors: list[str] | None = None,
+        child_safety_violations: list[str] | None = None,
     ) -> None:
         self.is_valid = is_valid
         self.threats = threats or []
         self.errors = errors or []
         self.child_safety_violations = child_safety_violations or []
-        self.has_critical_threats = any(
-            t.severity == "critical" for t in self.threats
-        )
+        self.has_critical_threats = any(t.severity == "critical" for t in self.threats)
         self.has_child_safety_issues = len(self.child_safety_violations) > 0

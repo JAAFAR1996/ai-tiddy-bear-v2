@@ -1,5 +1,4 @@
-"""
-Tests for Parent Child Verification Service
+"""Tests for Parent Child Verification Service
 Testing parent-child relationship verification and management.
 """
 
@@ -8,12 +7,12 @@ import pytest
 from src.application.services.parent_child_verification_service import (
     ParentChildVerificationService,
     RelationshipManager,
+    RelationshipRecord,
     RelationshipStatus,
     RelationshipType,
     VerificationRecord,
-    RelationshipRecord,
-    get_verification_service,
     get_relationship_manager,
+    get_verification_service,
 )
 
 
@@ -94,9 +93,7 @@ class TestParentChildVerificationService:
         child_id = "child_456"
 
         # Create verification request
-        request = await service.create_verification_request(
-            parent_id, child_id
-        )
+        request = await service.create_verification_request(parent_id, child_id)
         assert request is not None
         assert request.parent_id == parent_id
         assert request.child_id == child_id
@@ -213,9 +210,7 @@ class TestParentChildVerificationService:
         child_id = "child_workflow"
 
         # Step 1: Create verification request
-        request = await service.create_verification_request(
-            parent_id, child_id
-        )
+        request = await service.create_verification_request(parent_id, child_id)
         assert request.status == RelationshipStatus.PENDING
 
         # Step 2: Check verification status
@@ -229,9 +224,7 @@ class TestParentChildVerificationService:
         assert verification_result is True
 
         # Step 4: Check final status
-        final_status = await service.get_verification_status(
-            parent_id, child_id
-        )
+        final_status = await service.get_verification_status(parent_id, child_id)
         assert final_status == RelationshipStatus.VERIFIED
 
     @pytest.mark.asyncio
@@ -246,9 +239,7 @@ class TestParentChildVerificationService:
         relationship = await manager.add_relationship(
             parent_id, child_id, RelationshipType.GUARDIAN_CHILD
         )
-        assert (
-            relationship.relationship_type == RelationshipType.GUARDIAN_CHILD
-        )
+        assert relationship.relationship_type == RelationshipType.GUARDIAN_CHILD
 
         # Step 2: Get relationships
         parent_relationships = await manager.get_relationships(parent_id)
@@ -272,9 +263,7 @@ class TestParentChildVerificationService:
         # Create verification requests for all children
         requests = []
         for child_id in child_ids:
-            request = await service.create_verification_request(
-                parent_id, child_id
-            )
+            request = await service.create_verification_request(parent_id, child_id)
             requests.append(request)
 
         # Verify all requests were created
@@ -391,15 +380,11 @@ class TestParentChildVerificationService:
 
         # All requests should be created successfully
         assert len(requests) == 3
-        assert all(
-            req.status == RelationshipStatus.PENDING for req in requests
-        )
+        assert all(req.status == RelationshipStatus.PENDING for req in requests)
 
         # Verify relationships concurrently
         verify_tasks = [
-            service.verify_relationship(
-                parent_id, child_id, "email_confirmation"
-            )
+            service.verify_relationship(parent_id, child_id, "email_confirmation")
             for parent_id, child_id in parent_child_pairs
         ]
 
@@ -413,11 +398,21 @@ class TestParentChildVerificationService:
         # Test that all classes can be imported from the main module
         from src.application.services.parent_child_verification_service import (
             ParentChildVerificationService as PCVS,
+        )
+        from src.application.services.parent_child_verification_service import (
             RelationshipManager as RM,
-            RelationshipStatus as RS,
-            RelationshipType as RT,
-            VerificationRecord as VR,
+        )
+        from src.application.services.parent_child_verification_service import (
             RelationshipRecord as RR,
+        )
+        from src.application.services.parent_child_verification_service import (
+            RelationshipStatus as RS,
+        )
+        from src.application.services.parent_child_verification_service import (
+            RelationshipType as RT,
+        )
+        from src.application.services.parent_child_verification_service import (
+            VerificationRecord as VR,
         )
 
         assert PCVS is not None
@@ -437,10 +432,8 @@ class TestParentChildVerificationService:
         child_id = "integration_child"
 
         # Create verification through verification service
-        verification_request = (
-            await verification_service.create_verification_request(
-                parent_id, child_id
-            )
+        verification_request = await verification_service.create_verification_request(
+            parent_id, child_id
         )
 
         # Verify the relationship

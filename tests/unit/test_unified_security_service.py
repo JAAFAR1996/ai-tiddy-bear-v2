@@ -1,13 +1,12 @@
-"""
-Unit Tests for Unified Security Service
-"""
+"""Unit Tests for Unified Security Service"""
 
-import pytest
 from datetime import datetime, timedelta
 
+import pytest
+
 from src.infrastructure.security.unified_security_service import (
-    UnifiedSecurityService,
     SecurityConfig,
+    UnifiedSecurityService,
 )
 
 
@@ -51,9 +50,7 @@ class TestUnifiedSecurityService:
         )
 
         assert result["threat_detected"] is True
-        assert any(
-            "Dangerous pattern: <script>" in t for t in result["threat_types"]
-        )
+        assert any("Dangerous pattern: <script>" in t for t in result["threat_types"])
         assert result["severity"] == "high"
 
     @pytest.mark.asyncio
@@ -85,9 +82,7 @@ class TestUnifiedSecurityService:
     @pytest.mark.asyncio
     async def test_validate_login_attempt_allowed(self, security_service):
         """Test login validation when allowed"""
-        result = await security_service.validate_login_attempt(
-            "user123", "192.168.1.1"
-        )
+        result = await security_service.validate_login_attempt("user123", "192.168.1.1")
 
         assert result["allowed"] is True
 
@@ -105,9 +100,7 @@ class TestUnifiedSecurityService:
         assert "block_until" in result
 
     @pytest.mark.asyncio
-    async def test_validate_login_attempt_too_many_failures(
-        self, security_service
-    ):
+    async def test_validate_login_attempt_too_many_failures(self, security_service):
         """Test login validation with too many failed attempts"""
         user_id = "user123"
 
@@ -115,18 +108,14 @@ class TestUnifiedSecurityService:
         for _ in range(3):
             await security_service.record_failed_login(user_id, "192.168.1.1")
 
-        result = await security_service.validate_login_attempt(
-            user_id, "192.168.1.1"
-        )
+        result = await security_service.validate_login_attempt(user_id, "192.168.1.1")
 
         assert result["allowed"] is False
         assert result["reason"] == "Too many failed attempts"
         assert "retry_after" in result
 
     @pytest.mark.asyncio
-    async def test_record_failed_login_creates_audit_log(
-        self, security_service
-    ):
+    async def test_record_failed_login_creates_audit_log(self, security_service):
         """Test that failed login creates audit log"""
         user_id = "user123"
         ip = "192.168.1.1"
@@ -161,18 +150,14 @@ class TestUnifiedSecurityService:
     def test_validate_audio_file_too_large(self, security_service):
         """Test audio file validation with oversized file"""
         large_content = b"X" * (11 * 1024 * 1024)  # 11MB
-        result = security_service.validate_audio_file(
-            "test.wav", large_content
-        )
+        result = security_service.validate_audio_file("test.wav", large_content)
 
         assert result["is_valid"] is False
         assert any("size exceeds maximum" in e for e in result["errors"])
 
     def test_validate_audio_file_wrong_extension(self, security_service):
         """Test audio file validation with wrong extension"""
-        result = security_service.validate_audio_file(
-            "test.exe", b"MZ"
-        )  # EXE header
+        result = security_service.validate_audio_file("test.exe", b"MZ")  # EXE header
 
         assert result["is_valid"] is False
         assert any("not allowed" in e for e in result["errors"])
@@ -218,18 +203,15 @@ class TestUnifiedSecurityService:
         password = "test_password_123"
         hashed, salt = security_service.hash_password(password)
 
-        assert (
-            security_service.verify_password("wrong_password", hashed, salt)
-            is False
-        )
+        assert security_service.verify_password("wrong_password", hashed, salt) is False
 
     # ==================== Security Status Tests ====================
 
     def test_get_security_status(self, security_service):
         """Test security status reporting"""
         # Add some test data
-        security_service.blocked_ips["192.168.1.1"] = (
-            datetime.utcnow() + timedelta(hours=1)
+        security_service.blocked_ips["192.168.1.1"] = datetime.utcnow() + timedelta(
+            hours=1
         )
         security_service.threats.append(
             {"timestamp": datetime.utcnow().isoformat(), "severity": "high"}
@@ -270,9 +252,7 @@ class TestUnifiedSecurityServiceChildSafety:
         return UnifiedSecurityService(child_safety_config)
 
     @pytest.mark.asyncio
-    async def test_analyze_threat_child_unsafe_content(
-        self, child_safety_service
-    ):
+    async def test_analyze_threat_child_unsafe_content(self, child_safety_service):
         """Test detection of child-unsafe content"""
         result = await child_safety_service.analyze_threat(
             "This story contains violence and scary content", "192.168.1.1"
@@ -286,9 +266,7 @@ class TestUnifiedSecurityServiceChildSafety:
     async def test_child_audio_file_size_limit(self, child_safety_service):
         """Test stricter file size limits for children"""
         large_content = b"X" * (6 * 1024 * 1024)  # 6MB
-        result = child_safety_service.validate_audio_file(
-            "test.wav", large_content
-        )
+        result = child_safety_service.validate_audio_file("test.wav", large_content)
 
         assert result["is_valid"] is False
         assert any("size exceeds maximum" in e for e in result["errors"])

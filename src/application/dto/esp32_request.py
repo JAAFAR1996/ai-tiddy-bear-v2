@@ -4,8 +4,7 @@ from uuid import UUID
 
 @dataclass
 class ESP32Request:
-    """
-    Represents a request from an ESP32 device containing child
+    """Represents a request from an ESP32 device containing child
     interaction data. Supports multiple input types including audio,
     text, and sensor data while maintaining COPPA compliance and child
     safety requirements.

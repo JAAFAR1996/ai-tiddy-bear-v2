@@ -1,13 +1,13 @@
-from src.infrastructure.logging_config import get_logger
-from typing import List, Optional
-from dataclasses import dataclass
-import tempfile
-import subprocess
-import re
-import os
 import ast
+import os
+import re
+import subprocess
 import sys
+import tempfile
+from dataclasses import dataclass
 from pathlib import Path
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -35,16 +35,15 @@ class ValidationResult:
     """Result of test validation"""
 
     is_valid: bool
-    syntax_errors: List[str]
-    import_errors: List[str]
-    logic_errors: List[str]
-    suggestions: List[str]
-    fixed_code: Optional[str] = None
+    syntax_errors: list[str]
+    import_errors: list[str]
+    logic_errors: list[str]
+    suggestions: list[str]
+    fixed_code: str | None = None
 
 
 class TestValidator:
-    """
-    Validates and fixes AI-generated test cases
+    """Validates and fixes AI-generated test cases
     ensuring they meet quality and syntax standards.
     """
 
@@ -78,8 +77,7 @@ class TestValidator:
         }
 
     async def validate_syntax(self, test_code: str) -> bool:
-        """
-        Validate Python syntax of test code
+        """Validate Python syntax of test code
 
         Args:
             test_code: Test code to validate
@@ -97,11 +95,8 @@ class TestValidator:
             logger.debug(f"Error parsing test code: {e}")
             return False
 
-    async def comprehensive_validation(
-        self, test_code: str
-    ) -> ValidationResult:
-        """
-        Perform comprehensive validation of test code
+    async def comprehensive_validation(self, test_code: str) -> ValidationResult:
+        """Perform comprehensive validation of test code
 
         Args:
             test_code: Test code to validate
@@ -127,9 +122,7 @@ class TestValidator:
         import_errors = await self._check_imports(test_code)
         if import_errors:
             result.import_errors = import_errors
-            if (
-                not result.syntax_errors
-            ):  # Only mark invalid if no syntax errors
+            if not result.syntax_errors:  # Only mark invalid if no syntax errors
                 result.is_valid = False
 
         # Check test structure
@@ -142,9 +135,8 @@ class TestValidator:
 
         return result
 
-    async def fix_test(self, test_code: str) -> Optional[str]:
-        """
-        Attempt to fix common issues in test code
+    async def fix_test(self, test_code: str) -> str | None:
+        """Attempt to fix common issues in test code
 
         Args:
             test_code: Test code to fix
@@ -167,15 +159,14 @@ class TestValidator:
             # Validate the fixed code
             if await self.validate_syntax(fixed_code):
                 return fixed_code
-            else:
-                logger.warning("Could not fix test code")
-                return None
+            logger.warning("Could not fix test code")
+            return None
 
         except Exception as e:
             logger.error(f"Error fixing test code: {e}")
             return None
 
-    async def _find_syntax_errors(self, test_code: str) -> List[str]:
+    async def _find_syntax_errors(self, test_code: str) -> list[str]:
         """Find specific syntax errors in the code"""
         errors = []
 
@@ -184,19 +175,16 @@ class TestValidator:
         except SyntaxError as e:
             errors.append(f"Line {e.lineno}: {e.msg}")
         except Exception as e:
-            errors.append(f"Parse error: {str(e)}")
+            errors.append(f"Parse error: {e!s}")
 
         return errors
 
-    async def _check_imports(self, test_code: str) -> List[str]:
+    async def _check_imports(self, test_code: str) -> list[str]:
         """Check for missing or incorrect imports"""
         errors = []
 
         # Check for usage without imports
-        if (
-            "Mock" in test_code
-            and "from unittest.mock import" not in test_code
-        ):
+        if "Mock" in test_code and "from unittest.mock import" not in test_code:
             errors.append("Missing import: from unittest.mock import Mock")
 
         if "@given" in test_code and "from hypothesis import" not in test_code:
@@ -212,7 +200,7 @@ class TestValidator:
 
         return errors
 
-    async def _check_test_logic(self, test_code: str) -> List[str]:
+    async def _check_test_logic(self, test_code: str) -> list[str]:
         """Check for logical errors in test structure"""
         errors = []
 
@@ -230,24 +218,18 @@ class TestValidator:
 
         # Check for empty test methods
         if "pass" in test_code and "assert" not in test_code:
-            errors.append(
-                "Test method appears to be empty (only contains 'pass')"
-            )
+            errors.append("Test method appears to be empty (only contains 'pass')")
 
         # Check for proper indentation
         lines = test_code.split("\n")
         for i, line in enumerate(lines, 1):
-            if line.strip().startswith("def test_") and not line.startswith(
-                "    "
-            ):
+            if line.strip().startswith("def test_") and not line.startswith("    "):
                 if i > 1:  # Not the first line
-                    errors.append(
-                        f"Line {i}: Test method not properly indented"
-                    )
+                    errors.append(f"Line {i}: Test method not properly indented")
 
         return errors
 
-    async def _generate_suggestions(self, test_code: str) -> List[str]:
+    async def _generate_suggestions(self, test_code: str) -> list[str]:
         """Generate suggestions for improving test code"""
         suggestions = []
 
@@ -259,15 +241,11 @@ class TestValidator:
 
         # Suggest better assertions
         if "assert True" in test_code:
-            suggestions.append(
-                "Replace 'assert True' with meaningful assertions"
-            )
+            suggestions.append("Replace 'assert True' with meaningful assertions")
 
         # Suggest setup/teardown if needed
         if "Mock" in test_code and "setUp" not in test_code:
-            suggestions.append(
-                "Consider using setUp/tearDown for mock initialization"
-            )
+            suggestions.append("Consider using setUp/tearDown for mock initialization")
 
         # Suggest async/await usage
         if "async def" in test_code and "await" not in test_code:
@@ -294,9 +272,7 @@ class TestValidator:
         )
 
         # Fix missing 'self' parameter in test methods
-        fixed_code = re.sub(
-            r"def\s+(test_\w+)\s*\(\s*\)", r"def \1(self)", fixed_code
-        )
+        fixed_code = re.sub(r"def\s+(test_\w+)\s*\(\s*\)", r"def \1(self)", fixed_code)
 
         # Fix basic indentation issues
         lines = fixed_code.split("\n")
@@ -325,7 +301,7 @@ class TestValidator:
 
         return "\n".join(fixed_lines)
 
-    def _determine_needed_imports(self, test_code: str) -> List[str]:
+    def _determine_needed_imports(self, test_code: str) -> list[str]:
         """Determine which standard imports are needed in the test code."""
         needed_imports = []
         import_map = {
@@ -344,9 +320,7 @@ class TestValidator:
         lines = test_code.split("\n")
         insert_index = 0
         for i, line in enumerate(lines):
-            if line.strip().startswith("class ") or line.strip().startswith(
-                "def "
-            ):
+            if line.strip().startswith("class ") or line.strip().startswith("def "):
                 insert_index = i
                 break
 
@@ -418,8 +392,7 @@ class TestValidator:
         return fixed_code
 
     async def run_test_execution_check(self, test_code: str) -> bool:
-        """
-        Run the test code to check if it executes without errors
+        """Run the test code to check if it executes without errors
 
         Args:
             test_code: Test code to execute
@@ -429,9 +402,7 @@ class TestValidator:
         """
         try:
             # Create temporary file
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False
-            ) as f:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
                 f.write(test_code)
                 temp_file = f.name
 
@@ -439,6 +410,7 @@ class TestValidator:
                 # Run pytest on the temporary file
                 result = subprocess.run(
                     [sys.executable, "-m", "pytest", temp_file, "-v"],
+                    check=False,
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -458,8 +430,7 @@ class TestValidator:
             return False
 
     async def validate_child_safety_compliance(self, test_code: str) -> bool:
-        """
-        Validate that test code complies with child safety requirements
+        """Validate that test code complies with child safety requirements
 
         Args:
             test_code: Test code to validate

@@ -1,15 +1,14 @@
-"""
-End-to-End Tests for AI Teddy Bear System
-"""
+"""End-to-End Tests for AI Teddy Bear System"""
+
+import asyncio
+import os
+from uuid import uuid4
 
 import pytest
-import asyncio
 from httpx import AsyncClient
-from uuid import uuid4
-import os
 
+from src.infrastructure.persistence.database_manager import Database
 from src.main import app
-from src.infrastructure.persistence.database import Database
 
 
 @pytest.fixture(scope="session")
@@ -43,11 +42,8 @@ class TestCompleteUserJourney:
     """Test complete user journey from signup to child interaction."""
 
     @pytest.mark.asyncio
-    async def test_full_user_journey(
-        self, test_client: AsyncClient, test_database
-    ):
+    async def test_full_user_journey(self, test_client: AsyncClient, test_database):
         """Test complete flow: signup -> login -> create child -> interact -> monitor."""
-
         # Step 1: Parent Registration
         parent_email = f"parent_{uuid4()}@test.com"
         registration_data = {
@@ -238,7 +234,6 @@ class TestMultiChildFamily:
         self, test_client: AsyncClient, test_database
     ):
         """Test managing multiple children under one parent."""
-
         # Create parent account
         parent_email = f"multiparent_{uuid4()}@test.com"
         parent_response = await test_client.post(
@@ -264,9 +259,7 @@ class TestMultiChildFamily:
 
         # Create multiple children
         children = []
-        for i, (name, age) in enumerate(
-            [("Alice", 5), ("Bob", 8), ("Charlie", 10)]
-        ):
+        for i, (name, age) in enumerate([("Alice", 5), ("Bob", 8), ("Charlie", 10)]):
             # COPPA consent for each child
             consent_response = await test_client.post(
                 "/api/v1/coppa/consent",
@@ -296,9 +289,7 @@ class TestMultiChildFamily:
             children.append(child_response.json())
 
         # List all children
-        list_response = await test_client.get(
-            "/api/v1/children", headers=auth_headers
-        )
+        list_response = await test_client.get("/api/v1/children", headers=auth_headers)
 
         assert list_response.status_code == 200
         child_list = list_response.json()
@@ -320,24 +311,17 @@ class TestMultiChildFamily:
 
             # Verify age-appropriate content
             if child["age"] <= 5:
-                assert "simple" in response_data["metadata"].get(
-                    "complexity", ""
-                )
+                assert "simple" in response_data["metadata"].get("complexity", "")
             elif child["age"] >= 10:
-                assert "advanced" in response_data["metadata"].get(
-                    "complexity", ""
-                )
+                assert "advanced" in response_data["metadata"].get("complexity", "")
 
 
 class TestLongRunningSession:
     """Test long-running interaction session."""
 
     @pytest.mark.asyncio
-    async def test_extended_conversation(
-        self, test_client: AsyncClient, test_database
-    ):
+    async def test_extended_conversation(self, test_client: AsyncClient, test_database):
         """Test extended conversation with context retention."""
-
         # Setup parent and child
         parent_email = f"longparent_{uuid4()}@test.com"
         await test_client.post(
@@ -417,9 +401,7 @@ class TestLongRunningSession:
 
         assert history_response.status_code == 200
         history = history_response.json()
-        assert (
-            len(history["messages"]) == len(story_messages) * 2
-        )  # User + AI messages
+        assert len(history["messages"]) == len(story_messages) * 2  # User + AI messages
 
         # Verify story coherence
         full_story = " ".join(
@@ -438,11 +420,8 @@ class TestSystemResilience:
     """Test system resilience and recovery."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_users(
-        self, test_client: AsyncClient, test_database
-    ):
+    async def test_concurrent_users(self, test_client: AsyncClient, test_database):
         """Test system handling multiple concurrent users."""
-
         # Create multiple parent accounts concurrently
         parent_tasks = []
         for i in range(10):
@@ -508,11 +487,8 @@ class TestSystemResilience:
         assert all(r.status_code == 200 for r in chat_responses)
 
     @pytest.mark.asyncio
-    async def test_token_refresh_flow(
-        self, test_client: AsyncClient, test_database
-    ):
+    async def test_token_refresh_flow(self, test_client: AsyncClient, test_database):
         """Test token refresh mechanism."""
-
         # Register and login
         email = f"refresh_{uuid4()}@test.com"
         await test_client.post(

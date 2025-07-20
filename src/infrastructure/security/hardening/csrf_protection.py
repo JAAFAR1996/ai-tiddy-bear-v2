@@ -1,15 +1,15 @@
-"""
-CSRF Protection for AI Teddy Bear
+"""CSRF Protection for AI Teddy Bear
 Comprehensive Cross-Site Request Forgery protection with token-based validation
 """
 
-from dataclasses import dataclass
-from typing import Dict, Optional, Set
 import hashlib
+import hmac
 import secrets
 import time
+from dataclasses import dataclass
+
 from fastapi import HTTPException, Request, Response
-import hmac
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
@@ -23,7 +23,7 @@ class CSRFConfig:
     token_lifetime: int = 3600  # 1 hour
     cookie_name: str = "csrf_token"
     header_name: str = "X-CSRF-Token"
-    safe_methods: Set[str] = None
+    safe_methods: set[str] = None
     require_https: bool = True
     same_site: str = "Strict"  # "Strict", "Lax", "None"
 
@@ -33,22 +33,18 @@ class CSRFConfig:
 
 
 class CSRFTokenManager:
-    """
-    Manages CSRF token generation, validation, and storage
+    """Manages CSRF token generation, validation, and storage
     Implements double-submit cookie pattern with cryptographic validation
     """
 
     def __init__(self, config: CSRFConfig) -> None:
         self.config = config
-        self.token_cache: Dict[str, Dict] = {}  # In-memory cache for tokens
+        self.token_cache: dict[str, dict] = {}  # In-memory cache for tokens
         if not config.secret_key or len(config.secret_key) < 32:
-            raise ValueError(
-                "CSRF secret key must be at least 32 characters long"
-            )
+            raise ValueError("CSRF secret key must be at least 32 characters long")
 
     def generate_token(self, session_id: str, user_id: str = None) -> str:
-        """
-        Generate a cryptographically secure CSRF token
+        """Generate a cryptographically secure CSRF token
         Args: session_id: User session identifier
             user_id: Optional user identifier for additional security
         Returns: Base64-encoded CSRF token
@@ -67,9 +63,7 @@ class CSRFTokenManager:
                 hashlib.sha256,
             ).hexdigest()
             # Combine all components
-            full_token = (
-                f"{timestamp}.{secrets.token_urlsafe(16)}.{signature[:16]}"
-            )
+            full_token = f"{timestamp}.{secrets.token_urlsafe(16)}.{signature[:16]}"
             # Cache token for validation
             self.token_cache[full_token] = {
                 "session_id": session_id,
@@ -85,11 +79,8 @@ class CSRFTokenManager:
             logger.error(f"Failed to generate CSRF token: {e}")
             raise
 
-    def validate_token(
-        self, token: str, session_id: str, user_id: str = None
-    ) -> bool:
-        """
-        Validate CSRF token against session and user
+    def validate_token(self, token: str, session_id: str, user_id: str = None) -> bool:
+        """Validate CSRF token against session and user
         Args: token: CSRF token to validate
             session_id: Current session identifier
             user_id: Current user identifier
@@ -101,9 +92,7 @@ class CSRFTokenManager:
                 return False
             # Check if token exists in cache
             if token not in self.token_cache:
-                logger.warning(
-                    f"CSRF token not found in cache: {token[:16]}..."
-                )
+                logger.warning(f"CSRF token not found in cache: {token[:16]}...")
                 return False
             token_data = self.token_cache[token]
             # Check expiration
@@ -126,8 +115,7 @@ class CSRFTokenManager:
             return False
 
     def invalidate_token(self, token: str) -> bool:
-        """
-        Invalidate a specific CSRF token
+        """Invalidate a specific CSRF token
         Args: token: Token to invalidate
         Returns: True if token was found and invalidated
         """
@@ -142,8 +130,7 @@ class CSRFTokenManager:
             return False
 
     def invalidate_session_tokens(self, session_id: str) -> int:
-        """
-        Invalidate all tokens for a specific session
+        """Invalidate all tokens for a specific session
         Args: session_id: Session to invalidate tokens for Returns: Number of tokens invalidated
         """
         try:
@@ -174,13 +161,11 @@ class CSRFTokenManager:
             for token in expired_tokens:
                 del self.token_cache[token]
             if expired_tokens:
-                logger.debug(
-                    f"Cleaned up {len(expired_tokens)} expired CSRF tokens"
-                )
+                logger.debug(f"Cleaned up {len(expired_tokens)} expired CSRF tokens")
         except Exception as e:
             logger.error(f"Failed to cleanup expired tokens: {e}")
 
-    def get_token_stats(self) -> Dict[str, int]:
+    def get_token_stats(self) -> dict[str, int]:
         """Get statistics about current tokens"""
         try:
             current_time = int(time.time())
@@ -201,9 +186,7 @@ class CSRFTokenManager:
 
 
 class CSRFProtection:
-    """
-    Main CSRF protection class Provides middleware and utilities for CSRF protection
-    """
+    """Main CSRF protection class Provides middleware and utilities for CSRF protection"""
 
     def __init__(self, config: CSRFConfig) -> None:
         self.config = config
@@ -216,8 +199,7 @@ class CSRFProtection:
         return self.token_manager.generate_token(session_id, user_id)
 
     def validate_request(self, request: Request) -> bool:
-        """
-        Validate CSRF protection for request
+        """Validate CSRF protection for request
         Args: request: FastAPI request object
         Returns: True if request is valid or doesn't require CSRF protection
         """
@@ -269,13 +251,11 @@ class CSRFProtection:
         session_id = request.cookies.get("session_id")
         if not session_id:
             # Generate temporary session ID based on client info
-            client_info = (
-                f"{request.client.host if request.client else 'unknown'}"
-            )
+            client_info = f"{request.client.host if request.client else 'unknown'}"
             session_id = hashlib.sha256(client_info.encode()).hexdigest()[:16]
         return session_id
 
-    def _get_user_id(self, request: Request) -> Optional[str]:
+    def _get_user_id(self, request: Request) -> str | None:
         """Extract user ID from request(if authenticated)"""
         try:
             # Try to get from request state (set by auth middleware)
@@ -287,7 +267,7 @@ class CSRFProtection:
             logger.debug(f"Could not extract user ID: {e}")
             return None
 
-    def _get_csrf_token_from_request(self, request: Request) -> Optional[str]:
+    def _get_csrf_token_from_request(self, request: Request) -> str | None:
         """Extract CSRF token from request headers or form data"""
         try:
             # Try header first
@@ -306,9 +286,7 @@ class CSRFProtection:
 
 # Middleware for automatic CSRF protection
 class CSRFMiddleware:
-    """
-    ASGI middleware for automatic CSRF protection
-    """
+    """ASGI middleware for automatic CSRF protection"""
 
     def __init__(self, app, config: CSRFConfig) -> None:
         self.app = app
@@ -332,7 +310,7 @@ class CSRFMiddleware:
 
 
 # Global CSRF protection instance
-_csrf_protection: Optional[CSRFProtection] = None
+_csrf_protection: CSRFProtection | None = None
 
 
 def get_csrf_protection() -> CSRFProtection:
@@ -379,9 +357,7 @@ def csrf_protect(func):
         # Validate CSRF
         csrf = get_csrf_protection()
         if not csrf.validate_request(request):
-            raise HTTPException(
-                status_code=403, detail="CSRF token validation failed"
-            )
+            raise HTTPException(status_code=403, detail="CSRF token validation failed")
         return await func(*args, **kwargs)
 
     return wrapper

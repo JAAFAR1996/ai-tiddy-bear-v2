@@ -1,5 +1,6 @@
 import base64
 from uuid import UUID
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from src.application.dto.ai_response import AIResponse

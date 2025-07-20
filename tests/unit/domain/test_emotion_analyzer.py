@@ -1,9 +1,9 @@
-"""
-Unit tests for EmotionAnalyzer domain service.
+"""Unit tests for EmotionAnalyzer domain service.
 Tests emotion detection and child safety features.
 """
 
 import pytest
+
 from src.domain.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 
 
@@ -28,15 +28,11 @@ class TestEmotionResult:
     def test_confidence_validation(self):
         """Test confidence score validation."""
         # Test invalid confidence (> 1.0)
-        with pytest.raises(
-            ValueError, match="Confidence must be between 0.0 and 1.0"
-        ):
+        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
             EmotionResult("happy", 1.5, {"happy": 0.9})
 
         # Test invalid confidence (< 0.0)
-        with pytest.raises(
-            ValueError, match="Confidence must be between 0.0 and 1.0"
-        ):
+        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
             EmotionResult("happy", -0.1, {"happy": 0.9})
 
     def test_sentiment_validation(self):
@@ -114,9 +110,7 @@ class TestEmotionAnalyzer:
 
     def test_analyze_frustrated_text(self, analyzer):
         """Test analysis of frustrated text."""
-        result = analyzer.analyze_text(
-            "This makes me so angry and frustrated!"
-        )
+        result = analyzer.analyze_text("This makes me so angry and frustrated!")
 
         assert result.primary_emotion == "frustrated"
         assert result.confidence == 0.7
@@ -257,14 +251,10 @@ class TestEmotionAnalyzer:
 
     def test_requires_attention_very_low_sentiment(self, analyzer):
         """Test attention requirement for very low sentiment."""
-        result = EmotionResult(
-            "neutral", 0.6, {"neutral": 0.6}, sentiment_score=-0.8
-        )
+        result = EmotionResult("neutral", 0.6, {"neutral": 0.6}, sentiment_score=-0.8)
         assert analyzer.requires_attention(result) is True
 
-    def test_requires_attention_high_arousal_negative_sentiment(
-        self, analyzer
-    ):
+    def test_requires_attention_high_arousal_negative_sentiment(self, analyzer):
         """Test attention requirement for high arousal with negative sentiment."""
         result = EmotionResult(
             "excited",
@@ -277,9 +267,7 @@ class TestEmotionAnalyzer:
 
     def test_requires_attention_positive_emotion(self, analyzer):
         """Test attention requirement for positive emotions."""
-        result = EmotionResult(
-            "happy", 0.9, {"happy": 0.9}, sentiment_score=0.8
-        )
+        result = EmotionResult("happy", 0.9, {"happy": 0.9}, sentiment_score=0.8)
         assert analyzer.requires_attention(result) is False
 
         result = EmotionResult("calm", 0.8, {"calm": 0.8}, sentiment_score=0.3)
@@ -302,9 +290,7 @@ class TestEmotionAnalyzer:
         """Test text with multiple emotion words."""
         # First matching emotion should win
         result = analyzer.analyze_text("I am happy but also a bit sad")
-        assert (
-            result.primary_emotion == "happy"
-        )  # happy comes first in check order
+        assert result.primary_emotion == "happy"  # happy comes first in check order
 
     def test_emotion_confidence_ranges(self, analyzer):
         """Test that emotion confidence is within valid ranges."""

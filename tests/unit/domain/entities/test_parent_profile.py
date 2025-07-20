@@ -1,7 +1,8 @@
 """Test cases for Parent entity."""
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 from src.domain.entities.parent_profile.entities import Parent
 
@@ -103,9 +104,7 @@ class TestParentEntity:
         assert parent3.get_full_name() == "Mohamed"
 
         # Name field takes precedence
-        parent4 = Parent(
-            name="Full Name", first_name="First", last_name="Last"
-        )
+        parent4 = Parent(name="Full Name", first_name="First", last_name="Last")
         assert parent4.get_full_name() == "First Last"
 
         # No name provided
@@ -115,9 +114,7 @@ class TestParentEntity:
     def test_get_display_name(self):
         """Test display name generation."""
         # With name
-        parent1 = Parent(
-            name="John Doe", id="12345678-1234-5678-1234-567812345678"
-        )
+        parent1 = Parent(name="John Doe", id="12345678-1234-5678-1234-567812345678")
         assert parent1.get_display_name() == "John Doe"
 
         # Anonymous user
@@ -194,14 +191,10 @@ class TestParentEntity:
         assert parent.preferences["session_timeout_minutes"] == 60
 
         # Invalid session timeout
-        with pytest.raises(
-            ValueError, match="Session timeout must be between"
-        ):
+        with pytest.raises(ValueError, match="Session timeout must be between"):
             parent.update_preference("session_timeout_minutes", 500)
 
-        with pytest.raises(
-            ValueError, match="Session timeout must be between"
-        ):
+        with pytest.raises(ValueError, match="Session timeout must be between"):
             parent.update_preference("session_timeout_minutes", 2)
 
         # Invalid key

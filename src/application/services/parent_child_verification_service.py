@@ -1,15 +1,5 @@
-"""Provides services for parent-child verification and relationship management.
 
-This module has been refactored into a clean, modular architecture.
-The original functionality is preserved while improving maintainability and security.
-It re-exports key classes and provides factory functions for convenience.
-
-**Migration Note**: For new code, import from the 'verification' package:
-
-```python
-from src.application.services.verification import ParentChildVerificationService
-```
-"""
+from src.application.services.consent.verification_service import VerificationService
 
 from .verification.relationship_manager import RelationshipManager
 from .verification.verification_models import (

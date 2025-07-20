@@ -57,7 +57,7 @@ except ImportError:
 
     class Request:
         def __init__(self):
-            self.url = type('URL', (), {'path': '/'})()
+            self.url = type("URL", (), {"path": "/"})()
 
     class HTTPException(Exception):
         def __init__(self, status_code: int, detail: str) -> None:
@@ -76,6 +76,7 @@ except ImportError:
         def exception_handler(self, exc_class):
             def decorator(func):
                 return func
+
             return decorator
 
 
@@ -87,35 +88,33 @@ class ChildSafetyRateLimiter:
     def __init__(self, settings: Settings = None) -> None:
         if settings is None:
             settings = get_settings()
-        
+
         self.settings = settings
-        
+
         if SLOWAPI_AVAILABLE:
             self.limiter = Limiter(
                 key_func=get_remote_address,
                 default_limits=[self.settings.security.DEFAULT_RATE_LIMIT],
                 storage_uri=getattr(
-                    self.settings.security, 
-                    'REDIS_URL_RATE_LIMIT', 
-                    'memory://'
+                    self.settings.security, "REDIS_URL_RATE_LIMIT", "memory://"
                 ),
             )
         else:
             self.limiter = Limiter()
-        
+
         # Child-specific limits
         self.child_interaction_limits = defaultdict(list)
         self.child_lockout_period = timedelta(
             seconds=getattr(
                 self.settings.security,
-                'CHILD_LOCKOUT_SECONDS',
-                300  # 5 minutes default
+                "CHILD_LOCKOUT_SECONDS",
+                300,  # 5 minutes default
             )
         )
         self.max_child_interactions = getattr(
             self.settings.security,
-            'CHILD_MAX_INTERACTIONS_PER_MINUTE',
-            10  # 10 interactions per minute default
+            "CHILD_MAX_INTERACTIONS_PER_MINUTE",
+            10,  # 10 interactions per minute default
         )
 
     def get_limiter(self) -> Limiter:
@@ -127,7 +126,7 @@ class ChildSafetyRateLimiter:
     ) -> None:
         """Rate limit child interactions to prevent abuse and ensure safety."""
         now = datetime.utcnow()
-        
+
         # Clean up old interactions
         self.child_interaction_limits[child_id] = [
             t
@@ -136,13 +135,8 @@ class ChildSafetyRateLimiter:
         ]
 
         # Check if limit exceeded
-        if (
-            len(self.child_interaction_limits[child_id])
-            >= self.max_child_interactions
-        ):
-            logger.warning(
-                f"Child interaction limit exceeded for child_id: {child_id}"
-            )
+        if len(self.child_interaction_limits[child_id]) >= self.max_child_interactions:
+            logger.warning(f"Child interaction limit exceeded for child_id: {child_id}")
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail="Interaction limit reached. Please try again later.",
@@ -155,13 +149,14 @@ class ChildSafetyRateLimiter:
         """Check if a child is currently locked out"""
         if child_id not in self.child_interaction_limits:
             return False
-        
+
         now = datetime.utcnow()
         recent_interactions = [
-            t for t in self.child_interaction_limits[child_id]
+            t
+            for t in self.child_interaction_limits[child_id]
             if now - t < self.child_lockout_period
         ]
-        
+
         return len(recent_interactions) >= self.max_child_interactions
 
     def get_child_interaction_count(self, child_id: str) -> int:
@@ -183,7 +178,9 @@ class ChildSafetyRateLimiter:
     def register_rate_limit_handler(self, app) -> None:
         """Register the rate limit exceeded handler with the FastAPI app."""
         if not FASTAPI_AVAILABLE:
-            logger.warning("FastAPI not available, skipping rate limit handler registration")
+            logger.warning(
+                "FastAPI not available, skipping rate limit handler registration"
+            )
             return
 
         @app.exception_handler(RateLimitExceeded)
@@ -191,15 +188,13 @@ class ChildSafetyRateLimiter:
             request: Request,
             exc: RateLimitExceeded,
         ) -> JSONResponse:
-            logger.warning(
-                f"Rate limit exceeded for {request.url.path}: {exc.detail}"
-            )
+            logger.warning(f"Rate limit exceeded for {request.url.path}: {exc.detail}")
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={
                     "detail": f"Rate limit exceeded: {exc.detail}",
                     "retry_after": 60,  # Suggest retry after 60 seconds
-                    "message": "Please wait before making more requests."
+                    "message": "Please wait before making more requests.",
                 },
             )
 
@@ -211,14 +206,16 @@ class ChildSafetyRateLimiter:
             "max_child_interactions": self.max_child_interactions,
             "lockout_period_seconds": self.child_lockout_period.total_seconds(),
         }
-        
+
         if child_id:
-            status_info.update({
-                "child_id": child_id,
-                "current_interactions": self.get_child_interaction_count(child_id),
-                "is_locked_out": self.is_child_locked_out(child_id),
-            })
-        
+            status_info.update(
+                {
+                    "child_id": child_id,
+                    "current_interactions": self.get_child_interaction_count(child_id),
+                    "is_locked_out": self.is_child_locked_out(child_id),
+                }
+            )
+
         return status_info
 
 
@@ -242,8 +239,7 @@ def create_rate_limiter_dependency():
     """Create a FastAPI dependency for the rate limiter"""
     if FASTAPI_AVAILABLE:
         return Depends(get_child_safety_rate_limiter)
-    else:
-        return get_child_safety_rate_limiter
+    return get_child_safety_rate_limiter
 
 
 # Convenience functions for easy use

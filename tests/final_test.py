@@ -1,12 +1,12 @@
-"""
-🧪 الاختبار النهائي - AI Teddy Bear
+"""🧪 الاختبار النهائي - AI Teddy Bear
 اختبار سريع لقياس التحسن بعد إصلاح الخدمات
 """
 
-from src.infrastructure.logging_config import get_logger
 import logging
 import sys
 from pathlib import Path
+
+from src.infrastructure.logging_config import get_logger
 
 # إعداد المسارات
 project_root = Path(__file__).parent.parent
@@ -83,9 +83,7 @@ def test_services():
 
     # Device Services
     try:
-        device_files = list(
-            Path("src/application/services/device").glob("*.py")
-        )
+        device_files = list(Path("src/application/services/device").glob("*.py"))
         if device_files:
             results["device_services"] = True
             logger.info("  ✅ Device Services: يعمل بشكل طبيعي")
@@ -130,14 +128,13 @@ def test_core_entities():
     if entities_found > 0:
         logger.info(f"  ✅ {entities_found}/{total_entities} entities تعمل")
         return True
-    else:
-        # fallback: تحقق من وجود خدمات بديلة
-        try:
-            logger.info("  ✅ Core services available as fallback")
-            return True
-        except BaseException:
-            logger.info("  ❌ No entities or core services found")
-            return False
+    # fallback: تحقق من وجود خدمات بديلة
+    try:
+        logger.info("  ✅ Core services available as fallback")
+        return True
+    except BaseException:
+        logger.info("  ❌ No entities or core services found")
+        return False
 
 
 def calculate_final_score(service_results, entities_working):
@@ -169,9 +166,7 @@ def main():
     logger.info(
         f"✅ خدمات ناجحة: {final_score['services_passed']}/{final_score['total_services']}"
     )
-    logger.info(
-        f"📈 نسبة نجاح الخدمات: {final_score['service_percentage']:.1f}%"
-    )
+    logger.info(f"📈 نسبة نجاح الخدمات: {final_score['service_percentage']:.1f}%")
     logger.info(
         f"🎯 الكيانات الأساسية: {'✅ تعمل' if final_score['entities_working'] else '❌ مشاكل'}"
     )

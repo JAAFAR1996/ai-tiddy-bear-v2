@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from src.presentation.api.endpoints.children.models import ChildResponse
 
@@ -22,7 +21,7 @@ def create_mock_child_response(
 
 def create_mock_children_list(
     parent_id: str = "mock_parent",
-) -> List[ChildResponse]:
+) -> list[ChildResponse]:
     """Create mock children list for testing purposes."""
     return [
         ChildResponse(

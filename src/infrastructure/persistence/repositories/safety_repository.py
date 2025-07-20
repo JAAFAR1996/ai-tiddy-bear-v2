@@ -8,7 +8,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.security.database_input_validator import (
     SecurityError,
     database_input_validation,

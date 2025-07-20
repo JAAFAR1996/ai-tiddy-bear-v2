@@ -3,9 +3,7 @@ from .models import TestResult, TestSuite
 
 async def run_contract_tests(framework):
     """تشغيل اختبارات العقد"""
-    suite = TestSuite(
-        name="Contract Tests", description="اختبارات العقد لتوافق API"
-    )
+    suite = TestSuite(name="Contract Tests", description="اختبارات العقد لتوافق API")
 
     # Test API contracts
     api_contracts = [

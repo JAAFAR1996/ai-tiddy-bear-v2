@@ -1,10 +1,10 @@
-"""
-Tests for SafetyValidator Protocol
+"""Tests for SafetyValidator Protocol
 Testing the protocol interface for content safety validation.
 """
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
 
 from src.domain.services.safety_validator import SafetyValidator
 from src.domain.value_objects.safety_level import SafetyLevel
@@ -116,9 +116,7 @@ class TestSafetyValidatorProtocol:
 
         # Assert
         assert result == SafetyLevel.SAFE
-        mock_safety_validator.validate_audio.assert_called_once_with(
-            audio_data
-        )
+        mock_safety_validator.validate_audio.assert_called_once_with(audio_data)
 
     @pytest.mark.asyncio
     async def test_validate_audio_warning(self, mock_safety_validator):
@@ -240,22 +238,17 @@ class TestSafetyValidatorImplementationExample:
                 # In reality, this would transcribe and analyze the audio
                 audio_size = len(audio_data)
 
-                if audio_size == 0:
+                if audio_size == 0 or audio_size < 1000:
                     return SafetyLevel.SAFE
-                elif audio_size < 1000:
-                    return SafetyLevel.SAFE
-                elif audio_size < 10000:
+                if audio_size < 10000:
                     return SafetyLevel.WARNING
-                else:
-                    # Large audio files might need more scrutiny
-                    return SafetyLevel.WARNING
+                # Large audio files might need more scrutiny
+                return SafetyLevel.WARNING
 
         return ConcreteSafetyValidator()
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_text_safe(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_text_safe(self, concrete_safety_validator):
         """Test concrete implementation with safe text."""
         text = "The teddy bear loves to play fun games with children!"
         result = await concrete_safety_validator.validate_text(text)
@@ -263,9 +256,7 @@ class TestSafetyValidatorImplementationExample:
         assert result == SafetyLevel.SAFE
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_text_warning(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_text_warning(self, concrete_safety_validator):
         """Test concrete implementation with warning text."""
         text = "The scary monster hides in the dark closet."
         result = await concrete_safety_validator.validate_text(text)
@@ -273,9 +264,7 @@ class TestSafetyValidatorImplementationExample:
         assert result == SafetyLevel.WARNING
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_text_unsafe(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_text_unsafe(self, concrete_safety_validator):
         """Test concrete implementation with unsafe text."""
         text = "Content containing violence is not appropriate."
         result = await concrete_safety_validator.validate_text(text)
@@ -283,9 +272,7 @@ class TestSafetyValidatorImplementationExample:
         assert result == SafetyLevel.UNSAFE
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_text_mixed_case(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_text_mixed_case(self, concrete_safety_validator):
         """Test concrete implementation with mixed case text."""
         text = "The SCARY Monster is very DARK"
         result = await concrete_safety_validator.validate_text(text)
@@ -293,9 +280,7 @@ class TestSafetyValidatorImplementationExample:
         assert result == SafetyLevel.WARNING  # Should detect despite case
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_audio_small(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_audio_small(self, concrete_safety_validator):
         """Test concrete implementation with small audio."""
         audio_data = b"x" * 500  # Small audio
         result = await concrete_safety_validator.validate_audio(audio_data)
@@ -303,9 +288,7 @@ class TestSafetyValidatorImplementationExample:
         assert result == SafetyLevel.SAFE
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_audio_medium(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_audio_medium(self, concrete_safety_validator):
         """Test concrete implementation with medium audio."""
         audio_data = b"x" * 5000  # Medium audio
         result = await concrete_safety_validator.validate_audio(audio_data)
@@ -313,9 +296,7 @@ class TestSafetyValidatorImplementationExample:
         assert result == SafetyLevel.WARNING
 
     @pytest.mark.asyncio
-    async def test_concrete_validate_audio_large(
-        self, concrete_safety_validator
-    ):
+    async def test_concrete_validate_audio_large(self, concrete_safety_validator):
         """Test concrete implementation with large audio."""
         audio_data = b"x" * 15000  # Large audio
         result = await concrete_safety_validator.validate_audio(audio_data)
@@ -336,7 +317,7 @@ class TestSafetyValidatorIntegration:
             async def validate_text(self, text: str) -> SafetyLevel:
                 if "bad" in text.lower():
                     return SafetyLevel.UNSAFE
-                elif "caution" in text.lower():
+                if "caution" in text.lower():
                     return SafetyLevel.WARNING
                 return SafetyLevel.SAFE
 
@@ -356,32 +337,24 @@ class TestSafetyValidatorIntegration:
                 # Return the worst safety level
                 if SafetyLevel.UNSAFE in [text_safety, audio_safety]:
                     return SafetyLevel.UNSAFE
-                elif SafetyLevel.WARNING in [text_safety, audio_safety]:
+                if SafetyLevel.WARNING in [text_safety, audio_safety]:
                     return SafetyLevel.WARNING
                 return SafetyLevel.SAFE
 
         validator = WorkflowValidator()
 
         # Test safe content
-        result = await validator.validate_content(
-            "Hello friendly teddy!", b"x" * 100
-        )
+        result = await validator.validate_content("Hello friendly teddy!", b"x" * 100)
         assert result == SafetyLevel.SAFE
 
         # Test warning from text
-        result = await validator.validate_content(
-            "Please use caution here", b"x" * 100
-        )
+        result = await validator.validate_content("Please use caution here", b"x" * 100)
         assert result == SafetyLevel.WARNING
 
         # Test warning from audio
-        result = await validator.validate_content(
-            "Hello friendly teddy!", b"x" * 20000
-        )
+        result = await validator.validate_content("Hello friendly teddy!", b"x" * 20000)
         assert result == SafetyLevel.WARNING
 
         # Test unsafe content
-        result = await validator.validate_content(
-            "This is bad content", b"x" * 100
-        )
+        result = await validator.validate_content("This is bad content", b"x" * 100)
         assert result == SafetyLevel.UNSAFE

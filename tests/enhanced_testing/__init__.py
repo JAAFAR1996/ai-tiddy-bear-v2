@@ -1,5 +1,4 @@
-"""
-Enhanced Testing Framework - Enterprise Grade 2025
+"""Enhanced Testing Framework - Enterprise Grade 2025
 Comprehensive testing suite with performance, security, and integration testing
 """
 
@@ -12,15 +11,15 @@ from .security_tests import SecurityTestSuite
 from .utils import TestDataGenerator, TestHelper
 
 __all__ = [
-    "BaseTest",
     "AsyncBaseTest",
-    "MockServices",
-    "MockAIService",
-    "MockAudioService",
-    "SecurityTestSuite",
-    "PerformanceTestSuite",
+    "BaseTest",
     "IntegrationTestSuite",
     "LoadTestSuite",
+    "MockAIService",
+    "MockAudioService",
+    "MockServices",
+    "PerformanceTestSuite",
+    "SecurityTestSuite",
     "TestDataGenerator",
     "TestHelper",
 ]

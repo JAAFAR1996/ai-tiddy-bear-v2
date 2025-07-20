@@ -46,9 +46,7 @@ class COPPAConfig:
         """Initializes COPPA configuration from environment and settings."""
         try:
             self._enabled = self.settings.privacy.COPPA_ENABLED
-            logging.info(
-                f"COPPA compliance initialized from settings: {self._enabled}"
-            )
+            logging.info(f"COPPA compliance initialized from settings: {self._enabled}")
         except AttributeError:
             # Fallback to environment variable if settings not properly loaded
             env_value = os.getenv("COPPA_ENABLED", "").lower()
@@ -74,3 +72,23 @@ def get_coppa_config() -> COPPAConfig:
 
     """
     return COPPAConfig()
+
+
+def is_coppa_enabled() -> bool:
+    """Check if COPPA compliance is enabled.
+    
+    Returns:
+        True if COPPA is enabled, False otherwise.
+    """
+    config = get_coppa_config()
+    return config.enabled
+
+
+def get_data_retention_days() -> int:
+    """Get the number of days to retain child data.
+    
+    Returns:
+        Number of days for data retention (default 30 days for COPPA compliance).
+    """
+    # COPPA requires deletion within reasonable time, typically 30 days
+    return int(os.getenv("DATA_RETENTION_DAYS", "30"))

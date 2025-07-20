@@ -1,5 +1,4 @@
-"""
-Tests for Emotion Analyzer Service
+"""Tests for Emotion Analyzer Service
 Testing emotion analysis from text and multimodal inputs.
 """
 
@@ -182,9 +181,7 @@ class TestEmotionAnalyzer:
         }
 
         # Act
-        result = await service.analyze_multimodal(
-            text, audio_data, complex_context
-        )
+        result = await service.analyze_multimodal(text, audio_data, complex_context)
 
         # Assert
         assert isinstance(result, dict)
@@ -195,18 +192,10 @@ class TestEmotionAnalyzer:
         """Test mapping emotion result to voice."""
         # Arrange
         emotion_results = [
-            EmotionResult(
-                "happy", 0.9, {"happy": 0.9, "neutral": 0.1}, 0.8, 0.7
-            ),
-            EmotionResult(
-                "sad", 0.8, {"sad": 0.8, "neutral": 0.2}, -0.5, -0.6
-            ),
-            EmotionResult(
-                "angry", 0.85, {"angry": 0.85, "neutral": 0.15}, 0.9, -0.8
-            ),
-            EmotionResult(
-                "neutral", 0.6, {"neutral": 0.6, "happy": 0.4}, 0.0, 0.0
-            ),
+            EmotionResult("happy", 0.9, {"happy": 0.9, "neutral": 0.1}, 0.8, 0.7),
+            EmotionResult("sad", 0.8, {"sad": 0.8, "neutral": 0.2}, -0.5, -0.6),
+            EmotionResult("angry", 0.85, {"angry": 0.85, "neutral": 0.15}, 0.9, -0.8),
+            EmotionResult("neutral", 0.6, {"neutral": 0.6, "happy": 0.4}, 0.0, 0.0),
         ]
 
         for emotion_result in emotion_results:
@@ -215,9 +204,7 @@ class TestEmotionAnalyzer:
 
             # Assert
             assert isinstance(voice, str)
-            assert (
-                voice == "neutral"
-            )  # Current implementation always returns "neutral"
+            assert voice == "neutral"  # Current implementation always returns "neutral"
 
     def test_map_emotion_to_voice_edge_cases(self, service):
         """Test voice mapping with edge case emotion results."""
@@ -356,9 +343,7 @@ class TestEmotionAnalyzer:
             # In a real implementation, might return emotion-specific voices
 
     @pytest.mark.parametrize("confidence", [0.0, 0.1, 0.5, 0.9, 1.0])
-    def test_map_emotion_to_voice_different_confidences(
-        self, service, confidence
-    ):
+    def test_map_emotion_to_voice_different_confidences(self, service, confidence):
         """Test voice mapping with different confidence levels."""
         emotion_result = EmotionResult(
             primary_emotion="happy",

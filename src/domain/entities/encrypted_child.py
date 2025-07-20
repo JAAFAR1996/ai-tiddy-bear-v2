@@ -7,8 +7,8 @@ maintaining an audit trail for all access, offering robust privacy controls.
 """
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, date, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 from src.domain.value_objects.encrypted_field import EncryptedField
@@ -21,33 +21,33 @@ class EncryptedChild:
     name: str
     age: int
     child_id: UUID = field(default_factory=uuid4)
-    date_of_birth: Optional[date] = None
-    gender: Optional[str] = None
-    personality_traits: List[str] = field(default_factory=list)
-    learning_preferences: Dict[str, float] = field(default_factory=dict)
-    communication_style: Optional[str] = None
-    max_daily_interaction_time: Optional[int] = None  # in seconds
+    date_of_birth: date | None = None
+    gender: str | None = None
+    personality_traits: list[str] = field(default_factory=list)
+    learning_preferences: dict[str, float] = field(default_factory=dict)
+    communication_style: str | None = None
+    max_daily_interaction_time: int | None = None  # in seconds
     total_interaction_time: int = 0  # in seconds
-    last_interaction: Optional[datetime] = None
-    allowed_topics: List[str] = field(default_factory=list)
-    restricted_topics: List[str] = field(default_factory=list)
+    last_interaction: datetime | None = None
+    allowed_topics: list[str] = field(default_factory=list)
+    restricted_topics: list[str] = field(default_factory=list)
     language_preference: str = "en"
-    cultural_background: Optional[str] = None
-    parental_controls: Dict[str, Any] = field(default_factory=dict)
+    cultural_background: str | None = None
+    parental_controls: dict[str, Any] = field(default_factory=dict)
     # Encrypted fields for sensitive data
-    _encrypted_emergency_contacts: Optional[EncryptedField] = None
-    _encrypted_medical_notes: Optional[EncryptedField] = None
-    educational_level: Optional[str] = None
-    special_needs: List[str] = field(default_factory=list)
+    _encrypted_emergency_contacts: EncryptedField | None = None
+    _encrypted_medical_notes: EncryptedField | None = None
+    educational_level: str | None = None
+    special_needs: list[str] = field(default_factory=list)
     is_active: bool = True
-    privacy_settings: Dict[str, Any] = field(default_factory=dict)
-    custom_settings: Dict[str, Any] = field(default_factory=dict)
+    privacy_settings: dict[str, Any] = field(default_factory=dict)
+    custom_settings: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
     def set_emergency_contacts(
         self,
-        contacts: List[Dict[str, Any]],
+        contacts: list[dict[str, Any]],
         encryption_key: bytes,
     ) -> None:
         """Encrypts and sets emergency contacts.
@@ -66,7 +66,7 @@ class EncryptedChild:
     def get_emergency_contacts(
         self,
         encryption_key: bytes,
-    ) -> Optional[List[Dict[str, Any]]]:
+    ) -> list[dict[str, Any]] | None:
         """Decrypts and retrieves emergency contacts.
 
         Args:
@@ -88,12 +88,10 @@ class EncryptedChild:
             encryption_key: The key to use for encryption.
 
         """
-        self._encrypted_medical_notes = EncryptedField.from_data(
-            notes, encryption_key
-        )
+        self._encrypted_medical_notes = EncryptedField.from_data(notes, encryption_key)
         self.updated_at = datetime.utcnow()
 
-    def get_medical_notes(self, encryption_key: bytes) -> Optional[str]:
+    def get_medical_notes(self, encryption_key: bytes) -> str | None:
         """Decrypts and retrieves medical notes.
 
         Args:
@@ -115,7 +113,7 @@ class EncryptedChild:
 
         """
         self.total_interaction_time += duration_seconds
-        self.last_interaction = datetime.now(timezone.utc)
+        self.last_interaction = datetime.now(UTC)
         self.updated_at = datetime.utcnow()
 
     def is_interaction_time_exceeded(self) -> bool:
@@ -153,7 +151,7 @@ class EncryptedChild:
             self.restricted_topics.append(topic)
             self.updated_at = datetime.utcnow()
 
-    def update_parental_controls(self, settings: Dict[str, Any]) -> None:
+    def update_parental_controls(self, settings: dict[str, Any]) -> None:
         """Updates the parental control settings.
 
         Args:

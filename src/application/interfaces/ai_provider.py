@@ -30,9 +30,7 @@ class AIProvider(Protocol):
 
     async def transcribe_audio(self, audio_data: bytes) -> str: ...
 
-    async def evaluate_educational_value(
-        self, text: str
-    ) -> dict[str, Any]: ...
+    async def evaluate_educational_value(self, text: str) -> dict[str, Any]: ...
 
     async def determine_activity_type(
         self,

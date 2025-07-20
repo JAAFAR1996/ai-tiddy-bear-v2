@@ -1,9 +1,10 @@
-from infrastructure.security.real_auth_service import AuthService
-from infrastructure.ai.real_ai_service import AIService
-from concurrent.futures import ThreadPoolExecutor
-import time
 import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+from infrastructure.ai.real_ai_service import AIService
+from infrastructure.security.real_auth_service import AuthService
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -104,9 +105,7 @@ class TestPerformance:
         """اختبار الطلبات المتزامنة للذكاء الاصطناعي"""
 
         def generate_response():
-            return self.ai_service.generate_response(
-                "Hello", 6, {"language": "en"}
-            )
+            return self.ai_service.generate_response("Hello", 6, {"language": "en"})
 
         start_time = time.time()
 

@@ -1,7 +1,8 @@
-from locust import HttpUser, between, task
 import random
 import sys
 from pathlib import Path
+
+from locust import HttpUser, between, task
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -86,6 +87,4 @@ class TeddyBearUser(HttpUser):
     @task(1)
     def end_conversation(self):
         """Test ending conversations"""
-        self.client.post(
-            "/api/v1/conversations/active/end", headers=self.headers
-        )
+        self.client.post("/api/v1/conversations/active/end", headers=self.headers)

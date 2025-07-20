@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""
-🧬 Mutation Testing Framework - AI Teddy Bear Project
+"""🧬 Mutation Testing Framework - AI Teddy Bear Project
 اختبارات الطفرة لضمان جودة الاختبارات وتغطية الحالات الحدية
 
 Lead Architect: جعفر أديب (Jaafar Adeeb)
 Enterprise Grade AI Teddy Bear Project 2025
 """
 
-from src.infrastructure.logging_config import get_logger
 import ast
 import asyncio
 import logging
@@ -15,9 +13,11 @@ import os
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from pydantic import BaseModel, Field
+
+from src.infrastructure.logging_config import get_logger
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -44,7 +44,7 @@ class MutationResult(BaseModel):
     mutated_code: str
     operator: str
     killed: bool = False
-    test_failure: Optional[str] = None
+    test_failure: str | None = None
     execution_time: float = 0.0
 
 
@@ -56,7 +56,7 @@ class MutationTestSuite(BaseModel):
     killed_mutations: int = 0
     survived_mutations: int = 0
     mutation_score: float = 0.0
-    results: List[MutationResult] = Field(default_factory=list)
+    results: list[MutationResult] = Field(default_factory=list)
     execution_time: float = 0.0
 
 
@@ -65,9 +65,9 @@ class MutationTestingFramework:
 
     def __init__(self):
         self.mutation_operators = self._initialize_mutation_operators()
-        self.test_suites: Dict[str, MutationTestSuite] = {}
+        self.test_suites: dict[str, MutationTestSuite] = {}
 
-    def _initialize_mutation_operators(self) -> List[MutationOperator]:
+    def _initialize_mutation_operators(self) -> list[MutationOperator]:
         """تهيئة مشغلات الطفرة"""
         return [
             # Arithmetic Operators
@@ -168,9 +168,7 @@ class MutationTestingFramework:
             ),
         ]
 
-    async def run_mutation_testing(
-        self, target_files: List[str]
-    ) -> Dict[str, Any]:
+    async def run_mutation_testing(self, target_files: list[str]) -> dict[str, Any]:
         """تشغيل اختبارات الطفرة على الملفات المستهدفة"""
         logger.info("🧬 بدء اختبارات الطفرة...")
 
@@ -203,7 +201,7 @@ class MutationTestingFramework:
         suite = MutationTestSuite(name=f"Mutation Tests for {file_path}")
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 original_content = f.read()
 
             # Parse the file
@@ -242,9 +240,7 @@ class MutationTestingFramework:
 
         return suite
 
-    def _find_mutable_lines(
-        self, tree: ast.AST, content: str
-    ) -> List[Tuple[int, str]]:
+    def _find_mutable_lines(self, tree: ast.AST, content: str) -> list[tuple[int, str]]:
         """العثور على الأسطر القابلة للطفرة"""
         lines = content.split("\n")
         mutable_lines = []
@@ -266,23 +262,19 @@ class MutationTestingFramework:
         line_content: str,
         operator: MutationOperator,
         original_content: str,
-    ) -> Optional[MutationResult]:
+    ) -> MutationResult | None:
         """تطبيق طفرة واحدة"""
         try:
             # Create mutated content
             lines = original_content.split("\n")
-            mutated_line = line_content.replace(
-                operator.pattern, operator.replacement
-            )
+            mutated_line = line_content.replace(operator.pattern, operator.replacement)
             lines[line_num - 1] = lines[line_num - 1].replace(
                 line_content, mutated_line
             )
             mutated_content = "\n".join(lines)
 
             # Create temporary file with mutation
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False
-            ) as f:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
                 f.write(mutated_content)
                 temp_file = f.name
 
@@ -331,7 +323,7 @@ class MutationTestingFramework:
             logger.error(f"❌ خطأ في تشغيل الاختبارات: {e}")
             return False
 
-    def _calculate_overall_results(self) -> Dict[str, Any]:
+    def _calculate_overall_results(self) -> dict[str, Any]:
         """حساب النتائج الإجمالية"""
         total_mutations = sum(
             suite.total_mutations for suite in self.test_suites.values()
@@ -344,9 +336,7 @@ class MutationTestingFramework:
         )
 
         overall_score = (
-            (total_killed / total_mutations * 100)
-            if total_mutations > 0
-            else 0
+            (total_killed / total_mutations * 100) if total_mutations > 0 else 0
         )
 
         return {
@@ -357,16 +347,14 @@ class MutationTestingFramework:
             "files_tested": len(self.test_suites),
         }
 
-    def _generate_recommendations(self) -> List[str]:
+    def _generate_recommendations(self) -> list[str]:
         """توليد توصيات لتحسين الاختبارات"""
         recommendations = []
 
         overall_results = self._calculate_overall_results()
 
         if overall_results["mutation_score"] < 80:
-            recommendations.append(
-                "🔴 معدل قتل الطفرات منخفض - تحتاج اختبارات إضافية"
-            )
+            recommendations.append("🔴 معدل قتل الطفرات منخفض - تحتاج اختبارات إضافية")
 
         if overall_results["survived_mutations"] > 0:
             recommendations.append(
@@ -380,9 +368,7 @@ class MutationTestingFramework:
                 )
 
         if not recommendations:
-            recommendations.append(
-                "✅ معدل قتل الطفرات ممتاز - الاختبارات قوية"
-            )
+            recommendations.append("✅ معدل قتل الطفرات ممتاز - الاختبارات قوية")
 
         return recommendations
 
@@ -405,9 +391,7 @@ async def test_mutation_framework():
 
     print("🧬 نتائج اختبارات الطفرة:")
     print(f"إجمالي الطفرات: {results['overall_results']['total_mutations']}")
-    print(
-        f"الطفرات المقتولة: {results['overall_results']['killed_mutations']}"
-    )
+    print(f"الطفرات المقتولة: {results['overall_results']['killed_mutations']}")
     print(f"معدل القتل: {results['overall_results']['mutation_score']:.1f}%")
 
     print("\n📋 التوصيات:")

@@ -6,9 +6,8 @@ from typing import Any
 
 # Local imports
 from ..config.settings import get_settings
-from .child_data_encryption import ChildDataEncryption
-from .rate_limiter import RateLimiter
-from .real_auth_service import ProductionAuthService
+from .rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
+# # from .real_auth_service import ProductionAuthService
 
 """Main security service - unified implementation"""
 from src.infrastructure.logging_config import get_logger
@@ -41,9 +40,7 @@ class MainSecurityService:
         ip_address: str | None = None,
     ):
         """Authenticate user with rate limiting."""
-        return await self.auth_service.authenticate_user(
-            email, password, ip_address
-        )
+        return await self.auth_service.authenticate_user(email, password, ip_address)
 
     async def create_token(self, user_data: dict[str, Any]) -> str:
         """Create JWT token."""
@@ -58,16 +55,16 @@ class MainSecurityService:
         """Encrypt sensitive child data."""
         return self.encryption_service.encrypt_child_data(data)
 
-    def decrypt_child_data(
-        self, encrypted_data: dict[str, Any]
-    ) -> dict[str, Any]:
+    def decrypt_child_data(self, encrypted_data: dict[str, Any]) -> dict[str, Any]:
         """Decrypt child data."""
         return self.encryption_service.decrypt_child_data(encrypted_data)
 
     # Security utility methods
     def generate_secure_password(self, length: int = 12) -> str:
         """Generate cryptographically secure password."""
-        alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+        alphabet = (
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+        )
         return "".join(secrets.choice(alphabet) for _ in range(length))
 
     def hash_password(self, password: str) -> str:
@@ -103,9 +100,7 @@ class MainSecurityService:
         return {"valid": True, "sanitized": input_data.strip()}
 
     # Rate limiting methods
-    async def check_rate_limit(
-        self, identifier: str, limit: int | None = None
-    ) -> bool:
+    async def check_rate_limit(self, identifier: str, limit: int | None = None) -> bool:
         """Check if request is within rate limit."""
         return await self.rate_limiter.check_rate_limit(
             identifier,
@@ -155,9 +150,7 @@ class MainSecurityService:
             if dangerous.lower() in secret_key.lower():
                 errors.append(f"SECRET_KEY contains unsafe value: {dangerous}")
             if dangerous.lower() in jwt_secret.lower():
-                errors.append(
-                    f"JWT_SECRET_KEY contains unsafe value: {dangerous}"
-                )
+                errors.append(f"JWT_SECRET_KEY contains unsafe value: {dangerous}")
 
         return errors
 

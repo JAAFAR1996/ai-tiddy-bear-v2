@@ -1,12 +1,10 @@
-"""
-Test Data Builders and Mock Factory - بناة بيانات الاختبار ومصنع المحاكيات
-"""
+"""Test Data Builders and Mock Factory - بناة بيانات الاختبار ومصنع المحاكيات"""
 
 import random
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, TypeVar
 from unittest.mock import AsyncMock, Mock
 
 from faker import Faker
@@ -28,7 +26,7 @@ class TestChild:
     name: str = field(default_factory=faker.first_name)
     age: int = field(default_factory=lambda: random.randint(3, 12))
     parent_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    preferences: Dict[str, Any] = field(default_factory=dict)
+    preferences: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
     def to_domain(self) -> Child:
@@ -51,8 +49,8 @@ class TestParent:
     name: str = field(default_factory=faker.name)
     email: str = field(default_factory=faker.email)
     phone: str = field(default_factory=faker.phone_number)
-    children_ids: List[str] = field(default_factory=list)
-    settings: Dict[str, Any] = field(default_factory=dict)
+    children_ids: list[str] = field(default_factory=list)
+    settings: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
     def to_domain(self) -> Parent:
@@ -82,9 +80,9 @@ class TestDataBuilder:
 
     def create_child(
         self,
-        name: Optional[str] = None,
-        age: Optional[int] = None,
-        parent_id: Optional[str] = None,
+        name: str | None = None,
+        age: int | None = None,
+        parent_id: str | None = None,
         **kwargs,
     ) -> TestChild:
         """Create a test child"""
@@ -99,8 +97,8 @@ class TestDataBuilder:
 
     def create_parent(
         self,
-        name: Optional[str] = None,
-        email: Optional[str] = None,
+        name: str | None = None,
+        email: str | None = None,
         children_count: int = 0,
         **kwargs,
     ) -> TestParent:
@@ -121,7 +119,7 @@ class TestDataBuilder:
 
     def create_family(
         self, children_count: int = 2, parent_count: int = 2
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a complete family unit"""
         parents = [self.create_parent() for _ in range(parent_count)]
         children = []
@@ -136,11 +134,11 @@ class TestDataBuilder:
 
     def create_interaction(
         self,
-        child_id: Optional[str] = None,
-        message: Optional[str] = None,
-        response: Optional[str] = None,
+        child_id: str | None = None,
+        message: str | None = None,
+        response: str | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a test interaction"""
         interaction = {
             "id": str(uuid.uuid4()),
@@ -157,10 +155,10 @@ class TestDataBuilder:
 
     def create_device(
         self,
-        device_id: Optional[str] = None,
-        child_id: Optional[str] = None,
+        device_id: str | None = None,
+        child_id: str | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a test device"""
         device = {
             "id": device_id or f"ESP32_{uuid.uuid4().hex[:8]}",
@@ -174,9 +172,7 @@ class TestDataBuilder:
         self._created_entities["devices"].append(device)
         return device
 
-    def create_batch(
-        self, entity_type: str, count: int, **kwargs
-    ) -> List[Any]:
+    def create_batch(self, entity_type: str, count: int, **kwargs) -> list[Any]:
         """Create multiple entities of the same type"""
         creators = {
             "child": self.create_child,
@@ -206,7 +202,7 @@ class MockFactory:
 
     @staticmethod
     def create_mock(
-        spec: Optional[Type[T]] = None, async_mock: bool = False, **kwargs
+        spec: type[T] | None = None, async_mock: bool = False, **kwargs
     ) -> T:
         """Create a mock object"""
         mock_class = AsyncMock if async_mock else Mock
@@ -253,10 +249,10 @@ class MockFactory:
         mock = AsyncMock()
         cache_data = {}
 
-        async def get(key: str) -> Optional[Any]:
+        async def get(key: str) -> Any | None:
             return cache_data.get(key)
 
-        async def set(key: str, value: Any, ttl: Optional[int] = None) -> None:
+        async def set(key: str, value: Any, ttl: int | None = None) -> None:
             cache_data[key] = value
 
         async def delete(key: str) -> None:
@@ -275,7 +271,7 @@ class MockFactory:
         mock = AsyncMock()
         notifications = []
 
-        async def send_notification(notification: Dict[str, Any]) -> str:
+        async def send_notification(notification: dict[str, Any]) -> str:
             notification_id = str(uuid.uuid4())
             notifications.append({**notification, "id": notification_id})
             return notification_id

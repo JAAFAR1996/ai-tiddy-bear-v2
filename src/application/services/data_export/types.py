@@ -1,10 +1,10 @@
 """Data Export Types and Models
-Defines data structures and enums for the data export system."""
+Defines data structures and enums for the data export system.
+"""
 
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any
 
 
 class ExportFormat(Enum):
@@ -46,14 +46,14 @@ class ExportRequest:
 
     child_id: str
     parent_id: str
-    formats: List[ExportFormat]
-    categories: List[DataCategory]
-    date_range_start: Optional[datetime] = None
-    date_range_end: Optional[datetime] = None
+    formats: list[ExportFormat]
+    categories: list[DataCategory]
+    date_range_start: datetime | None = None
+    date_range_end: datetime | None = None
     include_deleted: bool = False
     anonymize_data: bool = False
-    request_id: Optional[str] = None
-    created_at: Optional[datetime] = None
+    request_id: str | None = None
+    created_at: datetime | None = None
 
 
 @dataclass
@@ -63,13 +63,13 @@ class ExportResult:
     request_id: str
     status: ExportStatus
     created_at: datetime
-    completed_at: Optional[datetime]
-    file_size_bytes: Optional[int]
-    download_url: Optional[str]
-    expires_at: Optional[datetime]
-    error_message: Optional[str]
-    categories_exported: List[DataCategory]
-    formats_generated: List[ExportFormat]
+    completed_at: datetime | None
+    file_size_bytes: int | None
+    download_url: str | None
+    expires_at: datetime | None
+    error_message: str | None
+    categories_exported: list[DataCategory]
+    formats_generated: list[ExportFormat]
 
 
 @dataclass
@@ -81,6 +81,6 @@ class ExportMetadata:
     parent_id: str
     data_version: str
     total_records: int
-    date_range: Dict[str, Optional[datetime]]
-    coppa_compliance_notes: List[str]
+    date_range: dict[str, datetime | None]
+    coppa_compliance_notes: list[str]
     retention_policy: str

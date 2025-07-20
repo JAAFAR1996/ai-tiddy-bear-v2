@@ -1,12 +1,12 @@
-"""
-🔒 SQL Query Validation Service
+"""🔒 SQL Query Validation Service
 Advanced SQL injection prevention and query safety
 """
 
+import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, List, Optional, Tuple
-import re
+from typing import Any
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
@@ -17,15 +17,14 @@ class QueryValidationResult:
     """Result of SQL query validation"""
 
     safe: bool
-    errors: List[str]
-    warnings: List[str]
-    sanitized_query: Optional[str] = None
+    errors: list[str]
+    warnings: list[str]
+    sanitized_query: str | None = None
     threat_level: str = "low"  # low, medium, high, critical
 
 
 class SQLQueryValidator:
-    """
-    Enterprise - grade SQL injection prevention
+    """Enterprise-grade SQL injection prevention
     Features:
     - Advanced SQL injection pattern detection
     - NoSQL injection prevention
@@ -81,7 +80,7 @@ class SQLQueryValidator:
         logger.info("SQL Query Validator initialized")
 
     def validate_query_parameters(
-        self, params: Dict[str, Any]
+        self, params: dict[str, Any]
     ) -> QueryValidationResult:
         """Validate query parameters for SQL injection"""
         validation = QueryValidationResult(
@@ -114,9 +113,7 @@ class SQLQueryValidator:
                         f"High-risk SQL pattern in '{key}': {pattern}"
                     )
                     validation.threat_level = (
-                        "high"
-                        if validation.threat_level != "critical"
-                        else "critical"
+                        "high" if validation.threat_level != "critical" else "critical"
                     )
                     logger.warning(
                         f"High-risk SQL pattern detected: {key}={str_value[:100]}"
@@ -131,9 +128,7 @@ class SQLQueryValidator:
                     )
                     if validation.threat_level == "low":
                         validation.threat_level = "medium"
-                    logger.warning(
-                        f"NoSQL injection attempt: {key}={str_value[:100]}"
-                    )
+                    logger.warning(f"NoSQL injection attempt: {key}={str_value[:100]}")
 
         return validation
 
@@ -181,8 +176,8 @@ class SQLQueryValidator:
         return True
 
     def create_safe_where_clause(
-        self, conditions: Dict[str, Any]
-    ) -> Tuple[str, List[Any]]:
+        self, conditions: dict[str, Any]
+    ) -> tuple[str, list[Any]]:
         """Create safe parameterized WHERE clause"""
         where_parts = []
         params = []
@@ -194,9 +189,7 @@ class SQLQueryValidator:
 
             # Validate value safety
             if isinstance(value, str):
-                param_validation = self.validate_query_parameters(
-                    {column: value}
-                )
+                param_validation = self.validate_query_parameters({column: value})
                 if not param_validation.safe:
                     raise ValueError(
                         f"Unsafe value for column {column}: {param_validation.errors}"
@@ -208,10 +201,41 @@ class SQLQueryValidator:
         where_clause = " AND ".join(where_parts) if where_parts else "1=1"
         return where_clause, params
 
+    def validate_child_data_query(
+        self, table_name: str, conditions: dict[str, Any]
+    ) -> QueryValidationResult:
+        """Special validation for queries involving child data"""
+        validation = QueryValidationResult(
+            safe=True, errors=[], warnings=[], threat_level="low"
+        )
+
+        # Validate table name
+        if not self.validate_table_name(table_name):
+            validation.safe = False
+            validation.errors.append(f"Invalid or unsafe table name: {table_name}")
+            validation.threat_level = "high"
+
+        # Extra validation for child-related tables
+        if table_name in ["children", "conversations", "messages"]:
+            # Ensure child_id is present for data isolation
+            if "child_id" not in conditions:
+                validation.warnings.append(
+                    "Child data query without child_id filter - potential data leak"
+                )
+
+            # Validate all conditions
+            param_validation = self.validate_query_parameters(conditions)
+            if not param_validation.safe:
+                validation.safe = False
+                validation.errors.extend(param_validation.errors)
+                validation.threat_level = param_validation.threat_level
+
+        return validation
+
     def log_security_event(
         self,
         event_type: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
         severity: str = "medium",
     ) -> None:
         """Log security event for monitoring"""
@@ -223,18 +247,76 @@ class SQLQueryValidator:
             "source": "sql_query_validator",
         }
 
+        # Log the security event
         if severity in ["high", "critical"]:
-            logger.error(
-                f"Security Event ({severity}): {event_type} - {details}"
-            )
+            logger.error(f"Security Event ({severity}): {event_type} - {details}")
         else:
-            logger.warning(
-                f"Security Event ({severity}): {event_type} - {details}"
-            )
+            logger.warning(f"Security Event ({severity}): {event_type} - {details}")
+
+        # In production, this would also send to SIEM/monitoring system
+        # Example: send_to_security_monitoring(security_event)
+
+    def sanitize_query_string(self, query: str) -> str:
+        """Sanitize a raw query string (use with extreme caution)"""
+        # Remove SQL comments
+        query = re.sub(r"--.*$", "", query, flags=re.MULTILINE)
+        query = re.sub(r"/\*.*?\*/", "", query, flags=re.DOTALL)
+
+        # Remove dangerous keywords
+        dangerous_keywords = ["DROP", "DELETE", "TRUNCATE", "ALTER", "EXEC", "EXECUTE"]
+        for keyword in dangerous_keywords:
+            query = re.sub(rf"\b{keyword}\b", "", query, flags=re.IGNORECASE)
+
+        # Remove multiple spaces
+        query = re.sub(r"\s+", " ", query).strip()
+
+        logger.warning(f"Query sanitization performed: {query[:100]}...")
+        return query
+
+    def get_safe_limit_offset(
+        self, limit: int = None, offset: int = None
+    ) -> tuple[int, int]:
+        """Get safe LIMIT and OFFSET values"""
+        # Default and maximum limits for child safety
+        DEFAULT_LIMIT = 50
+        MAX_LIMIT = 1000
+        MAX_OFFSET = 10000
+
+        # Validate and sanitize limit
+        if limit is None:
+            limit = DEFAULT_LIMIT
+        else:
+            try:
+                limit = int(limit)
+                if limit <= 0:
+                    limit = DEFAULT_LIMIT
+                elif limit > MAX_LIMIT:
+                    limit = MAX_LIMIT
+                    logger.warning(f"Limit capped at maximum: {MAX_LIMIT}")
+            except (ValueError, TypeError):
+                limit = DEFAULT_LIMIT
+                logger.warning("Invalid limit value, using default")
+
+        # Validate and sanitize offset
+        if offset is None:
+            offset = 0
+        else:
+            try:
+                offset = int(offset)
+                if offset < 0:
+                    offset = 0
+                elif offset > MAX_OFFSET:
+                    offset = MAX_OFFSET
+                    logger.warning(f"Offset capped at maximum: {MAX_OFFSET}")
+            except (ValueError, TypeError):
+                offset = 0
+                logger.warning("Invalid offset value, using default")
+
+        return limit, offset
 
 
 # Global instance
-_query_validator: Optional[SQLQueryValidator] = None
+_query_validator: SQLQueryValidator | None = None
 
 
 def get_query_validator() -> SQLQueryValidator:
@@ -243,3 +325,36 @@ def get_query_validator() -> SQLQueryValidator:
     if _query_validator is None:
         _query_validator = SQLQueryValidator()
     return _query_validator
+
+
+# Convenience functions for common operations
+def validate_params(params: dict[str, Any]) -> QueryValidationResult:
+    """Quick parameter validation"""
+    validator = get_query_validator()
+    return validator.validate_query_parameters(params)
+
+
+def is_safe_table(table_name: str) -> bool:
+    """Quick table name validation"""
+    validator = get_query_validator()
+    return validator.validate_table_name(table_name)
+
+
+def is_safe_column(column_name: str) -> bool:
+    """Quick column name validation"""
+    validator = get_query_validator()
+    return validator.validate_column_name(column_name)
+
+
+def create_safe_where(conditions: dict[str, Any]) -> tuple[str, list[Any]]:
+    """Quick safe WHERE clause creation"""
+    validator = get_query_validator()
+    return validator.create_safe_where_clause(conditions)
+
+
+def validate_child_query(
+    table_name: str, conditions: dict[str, Any]
+) -> QueryValidationResult:
+    """Quick child data query validation"""
+    validator = get_query_validator()
+    return validator.validate_child_data_query(table_name, conditions)

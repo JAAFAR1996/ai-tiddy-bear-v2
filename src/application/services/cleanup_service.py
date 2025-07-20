@@ -20,9 +20,7 @@ class CleanupService:
 
     def __init__(
         self,
-        logger: logging.Logger = get_logger(
-            __name__, component="cleanup_service"
-        ),
+        logger: logging.Logger = get_logger(__name__, component="cleanup_service"),
     ) -> None:
         """Initializes the cleanup service with predefined retention policies."""
         self.retention_policies = {
@@ -57,9 +55,7 @@ class CleanupService:
         # would go here.
         return True  # Assume safe for simulation
 
-    async def cleanup_old_data(
-        self, data_type: str | None = None
-    ) -> dict[str, Any]:
+    async def cleanup_old_data(self, data_type: str | None = None) -> dict[str, Any]:
         """Cleans up old data based on retention policies.
 
         Args:
@@ -79,9 +75,7 @@ class CleanupService:
                     result = await self._cleanup_data_type(data_type)
                     cleanup_results[data_type] = result
                 else:
-                    self.logger.warning(
-                        f"Unknown data type for cleanup: {data_type}"
-                    )
+                    self.logger.warning(f"Unknown data type for cleanup: {data_type}")
                     return {"success": False, "error": "Unknown data type"}
             else:
                 # Clean all data types
@@ -90,12 +84,10 @@ class CleanupService:
                     cleanup_results[data_type_name] = result
 
             total_cleaned = sum(
-                result.get("items_cleaned", 0)
-                for result in cleanup_results.values()
+                result.get("items_cleaned", 0) for result in cleanup_results.values()
             )
             total_space_freed = sum(
-                result.get("space_freed_mb", 0)
-                for result in cleanup_results.values()
+                result.get("space_freed_mb", 0) for result in cleanup_results.values()
             )
             duration = (datetime.now() - start_time).total_seconds()
 

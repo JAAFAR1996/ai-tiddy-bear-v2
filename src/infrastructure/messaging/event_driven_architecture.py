@@ -1,8 +1,9 @@
 import uuid
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any
-from datetime import datetime
+
 
 class EventType(Enum):
     DOMAIN = "DOMAIN"
@@ -49,9 +50,7 @@ class InMemoryCommandBus:
         handler = self.handlers.get(type(command))
         if handler:
             return await handler.handle(command)
-        raise ValueError(
-            f"No handler registered for command type {type(command)}"
-        )
+        raise ValueError(f"No handler registered for command type {type(command)}")
 
 
 class InMemoryQueryBus:
@@ -64,7 +63,9 @@ class InMemoryQueryBus:
 
     async def ask(self, query):
         # Simplified caching for demonstration
-        query_key = f"{type(query).__name__}-{hash(frozenset(query.parameters.items()))}"
+        query_key = (
+            f"{type(query).__name__}-{hash(frozenset(query.parameters.items()))}"
+        )
         if query_key in self.cache:
             return self.cache[query_key]
 
@@ -87,13 +88,9 @@ def create_event(
     )
 
 
-def create_command(
-    data: dict[str, Any], user_id: str | None = None
-) -> Command:
+def create_command(data: dict[str, Any], user_id: str | None = None) -> Command:
     return Command(data=data, user_id=user_id)
 
 
-def create_query(
-    parameters: dict[str, Any], user_id: str | None = None
-) -> Query:
+def create_query(parameters: dict[str, Any], user_id: str | None = None) -> Query:
     return Query(parameters=parameters, user_id=user_id)

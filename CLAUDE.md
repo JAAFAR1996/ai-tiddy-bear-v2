@@ -1,131 +1,36 @@
-# CLAUDE.md
+## DNA Remediation, Execution, and Test Retention Policy
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+### 1. DNA Adherence
+- Every contributor (human or AI) MUST fully read and enforce all clauses and “red lines” in `PROJECT_DNA_SPECIFICATION.md`.
+- NO code change, fix, or suggestion is permitted if it contradicts the DNA protocol, or uses static/hardcoded blacklists, whitelists, patterns, or keywords (unless the DNA explicitly allows it).
 
-## Project Overview
+### 2. Prohibited Practices
+- STRICTLY FORBIDDEN: Any static, hardcoded, or superficial filter (keyword lists, regex blacklists) for safety, security, or content filtering—unless mandated by the DNA.
+- Absolutely NO TODO, FIXME, HACK, workaround, shortcut, placeholder, or deferred code, comment, or solution is ever allowed. Every deliverable must be 100% complete, robust, and production-grade.
+- Any violation (TODO, FIXME, partial code, etc.) will result in immediate rejection, loss of privileges, and potential blacklisting.
 
-This is the **AI Teddy Bear** backend - an enterprise-grade, child-safe AI interaction platform built with Hexagonal Architecture. The system prioritizes child safety (COPPA compliance), secure AI responses, and parental controls.
+### 3. Runtime Execution & Targeted Testing
+- After every fix, the modified file/script/component MUST be executed from the project’s *actual directory structure*, using proper module imports—never via hacks, sys.path tweaks, or out-of-tree partial runs.
+- All tests must be run from their intended location within the project (e.g., `python -m tests.unit.infrastructure.ai.test_xxx` from project root, or via the CI/test runner entrypoint).
+- Any import or path error (`ModuleNotFoundError`, `ImportError`, etc.) must be reported and resolved immediately. Skipping, masking, or working around such errors by running code outside the real project structure is a critical violation.
+- No contributor may proceed or claim success if the code or test fails due to import/path/module issues. All imports must function as they would in production or CI.
 
-## Core Commands
+### 4. Test Retention, Provenance, and Integrity
+- It is strictly forbidden to create, use, or delete any temporary, transient, or out-of-directory test file for any fix.
+- Every test written or updated MUST be added to—and remain in—the official tests directory (`tests/`, `integration_tests/`, etc.) with a descriptive, convention-compliant name.
+- After every fix, contributors MUST provide a directory tree (or file listing) of the tests directory, demonstrating the presence of the new/updated test file, *plus* the test results.
+- Any deletion, moving, or renaming of a test file after it is run is considered sabotage and is grounds for immediate expulsion.
+- All tests must remain discoverable and repeatable by CI and maintainers at any time.
 
-```bash
-# Development mode (no external dependencies)
-cd src && python3 main.py
+### 5. Verification and Proof
+- Every test must be proven to run successfully from its official location, with all imports functional as in the live project.
+- After each fix, the exact command used to run the test AND its console output must be included in all reports or PRs.
+- Any error, especially `ModuleNotFoundError` or `ImportError`, blocks further progress until resolved.
 
-# Production mode (requires FastAPI)
-pip install -r requirements.txt
-uvicorn src.main:app --reload --port 8000
+### 6. Enforcement
+- Failure to provide proof of successful execution, test presence, or test result is grounds for instant rejection and removal from the project.
+- Any sign of TODO, FIXME, unfinished code, missing or deleted test, unverified runtime execution, or running code/tests outside the correct project structure will trigger immediate corrective action and permanent loss of trust.
 
-# Run tests
-python3 -m pytest tests/ -v --cov=src
+---
 
-# Code quality checks
-python3 -m flake8 src/
-python3 -m mypy src/
-python3 -m black src/
-
-# Core feature testing
-cd src && python3 CORE_FEATURES_TEST.py
-```
-
-## Architecture (Hexagonal/Clean Architecture)
-
-The codebase follows strict Hexagonal Architecture with 4 layers:
-
-```
-src/
-├── domain/           # Business logic ONLY (no external dependencies)
-├── application/      # Use cases and application services
-├── infrastructure/   # External concerns (DB, APIs, security)
-└── presentation/     # API endpoints and middleware
-```
-
-**Critical Import Rules:**
-- Always import settings from `src.infrastructure.config.settings`
-- Always import DI container from `src.infrastructure.di.container`
-- Dependencies flow inward only (infrastructure → application → domain)
-
-## Child Safety Requirements
-
-This system handles children's data and must maintain:
-- **COPPA compliance** at all times
-- **Content filtering** for all AI responses
-- **Parental consent** for data collection
-- Data retention policy: 90 days (configurable via application settings; reference formal policy document for details).
-- **Encrypted storage** for all PII
-
-## Key Features Status
-
-- ✅ **Child Safety Protection** (100% working)
-- ✅ **AI Intelligence** (100% working) 
-- ✅ **Parental Controls** (100% working)
-- ✅ **Security Features** (100% working)
-- API Endpoints: Core routes fully implemented and functional; advanced features undergoing performance testing.
-
-## Development Guidelines
-
-### Code Quality Standards
-- **No files over 300 lines**
-- **Type hints mandatory** on all functions
-- **No `print()` statements** in production code
-- **Comprehensive error handling** required
-- **Security-first approach** for all implementations
-
-### Testing Strategy
-- Unit tests in `tests/unit/`
-- Integration tests in `tests/integration/`
-- Security tests in `tests/security/`
-- E2E tests in `tests/e2e/`
-- **Minimum 80% code coverage**
-
-### Security Rules
-- **Never hardcode secrets** - use environment variables
-- **Implement robust API key management and rotation policies** - API keys should be regularly rotated and managed using secure secrets management solutions (e.g., AWS Secrets Manager, Azure Key Vault, HashiCorp Vault) rather than being stored directly in environment variables for long periods.
-- **Always validate input** with Pydantic models
-- **Rate limiting** on all API endpoints
-- **JWT authentication** with refresh tokens
-- **Audit logging** for all sensitive operations
-- **Never use user-controlled input to construct file paths** - Always sanitize or validate file paths to prevent directory traversal vulnerabilities, especially when serving static files or handling file uploads.
-
-## External Dependencies
-
-**Production Stack:**
-- `fastapi` - Web framework
-- `pydantic` - Data validation (REQUIRED, no fallbacks)
-- `sqlalchemy` - Database ORM
-- `redis` - Caching and sessions
-- `openai` - AI services
-- `bcrypt` - Password hashing
-
-**Development Tools:**
-- `pytest` - Testing framework
-- `black` - Code formatting
-- `mypy` - Type checking
-- `flake8` - Linting
-
-## File Structure Highlights
-
-```
-src/
-├── domain/
-│   ├── entities/child.py              # Core child entity
-│   ├── value_objects/safety_level.py  # Safety enums
-│   └── services/safety_validator.py   # Safety business logic
-├── application/
-│   ├── use_cases/generate_ai_response.py  # Main AI use case
-│   └── services/consent_service.py       # COPPA compliance
-├── infrastructure/
-│   ├── ai/production_ai_service.py       # Real OpenAI integration
-│   ├── security/comprehensive_security_service.py  # Security
-│   └── config/settings.py               # Environment configuration
-└── presentation/
-    └── api/                             # FastAPI routes
-```
-
-## Common Issues and Solutions
-
-### Missing Dependencies
-If you see import errors for `
-### Database Issues
-- For connection issues, verify `DATABASE_URL` environment variable is correctly set and network access to PostgreSQL is permitted.
-- Consult internal runbook for advanced database troubleshooting steps or common error scenarios.
+**This policy is enforced for all contributors, human or AI, and is non-negotiable. Any breach results in immediate and permanent loss of contribution privileges.**

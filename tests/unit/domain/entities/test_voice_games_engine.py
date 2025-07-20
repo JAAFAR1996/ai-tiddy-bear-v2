@@ -1,18 +1,19 @@
 """Test cases for VoiceGameEngine."""
 
-import pytest
+import asyncio
 from datetime import datetime
 from unittest.mock import patch
-import asyncio
+
+import pytest
 
 from src.domain.entities.voice_games.voice_games_engine import (
-    VoiceGameEngine,
-    GameType,
-    GameSession,
     MAX_QUESTIONS_PER_GAME,
-    TRIVIA_SCORE_INCREMENT,
     RIDDLE_SCORE_INCREMENT,
     STORY_SCORE_INCREMENT,
+    TRIVIA_SCORE_INCREMENT,
+    GameSession,
+    GameType,
+    VoiceGameEngine,
 )
 
 
@@ -191,15 +192,11 @@ class TestVoiceGameEngine:
         """Test processing story adventure choice."""
         # Start game
         child_id = "child_123"
-        start_result = await engine.start_game(
-            GameType.STORY_ADVENTURE, child_id
-        )
+        start_result = await engine.start_game(GameType.STORY_ADVENTURE, child_id)
         game_id = start_result["game_id"]
 
         # Make a choice that matches one of the options
-        result = await engine.process_game_input(
-            game_id, "ask him about the way"
-        )
+        result = await engine.process_game_input(game_id, "ask him about the way")
 
         assert result["success"] is True
         assert "choice_made" in result
@@ -346,9 +343,7 @@ class TestVoiceGameEngine:
         correct_answer = session.questions[0]["answer"]
 
         # Test case variations
-        result = await engine.process_game_input(
-            game_id, correct_answer.upper()
-        )
+        result = await engine.process_game_input(game_id, correct_answer.upper())
         assert result["correct"] is True
 
     @pytest.mark.asyncio
@@ -356,15 +351,11 @@ class TestVoiceGameEngine:
         """Test handling unclear story choices."""
         # Start story game
         child_id = "child_123"
-        start_result = await engine.start_game(
-            GameType.STORY_ADVENTURE, child_id
-        )
+        start_result = await engine.start_game(GameType.STORY_ADVENTURE, child_id)
         game_id = start_result["game_id"]
 
         # Make unclear choice
-        result = await engine.process_game_input(
-            game_id, "I don't know what to do"
-        )
+        result = await engine.process_game_input(game_id, "I don't know what to do")
 
         assert result["success"] is True
         assert result["choice_made"] == "unclear"
@@ -387,9 +378,7 @@ class TestVoiceGameEngine:
 
         # Check that not all games have identical question order
         # (There's a small chance they could be the same by random chance)
-        unique_orders = set(
-            tuple(q["question"] for q in qs) for qs in game_sessions
-        )
+        unique_orders = set(tuple(q["question"] for q in qs) for qs in game_sessions)
         assert len(unique_orders) > 1
 
     def test_max_questions_per_game_limit(self, engine):
@@ -423,9 +412,7 @@ class TestVoiceGameEngine:
     async def test_exception_handling_in_start_game(self, engine):
         """Test exception handling in start_game."""
         # Mock game content to raise exception
-        with patch.object(
-            engine, "game_content", side_effect=Exception("Test error")
-        ):
+        with patch.object(engine, "game_content", side_effect=Exception("Test error")):
             result = await engine.start_game(GameType.TRIVIA, "child_123")
 
             assert result["success"] is False

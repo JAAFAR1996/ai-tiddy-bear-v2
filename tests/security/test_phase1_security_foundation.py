@@ -1,16 +1,14 @@
-from infrastructure.security.secrets_manager import (
-    SecretConfig,
-    SecretProvider,
-    SecretType,
-    create_secrets_manager,
-)
-from infrastructure.security.safe_expression_parser import (
-    ExpressionContext,
-    SafeExpressionConfig,
-    SafeExpressionParser,
-    safe_eval,
-    safe_json_logic,
-    safe_template,
+import json
+import sys
+import tempfile
+import time
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+
+from infrastructure.exception_handling import handle_exceptions, with_retry
+from infrastructure.exception_handling.enterprise_exception_handler import (
+    EnterpriseExceptionHandler,
+    ExceptionHandlerConfig,
 )
 from infrastructure.security.audit_logger import (
     AuditCategory,
@@ -22,17 +20,20 @@ from infrastructure.security.audit_logger import (
     log_audit_event,
     log_child_safety_incident,
 )
-from infrastructure.exception_handling import handle_exceptions, with_retry
-from infrastructure.exception_handling.enterprise_exception_handler import (
-    EnterpriseExceptionHandler,
-    ExceptionHandlerConfig,
+from infrastructure.security.safe_expression_parser import (
+    ExpressionContext,
+    SafeExpressionConfig,
+    SafeExpressionParser,
+    safe_eval,
+    safe_json_logic,
+    safe_template,
 )
-from datetime import datetime, timezone, timedelta
-import time
-import tempfile
-import json
-import sys
-from pathlib import Path
+from infrastructure.security.secrets_manager import (
+    SecretConfig,
+    SecretProvider,
+    SecretType,
+    create_secrets_manager,
+)
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -172,9 +173,7 @@ class TestPhase1SecurityFoundation:
     # ================== SECRETS MANAGEMENT TESTS ==================
 
     @pytest.mark.asyncio
-    async def test_secrets_manager_initialization(
-        self, temp_dir, secrets_config
-    ):
+    async def test_secrets_manager_initialization(self, temp_dir, secrets_config):
         """Test secrets manager initialization"""
         secrets_manager = create_secrets_manager(
             environment="testing",
@@ -183,15 +182,10 @@ class TestPhase1SecurityFoundation:
         )
 
         assert secrets_manager is not None
-        assert (
-            secrets_manager.config.default_provider
-            == SecretProvider.LOCAL_ENCRYPTED
-        )
+        assert secrets_manager.config.default_provider == SecretProvider.LOCAL_ENCRYPTED
 
     @pytest.mark.asyncio
-    async def test_secrets_manager_set_get_secret(
-        self, temp_dir, secrets_config
-    ):
+    async def test_secrets_manager_set_get_secret(self, temp_dir, secrets_config):
         """Test setting and getting secrets"""
         secrets_manager = create_secrets_manager("testing")
 
@@ -226,9 +220,7 @@ class TestPhase1SecurityFoundation:
 
     # ================== SAFE EXPRESSION PARSER TESTS ==================
 
-    def test_safe_expression_parser_initialization(
-        self, safe_expression_config
-    ):
+    def test_safe_expression_parser_initialization(self, safe_expression_config):
         """Test safe expression parser initialization"""
         parser = SafeExpressionParser(safe_expression_config)
         assert parser is not None
@@ -319,9 +311,7 @@ class TestPhase1SecurityFoundation:
 
     def test_safe_json_logic(self):
         """Test safe JSONLogic processing"""
-        logic = {
-            "and": [{"<": [{"var": "age"}, 18]}, {">": [{"var": "score"}, 80]}]
-        }
+        logic = {"and": [{"<": [{"var": "age"}, 18]}, {">": [{"var": "score"}, 80]}]}
         variables = {"age": 16, "score": 85}
 
         result = safe_json_logic(json.dumps(logic), variables)
@@ -356,14 +346,12 @@ class TestPhase1SecurityFoundation:
         assert error_details.additional_data["test_key"] == "test_value"
 
     @pytest.mark.asyncio
-    async def test_circuit_breaker_functionality(
-        self, exception_handler_config
-    ):
+    async def test_circuit_breaker_functionality(self, exception_handler_config):
         """Test circuit breaker functionality"""
         # Get circuit breaker
-        cb = EnterpriseExceptionHandler(
-            exception_handler_config
-        ).get_circuit_breaker("test_service")
+        cb = EnterpriseExceptionHandler(exception_handler_config).get_circuit_breaker(
+            "test_service"
+        )
 
         assert cb.state == "CLOSED"
         assert cb.can_execute() is True
@@ -377,9 +365,8 @@ class TestPhase1SecurityFoundation:
         assert cb.can_execute() is False
 
         # Wait for timeout
-        cb.last_failure_time = datetime.now(timezone.utc) - timedelta(
-            seconds=exception_handler_config.circuit_breaker_timeout_seconds
-            + 1
+        cb.last_failure_time = datetime.now(UTC) - timedelta(
+            seconds=exception_handler_config.circuit_breaker_timeout_seconds + 1
         )
 
         # Should be half-open
@@ -522,9 +509,7 @@ class TestPhase1SecurityFoundation:
         """Test complete security integration workflow"""
         # Initialize all security components
         secrets_manager = create_secrets_manager("testing")
-        exception_handler = EnterpriseExceptionHandler(
-            exception_handler_config
-        )
+        exception_handler = EnterpriseExceptionHandler(exception_handler_config)
 
         # Set up a secret
         await secrets_manager.set_secret("test_key", "test_value")
@@ -546,9 +531,7 @@ class TestPhase1SecurityFoundation:
         try:
             raise ValueError("Integration test error")
         except Exception as e:
-            error_details = exception_handler.handle_exception(
-                e, reraise=False
-            )
+            error_details = exception_handler.handle_exception(e, reraise=False)
             assert error_details is not None
 
     @pytest.mark.asyncio
@@ -557,9 +540,7 @@ class TestPhase1SecurityFoundation:
     ):
         """Test child safety workflow with all security components"""
         # Initialize components
-        exception_handler = EnterpriseExceptionHandler(
-            exception_handler_config
-        )
+        exception_handler = EnterpriseExceptionHandler(exception_handler_config)
 
         # Simulate child interaction
         try:
@@ -589,9 +570,7 @@ class TestPhase1SecurityFoundation:
 
         except Exception as e:
             # Handle any errors
-            error_details = exception_handler.handle_exception(
-                e, reraise=False
-            )
+            error_details = exception_handler.handle_exception(e, reraise=False)
             assert error_details is not None
 
     # ================== PERFORMANCE TESTS ==================

@@ -1,18 +1,15 @@
-"""
-Encryption Service Adapter
+"""Encryption Service Adapter
 Implements the domain encryption interface using infrastructure encryption services,
 maintaining Hexagonal Architecture separation of concerns.
 """
 
-from typing import Optional
 from src.domain.interfaces.encryption_interface import (
     EncryptionServiceInterface,
 )
 
 
 class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
-    """
-    Adapter that implements domain encryption interface using infrastructure services.
+    """Adapter that implements domain encryption interface using infrastructure services.
     This adapter allows the domain layer to use encryption without coupling
     to specific infrastructure implementations.
     """
@@ -43,18 +40,16 @@ class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
         service = self._get_service()
         if service:
             return service.encrypt(data)
-        else:
-            # Fallback: return data as-is if encryption not available
-            return data
+        # Fallback: return data as-is if encryption not available
+        return data
 
     def decrypt(self, encrypted_data: str) -> str:
         """Decrypt data using infrastructure service."""
         service = self._get_service()
         if service:
             return service.decrypt(encrypted_data)
-        else:
-            # Fallback: return data as-is if decryption not available
-            return encrypted_data
+        # Fallback: return data as-is if decryption not available
+        return encrypted_data
 
     def is_available(self) -> bool:
         """Check if infrastructure encryption service is available."""
@@ -63,7 +58,7 @@ class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
 
 
 # Global adapter instance
-_encryption_adapter: Optional[InfrastructureEncryptionAdapter] = None
+_encryption_adapter: InfrastructureEncryptionAdapter | None = None
 
 
 def get_encryption_adapter() -> InfrastructureEncryptionAdapter:

@@ -1,10 +1,11 @@
 """Comprehensive verification tests to ensure all fixes work together."""
 
-from pathlib import Path
+import logging
 import os
 import sys
+from pathlib import Path
+
 from src.infrastructure.logging_config import get_logger
-import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -68,7 +69,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 def test_import_verification():
     """Test that all critical imports work after fixes."""
-
     # Test core use cases
     try:
         pass
@@ -112,10 +112,9 @@ def test_import_verification():
 
 def test_container_initialization():
     """Test that dependency injection container can be initialized."""
-
     try:
-        from infrastructure.di.container import Container
         from infrastructure.config.settings import get_settings
+        from infrastructure.di.container import Container
 
         # Test settings
         settings = get_settings()
@@ -135,7 +134,6 @@ def test_container_initialization():
 
 def test_domain_entities_creation():
     """Test that domain entities can be created."""
-
     try:
         from domain.entities.child_profile import ChildProfile
 
@@ -157,7 +155,6 @@ def test_domain_entities_creation():
 
 def test_value_objects_functionality():
     """Test that value objects work correctly."""
-
     try:
         from domain.value_objects.age_group import AgeGroup
         from domain.value_objects.language import Language
@@ -183,10 +180,10 @@ def test_value_objects_functionality():
 
 def test_event_creation():
     """Test that domain events can be created."""
-
     try:
-        from domain.events.child_registered import ChildRegistered
         from uuid import uuid4
+
+        from domain.events.child_registered import ChildRegistered
 
         child_id = uuid4()
 
@@ -209,9 +206,9 @@ def test_event_creation():
 
 def test_use_case_instantiation():
     """Test that use cases can be instantiated (with mocks)."""
-
     try:
         from unittest.mock import Mock
+
         from application.use_cases.process_esp32_audio import (
             ProcessESP32AudioUseCase,
         )
@@ -238,7 +235,6 @@ def test_use_case_instantiation():
 
 def test_file_structure_integrity():
     """Test that all expected test files exist."""
-
     test_files = [
         "tests/unit/use_cases/test_process_esp32_audio.py",
         "tests/unit/use_cases/test_manage_child_profile.py",
@@ -267,7 +263,6 @@ def test_file_structure_integrity():
 
 def test_settings_configuration():
     """Test that settings are properly configured."""
-
     try:
         from infrastructure.config.settings import get_settings
 
@@ -291,7 +286,6 @@ def test_settings_configuration():
 
 def test_no_circular_imports():
     """Test that there are no circular import issues."""
-
     try:
         # Import all main modules to check for circular dependencies
         pass
@@ -307,7 +301,6 @@ def test_no_circular_imports():
 
 def run_comprehensive_verification():
     """Run all verification tests."""
-
     logger.info("🔍 Starting Comprehensive Verification Tests...")  # ✅
     logger.info("=" * 50)  # ✅
 
@@ -336,18 +329,14 @@ def run_comprehensive_verification():
             failed += 1
 
     logger.info("\n" + "=" * 50)  # ✅
-    logger.info(f"📊 VERIFICATION RESULTS:")  # ✅
+    logger.info("📊 VERIFICATION RESULTS:")  # ✅
     logger.info(f"✅ Passed: {passed}")  # ✅
     logger.info(f"❌ Failed: {failed}")  # ✅
-    logger.info(
-        f"📈 Success Rate: {(passed / (passed + failed)) * 100:.1f}%"
-    )  # ✅
+    logger.info(f"📈 Success Rate: {(passed / (passed + failed)) * 100:.1f}%")  # ✅
 
     if failed == 0:
         logger.info("\n🎉 ALL VERIFICATION TESTS PASSED!")  # ✅
-        logger.info(
-            "✅ The AI Teddy Bear project is ready for production!"
-        )  # ✅
+        logger.info("✅ The AI Teddy Bear project is ready for production!")  # ✅
     else:
         logger.warning(
             f"\n⚠️  {failed} tests failed. Please address these issues before deployment."

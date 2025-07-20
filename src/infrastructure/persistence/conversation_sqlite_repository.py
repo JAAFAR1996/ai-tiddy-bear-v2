@@ -1,16 +1,17 @@
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Any
 import asyncio
 import hashlib
 import json
 import os
 import sqlite3
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
+
 from cryptography.fernet import Fernet
+
 from src.infrastructure.security.path_validator import (
     get_secure_file_operations,
 )
-
 
 """Production - ready SQLite conversation repository with COPPA compliance"""
 
@@ -20,8 +21,7 @@ logger = get_logger(__name__, component="persistence")
 
 
 class ConversationSQLiteRepository:
-    """
-    Production - grade conversation repository with comprehensive safety and privacy controls.
+    """Production - grade conversation repository with comprehensive safety and privacy controls.
     Implements COPPA - compliant data handling with encryption and automatic cleanup.
     """
 
@@ -99,10 +99,10 @@ class ConversationSQLiteRepository:
             raise RuntimeError(f"Database initialization failed: {e}")
 
     async def save_conversation(
-        self, conversation_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Save conversation with comprehensive validation and encryption.
+        self, conversation_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Save conversation with comprehensive validation and encryption.
+
         Args:
             conversation_data: Dictionary containing conversation details
         Returns:
@@ -120,11 +120,7 @@ class ConversationSQLiteRepository:
                 raise ValueError(f"Missing required field: {field}")
         child_id = conversation_data["child_id"]
         # Validate child_id format
-        if (
-            not child_id
-            or len(child_id) < 8
-            or not child_id.replace("-", "").isalnum()
-        ):
+        if not child_id or len(child_id) < 8 or not child_id.replace("-", "").isalnum():
             raise ValueError("Invalid child_id format")
 
         # Safety checks
@@ -138,12 +134,8 @@ class ConversationSQLiteRepository:
 
         # Prepare conversation for storage
         conversation_hash = self._generate_conversation_hash(conversation_data)
-        encrypted_content = self.cipher.encrypt(
-            json.dumps(conversation_data).encode()
-        )
-        expires_at = datetime.utcnow() + timedelta(
-            days=self.max_conversation_age_days
-        )
+        encrypted_content = self.cipher.encrypt(json.dumps(conversation_data).encode())
+        expires_at = datetime.utcnow() + timedelta(days=self.max_conversation_age_days)
 
         try:
 
@@ -180,14 +172,12 @@ class ConversationSQLiteRepository:
                 "saved_at": datetime.utcnow().isoformat(),
             }
         except Exception as e:
-            logger.error(
-                f"Failed to save conversation for child {child_id}: {e}"
-            )
+            logger.error(f"Failed to save conversation for child {child_id}: {e}")
             raise RuntimeError(f"Conversation save failed: {e}")
 
     async def get_conversations(
         self, child_id: str, limit: int = 50, offset: int = 0
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get conversations for a child with decryption and safety filtering."""
         if not child_id or limit <= 0 or limit > 100:
             raise ValueError("Invalid parameters")
@@ -228,20 +218,14 @@ class ConversationSQLiteRepository:
                         }
                     )
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to decrypt conversation {row['id']}: {e}"
-                    )
+                    logger.warning(f"Failed to decrypt conversation {row['id']}: {e}")
                     continue
             return conversations
         except Exception as e:
-            logger.error(
-                f"Failed to retrieve conversations for child {child_id}: {e}"
-            )
+            logger.error(f"Failed to retrieve conversations for child {child_id}: {e}")
             raise RuntimeError(f"Conversation retrieval failed: {e}")
 
-    async def delete_child_conversations(
-        self, child_id: str
-    ) -> Dict[str, Any]:
+    async def delete_child_conversations(self, child_id: str) -> dict[str, Any]:
         """Delete all conversations for a child (COPPA right to deletion)."""
         if not child_id:
             raise ValueError("Valid child_id required")
@@ -256,9 +240,7 @@ class ConversationSQLiteRepository:
         try:
             loop = asyncio.get_event_loop()
             deleted_count = await loop.run_in_executor(None, _delete_from_db)
-            logger.info(
-                f"Deleted {deleted_count} conversations for child {child_id}"
-            )
+            logger.info(f"Deleted {deleted_count} conversations for child {child_id}")
             return {
                 "success": True,
                 "child_id": child_id,
@@ -266,14 +248,10 @@ class ConversationSQLiteRepository:
                 "deleted_at": datetime.utcnow().isoformat(),
             }
         except Exception as e:
-            logger.error(
-                f"Failed to delete conversations for child {child_id}: {e}"
-            )
+            logger.error(f"Failed to delete conversations for child {child_id}: {e}")
             raise RuntimeError(f"Conversation deletion failed: {e}")
 
-    async def _validate_conversation_safety(
-        self, conversation_data: Dict[str, Any]
-    ):
+    async def _validate_conversation_safety(self, conversation_data: dict[str, Any]):
         """Validate conversation content for child safety."""
         message = conversation_data.get("message", "")
         response = conversation_data.get("response", "")
@@ -300,9 +278,7 @@ class ConversationSQLiteRepository:
         if len(message) > 1000 or len(response) > 2000:
             raise ValueError("Message or response too long")
 
-    def _generate_conversation_hash(
-        self, conversation_data: Dict[str, Any]
-    ) -> str:
+    def _generate_conversation_hash(self, conversation_data: dict[str, Any]) -> str:
         """Generate unique hash for conversation to prevent duplicates."""
         content = f"{conversation_data['child_id']}{conversation_data['message']}{conversation_data['response']}"
         return hashlib.sha256(content.encode()).hexdigest()[:16]
@@ -321,9 +297,7 @@ class ConversationSQLiteRepository:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, _count_from_db)
 
-    async def _cleanup_old_conversations(
-        self, child_id: str, keep_latest: int = 500
-    ):
+    async def _cleanup_old_conversations(self, child_id: str, keep_latest: int = 500):
         """Clean up old conversations to maintain performance."""
 
         def _cleanup_from_db():

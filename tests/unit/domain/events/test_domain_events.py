@@ -1,18 +1,17 @@
-from domain.events.conversation_updated import ConversationUpdated
-from domain.events.conversation_started import ConversationStarted
-from domain.events.child_profile_updated import ChildProfileUpdated
-from domain.events.child_registered import ChildRegistered
-from domain.events.domain_events import DomainEvent
-from uuid import uuid4
+import sys
 from datetime import datetime
 from pathlib import Path
-import sys
+from uuid import uuid4
+
+from domain.events.child_profile_updated import ChildProfileUpdated
+from domain.events.child_registered import ChildRegistered
+from domain.events.conversation_started import ConversationStarted
+from domain.events.conversation_updated import ConversationUpdated
+from domain.events.domain_events import DomainEvent
 
 
 class MockConversationStarted:
-    def __init__(
-        self, conversation_id, child_id, initial_message, metadata=None
-    ):
+    def __init__(self, conversation_id, child_id, initial_message, metadata=None):
         self.conversation_id = conversation_id
         self.child_id = child_id
         self.initial_message = initial_message

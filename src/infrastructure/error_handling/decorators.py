@@ -1,21 +1,21 @@
-from typing import Callable, Type, Any, Tuple, Optional
-import functools
 import asyncio
+import functools
+from collections.abc import Callable
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
 
 from .error_types import BaseApplicationError, ExternalServiceError
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
 
 
 def handle_errors(
-    *error_mappings: Tuple[Type[Exception], Type[BaseApplicationError]],
-    default_error: Optional[Type[BaseApplicationError]] = None,
+    *error_mappings: tuple[type[Exception], type[BaseApplicationError]],
+    default_error: type[BaseApplicationError] | None = None,
     log_errors: bool = True,
 ):
-    """
-    Maps exceptions to application errors and handles logging.
-    """
+    """Maps exceptions to application errors and handles logging."""
 
     def decorator(func: Callable):
         @functools.wraps(func)
@@ -81,12 +81,11 @@ def handle_errors(
 
 def retry_on_error(
     max_retries: int = 3,
-    retry_exceptions: Tuple[Type[Exception], ...] = (ExternalServiceError,),
+    retry_exceptions: tuple[type[Exception], ...] = (ExternalServiceError,),
     delay: float = 1.0,
     backoff: float = 2.0,
 ):
-    """
-    Decorator to retry function on specific errors.
+    """Decorator to retry function on specific errors.
     Usage: @retry_on_error(max_retries=3, retry_exceptions=(ExternalServiceError,))
     """
 
@@ -111,14 +110,10 @@ def retry_on_error(
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except Exception as other_error:
-                    logger.error(
-                        f"Unexpected error in {func.__name__}: {other_error}"
-                    )
+                    logger.error(f"Unexpected error in {func.__name__}: {other_error}")
                     raise
 
-            logger.error(
-                f"All {max_retries} retries failed for {func.__name__}"
-            )
+            logger.error(f"All {max_retries} retries failed for {func.__name__}")
             raise last_error
 
         @functools.wraps(func)
@@ -143,14 +138,10 @@ def retry_on_error(
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except Exception as other_error:
-                    logger.error(
-                        f"Unexpected error in {func.__name__}: {other_error}"
-                    )
+                    logger.error(f"Unexpected error in {func.__name__}: {other_error}")
                     raise
 
-            logger.error(
-                f"All {max_retries} retries failed for {func.__name__}"
-            )
+            logger.error(f"All {max_retries} retries failed for {func.__name__}")
             raise last_error
 
         if asyncio.iscoroutinefunction(func):
@@ -165,8 +156,7 @@ def safe_execution(
     log_errors: bool = True,
     reraise: bool = False,
 ):
-    """
-    Decorator for safe execution with fallback value.
+    """Decorator for safe execution with fallback value.
     Usage: @safe_execution(fallback_value=[], log_errors=True)
     """
 
@@ -177,9 +167,7 @@ def safe_execution(
                 return await func(*args, **kwargs)
             except Exception as e:
                 if log_errors:
-                    logger.error(
-                        f"Error in {func.__name__}: {e}", exc_info=True
-                    )
+                    logger.error(f"Error in {func.__name__}: {e}", exc_info=True)
                 if reraise:
                     raise
                 return fallback_value
@@ -190,9 +178,7 @@ def safe_execution(
                 return func(*args, **kwargs)
             except Exception as e:
                 if log_errors:
-                    logger.error(
-                        f"Error in {func.__name__}: {e}", exc_info=True
-                    )
+                    logger.error(f"Error in {func.__name__}: {e}", exc_info=True)
                 if reraise:
                     raise
                 return fallback_value
@@ -206,12 +192,10 @@ def safe_execution(
 
 def validate_result(
     validator: Callable[[Any], bool],
-    error_class: Type[BaseApplicationError],
+    error_class: type[BaseApplicationError],
     error_message: str = "Result validation failed",
 ):
-    """
-    Decorator to validate the result of a function and raise error if invalid.
-    """
+    """Decorator to validate the result of a function and raise error if invalid."""
 
     def decorator(func: Callable):
         @functools.wraps(func)

@@ -1,16 +1,15 @@
-"""
-Database Integration Tests
+"""Database Integration Tests
 
 Real database tests using in-memory SQLite for fast, reliable testing.
 """
 
-import pytest
 import asyncio
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.database_service_orchestrator import (
     DatabaseServiceOrchestrator,
 )
@@ -226,9 +225,7 @@ class TestConversationOperationsIntegration:
     """Integration tests for conversation operations."""
 
     @pytest.mark.asyncio
-    async def test_conversation_storage_and_retrieval(
-        self, db_service, test_user
-    ):
+    async def test_conversation_storage_and_retrieval(self, db_service, test_user):
         """Test storing and retrieving conversations."""
         # Create child first
         child_id = await db_service.create_child(
@@ -244,9 +241,7 @@ class TestConversationOperationsIntegration:
 
         conv_ids = []
         for message, response in conversations:
-            conv_id = await db_service.save_conversation(
-                child_id, message, response
-            )
+            conv_id = await db_service.save_conversation(child_id, message, response)
             conv_ids.append(conv_id)
             # Add small delay to ensure different timestamps
             await asyncio.sleep(0.01)
@@ -334,9 +329,7 @@ class TestSafetyOperationsIntegration:
         ]
 
         for score, reason in scores:
-            success = await db_service.update_safety_score(
-                child_id, score, reason
-            )
+            success = await db_service.update_safety_score(child_id, score, reason)
             assert success is True
 
     @pytest.mark.asyncio

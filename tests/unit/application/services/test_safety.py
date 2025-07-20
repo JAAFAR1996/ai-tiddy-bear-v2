@@ -1,10 +1,10 @@
-"""
-Tests for Safety Service
+"""Tests for Safety Service
 Testing advanced safety and content filtering functionality.
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 
 from src.application.services.safety import SafetyService
 from src.domain.safety.models import (
@@ -47,9 +47,7 @@ class TestSafetyService:
         )
 
     @pytest.fixture
-    def safety_service(
-        self, safety_config, mock_ai_provider, mock_performance_monitor
-    ):
+    def safety_service(self, safety_config, mock_ai_provider, mock_performance_monitor):
         """Create a safety service instance."""
         return SafetyService(
             config=safety_config,
@@ -151,17 +149,13 @@ class TestSafetyService:
         content = "test content"
 
         with patch("src.application.services.safety.logger") as mock_logger:
-            with pytest.raises(
-                ValueError, match="Valid SafetyAnalysisResult required"
-            ):
+            with pytest.raises(ValueError, match="Valid SafetyAnalysisResult required"):
                 safety_service._analyze_harmful_content(content, None)
 
             mock_logger.error.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_analyze_toxicity_success(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_analyze_toxicity_success(self, safety_service, mock_ai_provider):
         """Test toxicity analysis with successful AI call."""
         content = "Test content for toxicity"
         result = SafetyAnalysisResult(original_content=content)
@@ -175,9 +169,7 @@ class TestSafetyService:
         mock_ai_provider.analyze_toxicity.assert_called_once_with(content)
 
     @pytest.mark.asyncio
-    async def test_analyze_toxicity_high_score(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_analyze_toxicity_high_score(self, safety_service, mock_ai_provider):
         """Test toxicity analysis with high toxicity score."""
         content = "Toxic content example"
         result = SafetyAnalysisResult(original_content=content)
@@ -199,15 +191,11 @@ class TestSafetyService:
             mock_logger.warning.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_analyze_toxicity_ai_error(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_analyze_toxicity_ai_error(self, safety_service, mock_ai_provider):
         """Test toxicity analysis with AI provider error."""
         content = "Test content"
         result = SafetyAnalysisResult(original_content=content)
-        mock_ai_provider.analyze_toxicity.side_effect = Exception(
-            "AI service error"
-        )
+        mock_ai_provider.analyze_toxicity.side_effect = Exception("AI service error")
 
         with patch.object(safety_service, "logger") as mock_logger:
             await safety_service._analyze_toxicity(content, result)
@@ -216,10 +204,7 @@ class TestSafetyService:
             assert result.risk_level == RiskLevel.CRITICAL
             assert len(result.modifications) == 1
             assert result.modifications[0].type == "error"
-            assert (
-                "Toxicity analysis error"
-                in result.modifications[0].description
-            )
+            assert "Toxicity analysis error" in result.modifications[0].description
 
             mock_logger.error.assert_called_once()
 
@@ -258,10 +243,7 @@ class TestSafetyService:
             assert result.emotional_impact.sentiment == "error"
             assert result.risk_level == RiskLevel.CRITICAL
             assert len(result.modifications) == 1
-            assert (
-                "Emotional analysis error"
-                in result.modifications[0].description
-            )
+            assert "Emotional analysis error" in result.modifications[0].description
 
             mock_logger.error.assert_called_once()
 
@@ -283,9 +265,7 @@ class TestSafetyService:
             assert result.educational_value is not None
             assert result.educational_value.score == 0.8
             assert result.educational_value.topics == ["science", "learning"]
-            mock_ai_provider.evaluate_educational_value.assert_called_once_with(
-                content
-            )
+            mock_ai_provider.evaluate_educational_value.assert_called_once_with(content)
             mock_logger.debug.assert_called_once()
 
     @pytest.mark.asyncio
@@ -314,9 +294,7 @@ class TestSafetyService:
             mock_logger.error.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_analyze_context_success(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_analyze_context_success(self, safety_service, mock_ai_provider):
         """Test context analysis with successful AI call."""
         context = {"user_input": "What's your name?", "session_data": {}}
         result = SafetyAnalysisResult(original_content="test")
@@ -335,9 +313,7 @@ class TestSafetyService:
             mock_logger.debug.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_analyze_context_ai_error(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_analyze_context_ai_error(self, safety_service, mock_ai_provider):
         """Test context analysis with AI provider error."""
         context = {"test": "data"}
         result = SafetyAnalysisResult(original_content="test")
@@ -352,9 +328,7 @@ class TestSafetyService:
             assert result.context_analysis.context_safe is False
             assert result.risk_level == RiskLevel.CRITICAL
             assert len(result.modifications) == 1
-            assert (
-                "Context analysis error" in result.modifications[0].description
-            )
+            assert "Context analysis error" in result.modifications[0].description
 
             mock_logger.error.assert_called_once()
 
@@ -466,9 +440,7 @@ class TestSafetyService:
         }
 
         # Analyze concurrently
-        tasks = [
-            safety_service.analyze_content(content) for content in contents
-        ]
+        tasks = [safety_service.analyze_content(content) for content in contents]
         results = await asyncio.gather(*tasks)
 
         # All should be analyzed successfully
@@ -491,9 +463,7 @@ class TestSafetyService:
             assert "PerformanceMonitor" in warning_msg
 
     @pytest.mark.asyncio
-    async def test_risk_level_escalation(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_risk_level_escalation(self, safety_service, mock_ai_provider):
         """Test that risk levels escalate properly."""
         content = "Test content"
         result = SafetyAnalysisResult(original_content=content)
@@ -512,19 +482,13 @@ class TestSafetyService:
         assert result.risk_level == RiskLevel.CRITICAL
 
     @pytest.mark.asyncio
-    async def test_modification_tracking(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_modification_tracking(self, safety_service, mock_ai_provider):
         """Test that modifications are properly tracked."""
         content = "inappropriate harmful content"
 
         # Mock AI errors to generate modifications
-        mock_ai_provider.analyze_toxicity.side_effect = Exception(
-            "Toxicity error"
-        )
-        mock_ai_provider.analyze_emotion.side_effect = Exception(
-            "Emotion error"
-        )
+        mock_ai_provider.analyze_toxicity.side_effect = Exception("Toxicity error")
+        mock_ai_provider.analyze_emotion.side_effect = Exception("Emotion error")
         mock_ai_provider.evaluate_educational_value.side_effect = Exception(
             "Educational error"
         )
@@ -539,9 +503,7 @@ class TestSafetyService:
         assert modification_types.count("error") >= 3  # From AI errors
 
     @pytest.mark.asyncio
-    async def test_empty_content_handling(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_empty_content_handling(self, safety_service, mock_ai_provider):
         """Test handling of empty or whitespace content."""
         empty_contents = ["", "   ", "\n\t\n", None]
 
@@ -588,26 +550,18 @@ class TestSafetyService:
             assert result.risk_level >= RiskLevel.MEDIUM
 
     @pytest.mark.asyncio
-    async def test_error_handling_comprehensive(
-        self, safety_service, mock_ai_provider
-    ):
+    async def test_error_handling_comprehensive(self, safety_service, mock_ai_provider):
         """Test comprehensive error handling across all analysis methods."""
         content = "Test content for error handling"
         context = {"test": "context"}
 
         # Make all AI calls fail
-        mock_ai_provider.analyze_toxicity.side_effect = Exception(
-            "Toxicity failed"
-        )
-        mock_ai_provider.analyze_emotion.side_effect = Exception(
-            "Emotion failed"
-        )
+        mock_ai_provider.analyze_toxicity.side_effect = Exception("Toxicity failed")
+        mock_ai_provider.analyze_emotion.side_effect = Exception("Emotion failed")
         mock_ai_provider.evaluate_educational_value.side_effect = Exception(
             "Educational failed"
         )
-        mock_ai_provider.analyze_context.side_effect = Exception(
-            "Context failed"
-        )
+        mock_ai_provider.analyze_context.side_effect = Exception("Context failed")
 
         with patch.object(safety_service, "logger"):
             result = await safety_service.analyze_content(content, context)

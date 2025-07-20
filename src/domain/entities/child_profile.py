@@ -25,9 +25,7 @@ class ChildProfile:
     _child_name: ChildName
     _child_age: ChildAge
     _preferences: dict[str, Any]
-    _uncommitted_events: list[DomainEvent] = field(
-        default_factory=list, repr=False
-    )
+    _uncommitted_events: list[DomainEvent] = field(default_factory=list, repr=False)
 
     @staticmethod
     def create(
@@ -109,9 +107,7 @@ class ChildProfile:
             # Validate and update name using ChildName value object
             self._child_name = ChildName(name)
         if age is not None:
-            if not (
-                2 <= age <= 12
-            ):  # Assuming age range 2-12 for COPPA compliance
+            if not (2 <= age <= 12):  # Assuming age range 2-12 for COPPA compliance
                 raise ValueError(
                     "Child age must be between 2 and 12 for COPPA compliance.",
                 )

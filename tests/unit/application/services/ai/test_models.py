@@ -1,12 +1,11 @@
-"""
-Tests for AI Models
+"""Tests for AI Models
 Testing AI service response models and data structures.
 """
 
 import pytest
 from pydantic import ValidationError
 
-from src.application.services.ai.models import AIResponse
+from src.application.dto.ai_response import AIResponse
 
 
 class TestAIResponse:

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -47,8 +47,8 @@ class AudioData:
 
 try:
     from src.infrastructure.security.unified_encryption_service import (
-        UnifiedEncryptionService,
         EncryptionLevel,
+        UnifiedEncryptionService,
     )
 except ImportError:
     # If import fails, use mock versions

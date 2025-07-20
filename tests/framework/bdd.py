@@ -1,10 +1,9 @@
-"""
-BDD Test Helpers - أدوات اختبار BDD (Behavior-Driven Development)
-"""
+"""BDD Test Helpers - أدوات اختبار BDD (Behavior-Driven Development)"""
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -15,10 +14,10 @@ logger = structlog.get_logger(__name__)
 class TestContext:
     """Context for BDD test execution"""
 
-    given_descriptions: List[str] = field(default_factory=list)
-    when_descriptions: List[str] = field(default_factory=list)
-    then_descriptions: List[str] = field(default_factory=list)
-    variables: Dict[str, Any] = field(default_factory=dict)
+    given_descriptions: list[str] = field(default_factory=list)
+    when_descriptions: list[str] = field(default_factory=list)
+    then_descriptions: list[str] = field(default_factory=list)
+    variables: dict[str, Any] = field(default_factory=dict)
 
     def add_given(self, description: str):
         self.given_descriptions.append(description)
@@ -40,19 +39,13 @@ class TestContext:
         summary_parts = []
 
         if self.given_descriptions:
-            summary_parts.append(
-                "Given:\n  " + "\n  ".join(self.given_descriptions)
-            )
+            summary_parts.append("Given:\n  " + "\n  ".join(self.given_descriptions))
 
         if self.when_descriptions:
-            summary_parts.append(
-                "When:\n  " + "\n  ".join(self.when_descriptions)
-            )
+            summary_parts.append("When:\n  " + "\n  ".join(self.when_descriptions))
 
         if self.then_descriptions:
-            summary_parts.append(
-                "Then:\n  " + "\n  ".join(self.then_descriptions)
-            )
+            summary_parts.append("Then:\n  " + "\n  ".join(self.then_descriptions))
 
         return "\n\n".join(summary_parts)
 
@@ -83,9 +76,7 @@ class TestContextBuilder:
 class ActionExecutor:
     """Executor for test actions"""
 
-    def __init__(
-        self, action: Callable, context: Optional[TestContext] = None
-    ):
+    def __init__(self, action: Callable, context: TestContext | None = None):
         self.action = action
         self.context = context or TestContext()
         self.result = None
@@ -99,15 +90,11 @@ class ActionExecutor:
             else:
                 self.result = self.action(*args, **kwargs)
 
-            logger.debug(
-                f"Action executed successfully: {self.action.__name__}"
-            )
+            logger.debug(f"Action executed successfully: {self.action.__name__}")
 
         except Exception as e:
             self.exception = e
-            logger.error(
-                f"Action failed: {self.action.__name__}", error=str(e)
-            )
+            logger.error(f"Action failed: {self.action.__name__}", error=str(e))
 
         return self
 
@@ -140,7 +127,7 @@ class BDDTestCase:
         self.steps_executed = []
 
     def given(
-        self, description: str, setup_func: Optional[Callable] = None
+        self, description: str, setup_func: Callable | None = None
     ) -> "BDDTestCase":
         """Define a given condition"""
         self.context.add_given(description)
@@ -168,9 +155,7 @@ class BDDTestCase:
         self.steps_executed.append(("when", description))
         return self
 
-    def then(
-        self, description: str, assertion_func: Callable
-    ) -> "BDDTestCase":
+    def then(self, description: str, assertion_func: Callable) -> "BDDTestCase":
         """Define a then assertion"""
         self.context.add_then(description)
 
@@ -183,20 +168,16 @@ class BDDTestCase:
         return self
 
     def and_given(
-        self, description: str, setup_func: Optional[Callable] = None
+        self, description: str, setup_func: Callable | None = None
     ) -> "BDDTestCase":
         """Add another given condition"""
         return self.given(description, setup_func)
 
-    def and_when(
-        self, description: str, action_func: Callable
-    ) -> "BDDTestCase":
+    def and_when(self, description: str, action_func: Callable) -> "BDDTestCase":
         """Add another when action"""
         return self.when(description, action_func)
 
-    def and_then(
-        self, description: str, assertion_func: Callable
-    ) -> "BDDTestCase":
+    def and_then(self, description: str, assertion_func: Callable) -> "BDDTestCase":
         """Add another then assertion"""
         return self.then(description, assertion_func)
 

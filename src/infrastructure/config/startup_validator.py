@@ -45,7 +45,9 @@ class StartupValidator:
                 importlib.metadata.version(package_name)
                 logger.debug(f"✅ {display_name} available")
             except importlib.metadata.PackageNotFoundError:
-                error_msg = f"❌ {display_name} ({package_name}) is required but not installed"
+                error_msg = (
+                    f"❌ {display_name} ({package_name}) is required but not installed"
+                )
                 self.errors.append(error_msg)
                 logger.error(error_msg)
         return len(self.errors) == 0
@@ -60,17 +62,13 @@ class StartupValidator:
         if not self.settings.security.SECRET_KEY:
             self._add_error("❌ SECRET_KEY is required but not set")
         elif len(self.settings.security.SECRET_KEY) < 32:
-            self._add_error(
-                "❌ SECRET_KEY must be at least 32 characters long"
-            )
+            self._add_error("❌ SECRET_KEY must be at least 32 characters long")
         else:
             logger.debug("✅ SECRET_KEY configured")
         if not self.settings.security.JWT_SECRET_KEY:
             self._add_error("❌ JWT_SECRET_KEY is required but not set")
         elif len(self.settings.security.JWT_SECRET_KEY) < 32:
-            self._add_error(
-                "❌ JWT_SECRET_KEY must be at least 32 characters long"
-            )
+            self._add_error("❌ JWT_SECRET_KEY must be at least 32 characters long")
         else:
             logger.debug("✅ JWT_SECRET_KEY configured")
         if not self.settings.ai.OPENAI_API_KEY:
@@ -120,9 +118,7 @@ class StartupValidator:
                 self.errors.append(error_msg)
                 logger.error(error_msg)
             if dangerous.lower() in jwt_secret.lower():
-                error_msg = (
-                    f"❌ JWT_SECRET_KEY contains unsafe value: {dangerous}"
-                )
+                error_msg = f"❌ JWT_SECRET_KEY contains unsafe value: {dangerous}"
                 self.errors.append(error_msg)
                 logger.error(error_msg)
         return len(self.errors) == 0
@@ -134,9 +130,7 @@ class StartupValidator:
             self._add_error("DATABASE_URL is not configured.")
             return False
         try:
-            is_healthy = await check_database_connection(
-                self.settings.DATABASE_URL
-            )
+            is_healthy = await check_database_connection(self.settings.DATABASE_URL)
             if not is_healthy:
                 self._add_error(
                     "Database connection health check failed after multiple retries.",
@@ -173,13 +167,9 @@ class StartupValidator:
             logger.error(f"❌ {len(self.errors)} critical errors found:")
             for error in self.errors:
                 logger.error(f"  - {error}")
-            logger.critical(
-                "🛑 System cannot start due to critical validation errors."
-            )
+            logger.critical("🛑 System cannot start due to critical validation errors.")
             return False
-        logger.info(
-            "✅ All startup validations passed successfully. System is ready."
-        )
+        logger.info("✅ All startup validations passed successfully. System is ready.")
         return True
 
     def _add_error(self, message: str, exc: Exception | None = None) -> None:

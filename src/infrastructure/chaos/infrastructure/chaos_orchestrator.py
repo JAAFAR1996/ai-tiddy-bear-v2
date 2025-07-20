@@ -1,19 +1,22 @@
 """Chaos Engineering Orchestrator
 SRE Team Implementation - Task 15
-Advanced chaos orchestration and experiment management for AI Teddy Bear System"""
+Advanced chaos orchestration and experiment management for AI Teddy Bear System
+"""
 
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import requests
 
 from src.infrastructure.logging_config import get_logger
+
 from .chaos_injector import ChaosInjector
 from .chaos_monitor import ChaosMonitor
 from .chaos_reporter import ChaosReporter
@@ -56,7 +59,7 @@ class ChaosTarget:
     instance_count: int = 1
     health_endpoint: str = "/health"
     recovery_time: int = 30
-    failure_types: List[FailureType] = field(default_factory=list)
+    failure_types: list[FailureType] = field(default_factory=list)
     safety_critical: bool = False
 
 
@@ -66,7 +69,7 @@ class ExperimentMetrics:
 
     experiment_id: str
     start_time: datetime
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     failures_injected: int = 0
     failures_detected: int = 0
     recovery_time_seconds: float = 0.0
@@ -80,18 +83,18 @@ class ChaosOrchestrator:
     Manages complex chaos experiments across AI Teddy Bear system.
     """
 
-    def _initialize_core_components(self, config: Dict[str, Any]) -> None:
+    def _initialize_core_components(self, config: dict[str, Any]) -> None:
         """Initialize core orchestrator components."""
         self.config = config
-        self.active_experiments: Dict[str, Dict[str, Any]] = {}
-        self.experiment_history: List[ExperimentMetrics] = []
-        self.safety_monitors: List[Callable] = []
+        self.active_experiments: dict[str, dict[str, Any]] = {}
+        self.experiment_history: list[ExperimentMetrics] = []
+        self.safety_monitors: list[Callable] = []
         self.executor = ThreadPoolExecutor(max_workers=10)
         self.injector = ChaosInjector(self)
         self.monitor = ChaosMonitor(self)
         self.reporter = ChaosReporter(self)
 
-    def _setup_chaos_targets(self) -> Dict[str, ChaosTarget]:
+    def _setup_chaos_targets(self) -> dict[str, ChaosTarget]:
         """Setup chaos targets configuration."""
         return {
             "child-service": self._create_child_service_target(),
@@ -161,7 +164,7 @@ class ChaosOrchestrator:
             safety_critical=False,
         )
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         """Initialize ChaosOrchestrator with configuration."""
         config = config or {}
         self._initialize_core_components(config)
@@ -169,7 +172,7 @@ class ChaosOrchestrator:
 
     def add_safety_monitor(
         self,
-        monitor_func: Callable[[Dict[str, Any]], bool],
+        monitor_func: Callable[[dict[str, Any]], bool],
     ) -> None:
         """Add safety monitor function."""
         self.safety_monitors.append(monitor_func)
@@ -177,8 +180,8 @@ class ChaosOrchestrator:
     async def execute_chaos_experiment(
         self,
         experiment_name: str,
-        targets: List[str],
-        failure_types: List[FailureType],
+        targets: list[str],
+        failure_types: list[FailureType],
         duration_minutes: int = 10,
         intensity: float = 0.5,
     ) -> ExperimentMetrics:
@@ -223,9 +226,7 @@ class ChaosOrchestrator:
         except Exception as e:
             logger.error(f"❌ Chaos experiment failed: {experiment_id} - {e}")
             metrics.end_time = datetime.now()
-            self.active_experiments[experiment_id][
-                "status"
-            ] = ExperimentStatus.FAILED
+            self.active_experiments[experiment_id]["status"] = ExperimentStatus.FAILED
             await self._emergency_rollback(experiment_id)
         finally:
             self.experiment_history.append(metrics)
@@ -237,8 +238,8 @@ class ChaosOrchestrator:
     async def _execute_experiment_phases(
         self,
         experiment_id: str,
-        targets: List[str],
-        failure_types: List[FailureType],
+        targets: list[str],
+        failure_types: list[FailureType],
         duration_minutes: int,
         intensity: float,
         metrics: ExperimentMetrics,
@@ -252,10 +253,7 @@ class ChaosOrchestrator:
         for target in targets:
             if target in self.chaos_targets:
                 for failure_type in failure_types:
-                    if (
-                        failure_type
-                        in self.chaos_targets[target].failure_types
-                    ):
+                    if failure_type in self.chaos_targets[target].failure_types:
                         task = asyncio.create_task(
                             self.injector.inject_failure(
                                 target,
@@ -283,7 +281,7 @@ class ChaosOrchestrator:
         self,
         command: str,
         target: str,
-        duration: Optional[int] = None,
+        duration: int | None = None,
     ):
         """Execute chaos command safely."""
         logger.info(f"🔧 Chaos command for {target}: {command}")
@@ -297,16 +295,12 @@ class ChaosOrchestrator:
         critical_services = ["safety-service", "child-service"]
         for service in critical_services:
             try:
-                response = requests.get(
-                    f"http://{service}:8000/health", timeout=5
-                )
+                response = requests.get(f"http://{service}:8000/health", timeout=5)
                 if response.status_code != 200:
                     logger.error(f"❌ Critical service {service} is unhealthy")
                     return False
             except Exception as e:
-                logger.error(
-                    f"❌ Cannot reach critical service {service}: {e}"
-                )
+                logger.error(f"❌ Cannot reach critical service {service}: {e}")
                 return False
 
         if len(self.active_experiments) > 3:
@@ -339,9 +333,7 @@ class ChaosOrchestrator:
         ]
         for service in safety_services:
             try:
-                response = requests.get(
-                    f"http://{service}:8000/health", timeout=10
-                )
+                response = requests.get(f"http://{service}:8000/health", timeout=10)
                 if response.status_code != 200:
                     logger.warning(f"⚠️ {service} not healthy after experiment")
                     metrics.safety_violations += 1
@@ -353,18 +345,16 @@ class ChaosOrchestrator:
 
     async def _emergency_rollback(self, experiment_id: str):
         """Emergency rollback of all chaos actions."""
-        logger.critical(
-            f"🚨 EMERGENCY ROLLBACK for experiment {experiment_id}"
-        )
+        logger.critical(f"🚨 EMERGENCY ROLLBACK for experiment {experiment_id}")
         try:
             logger.info("✅ Emergency rollback completed")
         except Exception as e:
             logger.critical(f"❌ Emergency rollback failed: {e}")
 
-    def get_experiment_report(self, experiment_id: str) -> Dict[str, Any]:
+    def get_experiment_report(self, experiment_id: str) -> dict[str, Any]:
         """Generate comprehensive experiment report."""
         return self.reporter.get_experiment_report(experiment_id)
 
-    def get_system_resilience_score(self) -> Dict[str, Any]:
+    def get_system_resilience_score(self) -> dict[str, Any]:
         """Calculate overall system resilience score."""
         return self.reporter.get_system_resilience_score()

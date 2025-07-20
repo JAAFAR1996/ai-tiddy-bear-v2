@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.sql_injection_prevention import (
+from src.infrastructure.security.sql_injection_protection import (
     QueryValidationResult,
     get_secure_query_builder,
     get_sql_injection_prevention,
@@ -169,15 +169,11 @@ class DatabaseInputValidator:
 
         # Additional validation for specific cases
         if field_name == "age" and table_name == "children" and value > 13:
-            raise ValueError(
-                "Child age cannot exceed 13 years (COPPA compliance)"
-            )
+            raise ValueError("Child age cannot exceed 13 years (COPPA compliance)")
 
         return value
 
-    def _validate_json_input(
-        self, json_data: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _validate_json_input(self, json_data: dict[str, Any]) -> dict[str, Any]:
         """التحقق من البيانات JSON المتداخلة."""
         validated_json = {}
 
@@ -193,16 +189,12 @@ class DatabaseInputValidator:
             if isinstance(value, dict):
                 validated_json[key] = self._validate_json_input(value)
             elif isinstance(value, str):
-                sanitization_result = self.sql_prevention.sanitize_input(
-                    value, "text"
-                )
+                sanitization_result = self.sql_prevention.sanitize_input(value, "text")
                 validated_json[key] = sanitization_result.sanitized_input
             elif isinstance(value, list):
                 validated_json[key] = [
                     (
-                        self.sql_prevention.sanitize_input(
-                            item, "text"
-                        ).sanitized_input
+                        self.sql_prevention.sanitize_input(item, "text").sanitized_input
                         if isinstance(item, str)
                         else item
                     )
@@ -220,9 +212,7 @@ class DatabaseInputValidator:
     ) -> QueryValidationResult:
         """التحقق من تنفيذ الاستعلام."""
         # Validate the query structure
-        validation_result = self.sql_prevention.validate_sql_query(
-            query, params
-        )
+        validation_result = self.sql_prevention.validate_sql_query(query, params)
 
         if not validation_result.safe:
             # Log critical security event
@@ -247,14 +237,14 @@ class DatabaseInputValidator:
                 },
             )
 
-            raise SecurityError(
+            raise DatabaseSecurityError(
                 f"Dangerous SQL query blocked: {validation_result.errors}",
             )
 
         return validation_result
 
 
-class SecurityError(Exception):
+class DatabaseSecurityError(Exception):
     """خطأ أمني مخصص لمنع SQL Injection."""
 
 
@@ -284,9 +274,7 @@ def database_input_validation(table_name: str):
                         table_name,
                     )
                     kwargs[param_name] = validated_data
-                    logger.debug(
-                        f"Validated input data for table '{table_name}'"
-                    )
+                    logger.debug(f"Validated input data for table '{table_name}'")
 
             # Find query parameters
             if "query" in kwargs and "params" in kwargs:
@@ -295,7 +283,7 @@ def database_input_validation(table_name: str):
                     kwargs["params"],
                 )
                 if not validation_result.safe:
-                    raise SecurityError("Query validation failed")
+                    raise DatabaseSecurityError("Query validation failed")
 
             return await func(*args, **kwargs)
 
@@ -323,7 +311,7 @@ def validate_database_operation(
 
     # Validate table name
     if not validator.sql_prevention.validate_table_name(table_name):
-        raise SecurityError(f"Invalid table name: {table_name}")
+        raise DatabaseSecurityError(f"Invalid table name: {table_name}")
 
     validated_operation = {
         "operation": operation.upper(),
@@ -333,17 +321,13 @@ def validate_database_operation(
 
     # Validate data if provided
     if data:
-        validated_operation["data"] = validator.validate_input_data(
-            data, table_name
-        )
+        validated_operation["data"] = validator.validate_input_data(data, table_name)
 
     # Validate WHERE conditions if provided
     if where_conditions:
-        validated_operation["where_conditions"] = (
-            validator.validate_input_data(
-                where_conditions,
-                table_name,
-            )
+        validated_operation["where_conditions"] = validator.validate_input_data(
+            where_conditions,
+            table_name,
         )
 
     # Log the operation
@@ -367,11 +351,9 @@ class SafeDatabaseSession:
     ) -> Any:
         """تنفيذ آمن للاستعلامات."""
         # Validate query before execution
-        validation_result = self.validator.validate_query_execution(
-            query, params
-        )
+        validation_result = self.validator.validate_query_execution(query, params)
         if not validation_result.safe:
-            raise SecurityError("Query validation failed")
+            raise DatabaseSecurityError("Query validation failed")
 
         # Log the operation
         self.operations_log.append(

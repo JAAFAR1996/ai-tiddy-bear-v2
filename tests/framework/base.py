@@ -1,7 +1,6 @@
 """Test Framework Base Classes"""
 
 
-
 # Mock structlog
 class MockLogger:
     def info(self, message, **kwargs):
@@ -24,9 +23,7 @@ try:
 except ImportError:
     import sys
 
-    sys.modules["structlog"] = type(
-        "MockStructlog", (), {"get_logger": get_logger}
-    )
+    sys.modules["structlog"] = type("MockStructlog", (), {"get_logger": get_logger})
     structlog = sys.modules["structlog"]
 
 
@@ -63,7 +60,7 @@ class ChildSafetyTestCase(BaseTestCase):
         # Mock age appropriateness check
         if age < 5:
             return len(content) < 100 and "simple" in content.lower()
-        elif age < 10:
+        if age < 10:
             return len(content) < 200
         return True
 

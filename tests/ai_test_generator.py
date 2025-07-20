@@ -1,5 +1,4 @@
-"""
-AI-Powered Test Generator
+"""AI-Powered Test Generator
 ========================
 
 Uses GPT-4 to generate comprehensive, intelligent test cases
@@ -9,15 +8,15 @@ focusing on child safety, security, and edge cases.
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import openai
+
+from src.infrastructure.logging_config import get_logger
 
 from ..core.shared.exceptions import TestGenerationError
 from .code_analyzer import CodeAnalyzer
 from .test_validator import TestValidator
-
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="test")
 
@@ -29,7 +28,7 @@ class TestGenerationConfig:
     max_examples: int = 1000
     timeout_seconds: int = 300
     temperature: float = 0.3
-    focus_areas: List[str] = None
+    focus_areas: list[str] = None
     child_safety_priority: bool = True
     security_testing: bool = True
     performance_testing: bool = True
@@ -56,16 +55,15 @@ class GeneratedTest:
     priority: int  # 1-5, 5 being highest
     safety_critical: bool
     description: str
-    tags: List[str]
+    tags: list[str]
 
 
 class AITestGenerator:
-    """
-    AI-powered test generator using GPT-4 for intelligent
+    """AI-powered test generator using GPT-4 for intelligent
     test case creation with focus on child safety.
     """
 
-    def __init__(self, config: Optional[TestGenerationConfig] = None):
+    def __init__(self, config: TestGenerationConfig | None = None):
         self.config = config or TestGenerationConfig()
         self.gpt4_client = openai.AsyncOpenAI()
         self.code_analyzer = CodeAnalyzer()
@@ -97,10 +95,9 @@ class AITestGenerator:
         ]
 
     async def generate_tests_for_module(
-        self, module_path: str, output_dir: Optional[str] = None
-    ) -> List[GeneratedTest]:
-        """
-        Generate comprehensive test cases for a Python module
+        self, module_path: str, output_dir: str | None = None
+    ) -> list[GeneratedTest]:
+        """Generate comprehensive test cases for a Python module
 
         Args:
             module_path: Path to the Python module to test
@@ -113,7 +110,7 @@ class AITestGenerator:
             logger.info(f"Starting test generation for {module_path}")
 
             # Read and analyze the code
-            with open(module_path, "r", encoding="utf-8") as f:
+            with open(module_path, encoding="utf-8") as f:
                 source_code = f.read()
 
             analysis = {"code": source_code, "file_path": module_path}
@@ -138,9 +135,7 @@ class AITestGenerator:
             tests.extend(safety_tests)
 
             # Generate performance tests
-            performance_tests = await self._generate_performance_tests(
-                analysis
-            )
+            performance_tests = await self._generate_performance_tests(analysis)
             tests.extend(performance_tests)
 
             # Validate and fix generated tests
@@ -148,9 +143,7 @@ class AITestGenerator:
 
             # Save tests if output directory specified
             if output_dir:
-                await self._save_tests(
-                    validated_tests, output_dir, module_path
-                )
+                await self._save_tests(validated_tests, output_dir, module_path)
 
             logger.info(f"Generated {len(validated_tests)} validated tests")
             return validated_tests
@@ -160,8 +153,8 @@ class AITestGenerator:
             raise TestGenerationError(f"Failed to generate tests: {e}")
 
     async def _generate_unit_tests(
-        self, analysis: Dict[str, Any]
-    ) -> List[GeneratedTest]:
+        self, analysis: dict[str, Any]
+    ) -> list[GeneratedTest]:
         """Generate unit tests using AI"""
         prompt = self._create_unit_test_prompt(analysis)
 
@@ -175,7 +168,7 @@ class AITestGenerator:
         test_code = response.choices[0].message.content
         return self._parse_generated_tests(test_code, "unit")
 
-    def _create_unit_test_prompt(self, analysis: Dict[str, Any]) -> str:
+    def _create_unit_test_prompt(self, analysis: dict[str, Any]) -> str:
         """Create prompt for unit test generation"""
         return f"""
 Generate comprehensive unit tests for this Python code:
@@ -197,7 +190,7 @@ Generate at least 10 test methods.
 
     def _parse_generated_tests(
         self, test_code: str, test_type: str
-    ) -> List[GeneratedTest]:
+    ) -> list[GeneratedTest]:
         """Parse generated test code into structured test objects"""
         tests = []
 
@@ -220,37 +213,35 @@ Generate at least 10 test methods.
         return tests
 
     async def _generate_property_tests(
-        self, analysis: Dict[str, Any]
-    ) -> List[GeneratedTest]:
+        self, analysis: dict[str, Any]
+    ) -> list[GeneratedTest]:
         """Generate property-based tests"""
         return []  # Simplified for now
 
     async def _generate_security_tests(
-        self, analysis: Dict[str, Any]
-    ) -> List[GeneratedTest]:
+        self, analysis: dict[str, Any]
+    ) -> list[GeneratedTest]:
         """Generate security tests"""
         return []  # Simplified for now
 
     async def _generate_child_safety_tests(
-        self, analysis: Dict[str, Any]
-    ) -> List[GeneratedTest]:
+        self, analysis: dict[str, Any]
+    ) -> list[GeneratedTest]:
         """Generate child safety tests"""
         return []  # Simplified for now
 
     async def _generate_performance_tests(
-        self, analysis: Dict[str, Any]
-    ) -> List[GeneratedTest]:
+        self, analysis: dict[str, Any]
+    ) -> list[GeneratedTest]:
         """Generate performance tests"""
         return []  # Simplified for now
 
-    async def _validate_tests(
-        self, tests: List[GeneratedTest]
-    ) -> List[GeneratedTest]:
+    async def _validate_tests(self, tests: list[GeneratedTest]) -> list[GeneratedTest]:
         """Validate generated tests"""
         return tests  # Simplified for now
 
     async def _save_tests(
-        self, tests: List[GeneratedTest], output_dir: str, module_path: str
+        self, tests: list[GeneratedTest], output_dir: str, module_path: str
     ):
         """Save generated tests to files"""
         output_path = Path(output_dir)

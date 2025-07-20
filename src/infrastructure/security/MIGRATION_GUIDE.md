@@ -15,8 +15,8 @@ The security module has been refactored to eliminate duplicate services. Three s
 
 **Old:**
 ```python
-from src.infrastructure.security.comprehensive_security_service import ComprehensiveSecurityService
-from src.infrastructure.security.enhanced_security import EnhancedSecurityService
+from src.infrastructure.security.main_security_service import MainSecurityService
+from src.infrastructure.security.main_security_service import MainSecurityService
 from src.infrastructure.security.security_manager import SecurityManager
 ```
 

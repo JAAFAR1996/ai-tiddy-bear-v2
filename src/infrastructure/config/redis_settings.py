@@ -6,12 +6,11 @@ It ensures that Redis settings are loaded securely and consistently
 across the application, supporting caching and session management.
 """
 
-from pydantic import Field, RedisDsn
-
+from pydantic import Field
 from src.infrastructure.config.base_settings import BaseApplicationSettings
 
-
 class RedisSettings(BaseApplicationSettings):
-    """Configuration settings for Redis integration."""
+    """Configuration settings for Redis."""
 
-    REDIS_URL: RedisDsn = Field(..., env="REDIS_URL")
+    REDIS_URL: str = Field("redis://redis:6379/0", env="REDIS_URL")
+    ENABLE_REDIS: bool = Field(True, env="ENABLE_REDIS")

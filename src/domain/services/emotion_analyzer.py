@@ -63,16 +63,11 @@ class EmotionAnalyzer:
         text_lower = text.lower()
         # Enhanced emotion detection for children
         if any(
-            word in text_lower
-            for word in ["happy", "joy", "excited", "fun", "yay"]
+            word in text_lower for word in ["happy", "joy", "excited", "fun", "yay"]
         ):
-            return EmotionResult(
-                "happy", 0.9, {"happy": 0.9}, sentiment_score=0.8
-            )
+            return EmotionResult("happy", 0.9, {"happy": 0.9}, sentiment_score=0.8)
         if any(word in text_lower for word in ["sad", "cry", "upset", "down"]):
-            return EmotionResult(
-                "sad", 0.8, {"sad": 0.8}, sentiment_score=-0.6
-            )
+            return EmotionResult("sad", 0.8, {"sad": 0.8}, sentiment_score=-0.6)
         if any(word in text_lower for word in ["angry", "mad", "frustrated"]):
             return EmotionResult(
                 "frustrated",
@@ -97,9 +92,7 @@ class EmotionAnalyzer:
                 sentiment_score=0.3,
                 arousal_score=0.2,
             )
-        if any(
-            word in text_lower for word in ["curious", "wonder", "question"]
-        ):
+        if any(word in text_lower for word in ["curious", "wonder", "question"]):
             return EmotionResult(
                 "curious",
                 0.7,
@@ -115,9 +108,7 @@ class EmotionAnalyzer:
             arousal_score=0.3,
         )
 
-    def analyze_voice(
-        self, audio_features: dict[str, Any] | None
-    ) -> EmotionResult:
+    def analyze_voice(self, audio_features: dict[str, Any] | None) -> EmotionResult:
         """Analyze emotion from voice audio features.
 
         Args:
@@ -217,6 +208,5 @@ class EmotionAnalyzer:
             return True
         # Very high arousal with negative sentiment may indicate agitation
         return bool(
-            emotion_result.arousal_score > 0.8
-            and emotion_result.sentiment_score < -0.3
+            emotion_result.arousal_score > 0.8 and emotion_result.sentiment_score < -0.3
         )

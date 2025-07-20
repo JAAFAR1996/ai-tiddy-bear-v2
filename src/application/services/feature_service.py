@@ -105,17 +105,13 @@ class FeatureService:
 
         # Feature can be enabled
         # In a real system, this would update a child's profile in a database
-        self.logger.info(
-            f"Feature '{feature_type.value}' enabled for child {child_id}"
-        )
+        self.logger.info(f"Feature '{feature_type.value}' enabled for child {child_id}")
         return {
             "success": True,
             "message": f"Feature '{feature_type.value}' enabled.",
         }
 
-    async def disable_feature(
-        self, feature_name: str, child_id: str
-    ) -> dict[str, Any]:
+    async def disable_feature(self, feature_name: str, child_id: str) -> dict[str, Any]:
         """Disables a feature for a specific child.
 
         Args:
@@ -148,9 +144,7 @@ class FeatureService:
             "message": f"Feature '{feature_type.value}' disabled.",
         }
 
-    def get_feature_status(
-        self, feature_name: str, child_id: str
-    ) -> dict[str, Any]:
+    def get_feature_status(self, feature_name: str, child_id: str) -> dict[str, Any]:
         """Gets the current status of a feature for a specific child.
 
         Args:

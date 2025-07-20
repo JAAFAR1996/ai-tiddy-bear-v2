@@ -1,13 +1,18 @@
-from src.infrastructure.logging_config import get_logger
-import logging
+"""اختبارات الوظائف الأساسية
+Basic Functionality Tests
+"""
+
+import sys
+from pathlib import Path
+
 from application.services.emotion_analyzer import EmotionAnalyzer
 from domain.entities.voice_games.voice_games_engine import GameType, VoiceGameEngine
-from infrastructure.persistence.database import Database
 from infrastructure.external_services.speech_disorder_detector import (
     SpeechDisorderDetector,
 )
-import sys
-from pathlib import Path
+from infrastructure.persistence.database import Database
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -18,59 +23,61 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-try:
-    import pytest
-except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        # Mock pytest when not available
-        class MockPytest:
-            def fixture(self, *args, **kwargs):
-                def decorator(func):
-                    return func
-                return decorator
-
-            def mark(self):
-                class MockMark:
-                    def parametrize(self, *args, **kwargs):
-                        def decorator(func):
-                            return func
-                        return decorator
-
-                    def asyncio(self, func):
-                        return func
-
-                    def slow(self, func):
-                        return func
-
-                    def skip(self, reason=""):
-                        def decorator(func):
-                            return func
-                        return decorator
-                return MockMark()
-
-            def raises(self, exception):
-                class MockRaises:
-                    def __enter__(self):
-                        return self
-
-                    def __exit__(self, *args):
-                        return False
-                return MockRaises()
-
-            def skip(self, reason=""):
-                def decorator(func):
-                    return func
-                return decorator
-
-        pytest = MockPytest()
+# Import after path setup
 
 
 logger = get_logger(__name__, component="test")
 
+try:
+    import pytest
+except ImportError:
+    # Mock pytest when not available
+    class MockPytest:
+        def fixture(self, *args, **kwargs):
+            def decorator(func):
+                return func
 
-sys.path.append(str(Path(__file__).parent.parent))
+            return decorator
+
+        def mark(self):
+            class MockMark:
+                def parametrize(self, *args, **kwargs):
+                    def decorator(func):
+                        return func
+
+                    return decorator
+
+                def asyncio(self, func):
+                    return func
+
+                def slow(self, func):
+                    return func
+
+                def skip(self, reason=""):
+                    def decorator(func):
+                        return func
+
+                    return decorator
+
+            return MockMark()
+
+        def raises(self, exception):
+            class MockRaises:
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *args):
+                    return False
+
+            return MockRaises()
+
+        def skip(self, reason=""):
+            def decorator(func):
+                return func
+
+            return decorator
+
+    pytest = MockPytest()
 
 
 class TestBasicFunctionality:
@@ -118,8 +125,7 @@ class TestBasicFunctionality:
         """اختبار حفظ التفاعلات"""
         db = Database(":memory:")
         db.create_child("test_child", "أحمد", 7)
-        result = db.save_interaction(
-            "test_child", "مرحبا", "مرحبا بك أيضاً", "happy")
+        result = db.save_interaction("test_child", "مرحبا", "مرحبا بك أيضاً", "happy")
         assert result
         interactions = db.get_interactions("test_child")
         assert len(interactions) == 1
@@ -133,8 +139,7 @@ class TestAPIEndpoints:
     def client(self):
         """إعداد عميل الاختبار"""
         try:
-            try:
-            from fastapi import FastAPI
+            from fastapi.testclient import TestClient
         except ImportError:
             from common.mock_fastapi.testclient import TestClient
 
@@ -222,24 +227,31 @@ class TestDataProcessing:
 def run_manual_tests():
     """اختبارات يدوية للتحقق السريع"""
     logger.info("🧪 تشغيل الاختبارات اليدوية...")
+
+    # Check required directories
     required_dirs = ["uploads", "outputs", "data", "static"]
     for dir_name in required_dirs:
         if Path(dir_name).exists():
             logger.info(f"✅ مجلد {dir_name} موجود")
         else:
             logger.info(f"❌ مجلد {dir_name} مفقود")
+
+    # Check required files
     required_files = ["main.py", "requirements.txt", ".env"]
     for file_name in required_files:
         if Path(file_name).exists():
             logger.info(f"✅ ملف {file_name} موجود")
         else:
             logger.info(f"❌ ملف {file_name} مفقود")
+
+    # Test main service import
     try:
-        # from application.services.ai_teddy_bear_service import AITeddyBearService
+        from application.services.ai_teddy_bear_service import AITeddyBearService
 
         logger.info("✅ يمكن استيراد الخدمة الرئيسية")
     except ImportError as e:
         logger.info(f"❌ فشل استيراد الخدمة الرئيسية: {e}")
+
     logger.info("✅ انتهت الاختبارات اليدوية")
 
 

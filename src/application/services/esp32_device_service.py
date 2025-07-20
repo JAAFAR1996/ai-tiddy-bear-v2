@@ -43,9 +43,7 @@ class ESP32DeviceService:
         self.device_authenticator = device_authenticator
         self.logger = logger
 
-    async def process_sensor_reading(
-        self, reading: ESP32SensorReading
-    ) -> None:
+    async def process_sensor_reading(self, reading: ESP32SensorReading) -> None:
         """Processes a sensor reading from an ESP32 device.
 
         Args:

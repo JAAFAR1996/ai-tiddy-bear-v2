@@ -54,9 +54,7 @@ async def federation_gateway(federation_config):
     await gateway.cleanup()
 
 
-@pytest.mark.skipif(
-    not FEDERATION_AVAILABLE, reason="Federation not available"
-)
+@pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
 class TestRateLimiting:
     """Test rate limiting functionality."""
 

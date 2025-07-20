@@ -19,70 +19,70 @@ Author: Performance Team Lead
 """
 
 
+# Import pytest with fallback to mock
+pytest = None
 try:
     import pytest
 except ImportError:
     try:
         from common.mock_pytest import pytest
     except ImportError:
-        pass
-
-    # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+        # Mock pytest when not available
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
 
-    pytest = MockPytest()
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
+
+        pytest = MockPytest()
 
 # Test imports
 try:
     from infrastructure.cache.multi_layer_cache import (
-        MultiLayerCache,
         CacheConfig,
         CacheMetrics,
         ContentType,
         L1MemoryCache,
+        MultiLayerCache,
     )
 
     CACHE_AVAILABLE = True
@@ -208,9 +208,7 @@ class TestL1MemoryCache:
     async def test_cache_stats(self, l1_cache):
         """Test cache statistics."""
         # Add some data
-        await l1_cache.set(
-            "stat_key", "stat_value", ContentType.AI_RESPONSE, 300
-        )
+        await l1_cache.set("stat_key", "stat_value", ContentType.AI_RESPONSE, 300)
 
         stats = l1_cache.get_stats()
 
@@ -315,9 +313,7 @@ class TestMultiLayerCache:
 
         # Verify cached values
         for key, expected_value, content_type in warm_data:
-            value = await multi_layer_cache.get_with_fallback(
-                key, content_type
-            )
+            value = await multi_layer_cache.get_with_fallback(key, content_type)
             assert value == expected_value
 
     @pytest.mark.asyncio
@@ -457,9 +453,7 @@ async def test_cache_performance_under_load():
             await cache.set_multi_layer(key, value, ContentType.AI_RESPONSE)
 
             # Get value
-            result = await cache.get_with_fallback(
-                key, ContentType.AI_RESPONSE
-            )
+            result = await cache.get_with_fallback(key, ContentType.AI_RESPONSE)
             assert result == value
 
             return True

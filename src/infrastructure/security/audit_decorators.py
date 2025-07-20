@@ -1,12 +1,14 @@
-from datetime import datetime
-from typing import Callable, Any, Optional, Dict
 import asyncio
 import functools
 import inspect
-import logging
+from collections.abc import Callable
+from datetime import datetime
+from typing import Any
 
-from src.infrastructure.security.comprehensive_audit_integration import get_audit_integration
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.comprehensive_audit_integration import (
+    get_audit_integration,
+)
 
 """Audit Decorators for Automatic Audit Trail Creation
 Provides decorators to automatically add audit logging to functions and methods.
@@ -17,8 +19,8 @@ logger = get_logger(__name__, component="security")
 
 def audit_authentication(
     operation_type: str,
-    extract_email: Optional[Callable[[Any], str]] = None,
-    extract_ip: Optional[Callable[[Any], str]] = None,
+    extract_email: Callable[[Any], str] | None = None,
+    extract_ip: Callable[[Any], str] | None = None,
 ):
     """Decorator to automatically audit authentication operations.
     Args: operation_type: Type of operation(login, logout, password_change)
@@ -63,9 +65,7 @@ def audit_authentication(
                     audit_integration = get_audit_integration()
                     details = {
                         "function": func.__name__,
-                        "duration_ms": (
-                            datetime.utcnow() - start_time
-                        ).total_seconds()
+                        "duration_ms": (datetime.utcnow() - start_time).total_seconds()
                         * 1000,
                         "error": error_message,
                     }
@@ -157,9 +157,9 @@ def audit_authentication(
 def audit_data_access(
     operation: str,
     data_type: str,
-    extract_child_id: Optional[Callable[[Any], str]] = None,
-    extract_user_id: Optional[Callable[[Any], str]] = None,
-    extract_ip: Optional[Callable[[Any], str]] = None,
+    extract_child_id: Callable[[Any], str] | None = None,
+    extract_user_id: Callable[[Any], str] | None = None,
+    extract_ip: Callable[[Any], str] | None = None,
 ):
     """Decorator to automatically audit data access operations.
     Args: operation: Type of operation(create, read, update, delete)
@@ -201,9 +201,7 @@ def audit_data_access(
                     elif "user_id" in kwargs:
                         user_id = kwargs["user_id"]
                     elif hasattr(args[0], "current_user"):
-                        user_id = getattr(
-                            args[0].current_user, "id", "unknown"
-                        )
+                        user_id = getattr(args[0].current_user, "id", "unknown")
 
                     if extract_ip:
                         ip_address = extract_ip(*args, **kwargs)
@@ -318,8 +316,8 @@ def audit_data_access(
 def audit_security_event(
     event_type: str,
     severity: str = "info",
-    extract_user_id: Optional[Callable[[Any], str]] = None,
-    extract_ip: Optional[Callable[[Any], str]] = None,
+    extract_user_id: Callable[[Any], str] | None = None,
+    extract_ip: Callable[[Any], str] | None = None,
 ):
     """Decorator to automatically audit security events.
     Args: event_type: Type of security event
@@ -361,16 +359,12 @@ def audit_security_event(
                     audit_integration = get_audit_integration()
                     details = {
                         "function": func.__name__,
-                        "duration_ms": (
-                            datetime.utcnow() - start_time
-                        ).total_seconds()
+                        "duration_ms": (datetime.utcnow() - start_time).total_seconds()
                         * 1000,
                         "success": success,
                         "error": error_message,
                     }
-                    description = (
-                        f"Security event in {func.__name__}: {event_type}"
-                    )
+                    description = f"Security event in {func.__name__}: {event_type}"
                     if error_message:
                         description += f" (Error: {error_message})"
 
@@ -431,9 +425,7 @@ def audit_security_event(
                             "success": success,
                             "error": error_message,
                         }
-                        description = (
-                            f"Security event in {func.__name__}: {event_type}"
-                        )
+                        description = f"Security event in {func.__name__}: {event_type}"
                         if error_message:
                             description += f" (Error: {error_message})"
 
@@ -465,24 +457,24 @@ def audit_security_event(
 
 # Convenience decorators for common operations
 def audit_login(
-    extract_email: Optional[Callable] = None,
-    extract_ip: Optional[Callable] = None,
+    extract_email: Callable | None = None,
+    extract_ip: Callable | None = None,
 ):
     """Decorator for login operations."""
     return audit_authentication("login", extract_email, extract_ip)
 
 
 def audit_logout(
-    extract_email: Optional[Callable] = None,
-    extract_ip: Optional[Callable] = None,
+    extract_email: Callable | None = None,
+    extract_ip: Callable | None = None,
 ):
     """Decorator for logout operations."""
     return audit_authentication("logout", extract_email, extract_ip)
 
 
 def audit_child_create(
-    extract_child_id: Optional[Callable] = None,
-    extract_user_id: Optional[Callable] = None,
+    extract_child_id: Callable | None = None,
+    extract_user_id: Callable | None = None,
 ):
     """Decorator for child creation operations."""
     return audit_data_access(
@@ -494,8 +486,8 @@ def audit_child_create(
 
 
 def audit_child_update(
-    extract_child_id: Optional[Callable] = None,
-    extract_user_id: Optional[Callable] = None,
+    extract_child_id: Callable | None = None,
+    extract_user_id: Callable | None = None,
 ):
     """Decorator for child update operations."""
     return audit_data_access(
@@ -507,8 +499,8 @@ def audit_child_update(
 
 
 def audit_child_delete(
-    extract_child_id: Optional[Callable] = None,
-    extract_user_id: Optional[Callable] = None,
+    extract_child_id: Callable | None = None,
+    extract_user_id: Callable | None = None,
 ):
     """Decorator for child deletion operations."""
     return audit_data_access(

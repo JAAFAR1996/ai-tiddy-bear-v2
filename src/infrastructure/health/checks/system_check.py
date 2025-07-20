@@ -57,9 +57,7 @@ class SystemHealthCheck:
             else:
                 status = HealthStatus.HEALTHY
 
-            message = (
-                "; ".join(issues) if issues else "System resources are healthy"
-            )
+            message = "; ".join(issues) if issues else "System resources are healthy"
 
             return HealthCheckResult(
                 name="system",

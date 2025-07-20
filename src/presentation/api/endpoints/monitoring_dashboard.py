@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.monitoring import (
-    monitoring_service,
     AlertStatus,
+    monitoring_service,
 )
 from src.infrastructure.pagination import (
     PaginationService,
 )
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="api")
 
@@ -39,7 +40,7 @@ class MonitoringDashboardService:
         self.pagination_service = PaginationService()
         logger.info("Monitoring dashboard service initialized")
 
-    async def get_system_health(self) -> Dict[str, Any]:
+    async def get_system_health(self) -> dict[str, Any]:
         """Get overall system health status."""
         try:
             metrics_summary = monitoring_service.get_metrics_summary()
@@ -60,21 +61,17 @@ class MonitoringDashboardService:
                 "recent_alerts": recent_alerts,
                 "child_safety": safety_summary,
                 "system_status": (
-                    "operational"
-                    if health_status["score"] > 0.8
-                    else "degraded"
+                    "operational" if health_status["score"] > 0.8 else "degraded"
                 ),
             }
         except Exception as e:
             logger.error(f"Error getting system health: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get system health: {str(e)}",
+                detail=f"Failed to get system health: {e!s}",
             )
 
-    async def get_metrics_dashboard(
-        self, time_range: str = "1h"
-    ) -> Dict[str, Any]:
+    async def get_metrics_dashboard(self, time_range: str = "1h") -> dict[str, Any]:
         """Get metrics for dashboard display."""
         try:
             # Parse time range
@@ -87,9 +84,7 @@ class MonitoringDashboardService:
                 metric_name,
                 metric_values,
             ) in monitoring_service.metrics.items():
-                recent_values = [
-                    m for m in metric_values if m.timestamp > cutoff_time
-                ]
+                recent_values = [m for m in metric_values if m.timestamp > cutoff_time]
 
                 if recent_values:
                     dashboard_metrics[metric_name] = {
@@ -99,9 +94,7 @@ class MonitoringDashboardService:
                         "avg_value": sum(m.value for m in recent_values)
                         / len(recent_values),
                         "data_points": len(recent_values),
-                        "last_updated": recent_values[
-                            -1
-                        ].timestamp.isoformat(),
+                        "last_updated": recent_values[-1].timestamp.isoformat(),
                     }
 
             return {
@@ -113,18 +106,16 @@ class MonitoringDashboardService:
             logger.error(f"Error getting metrics dashboard: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get metrics dashboard: {str(e)}",
+                detail=f"Failed to get metrics dashboard: {e!s}",
             )
 
-    async def get_child_safety_dashboard(self) -> Dict[str, Any]:
+    async def get_child_safety_dashboard(self) -> dict[str, Any]:
         """Get child safety monitoring dashboard."""
         try:
             safety_monitor = monitoring_service.child_safety_monitor
 
             # Get recent safety events
-            recent_events = list(safety_monitor.safety_events)[
-                -100:
-            ]  # Last 100 events
+            recent_events = list(safety_monitor.safety_events)[-100:]  # Last 100 events
 
             # Group events by type
             event_counts = {}
@@ -133,9 +124,7 @@ class MonitoringDashboardService:
                 event_type = event["event_type"]
                 severity = event["severity"]
                 event_counts[event_type] = event_counts.get(event_type, 0) + 1
-                severity_counts[severity] = (
-                    severity_counts.get(severity, 0) + 1
-                )
+                severity_counts[severity] = severity_counts.get(severity, 0) + 1
 
             # Get active safety alerts
             active_safety_alerts = [
@@ -157,24 +146,20 @@ class MonitoringDashboardService:
             logger.error(f"Error getting child safety dashboard: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get child safety dashboard: {str(e)}",
+                detail=f"Failed to get child safety dashboard: {e!s}",
             )
 
-    async def get_security_dashboard(self) -> Dict[str, Any]:
+    async def get_security_dashboard(self) -> dict[str, Any]:
         """Get security monitoring dashboard."""
         try:
             # Get recent security events
-            recent_security = list(monitoring_service.suspicious_activities)[
-                -100:
-            ]
+            recent_security = list(monitoring_service.suspicious_activities)[-100:]
 
             # Group by event type
             security_counts = {}
             for event in recent_security:
                 event_type = event["event_type"]
-                security_counts[event_type] = (
-                    security_counts.get(event_type, 0) + 1
-                )
+                security_counts[event_type] = security_counts.get(event_type, 0) + 1
 
             # Get failed auth attempts
             failed_auth_summary = dict(monitoring_service.failed_auth_attempts)
@@ -195,10 +180,10 @@ class MonitoringDashboardService:
             logger.error(f"Error getting security dashboard: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get security dashboard: {str(e)}",
+                detail=f"Failed to get security dashboard: {e!s}",
             )
 
-    async def get_coppa_compliance_dashboard(self) -> Dict[str, Any]:
+    async def get_coppa_compliance_dashboard(self) -> dict[str, Any]:
         """Get COPPA compliance monitoring dashboard."""
         try:
             # Get recent COPPA events
@@ -222,9 +207,7 @@ class MonitoringDashboardService:
                 "consent_violations": len(consent_violations),
                 "compliance_score": compliance_score,
                 "compliance_status": (
-                    "compliant"
-                    if compliance_score > 0.9
-                    else "needs_attention"
+                    "compliant" if compliance_score > 0.9 else "needs_attention"
                 ),
                 "last_updated": datetime.utcnow().isoformat(),
             }
@@ -232,12 +215,12 @@ class MonitoringDashboardService:
             logger.error(f"Error getting COPPA compliance dashboard: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get COPPA compliance dashboard: {str(e)}",
+                detail=f"Failed to get COPPA compliance dashboard: {e!s}",
             )
 
     def _calculate_health_status(
-        self, metrics_summary: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, metrics_summary: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate overall system health status."""
         health_score = 1.0
         issues = []
@@ -279,16 +262,15 @@ class MonitoringDashboardService:
         """Convert health score to text status."""
         if score >= 0.9:
             return "excellent"
-        elif score >= 0.8:
+        if score >= 0.8:
             return "good"
-        elif score >= 0.6:
+        if score >= 0.6:
             return "fair"
-        elif score >= 0.4:
+        if score >= 0.4:
             return "poor"
-        else:
-            return "critical"
+        return "critical"
 
-    def _get_recent_alerts(self, hours: int = 24) -> List[Dict[str, Any]]:
+    def _get_recent_alerts(self, hours: int = 24) -> list[dict[str, Any]]:
         """Get recent alerts within specified hours."""
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
         recent_alerts = []
@@ -310,11 +292,9 @@ class MonitoringDashboardService:
                     }
                 )
 
-        return sorted(
-            recent_alerts, key=lambda x: x["last_triggered"], reverse=True
-        )
+        return sorted(recent_alerts, key=lambda x: x["last_triggered"], reverse=True)
 
-    def _get_child_safety_summary(self) -> Dict[str, Any]:
+    def _get_child_safety_summary(self) -> dict[str, Any]:
         """Get child safety monitoring summary."""
         safety_monitor = monitoring_service.child_safety_monitor
 
@@ -330,9 +310,7 @@ class MonitoringDashboardService:
             "total_events_24h": len(recent_events),
             "active_safety_alerts": len(safety_monitor.safety_alerts),
             "monitoring_active": True,
-            "last_event": (
-                recent_events[-1]["timestamp"] if recent_events else None
-            ),
+            "last_event": (recent_events[-1]["timestamp"] if recent_events else None),
         }
 
     def _parse_time_range(self, time_range: str) -> int:
@@ -348,7 +326,7 @@ class MonitoringDashboardService:
         return time_map.get(time_range, 1)
 
     def _calculate_threat_level(
-        self, security_counts: Dict[str, int], failed_auth: Dict[str, int]
+        self, security_counts: dict[str, int], failed_auth: dict[str, int]
     ) -> str:
         """Calculate current threat level."""
         total_security_events = sum(security_counts.values())
@@ -356,15 +334,14 @@ class MonitoringDashboardService:
 
         if total_security_events > 50 or total_failed_auth > 100:
             return "high"
-        elif total_security_events > 20 or total_failed_auth > 50:
+        if total_security_events > 20 or total_failed_auth > 50:
             return "medium"
-        elif total_security_events > 5 or total_failed_auth > 10:
+        if total_security_events > 5 or total_failed_auth > 10:
             return "low"
-        else:
-            return "minimal"
+        return "minimal"
 
     def _calculate_compliance_score(
-        self, coppa_counts: Dict[str, int], violations: List[Dict[str, Any]]
+        self, coppa_counts: dict[str, int], violations: list[dict[str, Any]]
     ) -> float:
         """Calculate COPPA compliance score."""
         total_events = sum(coppa_counts.values())
@@ -421,7 +398,7 @@ if FASTAPI_AVAILABLE:
 
     @router.get("/alerts")
     async def get_active_alerts(
-        severity: Optional[str] = Query(
+        severity: str | None = Query(
             None,
             regex="^(low|medium|high|critical|emergency)$",
             description="Filter by alert severity",
@@ -462,9 +439,9 @@ if FASTAPI_AVAILABLE:
             logger.error(f"Error getting active alerts: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to get active alerts: {str(e)}",
+                detail=f"Failed to get active alerts: {e!s}",
             )
 
 
 # Export for use in main application
-__all__ = ["router", "MonitoringDashboardService", "dashboard_service"]
+__all__ = ["MonitoringDashboardService", "dashboard_service", "router"]

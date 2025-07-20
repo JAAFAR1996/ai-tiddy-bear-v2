@@ -12,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.models.user_model import UserModel
 from src.infrastructure.security.database_input_validator import (
     SecurityError,
@@ -38,9 +38,7 @@ class UserRepository:
         logger.info("UserRepository initialized")
 
     @database_input_validation("users")
-    async def create_user(
-        self, email: str, hashed_password: str, role: str
-    ) -> str:
+    async def create_user(self, email: str, hashed_password: str, role: str) -> str:
         """Create a new user with comprehensive input validation.
 
         Args:
@@ -76,9 +74,7 @@ class UserRepository:
 
                 # Check if user already exists
                 existing_user = await safe_session.execute(
-                    select(UserModel).where(
-                        UserModel.email == validated_data["email"]
-                    ),
+                    select(UserModel).where(UserModel.email == validated_data["email"]),
                 )
                 if existing_user.scalar_one_or_none():
                     raise ValueError("User with this email already exists")

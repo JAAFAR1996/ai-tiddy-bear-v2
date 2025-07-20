@@ -1,28 +1,23 @@
+"""Comprehensive Monitoring Infrastructure Package
+Enterprise-grade monitoring and alerting for AI Teddy Bear backend.
 """
-Comprehensive Monitoring Infrastructure Package
-Enterprise - grade monitoring and alerting for AI Teddy Bear backend.
-"""
-
-from .comprehensive_monitoring import (
-    ComprehensiveMonitoringService,
-    ChildSafetyMonitor,
-    AlertSeverity,
-    MetricType,
-    AlertStatus,
-    MetricValue,
+from .components.types import (
     Alert,
-    monitoring_service,
-    monitor_performance,
+    AlertSeverity,
+    AlertStatus,
+    MetricType,
+    MetricValue,
 )
 
+from .comprehensive_monitoring import ChildSafetyMonitor
+from .components.monitoring_service import ComprehensiveMonitoringService
+
 __all__ = [
-    "ComprehensiveMonitoringService",
-    "ChildSafetyMonitor",
-    "AlertSeverity",
-    "MetricType",
-    "AlertStatus",
-    "MetricValue",
     "Alert",
-    "monitoring_service",
-    "monitor_performance",
+    "AlertSeverity", 
+    "AlertStatus",
+    "ChildSafetyMonitor",
+    "MetricType",
+    "MetricValue",
+    "ComprehensiveMonitoringService",
 ]

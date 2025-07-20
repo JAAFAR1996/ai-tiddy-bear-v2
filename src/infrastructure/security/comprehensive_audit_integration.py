@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.audit_logger import (
-    get_audit_logger,
-    AuditEventType,
-    AuditSeverity,
     AuditCategory,
     AuditContext,
+    AuditEventType,
+    AuditSeverity,
+    get_audit_logger,
 )
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
@@ -18,16 +19,15 @@ class AuditableOperation:
     """Represents an operation that should be audited."""
 
     operation_type: str
-    user_id: Optional[str]
-    child_id: Optional[str]
-    resource_id: Optional[str]
-    ip_address: Optional[str]
-    details: Optional[Dict[str, Any]] = None
+    user_id: str | None
+    child_id: str | None
+    resource_id: str | None
+    ip_address: str | None
+    details: dict[str, Any] | None = None
 
 
 class ComprehensiveAuditIntegration:
-    """
-    Comprehensive audit integration service that ensures all critical operations are logged.
+    """Comprehensive audit integration service that ensures all critical operations are logged.
     This service fixes audit trail gaps by providing centralized methods for logging:
     - Authentication events(login, logout, failures)
     - Authorization events(access granted / denied, permission changes)
@@ -44,12 +44,10 @@ class ComprehensiveAuditIntegration:
         event_type: str,
         user_email: str,
         success: bool,
-        ip_address: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        ip_address: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
-        """
-        Log authentication events with comprehensive details.
-        """
+        """Log authentication events with comprehensive details."""
         sanitized_email = self._sanitize_email(user_email)
 
         event_mapping = {
@@ -63,9 +61,7 @@ class ComprehensiveAuditIntegration:
             "account_locked": AuditEventType.ACCOUNT_LOCKED,
         }
 
-        audit_event_type = event_mapping.get(
-            event_type, AuditEventType.LOGIN_FAILURE
-        )
+        audit_event_type = event_mapping.get(event_type, AuditEventType.LOGIN_FAILURE)
         severity = AuditSeverity.INFO if success else AuditSeverity.WARNING
 
         if event_type == "account_locked":
@@ -95,17 +91,13 @@ class ComprehensiveAuditIntegration:
         resource: str,
         action: str,
         granted: bool,
-        child_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        child_id: str | None = None,
+        ip_address: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
-        """
-        Log authorization events (access control decisions).
-        """
+        """Log authorization events (access control decisions)."""
         event_type = (
-            AuditEventType.ACCESS_GRANTED
-            if granted
-            else AuditEventType.ACCESS_DENIED
+            AuditEventType.ACCESS_GRANTED if granted else AuditEventType.ACCESS_DENIED
         )
         severity = AuditSeverity.INFO if granted else AuditSeverity.WARNING
 
@@ -136,14 +128,12 @@ class ComprehensiveAuditIntegration:
         child_id: str,
         user_id: str,
         data_type: str,
-        ip_address: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-        operation_id: Optional[str] = None,
-        success: Optional[bool] = None,
+        ip_address: str | None = None,
+        details: dict[str, Any] | None = None,
+        operation_id: str | None = None,
+        success: bool | None = None,
     ) -> str:
-        """
-        Log child data operations for COPPA compliance.
-        """
+        """Log child data operations for COPPA compliance."""
         sanitized_child_id = self._sanitize_child_id(child_id)
 
         operation_mapping = {
@@ -160,9 +150,7 @@ class ComprehensiveAuditIntegration:
         severity = AuditSeverity.INFO
         if operation == "delete" and data_type in sensitive_types:
             severity = AuditSeverity.CRITICAL
-        elif operation == "delete":
-            severity = AuditSeverity.WARNING
-        elif data_type in sensitive_types:
+        elif operation == "delete" or data_type in sensitive_types:
             severity = AuditSeverity.WARNING
 
         context = AuditContext(
@@ -181,9 +169,7 @@ class ComprehensiveAuditIntegration:
             core_audit_fields["success"] = success
 
         safe_details = {
-            k: v
-            for k, v in (details or {}).items()
-            if k not in core_audit_fields
+            k: v for k, v in (details or {}).items() if k not in core_audit_fields
         }
         audit_details = {**core_audit_fields, **safe_details}
 
@@ -200,9 +186,9 @@ class ComprehensiveAuditIntegration:
         self,
         event_type: str,
         child_id: str,
-        parent_id: Optional[str],
+        parent_id: str | None,
         description: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
         from ..config.coppa_config import requires_coppa_audit_logging
 
@@ -247,9 +233,9 @@ class ComprehensiveAuditIntegration:
         event_type: str,
         severity: str,
         description: str,
-        user_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        user_id: str | None = None,
+        ip_address: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
         severity_mapping = {
             "debug": AuditSeverity.DEBUG,
@@ -259,9 +245,7 @@ class ComprehensiveAuditIntegration:
             "critical": AuditSeverity.CRITICAL,
         }
 
-        audit_severity = severity_mapping.get(
-            severity.lower(), AuditSeverity.INFO
-        )
+        audit_severity = severity_mapping.get(severity.lower(), AuditSeverity.INFO)
 
         context = AuditContext(user_id=user_id, ip_address=ip_address)
 
@@ -285,7 +269,7 @@ class ComprehensiveAuditIntegration:
         self,
         event_type: str,
         description: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
         system_event_mapping = {
             "startup": AuditEventType.SYSTEM_STARTUP,
@@ -330,7 +314,7 @@ class ComprehensiveAuditIntegration:
 
 
 # Global audit integration instance
-_audit_integration: Optional[ComprehensiveAuditIntegration] = None
+_audit_integration: ComprehensiveAuditIntegration | None = None
 
 
 def get_audit_integration() -> ComprehensiveAuditIntegration:
@@ -370,7 +354,7 @@ async def audit_child_data_operation(
 async def audit_coppa_event(
     event_type: str,
     child_id: str,
-    parent_id: Optional[str],
+    parent_id: str | None,
     description: str,
     **kwargs,
 ) -> str:

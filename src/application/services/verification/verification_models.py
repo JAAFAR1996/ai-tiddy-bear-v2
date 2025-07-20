@@ -1,11 +1,10 @@
 """Verification Data Models
-Defines core data structures for parent-child relationship verification."""
+Defines core data structures for parent-child relationship verification.
+"""
 
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
-from typing import Dict, Any, Optional, List
-from uuid import UUID
+from typing import Any
 
 
 class RelationshipStatus(Enum):
@@ -38,9 +37,9 @@ class VerificationRecord:
     verification_type: str
     status: RelationshipStatus
     attempted_at: str
-    completed_at: Optional[str] = None
-    evidence_provided: Optional[List[str]] = None
-    notes: Optional[str] = None
+    completed_at: str | None = None
+    evidence_provided: list[str] | None = None
+    notes: str | None = None
 
 
 @dataclass
@@ -52,8 +51,8 @@ class RelationshipRecord:
     child_id: str
     relationship_type: RelationshipType
     status: RelationshipStatus
-    verified_at: Optional[str] = None
-    expires_at: Optional[str] = None
-    verification_evidence: Optional[List[str]] = None
+    verified_at: str | None = None
+    expires_at: str | None = None
+    verification_evidence: list[str] | None = None
     emergency_contact: bool = False
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None

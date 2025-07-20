@@ -7,20 +7,19 @@ throughout the AI Teddy Bear application to prevent data leaks.
 import re
 import warnings
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from .log_sanitizer import LogSanitizer
 
 
 class LoggingSecurityMonitor:
-    """
-    Ensures all log messages are sanitized and COPPA-compliant
+    """Ensures all log messages are sanitized and COPPA-compliant
     before being written to log files.
     """
 
     def __init__(self) -> None:
         self.sanitizer = LogSanitizer()
-        self.violations_found: List[Dict[str, Any]] = []
+        self.violations_found: list[dict[str, Any]] = []
         # Patterns to detect potential sensitive data in logs
         self.sensitive_patterns = {
             "email": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
@@ -35,9 +34,8 @@ class LoggingSecurityMonitor:
             "token": r'token["\s]*[:=]["\s]*[A-Za-z0-9\-_\.]+',
         }
 
-    def scan_codebase_for_violations(self, source_dir: str) -> Dict[str, Any]:
-        """
-        Scan the codebase for potential logging security violations
+    def scan_codebase_for_violations(self, source_dir: str) -> dict[str, Any]:
+        """Scan the codebase for potential logging security violations
         Args: source_dir: Root directory to scan
         Returns: Report of findings and violations
         """
@@ -54,13 +52,11 @@ class LoggingSecurityMonitor:
             "violations": violations,
         }
 
-    def _scan_file_for_violations(
-        self, file_path: Path
-    ) -> List[Dict[str, Any]]:
+    def _scan_file_for_violations(self, file_path: Path) -> list[dict[str, Any]]:
         """Scan a single file for logging violations."""
         violations = []
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
                     if "logger." in line or "logging." in line:
                         # Check if the log message is sanitized

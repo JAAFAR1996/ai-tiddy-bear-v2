@@ -72,9 +72,7 @@ class InteractionService:
             self.logger.warning("Invalid child_id provided in process method.")
             raise InvalidInputError("Valid child_id is required")
         if not message or not isinstance(message, str):
-            self.logger.warning(
-                f"Invalid message provided for child {child_id}."
-            )
+            self.logger.warning(f"Invalid message provided for child {child_id}.")
             raise InvalidInputError("Valid message is required")
         if len(message) > self.config.max_message_length:
             self.logger.warning(
@@ -97,9 +95,7 @@ class InteractionService:
                     "timestamp": datetime.now(UTC).isoformat(),
                 }
         except (ResourceNotFoundError, InvalidInputError) as e:
-            self.logger.error(
-                f"Age verification failed for child {child_id}: {e}"
-            )
+            self.logger.error(f"Age verification failed for child {child_id}: {e}")
             return {
                 "success": False,
                 "error": f"Age verification failed: {e!s}",
@@ -166,15 +162,11 @@ class InteractionService:
 
         """
         self.logger.debug(f"Sanitizing message: {message[:50]}...")
-        sanitized_message = await self.sanitization_service.sanitize_text(
-            message
-        )
+        sanitized_message = await self.sanitization_service.sanitize_text(message)
         self.logger.info("Message sanitization complete.")
         return sanitized_message
 
-    async def _check_content_safety(
-        self, message: str
-    ) -> SafetyAnalysisResult:
+    async def _check_content_safety(self, message: str) -> SafetyAnalysisResult:
         """Checks the content of the message for safety and appropriateness using the injected safety monitor.
 
         Args:
@@ -184,9 +176,7 @@ class InteractionService:
             A SafetyAnalysisResult object.
 
         """
-        self.logger.debug(
-            f"Checking content safety for message: {message[:50]}..."
-        )
+        self.logger.debug(f"Checking content safety for message: {message[:50]}...")
         safety_result = await self.safety_monitor.analyze_content(message)
         self.logger.info(
             "Content safety check complete. Is safe: "

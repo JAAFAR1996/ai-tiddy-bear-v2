@@ -30,7 +30,7 @@ class COPPANoticeResponse(BaseModel):
     retention_period_days: int | None = None
 
 
-class COPPAComplianceStatus(BaseModel):
+class COPPAValidatorStatus(BaseModel):
     """COPPA compliance status response."""
 
     coppa_enabled: bool
@@ -38,7 +38,7 @@ class COPPAComplianceStatus(BaseModel):
     features_affected: list[str] = []
 
 
-@router.get("/status", response_model=COPPAComplianceStatus)
+@router.get("/status", response_model=COPPAValidatorStatus)
 async def get_coppa_status():
     """Get current COPPA compliance status
     This endpoint always works to inform clients about COPPA status.
@@ -55,7 +55,7 @@ async def get_coppa_status():
             "data_sharing_restricted",
         ]
 
-    return COPPAComplianceStatus(
+    return COPPAValidatorStatus(
         coppa_enabled=coppa_enabled,
         compliance_mode="strict" if coppa_enabled else "development",
         features_affected=features_affected,

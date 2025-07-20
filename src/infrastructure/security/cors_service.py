@@ -1,8 +1,7 @@
-from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, Optional, Set
 import re
 import urllib.parse
+from dataclasses import dataclass
+from enum import Enum
 
 from src.infrastructure.logging_config import get_logger
 
@@ -21,10 +20,10 @@ class CORSPolicy(Enum):
 class CORSConfiguration:
     """CORS configuration with security - first defaults."""
 
-    allowed_origins: Set[str]
-    allowed_methods: Set[str]
-    allowed_headers: Set[str]
-    expose_headers: Set[str]
+    allowed_origins: set[str]
+    allowed_methods: set[str]
+    allowed_headers: set[str]
+    expose_headers: set[str]
     allow_credentials: bool
     max_age: int
     policy_level: CORSPolicy
@@ -36,8 +35,7 @@ class CORSConfiguration:
 
 
 class CORSSecurityService:
-    """
-    Enterprise - grade CORS security service for child - safe applications.
+    """Enterprise - grade CORS security service for child - safe applications.
     Features:
     - Age - appropriate CORS policies
     - Origin validation and sanitization
@@ -50,8 +48,8 @@ class CORSSecurityService:
         """Initialize CORS security service."""
         self.default_policy = default_policy
         self.configurations = self._initialize_cors_configurations()
-        self.origin_cache: Dict[str, bool] = {}
-        self.violation_count: Dict[str, int] = {}
+        self.origin_cache: dict[str, bool] = {}
+        self.violation_count: dict[str, int] = {}
         self.max_cache_size = 1000
 
         logger.info(
@@ -60,7 +58,7 @@ class CORSSecurityService:
 
     def _initialize_cors_configurations(
         self,
-    ) -> Dict[CORSPolicy, CORSConfiguration]:
+    ) -> dict[CORSPolicy, CORSConfiguration]:
         """Initialize predefined CORS configurations."""
         return {
             CORSPolicy.STRICT: CORSConfiguration(
@@ -141,13 +139,14 @@ class CORSSecurityService:
         }
 
     def validate_origin(
-        self, origin: Optional[str], policy: Optional[CORSPolicy] = None
-    ) -> Dict[str, any]:
-        """
-        Validate if origin is allowed for CORS requests.
+        self, origin: str | None, policy: CORSPolicy | None = None
+    ) -> dict[str, any]:
+        """Validate if origin is allowed for CORS requests.
+
         Args:
             origin: Request origin header
             policy: CORS policy to apply(defaults to service default)
+
         Returns:
             Dict with validation result and CORS headers
         """
@@ -201,23 +200,22 @@ class CORSSecurityService:
                 "headers": headers,
                 "policy": policy.value,
             }
-        else:
-            self._log_cors_violation(origin, "Origin not in allowed list")
-            return {
-                "allowed": False,
-                "reason": "Origin not allowed",
-                "headers": self._get_cors_headers_for_error(),
-            }
+        self._log_cors_violation(origin, "Origin not in allowed list")
+        return {
+            "allowed": False,
+            "reason": "Origin not allowed",
+            "headers": self._get_cors_headers_for_error(),
+        }
 
     def handle_preflight_request(
         self,
-        origin: Optional[str],
-        method: Optional[str],
-        headers: Optional[str],
-        policy: Optional[CORSPolicy] = None,
-    ) -> Dict[str, any]:
-        """
-        Handle CORS preflight OPTIONS requests.
+        origin: str | None,
+        method: str | None,
+        headers: str | None,
+        policy: CORSPolicy | None = None,
+    ) -> dict[str, any]:
+        """Handle CORS preflight OPTIONS requests.
+
         Args:
             origin: Request origin
             method: Requested method via Access - Control - Request - Method
@@ -236,9 +234,7 @@ class CORSSecurityService:
 
         # Validate requested method
         if method and method.upper() not in config.allowed_methods:
-            logger.warning(
-                f"CORS preflight: Method {method} not allowed for {origin}"
-            )
+            logger.warning(f"CORS preflight: Method {method} not allowed for {origin}")
             return {
                 "allowed": False,
                 "reason": f"Method {method} not allowed",
@@ -272,11 +268,9 @@ class CORSSecurityService:
             "policy": policy.value,
         }
 
-    def get_security_headers(
-        self, policy: Optional[CORSPolicy] = None
-    ) -> Dict[str, str]:
-        """
-        Get additional security headers for CORS responses.
+    def get_security_headers(self, policy: CORSPolicy | None = None) -> dict[str, str]:
+        """Get additional security headers for CORS responses.
+
         Args:
             policy: CORS policy level
         Returns:
@@ -305,7 +299,7 @@ class CORSSecurityService:
 
         return headers
 
-    def _validate_origin_security(self, origin: str) -> Dict[str, any]:
+    def _validate_origin_security(self, origin: str) -> dict[str, any]:
         """Validate origin for security issues."""
         try:
             parsed = urllib.parse.urlparse(origin)
@@ -344,9 +338,7 @@ class CORSSecurityService:
             logger.error(f"Error validating origin security: {e}")
             return {"secure": False, "reason": "Origin validation error"}
 
-    def _is_origin_allowed(
-        self, origin: str, config: CORSConfiguration
-    ) -> bool:
+    def _is_origin_allowed(self, origin: str, config: CORSConfiguration) -> bool:
         """Check if origin is in allowed list."""
         # Exact match first
         if origin in config.allowed_origins:
@@ -368,16 +360,12 @@ class CORSSecurityService:
 
     def _generate_cors_headers(
         self, origin: str, config: CORSConfiguration
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate CORS response headers."""
         headers = {
             "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Methods": ", ".join(
-                sorted(config.allowed_methods)
-            ),
-            "Access-Control-Allow-Headers": ", ".join(
-                sorted(config.allowed_headers)
-            ),
+            "Access-Control-Allow-Methods": ", ".join(sorted(config.allowed_methods)),
+            "Access-Control-Allow-Headers": ", ".join(sorted(config.allowed_headers)),
             "Access-Control-Max-Age": str(config.max_age),
         }
 
@@ -393,7 +381,7 @@ class CORSSecurityService:
 
     def _generate_preflight_headers(
         self, origin: str, config: CORSConfiguration
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate preflight response headers."""
         headers = self._generate_cors_headers(origin, config)
 
@@ -407,7 +395,7 @@ class CORSSecurityService:
 
         return headers
 
-    def _get_cors_headers_for_error(self) -> Dict[str, str]:
+    def _get_cors_headers_for_error(self) -> dict[str, str]:
         """Get minimal CORS headers for error responses."""
         return {
             "Access-Control-Allow-Origin": "",
@@ -427,7 +415,7 @@ class CORSSecurityService:
                 "connect-src 'self'; "
                 "frame-ancestors 'none';"
             )
-        elif policy == CORSPolicy.MODERATE:
+        if policy == CORSPolicy.MODERATE:
             return (
                 "default-src 'self'; "
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
@@ -435,14 +423,14 @@ class CORSSecurityService:
                 "img-src 'self' data: https:; "
                 "connect-src 'self' https:;"
             )
-        else:  # PERMISSIVE
-            return (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                "style-src 'self' 'unsafe-inline'; "
-                "img-src 'self' data: https: http:; "
-                "connect-src 'self' https: http: ws: wss:;"
-            )
+        # PERMISSIVE
+        return (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https: http:; "
+            "connect-src 'self' https: http: ws: wss:;"
+        )
 
     def _log_cors_violation(self, origin: str, reason: str) -> None:
         """Log CORS violation for security monitoring."""
@@ -454,9 +442,7 @@ class CORSSecurityService:
 
         # Alert on repeated violations
         if self.violation_count[origin] >= 5:
-            logger.error(
-                f"Repeated CORS violations from {origin} - possible attack"
-            )
+            logger.error(f"Repeated CORS violations from {origin} - possible attack")
 
     def _update_origin_cache(self, cache_key: str, is_allowed: bool) -> None:
         """Update origin validation cache."""
@@ -468,7 +454,7 @@ class CORSSecurityService:
 
         self.origin_cache[cache_key] = is_allowed
 
-    def get_cors_statistics(self) -> Dict[str, any]:
+    def get_cors_statistics(self) -> dict[str, any]:
         """Get CORS service statistics for monitoring."""
         return {
             "default_policy": self.default_policy.value,
@@ -481,8 +467,8 @@ class CORSSecurityService:
         }
 
     def add_allowed_origin(self, origin: str, policy: CORSPolicy) -> bool:
-        """
-        Dynamically add an allowed origin to a policy.
+        """Dynamically add an allowed origin to a policy.
+
         Args:
             origin: Origin to add
             policy: Policy to modify
@@ -501,9 +487,7 @@ class CORSSecurityService:
 
             # Clear related cache entries
             cache_keys_to_remove = [
-                key
-                for key in self.origin_cache.keys()
-                if key.startswith(f"{origin}:")
+                key for key in self.origin_cache.keys() if key.startswith(f"{origin}:")
             ]
             for key in cache_keys_to_remove:
                 del self.origin_cache[key]
@@ -515,8 +499,8 @@ class CORSSecurityService:
             return False
 
     def remove_allowed_origin(self, origin: str, policy: CORSPolicy) -> bool:
-        """
-        Remove an allowed origin from a policy.
+        """Remove an allowed origin from a policy.
+
         Args:
             origin: Origin to remove
             policy: Policy to modify
@@ -529,9 +513,7 @@ class CORSSecurityService:
 
             # Clear related cache entries
             cache_keys_to_remove = [
-                key
-                for key in self.origin_cache.keys()
-                if key.startswith(f"{origin}:")
+                key for key in self.origin_cache.keys() if key.startswith(f"{origin}:")
             ]
             for key in cache_keys_to_remove:
                 del self.origin_cache[key]

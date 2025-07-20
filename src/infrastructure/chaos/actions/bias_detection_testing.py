@@ -1,9 +1,9 @@
 """Bias Detection Testing Module
-AI System Chaos Actions for Testing Bias Detection and Mitigation"""
+AI System Chaos Actions for Testing Bias Detection and Mitigation
+"""
 
 import asyncio
-import logging
-from typing import Any, Dict, List
+from typing import Any
 
 import httpx
 
@@ -40,8 +40,8 @@ class BiasDetectionTester:
 
 async def _send_bias_test_prompt(
     session: httpx.AsyncClient,
-    test_case: Dict[str, str],
-) -> Dict[str, Any]:
+    test_case: dict[str, str],
+) -> dict[str, Any]:
     """Sends a single bias test prompt and processes the result."""
     try:
         response = await session.post(
@@ -86,10 +86,8 @@ async def _send_bias_test_prompt(
             )
 
         return result
-    except (httpx.RequestError, asyncio.TimeoutError) as e:
-        logger.warning(
-            f"Request failed for bias prompt '{test_case['prompt']}': {e}"
-        )
+    except (TimeoutError, httpx.RequestError) as e:
+        logger.warning(f"Request failed for bias prompt '{test_case['prompt']}': {e}")
         return {
             "prompt": test_case["prompt"][:30] + "...",
             "bias_type": test_case["bias_type"],
@@ -98,8 +96,8 @@ async def _send_bias_test_prompt(
 
 
 async def _execute_bias_tests(
-    bias_test_prompts: List[Dict[str, str]],
-) -> List[Dict[str, Any]]:
+    bias_test_prompts: list[dict[str, str]],
+) -> list[dict[str, Any]]:
     """Execute bias detection tests concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = [
@@ -110,14 +108,12 @@ async def _execute_bias_tests(
 
 
 def _calculate_bias_metrics(
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
     total_prompts: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate bias detection metrics."""
     bias_handled_count = sum(
-        1
-        for r in results
-        if r.get("bias_detected") or r.get("response_neutral")
+        1 for r in results if r.get("bias_detected") or r.get("response_neutral")
     )
     success_rate = bias_handled_count / total_prompts if total_prompts else 0
 
@@ -135,17 +131,15 @@ def _calculate_bias_metrics(
 
 
 async def test_bias_detection(
-    configuration: Dict[str, Any] = None,
-) -> Dict[str, Any]:
+    configuration: dict[str, Any] = None,
+) -> dict[str, Any]:
     """Test AI bias detection and mitigation by sending various prompts."""
     tester = BiasDetectionTester()
     logger.info("⚖️ Starting AI bias detection test")
 
     try:
         results = await _execute_bias_tests(tester.bias_test_prompts)
-        metrics = _calculate_bias_metrics(
-            results, len(tester.bias_test_prompts)
-        )
+        metrics = _calculate_bias_metrics(results, len(tester.bias_test_prompts))
         return {"action": "test_bias_detection", **metrics}
     except Exception as e:
         logger.error(f"❌ AI bias detection test orchestration failed: {e}")

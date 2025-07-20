@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""
-📋 Contract Testing Framework - AI Teddy Bear Project
+"""📋 Contract Testing Framework - AI Teddy Bear Project
 اختبارات العقد لضمان توافق APIs والخدمات
 
 Lead Architect: جعفر أديب (Jaafar Adeeb)
 Enterprise Grade AI Teddy Bear Project 2025
 """
 
-from src.infrastructure.logging_config import get_logger
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 from pydantic import BaseModel, Field
+
+from src.infrastructure.logging_config import get_logger
 
 from .contract_components import (
     _calculate_overall_results,
@@ -43,9 +43,9 @@ class ContractDefinition(BaseModel):
     consumer: str
     endpoint: str
     method: str
-    request_schema: Dict[str, Any]
-    response_schema: Dict[str, Any]
-    headers: Dict[str, str] = Field(default_factory=dict)
+    request_schema: dict[str, Any]
+    response_schema: dict[str, Any]
+    headers: dict[str, str] = Field(default_factory=dict)
     timeout_seconds: int = 30
 
 
@@ -55,10 +55,10 @@ class ContractTest(BaseModel):
     name: str
     description: str
     contract: ContractDefinition
-    test_data: Dict[str, Any]
+    test_data: dict[str, Any]
     expected_status: int = 200
-    expected_response_keys: List[str] = Field(default_factory=list)
-    validation_rules: Dict[str, Any] = Field(default_factory=dict)
+    expected_response_keys: list[str] = Field(default_factory=list)
+    validation_rules: dict[str, Any] = Field(default_factory=dict)
 
 
 class ContractResult(BaseModel):
@@ -67,12 +67,12 @@ class ContractResult(BaseModel):
     test_name: str
     contract_name: str
     status: str  # passed, failed, error
-    request_sent: Dict[str, Any]
-    response_received: Optional[Dict[str, Any]] = None
-    response_status: Optional[int] = None
-    validation_errors: List[str] = Field(default_factory=list)
+    request_sent: dict[str, Any]
+    response_received: dict[str, Any] | None = None
+    response_status: int | None = None
+    validation_errors: list[str] = Field(default_factory=list)
     execution_time: float = 0.0
-    error_message: Optional[str] = None
+    error_message: str | None = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
@@ -83,8 +83,8 @@ class ContractTestSuite(BaseModel):
     description: str
     provider: str
     consumer: str
-    contracts: List[ContractDefinition] = Field(default_factory=list)
-    test_results: List[ContractResult] = Field(default_factory=list)
+    contracts: list[ContractDefinition] = Field(default_factory=list)
+    test_results: list[ContractResult] = Field(default_factory=list)
     total_tests: int = 0
     passed_tests: int = 0
     failed_tests: int = 0
@@ -97,8 +97,8 @@ class ContractTestingFramework:
 
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
-        self.test_suites: Dict[str, Any] = {}
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.test_suites: dict[str, Any] = {}
+        self.session: aiohttp.ClientSession | None = None
         self._execute_contract_test = execute_contract_test
         self._validate_against_schema = validate_against_schema
 
@@ -112,7 +112,7 @@ class ContractTestingFramework:
         if self.session:
             await self.session.close()
 
-    async def run_contract_testing(self) -> Dict[str, Any]:
+    async def run_contract_testing(self) -> dict[str, Any]:
         """تشغيل جميع اختبارات العقد"""
         logger.info("📋 بدء اختبارات العقد...")
 
@@ -144,15 +144,9 @@ async def test_contract_framework():
         results = await framework.run_contract_testing()
 
         print("📋 نتائج اختبارات العقد:")
-        print(
-            f"إجمالي الاختبارات: {results['overall_results']['total_tests']}"
-        )
-        print(
-            f"الاختبارات الناجحة: {results['overall_results']['passed_tests']}"
-        )
-        print(
-            f"معدل النجاح: {results['overall_results']['success_rate']:.1f}%"
-        )
+        print(f"إجمالي الاختبارات: {results['overall_results']['total_tests']}")
+        print(f"الاختبارات الناجحة: {results['overall_results']['passed_tests']}")
+        print(f"معدل النجاح: {results['overall_results']['success_rate']:.1f}%")
 
         print("\n📋 التوصيات:")
         for rec in results["recommendations"]:

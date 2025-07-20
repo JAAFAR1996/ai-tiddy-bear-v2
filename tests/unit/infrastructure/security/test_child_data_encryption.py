@@ -1,15 +1,15 @@
-"""
-Tests for Child Data Encryption
+"""Tests for Child Data Encryption
 Testing COPPA-compliant child data encryption system.
 """
 
-import pytest
-from unittest.mock import patch
-from datetime import datetime, timedelta
 import base64
-import json
 import hashlib
+import json
 import os
+from datetime import datetime, timedelta
+from unittest.mock import patch
+
+import pytest
 
 # Mock cryptography imports for testing
 pytest_plugins = ["pytest_mock"]
@@ -40,9 +40,7 @@ def mock_cryptography(mocker):
 @pytest.fixture
 def mock_datetime():
     """Mock datetime for consistent testing."""
-    with patch(
-        "src.infrastructure.security.child_data_encryption.datetime"
-    ) as mock_dt:
+    with patch("src.infrastructure.security.child_data_encryption.datetime") as mock_dt:
         mock_dt.utcnow.return_value = datetime(2024, 1, 15, 10, 30, 0)
         yield mock_dt
 
@@ -67,9 +65,7 @@ except ImportError:
     class COPPAComplianceRecord:
         def __init__(self, **kwargs):
             self.child_id = kwargs.get("child_id")
-            self.parental_consent_given = kwargs.get(
-                "parental_consent_given", False
-            )
+            self.parental_consent_given = kwargs.get("parental_consent_given", False)
             self.consent_timestamp = kwargs.get("consent_timestamp")
             self.consent_method = kwargs.get("consent_method")
             self.consent_ip_address = kwargs.get("consent_ip_address")
@@ -83,9 +79,7 @@ class TestChildDataEncryption:
     @pytest.fixture
     def encryption_service(self, mock_cryptography):
         """Create encryption service instance."""
-        with patch.dict(
-            os.environ, {"ENCRYPTION_KEY": "test_key_for_encryption"}
-        ):
+        with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key_for_encryption"}):
             return ChildDataEncryption()
 
     def test_initialization_with_key(self, mock_cryptography):
@@ -123,7 +117,7 @@ class TestChildDataEncryption:
             "custom_settings",
         }
 
-        assert ChildDataEncryption.SENSITIVE_FIELDS == expected_sensitive
+        assert expected_sensitive == ChildDataEncryption.SENSITIVE_FIELDS
 
     def test_pii_fields_definition(self):
         """Test that PII fields are properly defined."""
@@ -136,11 +130,9 @@ class TestChildDataEncryption:
             "cultural_background",
         }
 
-        assert ChildDataEncryption.PII_FIELDS == expected_pii
+        assert expected_pii == ChildDataEncryption.PII_FIELDS
 
-    def test_encrypt_child_data_basic(
-        self, encryption_service, mock_cryptography
-    ):
+    def test_encrypt_child_data_basic(self, encryption_service, mock_cryptography):
         """Test basic child data encryption."""
         mock_fernet, _, _, _ = mock_cryptography
         mock_fernet.encrypt.return_value = b"encrypted_sensitive_data"
@@ -214,9 +206,7 @@ class TestChildDataEncryption:
         metadata = result["_encryption_metadata"]
         assert metadata["field_count"] == 2  # name and medical_notes
 
-    def test_decrypt_child_data_basic(
-        self, encryption_service, mock_cryptography
-    ):
+    def test_decrypt_child_data_basic(self, encryption_service, mock_cryptography):
         """Test basic child data decryption."""
         mock_fernet, _, _, _ = mock_cryptography
         mock_fernet.decrypt.return_value = json.dumps(
@@ -266,9 +256,7 @@ class TestChildDataEncryption:
     ):
         """Test decryption with integrity check failure."""
         mock_fernet, _, _, _ = mock_cryptography
-        mock_fernet.decrypt.return_value = json.dumps(
-            {"name": "Test Child"}
-        ).encode()
+        mock_fernet.decrypt.return_value = json.dumps({"name": "Test Child"}).encode()
 
         encrypted_data = {
             "id": "child_123",
@@ -287,9 +275,7 @@ class TestChildDataEncryption:
     ):
         """Test decryption with checksum mismatch warning."""
         mock_fernet, _, _, _ = mock_cryptography
-        mock_fernet.decrypt.return_value = json.dumps(
-            {"name": "Test Child"}
-        ).encode()
+        mock_fernet.decrypt.return_value = json.dumps({"name": "Test Child"}).encode()
 
         encrypted_data = {
             "id": "child_123",
@@ -312,10 +298,7 @@ class TestChildDataEncryption:
 
                 # Should still decrypt but log warning
                 mock_logger.warning.assert_called()
-                assert (
-                    "integrity check failed"
-                    in mock_logger.warning.call_args[0][0]
-                )
+                assert "integrity check failed" in mock_logger.warning.call_args[0][0]
 
     def test_validate_coppa_compliance_valid(self, encryption_service):
         """Test COPPA compliance validation for valid data."""
@@ -367,16 +350,13 @@ class TestChildDataEncryption:
         assert result["compliant"] is False
         assert "Parental consent not obtained" in result["violations"]
 
-    def test_validate_coppa_compliance_expired_retention(
-        self, encryption_service
-    ):
+    def test_validate_coppa_compliance_expired_retention(self, encryption_service):
         """Test COPPA compliance validation with expired data retention."""
         child_data = {"age": 8}
         consent_record = COPPAComplianceRecord(
             child_id="child_expired",
             parental_consent_given=True,
-            data_retention_expires=datetime.utcnow()
-            - timedelta(days=1),  # Expired
+            data_retention_expires=datetime.utcnow() - timedelta(days=1),  # Expired
         )
 
         result = encryption_service.validate_coppa_compliance(
@@ -387,9 +367,7 @@ class TestChildDataEncryption:
         assert "Data retention period expired" in result["violations"]
         assert "Delete child data immediately" in result["required_actions"]
 
-    def test_validate_coppa_compliance_pii_without_consent(
-        self, encryption_service
-    ):
+    def test_validate_coppa_compliance_pii_without_consent(self, encryption_service):
         """Test COPPA compliance validation with PII but no consent."""
         child_data = {
             "age": 8,
@@ -591,9 +569,7 @@ class TestChildDataEncryption:
         ):
             child_data = {"name": "Test Child"}
 
-            with pytest.raises(
-                ValueError, match="Child data encryption failed"
-            ):
+            with pytest.raises(ValueError, match="Child data encryption failed"):
                 encryption_service.encrypt_child_data(child_data)
 
     def test_decryption_error_handling(self, encryption_service):
@@ -651,9 +627,7 @@ class TestChildDataEncryption:
             "name": "Test Child",
             "medical_notes": "No allergies",
         }
-        sensitive_json = json.dumps(
-            sensitive_data, ensure_ascii=False, default=str
-        )
+        sensitive_json = json.dumps(sensitive_data, ensure_ascii=False, default=str)
         mock_fernet.encrypt.return_value = b"encrypted_sensitive_data"
         mock_fernet.decrypt.return_value = sensitive_json.encode()
 

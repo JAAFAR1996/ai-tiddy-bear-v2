@@ -66,9 +66,7 @@ class ComprehensiveRateLimiter:
         """
         config = self.configs.get(config_name)
         if not config:
-            raise ValueError(
-                f"Rate limit configuration '{config_name}' not found"
-            )
+            raise ValueError(f"Rate limit configuration '{config_name}' not found")
 
         state = await self.storage.get_state(key)
 
@@ -89,9 +87,7 @@ class ComprehensiveRateLimiter:
         if not result.allowed:
             # Block key if necessary
             if self.child_safety_handler.should_block_key(config, state):
-                state.blocked_until = (
-                    time.time() + config.block_duration_seconds
-                )
+                state.blocked_until = time.time() + config.block_duration_seconds
                 result.retry_after = config.block_duration_seconds
                 result.blocked_reason = "blocked_due_to_suspicious_activity"
 

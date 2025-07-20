@@ -1,14 +1,16 @@
 """Clean, focused session management extracted from 426-line monolith.
-Provides enterprise-grade session handling with child safety features."""
+Provides enterprise-grade session handling with child safety features.
+"""
 
 import asyncio
 import contextlib
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from datetime import datetime
+from typing import Any
 
-from .session_models import AsyncSessionData, SessionStatus, SessionStats
-from .session_storage import SessionStorage
 from src.infrastructure.logging_config import get_logger
+
+from .session_models import AsyncSessionData, SessionStats, SessionStatus
+from .session_storage import SessionStorage
 
 logger = get_logger(__name__, component="services")
 
@@ -28,7 +30,7 @@ class AsyncSessionManager:
         """Initialize session manager with storage backend."""
         self.storage = SessionStorage()
         self.default_timeout = default_timeout_minutes
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: asyncio.Task | None = None
         self._manager_lock = asyncio.Lock()
 
     async def start_cleanup_task(self) -> None:
@@ -46,8 +48,8 @@ class AsyncSessionManager:
     async def create_session(
         self,
         child_id: str,
-        initial_data: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        initial_data: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> AsyncSessionData:
         """Create a new session for a child.
 
@@ -68,7 +70,7 @@ class AsyncSessionManager:
         logger.info(f"Session created: {session.session_id[:8]}...")
         return session
 
-    async def get_session(self, session_id: str) -> Optional[AsyncSessionData]:
+    async def get_session(self, session_id: str) -> AsyncSessionData | None:
         """Retrieve a session by ID.
 
         Args:
@@ -95,8 +97,8 @@ class AsyncSessionManager:
     async def update_session(
         self,
         session_id: str,
-        data_updates: Optional[Dict[str, Any]] = None,
-        metadata_updates: Optional[Dict[str, Any]] = None,
+        data_updates: dict[str, Any] | None = None,
+        metadata_updates: dict[str, Any] | None = None,
     ) -> bool:
         """Update session data and metadata.
 
@@ -146,9 +148,7 @@ class AsyncSessionManager:
         logger.info(f"Session ended: {session_id[:8]}...")
         return True
 
-    async def get_child_sessions(
-        self, child_id: str
-    ) -> List[AsyncSessionData]:
+    async def get_child_sessions(self, child_id: str) -> list[AsyncSessionData]:
         """Get all active sessions for a child.
 
         Args:
@@ -200,9 +200,7 @@ class AsyncSessionManager:
             Number of sessions cleaned up
 
         """
-        return await self.storage.cleanup_expired_sessions(
-            self.default_timeout
-        )
+        return await self.storage.cleanup_expired_sessions(self.default_timeout)
 
     async def _cleanup_loop(self) -> None:
         """Background task for periodic session cleanup."""

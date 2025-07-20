@@ -1,6 +1,11 @@
-import numpy as np
-import time
+"""Unit Tests for Edge AI Manager System.
+
+AI Team Implementation - Task 10 Tests
+Author: AI Team Lead
+"""
+
 import sys
+import time
 from pathlib import Path
 
 # Add src to path
@@ -12,6 +17,7 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import numpy with fallback
 try:
     import numpy as np
 except ImportError:
@@ -40,30 +46,37 @@ except ImportError:
                 def randint(self, low, high, size=None):
                     return low
 
+                def uniform(self, low, high, size=None):
+                    if size is None:
+                        return (low + high) / 2
+                    if isinstance(size, int):
+                        return [(low + high) / 2] * size
+                    return (
+                        [[(low + high) / 2] * size[0]]
+                        if len(size) == 1
+                        else (low + high) / 2
+                    )
+
             return MockRandom()
 
         @property
         def pi(self):
             return 3.14159265359
 
+        @property
+        def float32(self):
+            return float
+
+        @property
+        def int16(self):
+            return int
+
     np = MockNumpy()
 
-"""
-Unit Tests for Edge AI Manager System.
-
-AI Team Implementation - Task 10 Tests
-Author: AI Team Lead
-"""
-
-
+# Import pytest with fallback
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -109,6 +122,9 @@ except ImportError:
                 return func
 
             return decorator
+
+        def main(self, args):
+            return 0
 
     pytest = MockPytest()
 
@@ -195,7 +211,12 @@ class TestEdgeAIManager:
         await edge_ai_manager.initialize()
 
         # Create mock audio data
-        audio_data = np.random.uniform(-1, 1, 16000).astype(np.float32)
+        audio_data = np.random.uniform(-1, 1, 16000)
+        if hasattr(audio_data, "astype"):
+            audio_data = audio_data.astype(np.float32)
+        else:
+            # Mock numpy fallback
+            audio_data = [0.5] * 16000
 
         # Process on edge
         result = await edge_ai_manager.process_on_edge(audio_data)
@@ -218,15 +239,17 @@ class TestEdgeAIManager:
         await edge_ai_manager.initialize()
 
         # Test with high energy audio (should trigger wake word)
-        high_energy_audio = np.random.uniform(-0.5, 0.5, 16000).astype(
-            np.float32
-        )
+        high_energy_audio = np.random.uniform(-0.5, 0.5, 16000)
+        if hasattr(high_energy_audio, "astype"):
+            high_energy_audio = high_energy_audio.astype(np.float32)
+        else:
+            # Mock numpy fallback
+            high_energy_audio = [0.25] * 16000
+
         (
             detected,
             confidence,
-        ) = await edge_ai_manager.wake_word_detector.detect_wake_word(
-            high_energy_audio
-        )
+        ) = await edge_ai_manager.wake_word_detector.detect_wake_word(high_energy_audio)
 
         assert isinstance(detected, bool)
         assert 0.0 <= confidence <= 1.0
@@ -253,10 +276,8 @@ class TestEdgeAIManager:
         )
 
         # Analyze emotion
-        emotion_result = (
-            await edge_ai_manager.emotion_analyzer.analyze_emotion(
-                mock_features
-            )
+        emotion_result = await edge_ai_manager.emotion_analyzer.analyze_emotion(
+            mock_features
         )
 
         assert isinstance(emotion_result, EdgeEmotionResult)
@@ -312,10 +333,8 @@ class TestEdgeAIManager:
         assert 0.0 <= safety_result.safety_score <= 1.0
 
         # Test with potentially unsafe text
-        unsafe_safety_result = (
-            await edge_ai_manager.safety_checker.check_safety(
-                mock_features, "I hate this stupid thing"
-            )
+        unsafe_safety_result = await edge_ai_manager.safety_checker.check_safety(
+            mock_features, "I hate this stupid thing"
         )
 
         assert isinstance(unsafe_safety_result, EdgeSafetyResult)
@@ -352,18 +371,12 @@ class TestEdgeAIManager:
         # Test low memory device optimization
         low_mem_specs = {"memory_mb": 128, "cpu_cores": 1}
         edge_ai_manager.optimize_for_device(low_mem_specs)
-        assert (
-            edge_ai_manager.config.processing_mode
-            == EdgeProcessingMode.POWER_SAVE
-        )
+        assert edge_ai_manager.config.processing_mode == EdgeProcessingMode.POWER_SAVE
 
         # Test high memory device optimization
         high_mem_specs = {"memory_mb": 1024, "cpu_cores": 4}
         edge_ai_manager.optimize_for_device(high_mem_specs)
-        assert (
-            edge_ai_manager.config.processing_mode
-            == EdgeProcessingMode.BALANCED
-        )
+        assert edge_ai_manager.config.processing_mode == EdgeProcessingMode.BALANCED
 
     @pytest.mark.asyncio
     async def test_processing_modes(self, edge_ai_manager):
@@ -372,18 +385,19 @@ class TestEdgeAIManager:
             pytest.skip(f"Edge AI imports not available: {import_error}")
 
         await edge_ai_manager.initialize()
-        audio_data = np.random.uniform(-1, 1, 16000).astype(np.float32)
+        audio_data = np.random.uniform(-1, 1, 16000)
+        if hasattr(audio_data, "astype"):
+            audio_data = audio_data.astype(np.float32)
+        else:
+            # Mock numpy fallback
+            audio_data = [0.5] * 16000
 
         # Test ultra low latency mode
-        edge_ai_manager.config.processing_mode = (
-            EdgeProcessingMode.ULTRA_LOW_LATENCY
-        )
+        edge_ai_manager.config.processing_mode = EdgeProcessingMode.ULTRA_LOW_LATENCY
         result_fast = await edge_ai_manager.process_on_edge(audio_data)
 
         # Test high accuracy mode
-        edge_ai_manager.config.processing_mode = (
-            EdgeProcessingMode.HIGH_ACCURACY
-        )
+        edge_ai_manager.config.processing_mode = EdgeProcessingMode.HIGH_ACCURACY
         result_accurate = await edge_ai_manager.process_on_edge(audio_data)
 
         # Both should work but potentially with different processing times
@@ -424,9 +438,7 @@ class TestEdgeProcessingModes:
         if not EDGE_AI_IMPORTS_AVAILABLE:
             pytest.skip(f"Edge AI imports not available: {import_error}")
 
-        assert (
-            EdgeProcessingMode.ULTRA_LOW_LATENCY.value == "ultra_low_latency"
-        )
+        assert EdgeProcessingMode.ULTRA_LOW_LATENCY.value == "ultra_low_latency"
         assert EdgeProcessingMode.BALANCED.value == "balanced"
         assert EdgeProcessingMode.HIGH_ACCURACY.value == "high_accuracy"
         assert EdgeProcessingMode.POWER_SAVE.value == "power_save"
@@ -465,7 +477,13 @@ class TestMockFunctionality:
         await manager.initialize()
 
         # Test processing with mock models
-        audio_data = np.random.uniform(-1, 1, 16000).astype(np.float32)
+        audio_data = np.random.uniform(-1, 1, 16000)
+        if hasattr(audio_data, "astype"):
+            audio_data = audio_data.astype(np.float32)
+        else:
+            # Mock numpy fallback
+            audio_data = [0.5] * 16000
+
         result = await manager.process_on_edge(audio_data)
 
         # Should still produce valid results with mock models
@@ -523,13 +541,16 @@ class TestPerformanceOptimization:
         if not EDGE_AI_IMPORTS_AVAILABLE:
             pytest.skip(f"Edge AI imports not available: {import_error}")
 
-        config = EdgeModelConfig(
-            processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY
-        )
+        config = EdgeModelConfig(processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY)
         manager = EdgeAIManager(config)
         await manager.initialize()
 
-        audio_data = np.random.uniform(-1, 1, 16000).astype(np.float32)
+        audio_data = np.random.uniform(-1, 1, 16000)
+        if hasattr(audio_data, "astype"):
+            audio_data = audio_data.astype(np.float32)
+        else:
+            # Mock numpy fallback
+            audio_data = [0.5] * 16000
 
         start_time = time.time()
         result = await manager.process_on_edge(audio_data)

@@ -1,30 +1,52 @@
+"""Phase 2: Architecture Modernization Tests
+Comprehensive test suite for dependency injection, event-driven architecture,
+plugin system, microservices, and state management
+"""
+
+import asyncio
+import sys
+import tempfile
+import time
+import uuid
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+
+from infrastructure.dependency_injection.container import (
+    CircularDependencyError,
+    DependencyNotFoundError,
+    LifecycleScope,
+    create_container,
+)
+from infrastructure.messaging.event_driven_architecture import (
+    Command,
+    EventType,
+    InMemoryCommandBus,
+    InMemoryQueryBus,
+    Query,
+    create_command,
+    create_event,
+    create_query,
+)
+from infrastructure.microservices.service_orchestrator import (
+    LoadBalancer,
+    LoadBalancingStrategy,
+    ServiceInstance,
+    ServiceStatus,
+    create_service_definition,
+    create_service_instance,
+)
+from infrastructure.security.plugin_architecture import (
+    PluginSandbox,
+    PluginType,
+    SecurityError,
+    create_plugin_manager,
+    create_plugin_manifest,
+)
 from infrastructure.state.application_state_manager import (
     ApplicationStateManager,
     StateScope,
     create_state_manager,
 )
-from infrastructure.security.plugin_architecture import (
-    PluginType,
-    create_plugin_manager,
-    create_plugin_manifest,
-)
-from infrastructure.messaging.event_driven_architecture import (
-    EventType,
-    Command,
-    Query,
-    InMemoryCommandBus,
-    InMemoryQueryBus,
-    create_event,
-    create_command,
-    create_query,
-)
-from datetime import datetime, timezone, timedelta
-import uuid
-import time
-import tempfile
-import asyncio
-import sys
-from pathlib import Path
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -35,20 +57,11 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-"""
-Phase 2: Architecture Modernization Tests
-Comprehensive test suite for dependency injection, event-driven architecture, plugin system, microservices, and state management
-"""
-
+# Import after path setup
 
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -456,18 +469,11 @@ class TestMicroservicesOrchestrator:
         assert service.name == "test-service"
         assert service.version == "1.0.0"
         assert len(service.instances) == 2
-        assert (
-            service.load_balancing_strategy
-            == LoadBalancingStrategy.ROUND_ROBIN
-        )
+        assert service.load_balancing_strategy == LoadBalancingStrategy.ROUND_ROBIN
 
     @pytest.mark.asyncio
     async def test_load_balancer_round_robin(self):
         """Test load balancer round robin strategy"""
-        from infrastructure.microservices.service_orchestrator import (
-            LoadBalancer,
-        )
-
         load_balancer = LoadBalancer()
 
         # Mock service instances
@@ -492,10 +498,6 @@ class TestMicroservicesOrchestrator:
     @pytest.mark.asyncio
     async def test_load_balancer_random(self):
         """Test load balancer random strategy"""
-        from infrastructure.microservices.service_orchestrator import (
-            LoadBalancer,
-        )
-
         load_balancer = LoadBalancer()
 
         instances = [
@@ -523,9 +525,7 @@ class TestApplicationStateManager:
         state_manager = create_state_manager()
 
         # Set state
-        await state_manager.set_state(
-            "test_key", "test_value", StateScope.REQUEST
-        )
+        await state_manager.set_state("test_key", "test_value", StateScope.REQUEST)
 
         # Get state
         value = await state_manager.get_state("test_key", StateScope.REQUEST)
@@ -554,15 +554,11 @@ class TestApplicationStateManager:
             )
 
             # Verify state exists
-            value = await state_manager.get_state(
-                "request_key", StateScope.REQUEST
-            )
+            value = await state_manager.get_state("request_key", StateScope.REQUEST)
             assert value == "request_value"
 
         # After context exit, request scope should be cleared
-        value = await state_manager.get_state(
-            "request_key", StateScope.REQUEST
-        )
+        value = await state_manager.get_state("request_key", StateScope.REQUEST)
         assert value is None
 
     @pytest.mark.asyncio
@@ -577,9 +573,7 @@ class TestApplicationStateManager:
             )
 
             # Verify state exists
-            value = await state_manager.get_state(
-                "session_key", StateScope.SESSION
-            )
+            value = await state_manager.get_state("session_key", StateScope.SESSION)
             assert value == "session_value"
 
     @pytest.mark.asyncio
@@ -588,9 +582,7 @@ class TestApplicationStateManager:
         state_manager = create_state_manager()
 
         # Set state with expiration
-        expires_at = datetime.now(timezone.utc).replace(
-            microsecond=0
-        ) + timedelta(seconds=1)
+        expires_at = datetime.now(UTC).replace(microsecond=0) + timedelta(seconds=1)
         await state_manager.set_state(
             "expiring_key",
             "expiring_value",
@@ -599,18 +591,14 @@ class TestApplicationStateManager:
         )
 
         # State should exist initially
-        value = await state_manager.get_state(
-            "expiring_key", StateScope.REQUEST
-        )
+        value = await state_manager.get_state("expiring_key", StateScope.REQUEST)
         assert value == "expiring_value"
 
         # Wait for expiration
         await asyncio.sleep(1.1)
 
         # State should be expired
-        value = await state_manager.get_state(
-            "expiring_key", StateScope.REQUEST
-        )
+        value = await state_manager.get_state("expiring_key", StateScope.REQUEST)
         assert value is None
 
 
@@ -739,14 +727,10 @@ class TestPerformance:
         # Test bulk operations
         start_time = time.time()
         for i in range(1000):
-            await state_manager.set_state(
-                f"key_{i}", f"value_{i}", StateScope.REQUEST
-            )
+            await state_manager.set_state(f"key_{i}", f"value_{i}", StateScope.REQUEST)
 
         for i in range(1000):
-            value = await state_manager.get_state(
-                f"key_{i}", StateScope.REQUEST
-            )
+            value = await state_manager.get_state(f"key_{i}", StateScope.REQUEST)
             assert value == f"value_{i}"
 
         operation_time = time.time() - start_time
@@ -799,11 +783,6 @@ class TestSecurity:
     @pytest.mark.asyncio
     async def test_plugin_sandboxing(self):
         """Test plugin sandboxing security"""
-        from infrastructure.security.plugin_architecture import (
-            PluginSandbox,
-            SecurityError,
-        )
-
         # Test dangerous operations
         sandbox = PluginSandbox("test_plugin", [])
 
@@ -822,26 +801,14 @@ class TestSecurity:
         state_manager = create_state_manager()
 
         # Set state in different scopes
-        await state_manager.set_state(
-            "key", "request_value", StateScope.REQUEST
-        )
-        await state_manager.set_state(
-            "key", "session_value", StateScope.SESSION
-        )
-        await state_manager.set_state(
-            "key", "app_value", StateScope.APPLICATION
-        )
+        await state_manager.set_state("key", "request_value", StateScope.REQUEST)
+        await state_manager.set_state("key", "session_value", StateScope.SESSION)
+        await state_manager.set_state("key", "app_value", StateScope.APPLICATION)
 
         # Verify isolation
-        request_value = await state_manager.get_state(
-            "key", StateScope.REQUEST
-        )
-        session_value = await state_manager.get_state(
-            "key", StateScope.SESSION
-        )
-        app_value = await state_manager.get_state(
-            "key", StateScope.APPLICATION
-        )
+        request_value = await state_manager.get_state("key", StateScope.REQUEST)
+        session_value = await state_manager.get_state("key", StateScope.SESSION)
+        app_value = await state_manager.get_state("key", StateScope.APPLICATION)
 
         assert request_value == "request_value"
         assert session_value == "session_value"

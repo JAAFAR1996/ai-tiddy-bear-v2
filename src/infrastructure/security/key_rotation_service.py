@@ -88,19 +88,13 @@ class KeyStorage(Protocol):
         key_type: KeyType,
         key_id: str,
         key_data: dict[str, Any],
-    ) -> None:
-        ...
+    ) -> None: ...
 
-    def retrieve_key(
-        self, key_type: KeyType, key_id: str
-    ) -> dict[str, Any] | None:
-        ...
+    def retrieve_key(self, key_type: KeyType, key_id: str) -> dict[str, Any] | None: ...
 
-    def get_active_key_id(self, key_type: KeyType) -> str | None:
-        ...
+    def get_active_key_id(self, key_type: KeyType) -> str | None: ...
 
-    def set_active_key_id(self, key_type: KeyType, key_id: str) -> None:
-        ...
+    def set_active_key_id(self, key_type: KeyType, key_id: str) -> None: ...
 
 
 class KeyRotationService:
@@ -111,9 +105,7 @@ class KeyRotationService:
         self.storage = storage
         self.rotation_lock = threading.Lock()
 
-    def generate_key(
-        self, key_type: KeyType, key_size: int = 256
-    ) -> tuple[str, str]:
+    def generate_key(self, key_type: KeyType, key_size: int = 256) -> tuple[str, str]:
         """Generate a new key and key ID."""
         key = secrets.token_bytes(key_size // 8)
         key_id = hashlib.sha256(key).hexdigest()

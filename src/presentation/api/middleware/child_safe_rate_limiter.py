@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
-from typing import Dict
 import json
+from datetime import datetime, timedelta
+
 from fastapi import Request, Response
+
 from src.domain.constants import RATE_LIMIT_RETRY_AFTER_SECONDS
 
 
@@ -9,7 +10,7 @@ class ChildSafeRateLimiter:
     """Rate limiter with child - friendly error messages."""
 
     def __init__(self) -> None:
-        self.request_counts: Dict[str, list] = {}
+        self.request_counts: dict[str, list] = {}
         self.child_endpoints = ["/esp32", "/ai/generate", "/audio", "/voice"]
 
     def is_rate_limited(self, request: Request) -> bool:
@@ -30,22 +31,16 @@ class ChildSafeRateLimiter:
         # Different limits for different endpoints
         if self._is_child_endpoint(endpoint):
             # More restrictive for child endpoints
-            return (
-                len(self.request_counts[client_ip]) > 20
-            )  # 20 requests per minute
-        else:
-            # Standard rate limit
-            return (
-                len(self.request_counts[client_ip]) > 60
-            )  # 60 requests per minute
+            return len(self.request_counts[client_ip]) > 20  # 20 requests per minute
+        # Standard rate limit
+        return len(self.request_counts[client_ip]) > 60  # 60 requests per minute
 
     def create_rate_limit_response(self, request: Request) -> Response:
         """Create appropriate rate limit response."""
         endpoint = str(request.url.path)
         if self._is_child_endpoint(endpoint):
             return self._create_child_friendly_response()
-        else:
-            return self._create_standard_response()
+        return self._create_standard_response()
 
     def _get_client_ip(self, request: Request) -> str:
         """Extract client IP address."""

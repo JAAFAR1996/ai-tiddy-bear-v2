@@ -1,5 +1,5 @@
-from collections import defaultdict
 import os
+from collections import defaultdict
 
 report_file = "flake8_report.txt"
 output_file = "flake8_report_grouped.txt"
@@ -23,5 +23,4 @@ with open(report_file, encoding="utf-8") as f:
 with open(output_file, "w", encoding="utf-8") as f:
     for folder in sorted(problems_by_dir):
         f.write(f"\n=== {folder} ===\n")
-        for problem in problems_by_dir[folder]:
-            f.write(problem + "\n")
+        f.writelines(problem + "\n" for problem in problems_by_dir[folder])

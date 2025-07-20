@@ -1,22 +1,21 @@
-"""
-Integration Tests for Pagination and Monitoring Systems
+"""Integration Tests for Pagination and Monitoring Systems
 
 Tests the complete integration of pagination and monitoring features
 with child safety compliance.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from typing import List, Dict
 
-from src.infrastructure.pagination import (
-    PaginationService,
-    PaginationRequest,
-    SortOrder,
-)
+import pytest
+
 from src.infrastructure.monitoring import (
-    monitoring_service,
     AlertSeverity,
+    monitoring_service,
+)
+from src.infrastructure.pagination import (
+    PaginationRequest,
+    PaginationService,
+    SortOrder,
 )
 from src.presentation.api.endpoints.conversations_paginated import (
     ConversationPaginationService,
@@ -149,9 +148,7 @@ class TestMonitoringIntegration:
 
     def test_child_safety_event_recording(self):
         """Test child safety event recording and alerting."""
-        initial_events = len(
-            monitoring_service.child_safety_monitor.safety_events
-        )
+        initial_events = len(monitoring_service.child_safety_monitor.safety_events)
 
         # Record a child safety event
         monitoring_service.record_child_safety_event(
@@ -168,18 +165,14 @@ class TestMonitoringIntegration:
         )
 
         # Check latest event
-        latest_event = monitoring_service.child_safety_monitor.safety_events[
-            -1
-        ]
+        latest_event = monitoring_service.child_safety_monitor.safety_events[-1]
         assert latest_event["child_id"] == "child_123"
         assert latest_event["event_type"] == "inappropriate_content_blocked"
         assert latest_event["severity"] == "medium"
 
     def test_emergency_alert_creation(self):
         """Test emergency alert creation for critical child safety events."""
-        initial_alerts = len(
-            monitoring_service.child_safety_monitor.safety_alerts
-        )
+        initial_alerts = len(monitoring_service.child_safety_monitor.safety_alerts)
 
         # Record an emergency event
         monitoring_service.record_child_safety_event(
@@ -191,8 +184,7 @@ class TestMonitoringIntegration:
 
         # Check emergency alert was created
         assert (
-            len(monitoring_service.child_safety_monitor.safety_alerts)
-            > initial_alerts
+            len(monitoring_service.child_safety_monitor.safety_alerts) > initial_alerts
         )
 
         # Find the emergency alert
@@ -371,9 +363,7 @@ class TestIntegratedWorkflow:
         safety_dashboard = await dashboard_service.get_child_safety_dashboard()
 
         assert safety_dashboard["total_events"] >= 6
-        assert (
-            "inappropriate_content_blocked" in safety_dashboard["event_types"]
-        )
+        assert "inappropriate_content_blocked" in safety_dashboard["event_types"]
         assert safety_dashboard["active_alerts"] > 0
 
     def test_performance_monitoring_integration(self):
@@ -381,7 +371,7 @@ class TestIntegratedWorkflow:
         from src.infrastructure.monitoring import monitor_performance
 
         @monitor_performance("test_paginated_function")
-        def sample_paginated_function(items: List[Dict], page_size: int):
+        def sample_paginated_function(items: list[dict], page_size: int):
             """Sample function with performance monitoring."""
             # Simulate processing time
             import time

@@ -1,11 +1,11 @@
-"""
-Production readiness integration tests.
+"""Production readiness integration tests.
 Tests that verify the system can start and operate without mocks.
 """
 
-import pytest
 import os
 from unittest.mock import patch
+
+import pytest
 
 
 class TestProductionReadiness:
@@ -74,15 +74,12 @@ class TestProductionReadiness:
         mock_imports = []
         for file_path in production_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
                     if "from.*mock" in content or "import.*mock" in content:
                         # Exclude legitimate test fixtures in conftest.py or
                         # test files
-                        if (
-                            "conftest.py" not in file_path
-                            and "test_" not in file_path
-                        ):
+                        if "conftest.py" not in file_path and "test_" not in file_path:
                             mock_imports.append(file_path)
             except (UnicodeDecodeError, FileNotFoundError):
                 pass
@@ -112,11 +109,12 @@ class TestProductionReadiness:
 
     def test_database_service_uses_sqlalchemy_orm(self):
         """Test that database service uses proper ORM (no string interpolation)."""
+        import ast
+        import inspect
+
         from src.infrastructure.persistence.real_database_service import (
             DatabaseService,
         )
-        import inspect
-        import ast
 
         # Get the source code of critical methods
         methods_to_check = [
@@ -155,10 +153,14 @@ class TestProductionReadiness:
 
     def test_coppa_service_uses_real_encryption(self):
         """Test that COPPA service uses real Fernet encryption."""
-        from src.infrastructure.security.hardening.coppa_compliance import (
-            COPPAComplianceService,
-        )
         from cryptography.fernet import Fernet
+
+        from src.infrastructure.security.coppa_validator import (
+            COPPAValidator,
+            coppa_validator,
+            is_coppa_subject,
+            requires_parental_consent
+        )
 
         # Test with proper encryption key
         encryption_key = Fernet.generate_key().decode()
@@ -175,18 +177,17 @@ class TestProductionReadiness:
 
     def test_auth_service_uses_real_jwt(self):
         """Test that auth service uses real JWT implementation."""
+        import secrets
+
+        import jwt
+
         from src.infrastructure.security.real_auth_service import (
             ProductionAuthService,
         )
-        import jwt
-
-        import secrets
 
         auth_service = ProductionAuthService()
         # Generate secure test key dynamically - never hardcode
-        auth_service.secret_key = secrets.token_urlsafe(
-            32
-        )  # - مفتاح ديناميكي آمن
+        auth_service.secret_key = secrets.token_urlsafe(32)  # - مفتاح ديناميكي آمن
 
         # Create test user data
         user_data = {"id": "test_user", "email": "test@example.com"}
@@ -199,9 +200,7 @@ class TestProductionReadiness:
         assert len(parts) == 3, "Should be a valid JWT format"
 
         # Verify it can be decoded with real JWT library
-        decoded = jwt.decode(
-            token, auth_service.secret_key, algorithms=["HS256"]
-        )
+        decoded = jwt.decode(token, auth_service.secret_key, algorithms=["HS256"])
         assert decoded["id"] == "test_user"
 
     def test_ai_service_requires_real_openai_key(self):
@@ -229,12 +228,10 @@ class TestProductionReadiness:
         files_with_prints = []
         for file_path in production_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     lines = f.readlines()
                     for i, line in enumerate(lines):
-                        if "print(" in line and not line.strip().startswith(
-                            "#"
-                        ):
+                        if "print(" in line and not line.strip().startswith("#"):
                             files_with_prints.append(f"{file_path}:{i+1}")
             except (UnicodeDecodeError, FileNotFoundError):
                 pass
@@ -248,6 +245,7 @@ class TestProductionReadiness:
         """Test that the application can start with proper environment."""
         # Set up minimal valid environment with dynamically generated keys
         import secrets
+
         from cryptography.fernet import Fernet
 
         test_env = {
@@ -272,9 +270,7 @@ class TestProductionReadiness:
                 # If dependencies are missing, that's expected in test
                 # environment
                 if "pydantic" in str(e) or "fastapi" in str(e):
-                    pytest.skip(
-                        f"Dependencies not available in test environment: {e}"
-                    )
+                    pytest.skip(f"Dependencies not available in test environment: {e}")
                 else:
                     raise
 
@@ -297,8 +293,11 @@ class TestSecurityCompliance:
 
     def test_coppa_age_validation(self):
         """Test COPPA age validation works correctly."""
-        from src.infrastructure.security.hardening.coppa_compliance import (
-            COPPAComplianceService,
+        from src.infrastructure.security.coppa_validator import (
+            COPPAValidator,
+            coppa_validator,
+            is_coppa_subject,
+            requires_parental_consent
         )
 
         service = COPPAComplianceService()
@@ -308,16 +307,17 @@ class TestSecurityCompliance:
         result_too_young = service.validate_child_age(2)  # Too young
         result_too_old = service.validate_child_age(15)  # Too old
 
-        assert result_compliant["compliant"] == True
+        assert result_compliant["compliant"]
         assert result_too_young["compliant"] == False
         assert result_too_old["compliant"] == False
 
     def test_data_encryption_is_reversible(self):
         """Test that encrypted data can be properly decrypted."""
+        from cryptography.fernet import Fernet
+
         from src.infrastructure.security.hardening.coppa_compliance import (
             COPPAComplianceService,
         )
-        from cryptography.fernet import Fernet
 
         encryption_key = Fernet.generate_key().decode()
         service = COPPAComplianceService(encryption_key=encryption_key)

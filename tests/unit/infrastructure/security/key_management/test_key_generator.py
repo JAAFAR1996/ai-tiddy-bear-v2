@@ -1,11 +1,12 @@
-"""
-Test Key Generator
+"""Test Key Generator
 
 Comprehensive unit tests for KeyGenerator with algorithm coverage and child data security.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from src.infrastructure.security.key_management.key_generator import (
     KeyGenerator,
 )
@@ -24,9 +25,7 @@ class TestKeyGeneration:
     def test_generate_aes_256_key(self, key_generator):
         """Test AES-256 key generation."""
         # Act
-        key_id, key_data = key_generator.generate_key(
-            KeyType.ENCRYPTION, "AES-256"
-        )
+        key_id, key_data = key_generator.generate_key(KeyType.ENCRYPTION, "AES-256")
 
         # Assert
         assert key_id is not None
@@ -37,9 +36,7 @@ class TestKeyGeneration:
     def test_generate_aes_128_key(self, key_generator):
         """Test AES-128 key generation."""
         # Act
-        key_id, key_data = key_generator.generate_key(
-            KeyType.SESSION, "AES-128"
-        )
+        key_id, key_data = key_generator.generate_key(KeyType.SESSION, "AES-128")
 
         # Assert
         assert key_id is not None
@@ -50,9 +47,7 @@ class TestKeyGeneration:
     def test_generate_chacha20_key(self, key_generator):
         """Test ChaCha20 key generation."""
         # Act
-        key_id, key_data = key_generator.generate_key(
-            KeyType.SIGNING, "ChaCha20"
-        )
+        key_id, key_data = key_generator.generate_key(KeyType.SIGNING, "ChaCha20")
 
         # Assert
         assert key_id is not None
@@ -63,9 +58,7 @@ class TestKeyGeneration:
     def test_generate_child_data_key_uses_chacha20(self, key_generator):
         """Test that child data keys always use ChaCha20 for enhanced security."""
         # Act
-        key_id, key_data = key_generator.generate_key(
-            KeyType.CHILD_DATA, "AES-256"
-        )
+        key_id, key_data = key_generator.generate_key(KeyType.CHILD_DATA, "AES-256")
 
         # Assert
         assert key_id is not None
@@ -97,9 +90,7 @@ class TestKeyGeneration:
         # Generate multiple keys
         keys = []
         for _ in range(10):
-            key_id, key_data = key_generator.generate_key(
-                KeyType.SESSION, "AES-256"
-            )
+            key_id, key_data = key_generator.generate_key(KeyType.SESSION, "AES-256")
             keys.append((key_id, key_data))
 
         # Check uniqueness
@@ -130,9 +121,7 @@ class TestKeyGeneratorEdgeCases:
         results = []
 
         def generate_key():
-            key_id, key_data = key_generator.generate_key(
-                KeyType.ENCRYPTION, "AES-256"
-            )
+            key_id, key_data = key_generator.generate_key(KeyType.ENCRYPTION, "AES-256")
             results.append((key_id, key_data))
 
         # Create multiple threads
@@ -155,27 +144,19 @@ class TestKeyGeneratorEdgeCases:
         """Test that algorithm key sizes are consistent."""
         # Test multiple generations of same algorithm
         for _ in range(5):
-            _, key_data = key_generator.generate_key(
-                KeyType.ENCRYPTION, "AES-256"
-            )
+            _, key_data = key_generator.generate_key(KeyType.ENCRYPTION, "AES-256")
             assert len(key_data) == 32
 
         for _ in range(5):
-            _, key_data = key_generator.generate_key(
-                KeyType.SESSION, "AES-128"
-            )
+            _, key_data = key_generator.generate_key(KeyType.SESSION, "AES-128")
             assert len(key_data) == 16
 
         for _ in range(5):
-            _, key_data = key_generator.generate_key(
-                KeyType.SIGNING, "ChaCha20"
-            )
+            _, key_data = key_generator.generate_key(KeyType.SIGNING, "ChaCha20")
             assert len(key_data) == 32
 
     @patch("secrets.token_bytes")
-    def test_key_generation_failure_handling(
-        self, mock_token_bytes, key_generator
-    ):
+    def test_key_generation_failure_handling(self, mock_token_bytes, key_generator):
         """Test handling of key generation failures."""
         # Mock failure
         mock_token_bytes.side_effect = Exception("Random generation failed")

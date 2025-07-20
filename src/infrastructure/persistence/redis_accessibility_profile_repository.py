@@ -52,9 +52,7 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
                         1.0,
                     ),
                     volume_level=profile_data_dict.get("volume_level", 0.8),
-                    subtitles_enabled=profile_data_dict.get(
-                        "subtitles_enabled", False
-                    ),
+                    subtitles_enabled=profile_data_dict.get("subtitles_enabled", False),
                     additional_settings=profile_data_dict.get(
                         "additional_settings",
                         {},

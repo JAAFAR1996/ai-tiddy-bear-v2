@@ -1,18 +1,17 @@
-"""
-Production-grade test suite covering all safety features
-"""
+"""Production-grade test suite covering all safety features"""
 
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
+from src.domain.value_objects import ChildAge
+from src.infrastructure.ai.production_ai_service import ProductionAIService
 from src.infrastructure.security.coppa.consent_manager import ConsentManager
 from src.infrastructure.security.coppa.data_models import (
     ParentConsent,
 )
-from src.infrastructure.ai.production_ai_service import ProductionAIService
-from src.domain.value_objects import ChildAge
 
 
 class TestCOPPACompliance:
@@ -34,13 +33,9 @@ class TestCOPPACompliance:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_parental_consent_valid(
-        self, consent_manager, sample_consent
-    ):
+    async def test_verify_parental_consent_valid(self, consent_manager, sample_consent):
         """Test valid parental consent verification"""
-        with patch(
-            "src.infrastructure.persistence.database.get_database"
-        ) as mock_db:
+        with patch("src.infrastructure.persistence.database.get_database") as mock_db:
             # Mock database response with valid consent
             mock_session = AsyncMock()
             mock_result = AsyncMock()
@@ -70,9 +65,7 @@ class TestCOPPACompliance:
     @pytest.mark.asyncio
     async def test_verify_parental_consent_expired(self, consent_manager):
         """Test expired consent rejection"""
-        with patch(
-            "src.infrastructure.persistence.database.get_database"
-        ) as mock_db:
+        with patch("src.infrastructure.persistence.database.get_database") as mock_db:
             # Mock database response with no consent found
             mock_session = AsyncMock()
             mock_result = AsyncMock()
@@ -246,8 +239,7 @@ class TestRateLimiting:
     @pytest.mark.asyncio
     async def test_login_rate_limiting(self):
         """Test that login attempts are rate limited"""
-        from src.presentation.api.endpoints.auth import login
-        from src.presentation.api.endpoints.auth import LoginRequest
+        from src.presentation.api.endpoints.auth import LoginRequest, login
 
         with patch(
             "infrastructure.security.rate_limiter.get_rate_limiter"
@@ -257,9 +249,7 @@ class TestRateLimiting:
             mock_rate_limiter.check_rate_limit.return_value = False
             mock_limiter.return_value = mock_rate_limiter
 
-            request = LoginRequest(
-                email="test@example.com", password="test123"
-            )
+            request = LoginRequest(email="test@example.com", password="test123")
 
             with pytest.raises(Exception):  # Should raise HTTPException
                 await login(request, client_ip="192.168.1.1")
@@ -267,16 +257,13 @@ class TestRateLimiting:
     @pytest.mark.asyncio
     async def test_rate_limiter_mandatory(self):
         """Test that missing rate limiter causes service failure"""
-        from src.presentation.api.endpoints.auth import login
-        from src.presentation.api.endpoints.auth import LoginRequest
+        from src.presentation.api.endpoints.auth import LoginRequest, login
 
         with patch(
             "infrastructure.security.rate_limiter.get_rate_limiter",
             side_effect=ImportError(),
         ):
-            request = LoginRequest(
-                email="test@example.com", password="test123"
-            )
+            request = LoginRequest(email="test@example.com", password="test123")
 
             with pytest.raises(
                 Exception

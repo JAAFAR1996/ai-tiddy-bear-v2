@@ -1,10 +1,23 @@
-from application.interfaces.speech_processor import SpeechProcessor as IVoiceService
-from application.interfaces.ai_provider import AIProvider as IAIService
-from typing import List
-import logging
-from unittest.mock import Mock
+#!/usr/bin/env python3
+"""🧪 Tests for Clean Dependency Injection Container
+Testing the new dependency-injector based container
+"""
+
 import sys
 from pathlib import Path
+from unittest.mock import Mock
+
+from application.interfaces.ai_provider import AIProvider as IAIService
+from application.interfaces.speech_processor import SpeechProcessor as IVoiceService
+from infrastructure.container.app_container import (
+    ContainerContext,
+    TestContainer,
+    configure_container,
+    container,
+)
+from src.application.services.session.session_manager import AsyncSessionManager
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -15,26 +28,20 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-#!/usr/bin/env python3
-"""
-🧪 Tests for Clean Dependency Injection Container
-Testing the new dependency-injector based container
-"""
+# Import after path setup
 
+
+logger = get_logger(__name__, component="test")
 
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
     # Mock pytest when not available
-
     class MockPytest:
         def fixture(self, *args, **kwargs):
             def decorator(func):
                 return func
+
             return decorator
 
         def mark(self):
@@ -42,6 +49,7 @@ except ImportError:
                 def parametrize(self, *args, **kwargs):
                     def decorator(func):
                         return func
+
                     return decorator
 
                 def asyncio(self, func):
@@ -53,7 +61,9 @@ except ImportError:
                 def skip(self, reason=""):
                     def decorator(func):
                         return func
+
                     return decorator
+
             return MockMark()
 
         def raises(self, exception):
@@ -63,43 +73,31 @@ except ImportError:
 
                 def __exit__(self, *args):
                     return False
+
             return MockRaises()
 
         def skip(self, reason=""):
             def decorator(func):
                 return func
+
             return decorator
+
+        def main(self, args):
+            return 0
 
     pytest = MockPytest()
 
-    from infrastructure.container.app_container import (
-        ContainerContext,
-        TestContainer,
-        configure_container,
-        container,
-    )
-    ContainerContext,
-    TestContainer,
-    configure_container,
-    container,
-)
-from infrastructure.session_manager.session_manager import SessionManager
 
-from src.infrastructure.logging_config import get_logger
-
-logger= get_logger(__name__, component="test")
-
-
-@ pytest.fixture
+@pytest.fixture
 def test_container():
     """Create test container with overrides"""
     return TestContainer()
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_container_configuration():
     """Test container configuration"""
-    config= {
+    config = {
         "database_url": "sqlite+aiosqlite:///:memory:",
         "debug": True,
         "openai_api_key": "",

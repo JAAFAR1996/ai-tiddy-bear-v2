@@ -5,9 +5,13 @@ from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.child_data_encryption import (
     ChildDataEncryption,
 )
-from src.infrastructure.security.coppa_compliance_service import (
-    COPPAComplianceService,
+from src.infrastructure.security.coppa_validator import (
+    COPPAValidator,
+    coppa_validator,
+    is_coppa_subject,
+    requires_parental_consent
 )
+
 
 logger = get_logger(__name__, component="security")
 
@@ -17,7 +21,7 @@ class ChildDataSecurityManager:
 
     def __init__(self, encryption_key: str | None = None) -> None:
         self.encryption = ChildDataEncryption(encryption_key)
-        self.coppa_service = COPPAComplianceService(self.encryption)
+        self.coppa_service = COPPAValidatorService(self.encryption)
 
     def secure_child_profile(
         self,
@@ -65,16 +69,12 @@ class ChildDataSecurityManager:
         """Get child data for interaction with COPPA check."""
         try:
             # Decrypt data
-            decrypted_data = self.encryption.decrypt_child_data(
-                encrypted_child_data
-            )
+            decrypted_data = self.encryption.decrypt_child_data(encrypted_child_data)
 
             # Check data expiration
             coppa_info = encrypted_child_data.get("_coppa_compliance", {})
             if coppa_info.get("data_retention_expires"):
-                expiry = datetime.fromisoformat(
-                    coppa_info["data_retention_expires"]
-                )
+                expiry = datetime.fromisoformat(coppa_info["data_retention_expires"])
                 if datetime.utcnow() > expiry:
                     raise ValueError(
                         "Child data retention period expired - data access denied",

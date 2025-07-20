@@ -108,9 +108,7 @@ class SecureString(SecureFieldInterface[str]):
     a clean domain interface for working with sensitive strings.
     """
 
-    def __init__(
-        self, value: str, encryption_service: EncryptionServiceInterface
-    ):
+    def __init__(self, value: str, encryption_service: EncryptionServiceInterface):
         """Initialize secure string.
 
         Args:

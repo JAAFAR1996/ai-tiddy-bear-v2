@@ -1,10 +1,11 @@
-from src.infrastructure.logging_config import get_logger
 import asyncio
-import time
-from typing import List
-import aiohttp
 import sys
+import time
 from pathlib import Path
+
+import aiohttp
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -54,11 +55,9 @@ class ConcurrentUserTest:
 
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
-        self.results: List[dict] = []
+        self.results: list[dict] = []
 
-    async def simulate_user_session(
-        self, session: aiohttp.ClientSession, user_id: int
-    ):
+    async def simulate_user_session(self, session: aiohttp.ClientSession, user_id: int):
         """Simulate a complete user session"""
         start_time = time.time()
         try:
@@ -107,10 +106,7 @@ class ConcurrentUserTest:
     async def run_concurrent_test(self, num_users: int = 50):
         """Run concurrent user test"""
         async with aiohttp.ClientSession() as session:
-            tasks = [
-                self.simulate_user_session(session, i)
-                for i in range(num_users)
-            ]
+            tasks = [self.simulate_user_session(session, i) for i in range(num_users)]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             successful = sum(
                 1

@@ -43,9 +43,7 @@ class KeyGenerator:
 
         # Enhanced security for child data keys
         if key_type == KeyType.CHILD_DATA:
-            algorithm = (
-                "ChaCha20"  # Better performance and security for child data
-            )
+            algorithm = "ChaCha20"  # Better performance and security for child data
 
         # Generate key based on algorithm
         key_size = self.algorithm_key_sizes.get(algorithm)

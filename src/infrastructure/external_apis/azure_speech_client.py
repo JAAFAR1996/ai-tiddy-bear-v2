@@ -33,8 +33,7 @@ class AzureSpeechClient:
         voice_name: str = "en-US-JennyNeural",
     ) -> bytes:
         tts_url = (
-            f"https://{self.region}.tts.speech.microsoft.com/"
-            "cognitiveservices/v1"
+            f"https://{self.region}.tts.speech.microsoft.com/" "cognitiveservices/v1"
         )
         tts_headers = {
             "Ocp-Apim-Subscription-Key": self.api_key,

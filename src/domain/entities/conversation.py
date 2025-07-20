@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 from uuid import UUID, uuid4
 
 """
@@ -28,7 +27,7 @@ class Conversation:
     id: UUID
     child_id: UUID
     start_time: datetime
-    end_time: Optional[datetime]
+    end_time: datetime | None
     summary: str
     emotion_analysis: str
     sentiment_score: float
@@ -85,7 +84,7 @@ class Conversation:
         """
         return self.end_time is None
 
-    def duration_minutes(self) -> Optional[float]:
+    def duration_minutes(self) -> float | None:
         """Gets the conversation duration in minutes.
 
         Returns:
@@ -104,9 +103,7 @@ class Conversation:
         """
         self.summary = summary
 
-    def update_analysis(
-        self, emotion_analysis: str, sentiment_score: float
-    ) -> None:
+    def update_analysis(self, emotion_analysis: str, sentiment_score: float) -> None:
         """Updates the emotion analysis and sentiment score.
 
         Args:

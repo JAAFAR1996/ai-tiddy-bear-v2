@@ -91,11 +91,7 @@ class ChildSafetySummary(BaseModel):
         """Create safety summary from safety events data."""
         safety_score = max(0, 100 - len(safety_events) * 5)
         content_filtered = len(
-            [
-                e
-                for e in safety_events
-                if e.get("event_type") == "content_filter"
-            ],
+            [e for e in safety_events if e.get("event_type") == "content_filter"],
         )
         return cls(
             child_id=child_id,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any
 from uuid import UUID
 
 """
@@ -37,30 +37,28 @@ class ChildData:
     """
 
     id: UUID = field(metadata={"description": "Unique child identifier"})
-    name: str = field(
-        metadata={"description": "Child name (will be encrypted)"}
-    )
+    name: str = field(metadata={"description": "Child name (will be encrypted)"})
     age: int = field(
         metadata={"description": "Child age (3-13 years, COPPA compliant)"}
     )
-    preferences: Dict[str, Any] = field(
+    preferences: dict[str, Any] = field(
         default_factory=dict,
         metadata={"description": "Child preferences and settings"},
     )
-    parent_id: Optional[UUID] = field(
+    parent_id: UUID | None = field(
         default=None, metadata={"description": "Parent/guardian identifier"}
     )
     consent_granted: bool = field(
         default=False, metadata={"description": "Parental consent status"}
     )
-    consent_date: Optional[datetime] = field(
+    consent_date: datetime | None = field(
         default=None, metadata={"description": "Consent grant timestamp"}
     )
     data_created: datetime = field(
         default_factory=datetime.utcnow,
         metadata={"description": "Data creation timestamp"},
     )
-    last_interaction: Optional[datetime] = field(
+    last_interaction: datetime | None = field(
         default=None, metadata={"description": "Last interaction timestamp"}
     )
     encrypted_data: bool = field(
@@ -98,8 +96,7 @@ class ChildData:
 
             if not self.consent_date:
                 raise ValueError(
-                    "COPPA Compliance: Consent date required when consent is "
-                    "granted"
+                    "COPPA Compliance: Consent date required when consent is " "granted"
                 )
 
         # Data retention check (90 days maximum)

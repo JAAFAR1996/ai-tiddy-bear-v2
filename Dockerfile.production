@@ -139,7 +139,7 @@ alembic upgrade head
 echo "🔧 Initializing production database..."
 python -c "
 import asyncio
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 
 async def init_db():
     db = Database()

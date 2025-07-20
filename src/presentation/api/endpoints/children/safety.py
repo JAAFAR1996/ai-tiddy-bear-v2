@@ -63,13 +63,9 @@ class ChildSafetyManager:
             # Get safety events from database
             db_service = get_database_service()
             safety_events = await db_service.get_safety_events(child_id)
-            return ChildSafetySummary.from_safety_events(
-                child_id, safety_events
-            )
+            return ChildSafetySummary.from_safety_events(child_id, safety_events)
         except Exception as e:
-            logger.error(
-                f"Error getting safety summary for child {child_id}: {e}"
-            )
+            logger.error(f"Error getting safety summary for child {child_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to get safety summary: {e!s}",
@@ -134,18 +130,14 @@ class ChildSafetyManager:
             deduction = score_deductions.get(event_type, 5)
 
             if not DATABASE_AVAILABLE:
-                logger.info(
-                    f"Mock safety score updated: -{deduction} for {event_type}"
-                )
+                logger.info(f"Mock safety score updated: -{deduction} for {event_type}")
                 return max(0, 100 - deduction)
 
             # Get current safety score from database
             db_service = get_database_service()
             try:
                 # This would be implemented with a real get_safety_score method
-                current_score = (
-                    100  # Temporary fallback - needs real implementation
-                )
+                current_score = 100  # Temporary fallback - needs real implementation
                 new_score = max(0, current_score - deduction)
 
                 success = await db_service.update_safety_score(
@@ -155,14 +147,10 @@ class ChildSafetyManager:
                 )
 
                 if not success:
-                    logger.error(
-                        f"Failed to update safety score for child {child_id}"
-                    )
+                    logger.error(f"Failed to update safety score for child {child_id}")
                     raise RuntimeError("Safety score update failed")
             except Exception as e:
-                logger.error(
-                    f"Error updating safety score for child {child_id}: {e}"
-                )
+                logger.error(f"Error updating safety score for child {child_id}: {e}")
                 raise
 
             # Send alert if score drops significantly
@@ -206,9 +194,7 @@ class ChildSafetyManager:
             logger.error(f"Error sending safety alert: {e}")
 
     @staticmethod
-    async def get_safety_events(
-        child_id: str, limit: int = 10
-    ) -> list[dict[str, Any]]:
+    async def get_safety_events(child_id: str, limit: int = 10) -> list[dict[str, Any]]:
         """Get safety events for child."""
         try:
             if not DATABASE_AVAILABLE:
@@ -328,9 +314,7 @@ class PrivacyProtectionManager:
     """Privacy protection manager."""
 
     @staticmethod
-    def validate_data_sharing(
-        data: dict[str, Any], child_age: int
-    ) -> dict[str, Any]:
+    def validate_data_sharing(data: dict[str, Any], child_age: int) -> dict[str, Any]:
         """Validate data sharing safety."""
         try:
             sensitive_fields = [
@@ -440,9 +424,7 @@ class UsageMonitor:
             return {"error": str(e)}
 
     @staticmethod
-    async def get_usage_statistics(
-        child_id: str, days: int = 7
-    ) -> dict[str, Any]:
+    async def get_usage_statistics(child_id: str, days: int = 7) -> dict[str, Any]:
         """Get usage statistics."""
         try:
             if not DATABASE_AVAILABLE:
@@ -490,9 +472,7 @@ async def validate_interaction_safety(
     child_age: int,
 ) -> dict[str, Any]:
     """Validate interaction safety."""
-    return ContentSafetyFilter.validate_interaction_safety(
-        interaction_data, child_age
-    )
+    return ContentSafetyFilter.validate_interaction_safety(interaction_data, child_age)
 
 
 async def track_child_usage(

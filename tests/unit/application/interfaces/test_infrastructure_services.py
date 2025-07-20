@@ -1,25 +1,25 @@
-"""
-Comprehensive test suite for application/interfaces/infrastructure_services.py
+"""Comprehensive test suite for application/interfaces/infrastructure_services.py
 
 This test file validates all infrastructure service interfaces including
 encryption, data retention, parent verification, audit logging, access control,
 content filtering, email services, settings, and event bus functionality.
 """
 
-import pytest
 from abc import ABC
-from typing import List, Dict, Any
+from typing import Any
+
+import pytest
 
 from src.application.interfaces.infrastructure_services import (
-    IEncryptionService,
-    IDataRetentionService,
-    IParentVerificationService,
-    IAuditLogger,
     IAccessControlService,
+    IAuditLogger,
     IContentFilterService,
+    IDataRetentionService,
     IEmailService,
-    ISettingsProvider,
+    IEncryptionService,
     IEventBus,
+    IParentVerificationService,
+    ISettingsProvider,
 )
 
 
@@ -59,9 +59,7 @@ class MockDataRetentionService(IDataRetentionService):
         self.exported_data = {}
         self.deleted_ids = []
 
-    async def schedule_deletion(
-        self, child_id: str, retention_days: int
-    ) -> None:
+    async def schedule_deletion(self, child_id: str, retention_days: int) -> None:
         self.schedule_deletion_called = True
         self.scheduled_deletions[child_id] = retention_days
 
@@ -71,7 +69,7 @@ class MockDataRetentionService(IDataRetentionService):
         self.exported_data[child_id] = export_data
         return export_data
 
-    async def delete_expired_data(self) -> List[str]:
+    async def delete_expired_data(self) -> list[str]:
         self.delete_expired_data_called = True
         return self.deleted_ids
 
@@ -89,7 +87,7 @@ class MockParentVerificationService(IParentVerificationService):
         self,
         parent_id: str,
         verification_method: str,
-        verification_data: Dict[str, Any],
+        verification_data: dict[str, Any],
     ) -> bool:
         self.verify_parent_identity_called = True
         self.last_verification = {
@@ -99,7 +97,7 @@ class MockParentVerificationService(IParentVerificationService):
         }
         return self.verification_result
 
-    async def get_verification_methods(self) -> List[str]:
+    async def get_verification_methods(self) -> list[str]:
         self.get_verification_methods_called = True
         return self.verification_methods
 
@@ -138,7 +136,7 @@ class MockAuditLogger(IAuditLogger):
         child_id: str,
         consent_type: str,
         action: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> None:
         self.log_consent_change_called = True
         self.logged_consent_events.append(
@@ -172,7 +170,7 @@ class MockAccessControlService(IAccessControlService):
         }
         return self.access_result
 
-    async def get_parent_children(self, parent_id: str) -> List[str]:
+    async def get_parent_children(self, parent_id: str) -> list[str]:
         self.get_parent_children_called = True
         return self.parent_children.get(parent_id, [])
 
@@ -191,7 +189,7 @@ class MockContentFilterService(IContentFilterService):
 
     async def filter_content(
         self, content: str, child_age: int, context: str = "general"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         self.filter_content_called = True
         self.last_filter_request = {
             "content": content,
@@ -216,7 +214,7 @@ class MockEmailService(IEmailService):
         self.sent_emails = []
 
     async def send_email(
-        self, to: str, subject: str, template: str, context: Dict[str, Any]
+        self, to: str, subject: str, template: str, context: dict[str, Any]
     ) -> bool:
         self.send_email_called = True
         self.sent_emails.append(
@@ -270,7 +268,7 @@ class MockSettingsProvider(ISettingsProvider):
         self.get_encryption_key_called = True
         return self.encryption_key
 
-    def get_coppa_settings(self) -> Dict[str, Any]:
+    def get_coppa_settings(self) -> dict[str, Any]:
         self.get_coppa_settings_called = True
         return self.coppa_settings
 
@@ -288,15 +286,11 @@ class MockEventBus(IEventBus):
         self.published_events = []
         self.subscriptions = {}
 
-    async def publish_event(
-        self, event_name: str, data: Dict[str, Any]
-    ) -> None:
+    async def publish_event(self, event_name: str, data: dict[str, Any]) -> None:
         self.publish_event_called = True
         self.published_events.append({"event_name": event_name, "data": data})
 
-    async def subscribe_to_events(
-        self, event_names: List[str], handler
-    ) -> None:
+    async def subscribe_to_events(self, event_names: list[str], handler) -> None:
         self.subscribe_to_events_called = True
         for event_name in event_names:
             if event_name not in self.subscriptions:
@@ -467,9 +461,7 @@ class TestInfrastructureServiceInterfaces:
         service = MockContentFilterService()
 
         # Test filter_content
-        result = await service.filter_content(
-            "test content", 8, "conversation"
-        )
+        result = await service.filter_content("test content", 8, "conversation")
         assert service.filter_content_called
         assert result == {"is_safe": True, "filtered_content": "safe content"}
         assert service.last_filter_request["content"] == "test content"
@@ -561,9 +553,7 @@ class TestInfrastructureServiceInterfaces:
         def handler(event):
             return None
 
-        await bus.subscribe_to_events(
-            ["child_registered", "child_updated"], handler
-        )
+        await bus.subscribe_to_events(["child_registered", "child_updated"], handler)
         assert bus.subscribe_to_events_called
         assert "child_registered" in bus.subscriptions
         assert "child_updated" in bus.subscriptions
@@ -808,9 +798,7 @@ class TestInfrastructureServiceInterfaces:
         filter_result = await content_filter.filter_content("test", 8)
         assert isinstance(filter_result, dict)
 
-        topic_result = await content_filter.validate_topic(
-            "animals", "child_123"
-        )
+        topic_result = await content_filter.validate_topic("animals", "child_123")
         assert isinstance(topic_result, bool)
 
         # Test email service return types

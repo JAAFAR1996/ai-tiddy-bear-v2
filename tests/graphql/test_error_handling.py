@@ -61,9 +61,7 @@ async def auth_service(auth_config):
     return await create_auth_service(auth_config)
 
 
-@pytest.mark.skipif(
-    not FEDERATION_AVAILABLE, reason="Federation not available"
-)
+@pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
 class TestErrorHandling:
     """Test error handling in federation."""
 

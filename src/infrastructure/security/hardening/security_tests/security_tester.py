@@ -60,9 +60,7 @@ class SecurityTester:
                 results["passed_tests"] += 1
             else:
                 results["failed_tests"] += 1
-            results["test_results"].append(
-                {"test_name": name, "result": result}
-            )
+            results["test_results"].append({"test_name": name, "result": result})
 
         logger.info("✅ Security tests completed.")
         return results

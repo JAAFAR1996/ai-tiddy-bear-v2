@@ -1,41 +1,36 @@
-"""Defines general application configuration settings.
-
-This module uses Pydantic to manage environment variables and provide
-structured access to core application settings, such as environment,
-debug mode, application name and version, HTTPS enablement, CORS origins,
-trusted hosts, session duration, child-specific endpoints, and age limits.
-"""
-
+# src/infrastructure/config/application_settings.py
 from pathlib import Path
-
 from pydantic import Field
-
-from src.common import constants  # Import the constants module
+from src.common import constants
 from src.infrastructure.config.base_settings import BaseApplicationSettings
 
-
 class ApplicationSettings(BaseApplicationSettings):
-    """General application configuration settings."""
-
-    ENVIRONMENT: str = Field("development", env="ENVIRONMENT")
-    DEBUG: bool = Field(False, env="DEBUG")
-    APP_NAME: str = Field("AI Teddy Bear System", env="APP_NAME")
-    APP_VERSION: str = Field("2.0.0", env="APP_VERSION")
-    ENABLE_HTTPS: bool = Field(True, env="ENABLE_HTTPS")
-    CORS_ORIGINS: list[str] | None = Field(None, env="CORS_ORIGINS")
-    TRUSTED_HOSTS: list[str] | None = Field(None, env="TRUSTED_HOSTS")
-    MAX_SESSION_DURATION_SECONDS: int = Field(
-        3600, env="MAX_SESSION_DURATION_SECONDS"
-    )
+    '''General application configuration settings.'''
+    
+    # إزالة env من جميع الحقول لمنع القراءة المباشرة
+    ENVIRONMENT: str = Field(default="development")
+    DEBUG: bool = Field(default=False)
+    APP_NAME: str = Field(default="AI Teddy Bear System")
+    APP_VERSION: str = Field(default="2.0.0")
+    ENABLE_HTTPS: bool = Field(default=True)
+    CORS_ORIGINS: list[str] | None = Field(default=None)
+    TRUSTED_HOSTS: list[str] | None = Field(default=None)
+    MAX_SESSION_DURATION_SECONDS: int = Field(default=3600)
     CHILD_ENDPOINTS: list[str] = Field(
-        constants.CHILD_SPECIFIC_API_ENDPOINTS,
-        env="CHILD_ENDPOINTS",  # Use the imported constant
+        default_factory=lambda: constants.CHILD_SPECIFIC_API_ENDPOINTS
     )
-    MIN_CHILD_AGE: int = Field(3, env="MIN_CHILD_AGE")
-    MAX_CHILD_AGE: int = Field(13, env="MAX_CHILD_AGE")
+    MIN_CHILD_AGE: int = Field(default=3)
+    MAX_CHILD_AGE: int = Field(default=13)
     PROJECT_ROOT: Path = Field(
-        Path(__file__).parent.parent.parent.parent.resolve(),
-        env="PROJECT_ROOT",
-    )  # Ensure PROJECT_ROOT is a Path object directly.
-    STATIC_FILES_DIR: str = Field("static", env="STATIC_FILES_DIR")
-    # Add other general application settings here
+        default_factory=lambda: Path(__file__).parent.parent.parent.parent.resolve()
+    )
+    STATIC_FILES_DIR: str = Field(default="static")
+    
+    # المتغيرات الإضافية
+    ENABLE_AI_SERVICES: bool = Field(default=True)
+    USE_MOCK_SERVICES: bool = Field(default=False)
+    
+    # إعدادات السجلات
+    LOG_LEVEL: str = Field(default="INFO")
+    LOG_FORMAT: str = Field(default="json")
+    LOG_FILE: str = Field(default="logs/ai_teddy.log")

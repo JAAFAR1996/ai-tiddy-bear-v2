@@ -1,8 +1,7 @@
 """Security infrastructure."""
 
-from .child_data_encryption import ChildDataEncryption
 from .main_security_service import MainSecurityService, get_security_service
-from .rate_limiter import RateLimiter
+from .rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
 from .real_auth_service import (
     ProductionAuthService,
     get_current_parent,
@@ -10,7 +9,6 @@ from .real_auth_service import (
 )
 
 __all__ = [
-    "ChildDataEncryption",
     "MainSecurityService",
     "ProductionAuthService",
     "RateLimiter",

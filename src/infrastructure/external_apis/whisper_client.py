@@ -24,8 +24,7 @@ class WhisperClient:
         # Example of how to convert raw bytes to a numpy array (assuming float32, mono, 16kHz)
         # This is a highly simplified example and might not work for all audio inputs.
         audio_np = (
-            np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
-            / 32768.0
+            np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
         )
 
         result = self.model.transcribe(audio_np)

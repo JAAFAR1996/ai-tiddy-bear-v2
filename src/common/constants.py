@@ -83,6 +83,28 @@ LOG_RETENTION_DAYS = 30
 LOG_LEVEL_PRODUCTION = "WARNING"
 LOG_LEVEL_DEVELOPMENT = "DEBUG"
 SENSITIVE_LOG_INTERACTION_KEYS = [
+    "password",
+    "access_token",
+    "refresh_token",
+    "jwt",
+    "session",
+    "ssn",
+    "credit_card",
+    "card_number",
+    "cvv",
+    "secret",
+    "api_key",
+    "private_key",
+    "child_name",
+    "parent_name",
+    "email",
+    "phone",
+    "address",
+    "ip_address",
+    "child_id",
+    "parent_id",
+    "social_security_number",
+    "medical_record",
     "full_message_content",
     "raw_audio_data",
 ]  # Define keys to be excluded from child interaction logs.
@@ -92,6 +114,7 @@ MAX_ERROR_MESSAGE_LENGTH = 500
 ERROR_RETRY_ATTEMPTS = 3
 ERROR_RETRY_DELAY_SECONDS = 1
 CIRCUIT_BREAKER_FAILURE_THRESHOLD = 5
+
 
 # Event Store Constants
 class EventStoreType(Enum):
@@ -122,47 +145,8 @@ CHILD_SPECIFIC_API_ENDPOINTS = ["/api/v1/conversation", "/api/v1/voice"]
 # OpenAPI Documentation Constants
 OPENAPI_TITLE = "AI Teddy Bear API"
 OPENAPI_VERSION = "1.0.0"
-OPENAPI_DESCRIPTION = """## AI Teddy Bear - Child-Safe AI Companion API
-Production-ready API for AI Teddy Bear - A COPPA-compliant AI companion for children.
-### 🌟 Key Features
-- **Child-Safe AI Interactions**: Content filtering and age-appropriate responses
-- **COPPA Compliance**: Full compliance with Children's Online Privacy Protection Act
-- **Real-time Voice**: Voice interactions with safety monitoring
-- **Parental Controls**: Comprehensive controls and monitoring
-- **Educational Content**: Story generation and learning activities
-### 🔒 Security Features
-- JWT authentication with refresh tokens
-- Rate limiting on all endpoints (60 requests/minute)
-- Data encryption for all PII
-- Comprehensive audit logging
-- Account lockout protection
-### 📊 API Standards
-- RESTful design principles
-- Consistent error responses with tracking IDs
-- Pagination support on list endpoints
-- Request/response validation
-- CORS support for web clients
-### 🚀 Getting Started
-1. Register a parent account at `/auth/register`
-2. Login to receive JWT tokens at `/auth/login`
-3. Submit COPPA consent at `/coppa/consent`
-4. Create child profiles at `/children`
-5. Start conversations at `/conversations/chat`
-### 📝 Rate Limiting
-All endpoints are rate-limited to prevent abuse:
-- Standard endpoints: 60 requests/minute
-- Auth endpoints: 5 requests/minute
-- File uploads: 10 requests/minute
-### 🔍 Error Handling
-All errors include:
-- Unique `error_id` for tracking
-- Human-readable `message`
-- Optional `detail` for debugging
-- HTTP status codes following standards
-### 📖 Additional Resources
-- [API Status Page](https://status.aiteddybear.com]
-- [Developer Documentation](https://docs.aiteddybear.com]
-- [Support](mailto:support@aiteddybear.com)        """
+OPENAPI_DESCRIPTION = "AI Teddy Bear - Child-Safe AI Companion API"
+
 OPENAPI_SERVERS = [
     {"url": "https://api.aiteddybear.com/v1", "description": "Production"},
     {
@@ -230,25 +214,19 @@ OPENAPI_COMMON_RESPONSES = {
     "Unauthorized": {
         "description": "Unauthorized - Invalid or missing authentication",
         "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-            },
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
     "Forbidden": {
         "description": "Forbidden - Insufficient permissions",
         "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-            },
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
     "NotFound": {
         "description": "Not found - Resource does not exist",
         "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-            },
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
     "TooManyRequests": {
@@ -268,9 +246,7 @@ OPENAPI_COMMON_RESPONSES = {
             },
         },
         "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/Error"}
-            },
+            "application/json": {"schema": {"$ref": "#/components/schemas/Error"}},
         },
     },
 }

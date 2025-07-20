@@ -27,9 +27,7 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
         self.redis_client = redis_client
         self.logger = logger
 
-    async def get_profile_by_child_id(
-        self, child_id: UUID
-    ) -> ChildPersonality | None:
+    async def get_profile_by_child_id(self, child_id: UUID) -> ChildPersonality | None:
         key = self.PROFILE_KEY_PREFIX + str(child_id)
         try:
             profile_data_json = await self.redis_client.get(key)
@@ -40,9 +38,7 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
                 personality_type = PersonalityType[
                     profile_data_dict.get("personality_type", "OTHER").upper()
                 ]
-                last_updated = datetime.fromisoformat(
-                    profile_data_dict["last_updated"]
-                )
+                last_updated = datetime.fromisoformat(profile_data_dict["last_updated"])
 
                 profile = ChildPersonality(
                     child_id=UUID(profile_data_dict["child_id"]),

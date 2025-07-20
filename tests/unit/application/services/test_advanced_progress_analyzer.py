@@ -1,10 +1,10 @@
-"""
-Tests for Advanced Progress Analyzer
+"""Tests for Advanced Progress Analyzer
 Testing learning progress analysis and reporting for children.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 from freezegun import freeze_time
 
 from src.application.services.advanced_progress_analyzer import (
@@ -293,9 +293,7 @@ class TestAdvancedProgressAnalyzer:
         assert isinstance(metrics, ProgressMetrics)
 
         # Test with invalid interaction format
-        metrics = analyzer.analyze_progress(
-            child_id, [None, {}, {"invalid": "data"}]
-        )
+        metrics = analyzer.analyze_progress(child_id, [None, {}, {"invalid": "data"}])
         assert isinstance(metrics, ProgressMetrics)
 
     @pytest.mark.parametrize(
@@ -321,8 +319,6 @@ class TestAdvancedProgressAnalyzer:
 
         # Current mock returns 0.15, which should be reasonable for any level
         assert (
-            expected_rate_range[0]
-            <= metrics.improvement_rate
-            <= expected_rate_range[1]
+            expected_rate_range[0] <= metrics.improvement_rate <= expected_rate_range[1]
             or metrics.improvement_rate == 0.15
         )

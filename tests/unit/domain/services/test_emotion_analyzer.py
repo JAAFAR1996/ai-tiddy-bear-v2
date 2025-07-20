@@ -1,5 +1,4 @@
-"""
-Comprehensive tests for Emotion Analyzer Service
+"""Comprehensive tests for Emotion Analyzer Service
 Tests emotion detection from text and voice for child safety monitoring.
 """
 
@@ -37,18 +36,14 @@ class TestEmotionResult:
 
     def test_invalid_confidence(self):
         """Test emotion result with invalid confidence."""
-        with pytest.raises(
-            ValueError, match="Confidence must be between 0.0 and 1.0"
-        ):
+        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
             EmotionResult(
                 primary_emotion="happy",
                 confidence=1.5,
                 all_emotions={"happy": 1.5},
             )
 
-        with pytest.raises(
-            ValueError, match="Confidence must be between 0.0 and 1.0"
-        ):
+        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
             EmotionResult(
                 primary_emotion="happy",
                 confidence=-0.1,
@@ -373,9 +368,7 @@ class TestEmotionAnalyzer:
         )
         assert analyzer.requires_attention(emotion_result) is True
 
-    def test_requires_attention_high_arousal_negative_sentiment(
-        self, analyzer
-    ):
+    def test_requires_attention_high_arousal_negative_sentiment(self, analyzer):
         """Test attention requirement for high arousal with negative sentiment."""
         emotion_result = EmotionResult(
             primary_emotion="frustrated",
@@ -473,6 +466,6 @@ class TestEmotionAnalyzer:
         ]
         expected_emotions = ["happy", "sad", "frustrated", "curious"]
 
-        for text, expected in zip(texts, expected_emotions):
+        for text, expected in zip(texts, expected_emotions, strict=False):
             result = analyzer.analyze_text(text)
             assert result.primary_emotion == expected

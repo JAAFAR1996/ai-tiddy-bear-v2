@@ -1,5 +1,4 @@
 from domain.entities.emotion import EmotionType
-import numpy as np
 import sys
 from pathlib import Path
 
@@ -12,6 +11,7 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import numpy with fallback to mock
 try:
     import numpy as np
 except ImportError:
@@ -49,6 +49,8 @@ except ImportError:
     np = MockNumpy()
 
 
+# Import pytest with fallback to mock
+pytest = None
 try:
     import pytest
 except ImportError:
@@ -58,7 +60,9 @@ except ImportError:
         pass
 
     # Mock pytest when not available
-    class MockPytest:
+    if pytest is None:
+        class MockPytest:
+
         def fixture(self, *args, **kwargs):
             def decorator(func):
                 return func
@@ -103,7 +107,7 @@ except ImportError:
 
             return decorator
 
-    pytest = MockPytest()
+        pytest = MockPytest()
 
 
 class TestEmotionService:

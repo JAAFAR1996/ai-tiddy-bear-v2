@@ -111,9 +111,7 @@ class KafkaEventStore(EventStore):
                             "correlation_id",
                             str(uuid4()),
                         ),
-                        "causation_id": getattr(
-                            event, "causation_id", str(uuid4())
-                        ),
+                        "causation_id": getattr(event, "causation_id", str(uuid4())),
                     },
                 }
 
@@ -138,9 +136,7 @@ class KafkaEventStore(EventStore):
             )
             raise
         except Exception as e:
-            logger.error(
-                f"Failed to save events for aggregate {aggregate_id}: {e}"
-            )
+            logger.error(f"Failed to save events for aggregate {aggregate_id}: {e}")
             raise
 
     async def load_events(self, aggregate_id: UUID) -> list[Any]:
@@ -193,9 +189,7 @@ class KafkaEventStore(EventStore):
             )
             return events
         except Exception as e:
-            logger.error(
-                f"Failed to load events for aggregate {aggregate_id}: {e}"
-            )
+            logger.error(f"Failed to load events for aggregate {aggregate_id}: {e}")
             raise
 
     async def load_events_from_offset(

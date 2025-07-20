@@ -1,7 +1,5 @@
 """Cache configuration and constants"""
 
-from typing import Dict, Any
-
 
 class CacheConfig:
     """Cache configuration settings."""
@@ -37,7 +35,7 @@ def get_cache_key(prefix: str, identifier: str) -> str:
     return f"{prefix}{identifier}"
 
 
-def parse_cache_key(key: str) -> Dict[str, str]:
+def parse_cache_key(key: str) -> dict[str, str]:
     """Parse cache key into components."""
     parts = key.split(":", 1)
     if len(parts) == 2:

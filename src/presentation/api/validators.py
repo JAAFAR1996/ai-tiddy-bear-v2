@@ -27,10 +27,7 @@ class ChildValidationMixin:
         if not v or not v.strip():
             raise ValueError("Name cannot be empty")
         sanitized_name = v.strip()
-        if any(
-            char in sanitized_name
-            for char in ["<", ">", "&", '"', "'", "\x00"]
-        ):
+        if any(char in sanitized_name for char in ["<", ">", "&", '"', "'", "\x00"]):
             raise ValueError("Name contains invalid characters")
         dangerous_patterns = [
             "--",
@@ -52,9 +49,7 @@ class ChildValidationMixin:
         if v is None:
             return v
         if len(v) > MAX_INTERESTS_COUNT:
-            raise ValueError(
-                f"Maximum {MAX_INTERESTS_COUNT} interests allowed"
-            )
+            raise ValueError(f"Maximum {MAX_INTERESTS_COUNT} interests allowed")
         sanitized_interests = []
         for interest in v:
             if not isinstance(interest, str):
@@ -63,8 +58,7 @@ class ChildValidationMixin:
             if not sanitized_interest:
                 continue
             if any(
-                char in sanitized_interest
-                for char in ["<", ">", "&", '"', "'", "\x00"]
+                char in sanitized_interest for char in ["<", ">", "&", '"', "'", "\x00"]
             ):
                 raise ValueError(
                     f'Interest "{sanitized_interest}" contains invalid characters',

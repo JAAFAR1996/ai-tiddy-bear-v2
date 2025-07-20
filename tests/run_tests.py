@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""
-Test Runner for AI Teddy Bear
-"""
+"""Test Runner for AI Teddy Bear"""
 
-import sys
 import argparse
 import subprocess
+import sys
 from pathlib import Path
-from typing import List, Optional
 
 # Test suite configurations
 TEST_SUITES = {
@@ -63,7 +60,7 @@ class TestRunner:
         verbose: bool = False,
         quiet: bool = False,
         failfast: bool = False,
-        parallel: Optional[int] = None,
+        parallel: int | None = None,
     ) -> int:
         """Run a specific test suite"""
         if suite_name not in TEST_SUITES:
@@ -114,13 +111,13 @@ class TestRunner:
         cmd.append(str(self.tests_dir))
 
         # Run tests
-        result = subprocess.run(cmd, cwd=self.project_root)
+        result = subprocess.run(cmd, check=False, cwd=self.project_root)
 
         return result.returncode
 
     def run_specific_tests(
         self,
-        test_paths: List[str],
+        test_paths: list[str],
         verbose: bool = False,
         coverage: bool = True,
     ) -> int:
@@ -138,7 +135,7 @@ class TestRunner:
         # Add test paths
         cmd.extend(test_paths)
 
-        result = subprocess.run(cmd, cwd=self.project_root)
+        result = subprocess.run(cmd, check=False, cwd=self.project_root)
         return result.returncode
 
     def run_security_scan(self) -> int:
@@ -152,6 +149,7 @@ class TestRunner:
         print("\n🔍 Running Bandit security linter...")
         bandit_result = subprocess.run(
             ["python", "-m", "bandit", "-r", "src", "-ll"],
+            check=False,
             cwd=self.project_root,
         ).returncode
 
@@ -191,7 +189,7 @@ class TestRunner:
             "src/",
             "--exclude-dir=__pycache__",
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
         if result.stdout:
             print("⚠️  Potential secrets found:")
@@ -209,6 +207,7 @@ class TestRunner:
         print("Checking age verification implementation...")
         age_check = subprocess.run(
             ["grep", "-r", "age.*verification", "src/", "--include=*.py"],
+            check=False,
             capture_output=True,
         )
         if not age_check.stdout:
@@ -219,6 +218,7 @@ class TestRunner:
         print("Checking parental consent implementation...")
         consent_check = subprocess.run(
             ["grep", "-r", "parental.*consent", "src/", "--include=*.py"],
+            check=False,
             capture_output=True,
         )
         if not consent_check.stdout:
@@ -229,6 +229,7 @@ class TestRunner:
         print("Checking data retention policy...")
         retention_check = subprocess.run(
             ["grep", "-r", "data.*retention", "src/", "--include=*.py"],
+            check=False,
             capture_output=True,
         )
         if not retention_check.stdout:
@@ -238,8 +239,7 @@ class TestRunner:
         if checks_passed:
             print("✅ COPPA compliance checks passed")
             return 0
-        else:
-            return 1
+        return 1
 
     def generate_coverage_report(self) -> int:
         """Generate detailed coverage report"""
@@ -256,7 +256,7 @@ class TestRunner:
             str(self.tests_dir),
         ]
 
-        result = subprocess.run(cmd, cwd=self.project_root)
+        result = subprocess.run(cmd, check=False, cwd=self.project_root)
 
         if result.returncode == 0:
             print(
@@ -277,22 +277,14 @@ def main():
         + ["security-scan", "child-safety-validation", "coverage"],
         help="Test suite to run",
     )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Verbose output"
-    )
-    parser.add_argument(
-        "-q", "--quiet", action="store_true", help="Quiet output"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("-q", "--quiet", action="store_true", help="Quiet output")
     parser.add_argument(
         "-x", "--failfast", action="store_true", help="Stop on first failure"
     )
-    parser.add_argument(
-        "-n", "--parallel", type=int, help="Number of parallel workers"
-    )
+    parser.add_argument("-n", "--parallel", type=int, help="Number of parallel workers")
     parser.add_argument("-k", "--keyword", help="Run tests matching keyword")
-    parser.add_argument(
-        "--no-coverage", action="store_true", help="Disable coverage"
-    )
+    parser.add_argument("--no-coverage", action="store_true", help="Disable coverage")
 
     args = parser.parse_args()
 
@@ -303,9 +295,9 @@ def main():
     # Handle special commands
     if args.suite == "security-scan":
         return runner.run_security_scan()
-    elif args.suite == "child-safety-validation":
+    if args.suite == "child-safety-validation":
         return runner.run_child_safety_validation()
-    elif args.suite == "coverage":
+    if args.suite == "coverage":
         return runner.generate_coverage_report()
 
     # Handle keyword filtering
@@ -317,7 +309,7 @@ def main():
             cmd.extend(["--cov=src", "--cov-report=term-missing"])
         cmd.append(str(runner.tests_dir))
 
-        result = subprocess.run(cmd, cwd=project_root)
+        result = subprocess.run(cmd, check=False, cwd=project_root)
         return result.returncode
 
     # Run regular test suite

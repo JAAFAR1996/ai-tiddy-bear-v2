@@ -1,7 +1,8 @@
-from infrastructure.ai.real_ai_service import AIService
-from infrastructure.security.real_auth_service import AuthService
 import sys
 from pathlib import Path
+
+from infrastructure.ai.real_ai_service import AIService
+from infrastructure.security.real_auth_service import AuthService
 
 # Add src to path
 src_path = Path(__file__).parent

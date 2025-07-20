@@ -9,7 +9,7 @@ from uuid import uuid4
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.types import JSON
 
-from src.infrastructure.persistence.database import Base
+from src.infrastructure.persistence.models.base import Base
 
 
 class UserModel(Base):
@@ -40,9 +40,7 @@ class UserModel(Base):
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
 
     # Preferences and settings

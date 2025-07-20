@@ -1,6 +1,7 @@
 import asyncio
 import json
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -21,12 +22,10 @@ except ImportError as e:
     logger.critical(
         f"CRITICAL ERROR: confluent-kafka is required for production use: {e}"
     )
-    logger.critical(
-        "Install required dependencies: pip install confluent-kafka"
-    )
+    logger.critical("Install required dependencies: pip install confluent-kafka")
     logger.critical("Kafka event bus functionality will be disabled")
     raise ImportError(
-        f"Missing required dependency for Kafka event bus: confluent-kafka. Install with 'pip install confluent-kafka'"
+        "Missing required dependency for Kafka event bus: confluent-kafka. Install with 'pip install confluent-kafka'"
     ) from e
 
 from src.domain.events.domain_events import DomainEvent
@@ -46,12 +45,12 @@ class KafkaEventBus:
         self.client_id = client_id
         self.connected = True
         self.connection_timeout = 5  # 5 seconds timeout
-        self.producer: Optional[Producer] = None
-        self.consumers: Dict[str, Consumer] = {}
-        self.avro_serializers: Dict[str, AvroSerializer] = {}
-        self.avro_deserializers: Dict[str, AvroDeserializer] = {}
+        self.producer: Producer | None = None
+        self.consumers: dict[str, Consumer] = {}
+        self.avro_serializers: dict[str, AvroSerializer] = {}
+        self.avro_deserializers: dict[str, AvroDeserializer] = {}
         self.string_serializer = StringSerializer("utf_8")
-        self.handlers: Dict[str, Callable[[DomainEvent], Any]] = {}
+        self.handlers: dict[str, Callable[[DomainEvent], Any]] = {}
         self.running = False
         self.producer_config = {
             "bootstrap.servers": self.bootstrap_servers,
@@ -75,9 +74,7 @@ class KafkaEventBus:
             raise ConnectionError("Kafka not connected")
         if not self.producer:
             await self._attempt_connection()
-        topic = (
-            event.__class__.__name__.lower()
-        )  # Topic name from event class name
+        topic = event.__class__.__name__.lower()  # Topic name from event class name
         if topic not in self.avro_serializers:
             # Create mock schema for testing
             schema_str = json.dumps(
@@ -143,27 +140,21 @@ class KafkaEventBus:
                     if hasattr(msg, "error") and msg.error():
                         if (
                             hasattr(KafkaException, "_PARTITION_EOF")
-                            and msg.error().code()
-                            == KafkaException._PARTITION_EOF
+                            and msg.error().code() == KafkaException._PARTITION_EOF
                         ):
                             continue
-                        else:
-                            logger.error(f"Consumer error: {msg.error()}")
-                            break
+                        logger.error(f"Consumer error: {msg.error()}")
+                        break
                     deserializer = self.avro_deserializers.get(topic)
                     if deserializer:
                         event = deserializer(
                             msg.value(),
-                            SerializationContext(
-                                msg.topic(), MessageField.VALUE
-                            ),
+                            SerializationContext(msg.topic(), MessageField.VALUE),
                         )
                         if event and topic in self.handlers:
                             await self.handlers[topic](event)
                     else:
-                        logger.warning(
-                            f"No deserializer found for topic {topic}"
-                        )
+                        logger.warning(f"No deserializer found for topic {topic}")
                 except Exception as e:
                     logger.error(f"Failed to process message: {e}")
                     continue
@@ -174,7 +165,7 @@ class KafkaEventBus:
         for consumer in self.consumers.values():
             consumer.close()
 
-    def _delivery_report(self, err: Optional[Any], msg: Any) -> None:
+    def _delivery_report(self, err: Any | None, msg: Any) -> None:
         if err is not None:
             logger.error(f"Message delivery failed: {err}")
         else:
@@ -184,12 +175,11 @@ class KafkaEventBus:
 
     def _event_to_dict(
         self, event: DomainEvent, ctx: SerializationContext
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         # Convert dataclass to dictionary for Avro serialization
         if hasattr(event, "__dict__"):
             return event.__dict__
-        else:
-            return {"event_type": type(event).__name__}
+        return {"event_type": type(event).__name__}
 
     def __del__(self):
         """Cleanup resources when instance is destroyed"""

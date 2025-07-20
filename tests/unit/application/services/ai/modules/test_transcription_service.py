@@ -1,13 +1,13 @@
-"""
-Tests for AI Transcription Service Module
+"""Tests for AI Transcription Service Module
 Testing production-grade audio transcription with child safety filtering.
 """
 
-import pytest
-from unittest.mock import Mock, patch
-import tempfile
-import os
 import asyncio
+import os
+import tempfile
+from unittest.mock import Mock, patch
+
+import pytest
 
 from src.application.services.ai.modules.transcription_service import (
     TranscriptionService,
@@ -265,13 +265,9 @@ class TestTranscriptionService:
                 mock_wav_file.getnframes.return_value = 44100 * 5  # 5 seconds
                 mock_wav_file.getframerate.return_value = 44100
                 mock_wav_file.getnchannels.return_value = 1
-                mock_wave.open.return_value.__enter__.return_value = (
-                    mock_wav_file
-                )
+                mock_wave.open.return_value.__enter__.return_value = mock_wav_file
 
-                result = await service_with_engines._validate_audio_file(
-                    "test.wav"
-                )
+                result = await service_with_engines._validate_audio_file("test.wav")
 
                 assert result["valid"] is True
                 assert result["duration"] == 5.0
@@ -295,13 +291,9 @@ class TestTranscriptionService:
                 )  # 400 seconds (too long)
                 mock_wav_file.getframerate.return_value = 44100
                 mock_wav_file.getnchannels.return_value = 1
-                mock_wave.open.return_value.__enter__.return_value = (
-                    mock_wav_file
-                )
+                mock_wave.open.return_value.__enter__.return_value = mock_wav_file
 
-                result = await service_with_engines._validate_audio_file(
-                    "test.wav"
-                )
+                result = await service_with_engines._validate_audio_file("test.wav")
 
                 assert result["valid"] is False
                 assert "Audio too long" in result["error"]
@@ -315,9 +307,7 @@ class TestTranscriptionService:
             "src.application.services.ai.modules.transcription_service.AUDIO_PROCESSING_AVAILABLE",
             False,
         ):
-            result = await service_with_engines._validate_audio_file(
-                "test.wav"
-            )
+            result = await service_with_engines._validate_audio_file("test.wav")
 
             assert result["valid"] is True
             assert result["duration"] == 0
@@ -335,23 +325,17 @@ class TestTranscriptionService:
             ) as mock_wave:
                 mock_wave.open.side_effect = Exception("Invalid audio file")
 
-                result = await service_with_engines._validate_audio_file(
-                    "invalid.wav"
-                )
+                result = await service_with_engines._validate_audio_file("invalid.wav")
 
                 assert result["valid"] is False
                 assert "Audio validation failed" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_perform_transcription_whisper_success(
-        self, service_with_engines
-    ):
+    async def test_perform_transcription_whisper_success(self, service_with_engines):
         """Test transcription with Whisper engine success."""
         # Mock Whisper model
         mock_whisper_result = {"text": "مرحبا بك في عالم التكنولوجيا"}
-        service_with_engines.whisper_model.transcribe.return_value = (
-            mock_whisper_result
-        )
+        service_with_engines.whisper_model.transcribe.return_value = mock_whisper_result
 
         with patch("asyncio.get_event_loop") as mock_loop:
             mock_loop.return_value.run_in_executor.return_value = {
@@ -398,9 +382,7 @@ class TestTranscriptionService:
             assert result["confidence"] == 0.7
 
     @pytest.mark.asyncio
-    async def test_perform_transcription_all_engines_fail(
-        self, service_with_engines
-    ):
+    async def test_perform_transcription_all_engines_fail(self, service_with_engines):
         """Test transcription when all engines fail."""
         # Mock Whisper failure
         service_with_engines.whisper_model.transcribe.side_effect = Exception(
@@ -423,13 +405,9 @@ class TestTranscriptionService:
             assert result["confidence"] == 0.0
 
     @pytest.mark.asyncio
-    async def test_apply_safety_filters_safe_content(
-        self, service_with_engines
-    ):
+    async def test_apply_safety_filters_safe_content(self, service_with_engines):
         """Test safety filtering with safe content."""
-        transcription_result = {
-            "text": "مرحبا! كيف حالك اليوم؟ أريد أن ألعب معك."
-        }
+        transcription_result = {"text": "مرحبا! كيف حالك اليوم؟ أريد أن ألعب معك."}
 
         result = await service_with_engines._apply_safety_filters(
             transcription_result, "child_123"
@@ -440,13 +418,9 @@ class TestTranscriptionService:
         assert len(result["warnings"]) == 0
 
     @pytest.mark.asyncio
-    async def test_apply_safety_filters_unsafe_content(
-        self, service_with_engines
-    ):
+    async def test_apply_safety_filters_unsafe_content(self, service_with_engines):
         """Test safety filtering with unsafe content."""
-        transcription_result = {
-            "text": "What is your password and phone number?"
-        }
+        transcription_result = {"text": "What is your password and phone number?"}
 
         result = await service_with_engines._apply_safety_filters(
             transcription_result, "child_456"
@@ -461,9 +435,7 @@ class TestTranscriptionService:
         )
 
     @pytest.mark.asyncio
-    async def test_apply_safety_filters_empty_content(
-        self, service_with_engines
-    ):
+    async def test_apply_safety_filters_empty_content(self, service_with_engines):
         """Test safety filtering with empty content."""
         transcription_result = {"text": ""}
 
@@ -476,9 +448,7 @@ class TestTranscriptionService:
         assert len(result["warnings"]) == 0
 
     @pytest.mark.asyncio
-    async def test_apply_safety_filters_long_content(
-        self, service_with_engines
-    ):
+    async def test_apply_safety_filters_long_content(self, service_with_engines):
         """Test safety filtering with excessively long content."""
         long_text = "safe content " * 100  # > 1000 chars
         transcription_result = {"text": long_text}
@@ -565,9 +535,7 @@ class TestTranscriptionService:
                 }
 
                 try:
-                    await service_with_engines.transcribe_audio(
-                        sample_audio_data
-                    )
+                    await service_with_engines.transcribe_audio(sample_audio_data)
                 except ValueError:
                     pass  # Expected due to invalid format
 
@@ -597,9 +565,7 @@ class TestTranscriptionService:
             assert result["engine"] == "google"
 
     @pytest.mark.asyncio
-    async def test_concurrent_transcription_processing(
-        self, service_with_engines
-    ):
+    async def test_concurrent_transcription_processing(self, service_with_engines):
         """Test concurrent transcription processing."""
         audio_samples = [b"sample1" * 20, b"sample2" * 20, b"sample3" * 20]
 
@@ -667,9 +633,7 @@ class TestTranscriptionService:
                     assert len(results) == 3
                     assert all(r["success"] for r in results)
                     assert results[0]["transcription"] == "first transcription"
-                    assert (
-                        results[1]["transcription"] == "second transcription"
-                    )
+                    assert results[1]["transcription"] == "second transcription"
                     assert results[2]["transcription"] == "third transcription"
 
     @pytest.mark.asyncio
@@ -682,9 +646,7 @@ class TestTranscriptionService:
         ) as mock_validate:
             mock_validate.side_effect = Exception("Validation error")
 
-            with pytest.raises(
-                RuntimeError, match="Audio transcription failed"
-            ):
+            with pytest.raises(RuntimeError, match="Audio transcription failed"):
                 await service_with_engines.transcribe_audio(sample_audio_data)
 
     @pytest.mark.asyncio

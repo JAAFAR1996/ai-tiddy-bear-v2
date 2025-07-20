@@ -1,17 +1,18 @@
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from infrastructure.session_manager.session_manager import SessionManager
 from infrastructure.session_manager.session_models import (
     Session,
     SessionStatus,
 )
-from infrastructure.session_manager.session_manager import SessionManager
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy import text
-from datetime import datetime, timedelta
-import sys
-from pathlib import Path
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -22,68 +23,68 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """
 🧪 Tests for the Clean SessionManager
 Testing the new SQLite-based session management
 """
 
 
+# Import pytest with fallback to mock
+pytest = None
 try:
     import pytest
 except ImportError:
     try:
         from common.mock_pytest import pytest
     except ImportError:
-        pass
-
-    # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+        # Mock pytest when not available
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
 
-    pytest = MockPytest()
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
+
+        pytest = MockPytest()
 
 
 @pytest.fixture
@@ -227,9 +228,7 @@ async def test_cleanup_inactive_sessions(session_manager):
 
     # Update database directly to simulate old activity
     await session_manager.db.execute(
-        text(
-            "UPDATE sessions SET last_activity = :old_time WHERE id = :session_id"
-        ),
+        text("UPDATE sessions SET last_activity = :old_time WHERE id = :session_id"),
         {"old_time": old_time, "session_id": session_id},
     )
     await session_manager.db.commit()

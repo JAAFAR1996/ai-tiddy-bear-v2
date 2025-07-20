@@ -6,25 +6,25 @@
 # Import all models from the new modular structure for backward compatibility
 from src.infrastructure.persistence.models import (
     Base,
-    ParentModel,
     ChildModel,
+    ConsentModel,
+    ConsentType,
     ConversationModel,
     MessageModel,
-    ConsentModel,
+    ParentModel,
     SafetyEventModel,
-    ConsentType,
     SafetyEventType,
 )
 
 # Export all models for backward compatibility
 __all__ = [
     "Base",
-    "ParentModel",
     "ChildModel",
+    "ConsentModel",
+    "ConsentType",
     "ConversationModel",
     "MessageModel",
-    "ConsentModel",
+    "ParentModel",
     "SafetyEventModel",
-    "ConsentType",
     "SafetyEventType",
 ]

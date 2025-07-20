@@ -3,10 +3,10 @@
 Provides specialized repositories following Single Responsibility Principle.
 """
 
-from src.infrastructure.persistence.repositories.child_repository import (
+from src.infrastructure.persistence.child_repository import (
     ChildRepository,
 )
-from src.infrastructure.persistence.repositories.conversation_repository import (
+from src.infrastructure.persistence.conversation_repository import AsyncSQLAlchemyConversationRepo as ConversationRepository import (
     ConversationRepository,
 )
 from src.infrastructure.persistence.repositories.safety_repository import (

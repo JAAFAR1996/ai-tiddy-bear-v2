@@ -1,3 +1,5 @@
+"""Main router for all endpoints"""
+
 try:
     from fastapi import APIRouter
 
@@ -8,18 +10,14 @@ except ImportError as e:
         "Install with: pip install fastapi uvicorn",
     ) from e
 
-"""Main router for all endpoints"""
-
 from src.infrastructure.logging_config import get_logger
-
-logger = get_logger(__name__, component="api")
-
-# Import all endpoint routers
 from src.presentation.api.endpoints.auth import router as auth_router
 from src.presentation.api.endpoints.children import router as children_router
 from src.presentation.api.endpoints.conversations import (
     router as conversations_router,
 )
+
+logger = get_logger(__name__, component="api")
 
 # Create main API router
 api_router = APIRouter(prefix="/api/v1")
@@ -64,13 +62,3 @@ async def api_info():
             "Multilingual support",
         ],
     }
-
-
-# ✅ COPPA Consent Verification Integration
-# ConsentVerificationMiddleware should be applied at the FastAPI app level:
-# app.add_middleware(ConsentVerificationMiddleware, consent_required_paths={
-#     "/api/v1/process-audio": ["data_collection", "voice_recording"],
-#     "/api/v1/children": ["data_collection"],
-#     "/api/v1/conversations": ["data_collection", "usage_analytics"],
-# })
-# This ensures parental consent is verified at ALL child data collection points

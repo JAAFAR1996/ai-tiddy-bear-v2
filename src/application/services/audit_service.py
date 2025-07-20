@@ -18,9 +18,7 @@ class AuditService:
 
     def __init__(
         self,
-        logger: logging.Logger = get_logger(
-            __name__, component="audit_service"
-        ),
+        logger: logging.Logger = get_logger(__name__, component="audit_service"),
     ) -> None:
         """Initializes the audit service."""
         self.audit_logs: list[dict[str, Any]] = []
@@ -64,9 +62,7 @@ class AuditService:
             "coppa_compliant": True,
         }
         # Add child-specific information if present
-        if "child_id" in request_info.get(
-            "body", {}
-        ) or "child_id" in request_info.get(
+        if "child_id" in request_info.get("body", {}) or "child_id" in request_info.get(
             "query_params",
             {},
         ):

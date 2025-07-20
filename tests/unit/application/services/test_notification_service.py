@@ -1,16 +1,16 @@
-"""
-Tests for Notification Service
+"""Tests for Notification Service
 Testing notification management and delivery functionality.
 """
 
-import pytest
 from datetime import datetime
 from unittest.mock import patch
 
+import pytest
+
 from src.application.services.notification_service import (
+    NotificationChannel,
     NotificationService,
     NotificationType,
-    NotificationChannel,
 )
 
 
@@ -300,9 +300,7 @@ class TestNotificationService:
         recipients = ["parent_a", "parent_b", "parent_c"]
 
         for i, recipient in enumerate(recipients):
-            await service.send_notification(
-                recipient, f"Message for {recipient}"
-            )
+            await service.send_notification(recipient, f"Message for {recipient}")
 
         # Each recipient should have exactly one notification
         for recipient in recipients:
@@ -345,7 +343,7 @@ class TestNotificationService:
         # Send all notifications concurrently
         tasks = [
             service.send_notification(recipient, message)
-            for recipient, message in zip(recipients, messages)
+            for recipient, message in zip(recipients, messages, strict=False)
         ]
 
         results = await asyncio.gather(*tasks)
@@ -466,15 +464,11 @@ class TestNotificationService:
         message = "Attempts test"
 
         # Non-urgent notification
-        result1 = await service.send_notification(
-            recipient, message, urgent=False
-        )
+        result1 = await service.send_notification(recipient, message, urgent=False)
         assert result1["max_attempts"] == 1
 
         # Urgent notification
-        result2 = await service.send_notification(
-            recipient, message, urgent=True
-        )
+        result2 = await service.send_notification(recipient, message, urgent=True)
         assert result2["max_attempts"] == 3
 
     def test_service_state_isolation(self):

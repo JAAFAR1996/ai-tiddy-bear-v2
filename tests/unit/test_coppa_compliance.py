@@ -1,16 +1,16 @@
-"""
-Comprehensive Unit Tests for COPPA Compliance Service
-"""
+"""Comprehensive Unit Tests for COPPA Compliance Service"""
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from src.infrastructure.security.hardening.coppa_compliance import (
-    ProductionCOPPACompliance,
-    ChildData,
-    ConsentRecord,
+import pytest
+
+from src.infrastructure.security.coppa_validator import (
+    COPPAValidator,
+    coppa_validator,
+    is_coppa_subject,
+    requires_parental_consent
 )
 
 
@@ -76,10 +76,7 @@ class TestAgeValidation:
         assert result["severity"] == "high"
         assert "exceeds COPPA limit" in result["reason"]
         assert result["legal_risk"] == "high"
-        assert (
-            result["required_action"]
-            == "Service not available - COPPA violation"
-        )
+        assert result["required_action"] == "Service not available - COPPA violation"
 
     @pytest.mark.asyncio
     async def test_validate_age_too_young(self, coppa_service):
@@ -101,9 +98,7 @@ class TestAgeValidation:
         assert result["severity"] == "high"
         assert "invalid age" in result["reason"]
         assert result["legal_risk"] == "high"
-        assert (
-            result["required_action"] == "Service not available - Invalid age"
-        )
+        assert result["required_action"] == "Service not available - Invalid age"
 
     @pytest.mark.asyncio
     async def test_validate_age_boundary_min(self, coppa_service):
@@ -130,23 +125,16 @@ class TestAgeValidation:
         assert result["severity"] == "high"
         assert "exceeds COPPA limit" in result["reason"]
         assert result["legal_risk"] == "high"
-        assert (
-            result["required_action"]
-            == "Service not available - COPPA violation"
-        )
+        assert result["required_action"] == "Service not available - COPPA violation"
 
 
 class TestParentalConsent:
     """Test parental consent validation."""
 
     @pytest.mark.asyncio
-    async def test_validate_consent_valid(
-        self, coppa_service, valid_consent_data
-    ):
+    async def test_validate_consent_valid(self, coppa_service, valid_consent_data):
         """Test validation with valid consent data."""
-        result = await coppa_service.validate_parental_consent(
-            valid_consent_data
-        )
+        result = await coppa_service.validate_parental_consent(valid_consent_data)
 
         assert result["valid"] is True
         assert len(result["missing_fields"]) == 0
@@ -173,23 +161,17 @@ class TestParentalConsent:
         """Test validation with invalid email format."""
         valid_consent_data["parent_email"] = "not-an-email"
 
-        result = await coppa_service.validate_parental_consent(
-            valid_consent_data
-        )
+        result = await coppa_service.validate_parental_consent(valid_consent_data)
 
         assert result["valid"] is False
         assert "parent_email" in result["invalid_fields"]
 
     @pytest.mark.asyncio
-    async def test_validate_consent_denied(
-        self, coppa_service, valid_consent_data
-    ):
+    async def test_validate_consent_denied(self, coppa_service, valid_consent_data):
         """Test validation when consent is denied."""
         valid_consent_data["data_collection_consent"] = False
 
-        result = await coppa_service.validate_parental_consent(
-            valid_consent_data
-        )
+        result = await coppa_service.validate_parental_consent(valid_consent_data)
 
         assert result["valid"] is False
         assert "Missing data_collection_consent" in result["security_flags"]
@@ -299,30 +281,22 @@ class TestDataDeletion:
         assert "consent_records" in policy["data_types_to_retain"]
 
         # Check deletion date is 90 days from now
-        deletion_date = datetime.fromisoformat(
-            policy["scheduled_deletion_date"]
-        )
+        deletion_date = datetime.fromisoformat(policy["scheduled_deletion_date"])
         expected_date = datetime.utcnow() + timedelta(days=90)
         assert abs((deletion_date - expected_date).total_seconds()) < 60
 
     @pytest.mark.asyncio
-    async def test_schedule_data_deletion_custom_retention(
-        self, coppa_service
-    ):
+    async def test_schedule_data_deletion_custom_retention(self, coppa_service):
         """Test data deletion with custom retention period."""
         child_id = str(uuid4())
         retention_days = 30
 
-        policy = await coppa_service.schedule_data_deletion(
-            child_id, retention_days
-        )
+        policy = await coppa_service.schedule_data_deletion(child_id, retention_days)
 
         assert policy["retention_period_days"] == retention_days
 
         # Check deletion date is 30 days from now
-        deletion_date = datetime.fromisoformat(
-            policy["scheduled_deletion_date"]
-        )
+        deletion_date = datetime.fromisoformat(policy["scheduled_deletion_date"])
         expected_date = datetime.utcnow() + timedelta(days=retention_days)
         assert abs((deletion_date - expected_date).total_seconds()) < 60
 
@@ -339,9 +313,7 @@ class TestDataCollectionCompliance:
             "language": "en",
         }
 
-        result = coppa_service.check_data_collection_compliance(
-            data_to_collect
-        )
+        result = coppa_service.check_data_collection_compliance(data_to_collect)
 
         assert result["compliant"] is True
         assert len(result["prohibited_data_found"]) == 0
@@ -356,9 +328,7 @@ class TestDataCollectionCompliance:
             "age": 8,
         }
 
-        result = coppa_service.check_data_collection_compliance(
-            data_to_collect
-        )
+        result = coppa_service.check_data_collection_compliance(data_to_collect)
 
         assert result["compliant"] is False
         assert "last_name" in result["prohibited_data_found"]
@@ -374,14 +344,10 @@ class TestDataCollectionCompliance:
             "photos": "avatar_only",
         }
 
-        result = coppa_service.check_data_collection_compliance(
-            data_to_collect
-        )
+        result = coppa_service.check_data_collection_compliance(data_to_collect)
 
         assert len(result["recommendations"]) > 0
-        assert any(
-            "general location" in rec for rec in result["recommendations"]
-        )
+        assert any("general location" in rec for rec in result["recommendations"])
         assert any("photos" in rec for rec in result["recommendations"])
 
 

@@ -1,22 +1,22 @@
-"""
-Tests for Parental Consent Enforcement Service
+"""Tests for Parental Consent Enforcement Service
 Testing parental consent validation for child operations.
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
+
+import pytest
 from freezegun import freeze_time
 
-from src.domain.services.parental_consent_enforcer import (
-    ParentalConsentEnforcer,
-)
 from src.domain.models.consent_models import (
     ConsentRecord,
     ConsentStatus,
     ConsentType,
 )
 from src.domain.services.coppa_age_validation import AgeValidationResult
+from src.domain.services.parental_consent_enforcer import (
+    ParentalConsentEnforcer,
+)
 
 
 class TestParentalConsentEnforcer:
@@ -129,9 +129,7 @@ class TestParentalConsentEnforcer:
         assert len(consents) == 10  # Child requirements
 
     # Test validate_consent_for_operation
-    def test_validate_consent_adult_no_consent_required(
-        self, consent_enforcer
-    ):
+    def test_validate_consent_adult_no_consent_required(self, consent_enforcer):
         """Test validation for adult where no consent is required."""
         result = consent_enforcer.validate_consent_for_operation(
             child_id="adult_123",
@@ -299,9 +297,7 @@ class TestParentalConsentEnforcer:
         assert "Missing consent for" in result["message"]
 
     # Test helper methods
-    def test_find_consent_record(
-        self, consent_enforcer, sample_consent_record
-    ):
+    def test_find_consent_record(self, consent_enforcer, sample_consent_record):
         """Test finding consent record by type."""
         consent_records = [sample_consent_record]
 
@@ -361,13 +357,9 @@ class TestParentalConsentEnforcer:
         )
         assert consent_enforcer._is_consent_valid(expired_consent) is False
 
-    def test_consent_record_to_dict(
-        self, consent_enforcer, sample_consent_record
-    ):
+    def test_consent_record_to_dict(self, consent_enforcer, sample_consent_record):
         """Test converting consent record to dictionary."""
-        result = consent_enforcer._consent_record_to_dict(
-            sample_consent_record
-        )
+        result = consent_enforcer._consent_record_to_dict(sample_consent_record)
 
         assert result["consent_id"] == "consent_123"
         assert result["consent_type"] == ConsentType.DATA_COLLECTION.value
@@ -411,9 +403,7 @@ class TestParentalConsentEnforcer:
         summary = consent_enforcer.get_consent_requirements_summary(8)
 
         assert summary["child_age"] == 8
-        assert (
-            summary["age_validation"] == AgeValidationResult.VALID_CHILD.value
-        )
+        assert summary["age_validation"] == AgeValidationResult.VALID_CHILD.value
         assert summary["coppa_applicable"] is True
         assert summary["consent_required"] is True
         assert summary["total_required_consents"] == 10
@@ -425,9 +415,7 @@ class TestParentalConsentEnforcer:
         summary = consent_enforcer.get_consent_requirements_summary(15)
 
         assert summary["child_age"] == 15
-        assert (
-            summary["age_validation"] == AgeValidationResult.VALID_TEEN.value
-        )
+        assert summary["age_validation"] == AgeValidationResult.VALID_TEEN.value
         assert summary["coppa_applicable"] is False
         assert summary["consent_required"] is True
         assert summary["total_required_consents"] == 5
@@ -439,9 +427,7 @@ class TestParentalConsentEnforcer:
         summary = consent_enforcer.get_consent_requirements_summary(25)
 
         assert summary["child_age"] == 25
-        assert (
-            summary["age_validation"] == AgeValidationResult.VALID_ADULT.value
-        )
+        assert summary["age_validation"] == AgeValidationResult.VALID_ADULT.value
         assert summary["coppa_applicable"] is False
         assert summary["consent_required"] is False
         assert summary["total_required_consents"] == 0
@@ -452,30 +438,22 @@ class TestParentalConsentEnforcer:
     def test_get_compliance_level(self, consent_enforcer):
         """Test getting compliance level for different age validations."""
         assert (
-            consent_enforcer._get_compliance_level(
-                AgeValidationResult.VALID_CHILD
-            )
+            consent_enforcer._get_compliance_level(AgeValidationResult.VALID_CHILD)
             == "strict_coppa_compliance"
         )
 
         assert (
-            consent_enforcer._get_compliance_level(
-                AgeValidationResult.VALID_TEEN
-            )
+            consent_enforcer._get_compliance_level(AgeValidationResult.VALID_TEEN)
             == "moderate_parental_oversight"
         )
 
         assert (
-            consent_enforcer._get_compliance_level(
-                AgeValidationResult.VALID_ADULT
-            )
+            consent_enforcer._get_compliance_level(AgeValidationResult.VALID_ADULT)
             == "standard_privacy_protection"
         )
 
         assert (
-            consent_enforcer._get_compliance_level(
-                AgeValidationResult.TOO_YOUNG
-            )
+            consent_enforcer._get_compliance_level(AgeValidationResult.TOO_YOUNG)
             == "blocked_interaction"
         )
 

@@ -1,18 +1,19 @@
-"""Container module for dependency injection."""
+"""Dependency Injection Components Package.
 
-from .service_factory import ServiceFactory
+This package contains the core components for dependency injection,
+including wiring configurations and service factories.
+
+Note: APIWiringConfig, DashboardWiringConfig, and CoreWiringConfig 
+were removed as part of architectural simplification. The project 
+now uses FullWiringConfig directly.
+"""
+
 from .wiring_config import (
-    APIWiringConfig,
-    CoreWiringConfig,
-    DashboardWiringConfig,
+    WiringConfig,
     FullWiringConfig,
 )
 
-"""Container module for dependency injection."""
 __all__ = [
-    "APIWiringConfig",
-    "CoreWiringConfig",
-    "DashboardWiringConfig",
+    "WiringConfig", 
     "FullWiringConfig",
-    "ServiceFactory",
 ]

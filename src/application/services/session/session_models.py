@@ -1,11 +1,12 @@
 """Session Data Models
-Defines core data structures for async session management."""
+Defines core data structures for async session management.
+"""
 
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any
 
 
 class SessionStatus(str, Enum):
@@ -31,8 +32,8 @@ class AsyncSessionData:
     created_at: datetime = field(default_factory=datetime.utcnow)
     last_activity: datetime = field(default_factory=datetime.utcnow)
     status: SessionStatus = SessionStatus.ACTIVE
-    data: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     interaction_count: int = 0
     safety_score: float = 1.0
 
@@ -53,7 +54,7 @@ class AsyncSessionData:
         """Get total session duration."""
         return self.last_activity - self.created_at
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert session data to dictionary for serialization."""
         return {
             "session_id": self.session_id,

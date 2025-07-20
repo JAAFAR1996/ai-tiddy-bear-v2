@@ -1,6 +1,4 @@
-"""
-ChatGPT Integration Module for AI Teddy Bear
-"""
+"""ChatGPT Integration Module for AI Teddy Bear"""
 
 from .client import ChatGPTClient
 from .fallback_responses import FallbackResponseGenerator
@@ -9,14 +7,12 @@ from .safety_filter import SafetyFilter
 
 __all__ = [
     "ChatGPTClient",
-    "SafetyFilter",
-    "ResponseEnhancer",
     "FallbackResponseGenerator",
+    "ResponseEnhancer",
+    "SafetyFilter",
 ]
 
 # Version information
 __version__ = "1.0.0"
 __author__ = "AI Teddy Bear Team"
-__description__ = (
-    "Child-safe ChatGPT integration with comprehensive safety filtering"
-)
+__description__ = "Child-safe ChatGPT integration with comprehensive safety filtering"

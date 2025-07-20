@@ -55,9 +55,7 @@ async def federation_gateway(federation_config):
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(
-    not FEDERATION_AVAILABLE, reason="Federation not available"
-)
+@pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
 class TestFederationIntegration:
     """Integration tests for federation system."""
 
@@ -76,9 +74,7 @@ class TestFederationIntegration:
                         "name": "Test Child",
                         "age": 7,
                         "aiProfile": {
-                            "personalityTraits": [
-                                {"name": "Curious", "score": 0.85}
-                            ]
+                            "personalityTraits": [{"name": "Curious", "score": 0.85}]
                         },
                     }
                 }

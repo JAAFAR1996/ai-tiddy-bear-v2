@@ -1,30 +1,32 @@
 from enum import Enum
 
-
-class SafetyLevel(Enum):
+class SafetyLevel(str, Enum):
     NONE = "none"
     LOW = "low"
-    MODERATE = "moderate"
+    STRICT = "strict"        # Ages 3-6 (أضف الشرح المناسب حسب الحاجة)
+    MODERATE = "moderate"    # Ages 7-10
+    RELAXED = "relaxed"      # Ages 11-13
     HIGH = "high"
     CRITICAL = "critical"
 
     @classmethod
     def create_safe_level(cls) -> "SafetyLevel":
-        """Create a safe level instance."""
+        # اختر القيمة الافتراضية الأنسب لمشروعك (هنا NONE مثال)
         return cls.NONE
 
     def is_safe(self) -> bool:
-        """Check if the safety level indicates safe content."""
-        return self in [SafetyLevel.NONE, SafetyLevel.LOW]
+        # عدل هذا المنطق حسب ما يعتبر "آمن" فعلاً في مشروعك
+        return self in [SafetyLevel.NONE, SafetyLevel.LOW, SafetyLevel.STRICT, SafetyLevel.MODERATE, SafetyLevel.RELAXED]
 
     @property
     def level(self) -> int:
-        """Get numeric level for comparison."""
         level_map = {
             SafetyLevel.NONE: 0,
             SafetyLevel.LOW: 1,
-            SafetyLevel.MODERATE: 2,
-            SafetyLevel.HIGH: 3,
-            SafetyLevel.CRITICAL: 4,
+            SafetyLevel.STRICT: 2,
+            SafetyLevel.MODERATE: 3,
+            SafetyLevel.RELAXED: 4,
+            SafetyLevel.HIGH: 5,
+            SafetyLevel.CRITICAL: 6,
         }
         return level_map.get(self, 0)

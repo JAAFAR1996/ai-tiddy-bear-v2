@@ -57,9 +57,7 @@ class ConversationService:
         await self.conversation_repo.save(conversation)
         return conversation
 
-    async def get_conversation_history(
-        self, child_id: UUID
-    ) -> list[Conversation]:
+    async def get_conversation_history(self, child_id: UUID) -> list[Conversation]:
         """Retrieves the conversation history for a child.
 
         Args:
@@ -71,9 +69,7 @@ class ConversationService:
         """
         return await self.conversation_repo.find_by_child_id(child_id)
 
-    async def _get_conversation_by_id(
-        self, conversation_id: UUID
-    ) -> Conversation:
+    async def _get_conversation_by_id(self, conversation_id: UUID) -> Conversation:
         """Retrieves a conversation by its ID with error handling.
 
         Args:
@@ -88,9 +84,7 @@ class ConversationService:
         """
         conversation = await self.conversation_repo.get_by_id(conversation_id)
         if not conversation:
-            raise ValueError(
-                f"Conversation with ID {conversation_id} not found."
-            )
+            raise ValueError(f"Conversation with ID {conversation_id} not found.")
         return conversation
 
     async def update_conversation_analysis(
@@ -162,9 +156,7 @@ class ConversationService:
             self.logger.info(
                 f"No active conversation found for child {child_id}. Starting a new one.",
             )
-            conversation = await self.start_new_conversation(
-                child_id, user_input
-            )
+            conversation = await self.start_new_conversation(child_id, user_input)
         else:
             # Sort conversations to reliably get the latest one
             conversation = sorted(

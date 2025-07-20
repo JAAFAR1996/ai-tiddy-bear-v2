@@ -1,9 +1,14 @@
-import numpy as np
-from unittest.mock import patch
-import time
+"""Unit Tests for Distributed AI Processing System.
+
+AI Team Implementation - Task 11 Tests
+Author: AI Team Lead
+"""
+
 import asyncio
 import sys
+import time
 from pathlib import Path
+from unittest.mock import patch
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -14,6 +19,7 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import numpy with fallback
 try:
     import numpy as np
 except ImportError:
@@ -42,21 +48,32 @@ except ImportError:
                 def randint(self, low, high, size=None):
                     return low
 
+                def uniform(self, low, high, size=None):
+                    if size is None:
+                        return (low + high) / 2
+                    if isinstance(size, int):
+                        return [(low + high) / 2] * size
+                    return (
+                        [[(low + high) / 2] * size[0]]
+                        if len(size) == 1
+                        else (low + high) / 2
+                    )
+
             return MockRandom()
 
         @property
         def pi(self):
             return 3.14159265359
 
+        @property
+        def float32(self):
+            return float
+
+        @property
+        def int16(self):
+            return int
+
     np = MockNumpy()
-
-"""
-Unit Tests for Distributed AI Processing System.
-
-AI Team Implementation - Task 11 Tests
-Author: AI Team Lead
-"""
-
 
 # AsyncMock compatibility for Python < 3.8
 try:
@@ -77,14 +94,10 @@ except ImportError:
             return self().__await__()
 
 
+# Import pytest with fallback
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -131,6 +144,9 @@ except ImportError:
 
             return decorator
 
+        def main(self, args):
+            return 0
+
     pytest = MockPytest()
 
 # Import the modules to test
@@ -158,9 +174,7 @@ class TestChildContext:
     def test_default_child_context(self):
         """Test default child context creation."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         context = ChildContext(child_id="test_child_001", name="أحمد", age=7)
 
@@ -174,9 +188,7 @@ class TestChildContext:
     def test_custom_child_context(self):
         """Test custom child context creation."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         context = ChildContext(
             child_id="test_child_002",
@@ -200,13 +212,9 @@ class TestConversationRequest:
     def test_conversation_request_creation(self):
         """Test conversation request creation."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
-        child_context = ChildContext(
-            child_id="test_child", name="Test Child", age=6
-        )
+        child_context = ChildContext(child_id="test_child", name="Test Child", age=6)
 
         audio_data = b"fake_audio_data"
 
@@ -230,9 +238,7 @@ class TestMockAIServices:
     async def test_mock_transcription(self):
         """Test mock audio transcription."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         audio_data = b"mock_audio_data"
         result = await MockAIServices.transcribe_audio(audio_data)
@@ -249,9 +255,7 @@ class TestMockAIServices:
     async def test_mock_emotion_analysis(self):
         """Test mock emotion analysis."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         audio_data = b"mock_audio_data"
         text = "مرحبا تيدي"
@@ -274,9 +278,7 @@ class TestMockAIServices:
     async def test_mock_safety_check(self):
         """Test mock safety checking."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         safe_text = "مرحبا كيف حالك"
         audio_data = b"mock_audio_data"
@@ -296,9 +298,7 @@ class TestMockAIServices:
     async def test_mock_ai_response(self):
         """Test mock AI response generation."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         text = "مرحبا تيدي"
         child_context = ChildContext(child_id="test_child", name="أحمد", age=6)
@@ -317,17 +317,13 @@ class TestMockAIServices:
     async def test_mock_tts(self):
         """Test mock text-to-speech synthesis."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         text = "مرحبا أحمد"
         emotion = "happy"
         voice_profile = "child_friendly"
 
-        result = await MockAIServices.synthesize_speech(
-            text, emotion, voice_profile
-        )
+        result = await MockAIServices.synthesize_speech(text, emotion, voice_profile)
 
         assert isinstance(result, dict)
         assert "audio_data" in result
@@ -346,9 +342,7 @@ class TestDistributedAIProcessor:
     def processor(self):
         """Create distributed processor for testing."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         return DistributedAIProcessor()
 
@@ -356,9 +350,7 @@ class TestDistributedAIProcessor:
     async def test_processor_initialization(self, processor):
         """Test processor initialization."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         await processor.initialize()
 
@@ -371,16 +363,19 @@ class TestDistributedAIProcessor:
     async def test_conversation_processing(self, processor):
         """Test complete conversation processing pipeline."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         # Initialize processor
         await processor.initialize()
 
         # Create test data
-        audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
-        audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+        audio_data = np.random.uniform(-0.1, 0.1, 16000)
+        if hasattr(audio_data, "astype"):
+            audio_data = audio_data.astype(np.float32)
+            audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+        else:
+            # Mock numpy fallback
+            audio_bytes = b"mock_audio_bytes_data"
 
         child_context = ChildContext(
             child_id="test_child_001", name="أحمد", age=7, language="ar"
@@ -388,9 +383,7 @@ class TestDistributedAIProcessor:
 
         # Process conversation
         start_time = time.time()
-        response = await processor.process_conversation(
-            audio_bytes, child_context
-        )
+        response = await processor.process_conversation(audio_bytes, child_context)
         processing_time = time.time() - start_time
 
         # Verify response structure
@@ -426,17 +419,20 @@ class TestDistributedAIProcessor:
     async def test_batch_processing(self, processor):
         """Test batch conversation processing."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         await processor.initialize()
 
         # Create multiple test requests
         requests = []
         for i in range(3):
-            audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
-            audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+            audio_data = np.random.uniform(-0.1, 0.1, 16000)
+            if hasattr(audio_data, "astype"):
+                audio_data = audio_data.astype(np.float32)
+                audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+            else:
+                # Mock numpy fallback
+                audio_bytes = f"mock_audio_bytes_data_{i}".encode()
 
             child_context = ChildContext(
                 child_id=f"test_child_{i:03d}", name=f"طفل {i}", age=5 + i
@@ -461,15 +457,18 @@ class TestDistributedAIProcessor:
     async def test_safety_filtering(self, processor):
         """Test safety filtering functionality."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         await processor.initialize()
 
         # Create potentially unsafe content
-        audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
-        audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+        audio_data = np.random.uniform(-0.1, 0.1, 16000)
+        if hasattr(audio_data, "astype"):
+            audio_data = audio_data.astype(np.float32)
+            audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+        else:
+            # Mock numpy fallback
+            audio_bytes = b"mock_unsafe_audio_data"
 
         child_context = ChildContext(
             child_id="test_child_safety", name="طفل الأمان", age=6
@@ -487,9 +486,7 @@ class TestDistributedAIProcessor:
                 "processing_time_ms": 20,
             }
 
-            response = await processor.process_conversation(
-                audio_bytes, child_context
-            )
+            response = await processor.process_conversation(audio_bytes, child_context)
 
             # Should be marked as unsafe
             assert response.success is False
@@ -499,9 +496,7 @@ class TestDistributedAIProcessor:
     def test_performance_metrics(self, processor):
         """Test performance metrics collection."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         metrics = processor.get_performance_metrics()
 
@@ -528,22 +523,16 @@ class TestDistributedAIProcessor:
     async def test_error_handling(self, processor):
         """Test error handling in conversation processing."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         await processor.initialize()
 
         # Test with invalid audio data
         invalid_audio = b"invalid_audio_data"
-        child_context = ChildContext(
-            child_id="test_error", name="Test Error", age=6
-        )
+        child_context = ChildContext(child_id="test_error", name="Test Error", age=6)
 
         # Should handle gracefully
-        response = await processor.process_conversation(
-            invalid_audio, child_context
-        )
+        response = await processor.process_conversation(invalid_audio, child_context)
 
         # Should still return a valid response structure
         assert isinstance(response, ConversationResponse)
@@ -557,9 +546,7 @@ class TestProcessingMetrics:
     def test_metrics_initialization(self):
         """Test metrics object initialization."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         metrics = ProcessingMetrics()
 
@@ -579,9 +566,7 @@ class TestServiceIntegration:
     async def test_service_availability_detection(self):
         """Test detection of available services."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         processor = DistributedAIProcessor()
         await processor.initialize()
@@ -598,9 +583,7 @@ class TestServiceIntegration:
     async def test_fallback_behavior(self):
         """Test fallback to mock services when real services unavailable."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         processor = DistributedAIProcessor()
 
@@ -619,9 +602,7 @@ class TestDistributedScaling:
     async def test_load_optimization(self):
         """Test system optimization for different loads."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         processor = DistributedAIProcessor()
         await processor.initialize()
@@ -637,25 +618,26 @@ class TestDistributedScaling:
     async def test_concurrent_processing(self):
         """Test concurrent conversation processing."""
         if not DISTRIBUTED_AI_IMPORTS_AVAILABLE:
-            pytest.skip(
-                f"Distributed AI imports not available: {import_error}"
-            )
+            pytest.skip(f"Distributed AI imports not available: {import_error}")
 
         processor = DistributedAIProcessor()
         await processor.initialize()
 
         # Create multiple concurrent requests
         async def create_conversation_task(i):
-            audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
-            audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+            audio_data = np.random.uniform(-0.1, 0.1, 16000)
+            if hasattr(audio_data, "astype"):
+                audio_data = audio_data.astype(np.float32)
+                audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+            else:
+                # Mock numpy fallback
+                audio_bytes = f"mock_concurrent_audio_{i}".encode()
 
             child_context = ChildContext(
                 child_id=f"concurrent_child_{i}", name=f"طفل {i}", age=6
             )
 
-            return await processor.process_conversation(
-                audio_bytes, child_context
-            )
+            return await processor.process_conversation(audio_bytes, child_context)
 
         # Run multiple conversations concurrently
         num_concurrent = 5

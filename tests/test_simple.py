@@ -1,7 +1,7 @@
 import json
-from unittest.mock import MagicMock
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 # Add src to path
 src_path = Path(__file__).parent

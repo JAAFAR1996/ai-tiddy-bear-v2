@@ -64,14 +64,10 @@ class AdvancedPersonalizationService:
         self.logger.info(f"Creating personality profile for child: {child_id}")
         personality = await self._analyze_interactions(child_id, interactions)
         await self.repository.save_profile(personality)
-        self.logger.info(
-            f"Personality profile created and saved for child: {child_id}"
-        )
+        self.logger.info(f"Personality profile created and saved for child: {child_id}")
         return personality
 
-    async def get_personality_profile(
-        self, child_id: UUID
-    ) -> ChildPersonality | None:
+    async def get_personality_profile(self, child_id: UUID) -> ChildPersonality | None:
         """Retrieves the personality profile for a child from the repository.
 
         Args:
@@ -86,18 +82,12 @@ class AdvancedPersonalizationService:
         )
         profile = await self.repository.get_profile_by_child_id(child_id)
         if profile:
-            self.logger.info(
-                f"Personality profile found for child: {child_id}"
-            )
+            self.logger.info(f"Personality profile found for child: {child_id}")
         else:
-            self.logger.info(
-                f"Personality profile not found for child: {child_id}"
-            )
+            self.logger.info(f"Personality profile not found for child: {child_id}")
         return profile
 
-    async def get_personalized_content(
-        self, child_id: UUID
-    ) -> dict[str, Any] | None:
+    async def get_personalized_content(self, child_id: UUID) -> dict[str, Any] | None:
         """Gets personalized content recommendations for a child from their profile.
 
         Args:
@@ -122,16 +112,12 @@ class AdvancedPersonalizationService:
             profile_dict = profile.__dict__
             # Assuming AIProvider's method can take child_id, personality
             # profile, and additional context
-            personalized_content = (
-                await self.ai_provider.generate_personalized_content(
-                    child_id,
-                    profile_dict,
-                    {"current_time": str(datetime.now())},  # Example context
-                )
+            personalized_content = await self.ai_provider.generate_personalized_content(
+                child_id,
+                profile_dict,
+                {"current_time": str(datetime.now())},  # Example context
             )
-            self.logger.info(
-                f"AI generated personalized content for child {child_id}."
-            )
+            self.logger.info(f"AI generated personalized content for child {child_id}.")
             return personalized_content
         except Exception as e:
             self.logger.error(
@@ -139,9 +125,7 @@ class AdvancedPersonalizationService:
                 exc_info=True,
             )
             # Fallback to a generic content recommendation if AI service fails
-            self.logger.warning(
-                "Falling back to generic content recommendations."
-            )
+            self.logger.warning("Falling back to generic content recommendations.")
             return {
                 "stories": ["A generic story for everyone"],
                 "activities": ["A generic fun activity"],
@@ -168,9 +152,7 @@ class AdvancedPersonalizationService:
         try:
             # Assuming AIProvider.analyze_personality returns a dictionary
             # suitable for ChildPersonality
-            personality_data = await self.ai_provider.analyze_personality(
-                interactions
-            )
+            personality_data = await self.ai_provider.analyze_personality(interactions)
 
             # Map the AI response to ChildPersonality.
             # This mapping logic might need to be more sophisticated in a real
@@ -194,9 +176,7 @@ class AdvancedPersonalizationService:
                 metadata=personality_data.get("metadata", {}),
             )
         except Exception as e:
-            self.logger.error(
-                f"Error during personality analysis: {e}", exc_info=True
-            )
+            self.logger.error(f"Error during personality analysis: {e}", exc_info=True)
             # Fallback to a default or generic personality if AI analysis fails
             return ChildPersonality(
                 child_id=child_id,

@@ -1,0 +1,64 @@
+=== AuthenticationError ===
+src/domain/exceptions/security_exceptions.py
+src/infrastructure/error_handling/exceptions.py
+=== AuthorizationError ===
+src/domain/exceptions/base_exceptions.py
+src/infrastructure/error_handling/exceptions.py
+=== ChildSafetyResponse ===
+src/presentation/api/models/standard_responses.py
+src/presentation/api/models/validation_models.py
+=== ConflictError ===
+src/domain/exceptions/base_exceptions.py
+src/infrastructure/error_handling/exceptions.py
+=== ConsentRequest ===
+src/presentation/api/endpoints/children/compliance.py
+src/presentation/api/parental_dashboard.py
+=== ConsentType ===
+src/domain/models/consent_models.py
+src/infrastructure/persistence/models/consent_models.py
+=== ConversationRepository ===
+src/domain/repositories/conversation_repository.py
+src/infrastructure/persistence/conversation_repository.py
+=== ConversationResponse ===
+src/presentation/api/endpoints/conversations.py
+src/presentation/api/models/standard_responses.py
+=== DatabaseSettings ===
+src/infrastructure/config/database_settings.py
+src/infrastructure/config/models.py
+=== HealthStatus ===
+src/infrastructure/health/models.py
+src/presentation/api/endpoints/health.py
+=== NotFoundError ===
+src/domain/exceptions/base_exceptions.py
+src/infrastructure/error_handling/exceptions.py
+=== RateLimitConfig ===
+src/infrastructure/security/hardening/rate_limiter.py
+src/infrastructure/security/rate_limiter/core.py
+=== RateLimitResult ===
+src/infrastructure/security/hardening/rate_limiter.py
+src/infrastructure/security/rate_limiter/core.py
+=== RateLimitState ===
+src/infrastructure/security/hardening/rate_limiter.py
+src/infrastructure/security/rate_limiter/core.py
+=== RateLimitStrategy ===
+src/infrastructure/security/hardening/rate_limiter.py
+src/infrastructure/security/rate_limiter/core.py
+=== RateLimitType ===
+src/infrastructure/security/hardening/rate_limiter.py
+src/infrastructure/security/rate_limiter/core.py
+=== SecuritySettings ===
+src/infrastructure/config/models.py
+src/infrastructure/config/security_settings.py
+=== ServerSettings ===
+src/infrastructure/config/models.py
+src/infrastructure/config/server_settings.py
+=== SessionStatus ===
+src/application/services/session/session_models.py
+src/infrastructure/session_manager/session_models.py
+=== ValidationErrorResponse ===
+src/presentation/api/models/standard_responses.py
+src/presentation/api/models/validation_models.py
+=== ValidationSeverity ===
+src/domain/schemas.py
+src/infrastructure/security/hardening/validation/sanitizer.py
+src/infrastructure/security/hardening/validation/validation_config.py

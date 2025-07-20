@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class TextToSpeechService(ABC):
@@ -10,7 +9,7 @@ class TextToSpeechService(ABC):
         self,
         text: str,
         voice_id: str,
-        emotion: Optional[str] = None,
+        emotion: str | None = None,
     ) -> bytes:
         """Generate speech audio from text
 

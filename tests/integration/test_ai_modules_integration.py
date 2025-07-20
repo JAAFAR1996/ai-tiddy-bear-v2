@@ -1,23 +1,26 @@
-from application.services.transcription_service import TranscriptionResult
-from application.services.transcription_service import TranscriptionService
-from application.services.response_generator import (
-    ResponseGenerator,
-    ResponseContext,
-    ActivityType,
-)
+import asyncio
+import sys
+from datetime import datetime
+from pathlib import Path
+from unittest.mock import Mock
+
 from application.services.emotion_analyzer import (
     EmotionAnalyzer,
     EmotionResult,
 )
-from application.services.session_manager import (
-    SessionManager,
-    SessionData,
+from application.services.response_generator import (
+    ActivityType,
+    ResponseContext,
+    ResponseGenerator,
 )
-from unittest.mock import Mock
-from datetime import datetime
-import asyncio
-import sys
-from pathlib import Path
+from application.services.session_manager import (
+    SessionData,
+    SessionManager,
+)
+from application.services.transcription_service import (
+    TranscriptionResult,
+    TranscriptionService,
+)
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -117,12 +120,10 @@ try:
     from application.services.ai.main_service import AITeddyBearService
 except ImportError:
     # Fallback for testing environment
-    import sys
     import os
+    import sys
 
-    sys.path.insert(
-        0, os.path.join(os.path.dirname(__file__), "..", "..", "src")
-    )
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
     from application.services.ai_teddy_bear_service import AITeddyBearService
 
 
@@ -334,9 +335,7 @@ class TestResponseGeneratorIntegration:
         for text, expected_activity in test_cases:
             # Act
             emotion = EmotionResult("neutral", 0.5)
-            activity = await generator.determine_activity_type(
-                text, emotion, session
-            )
+            activity = await generator.determine_activity_type(text, emotion, session)
 
             # Assert
             assert activity == expected_activity
@@ -355,9 +354,7 @@ class TestResponseGeneratorIntegration:
         # Act
         text = "I miss my mommy"
         emotion = EmotionResult("sad", 0.9, {}, -0.7, 0.3)
-        activity = await generator.determine_activity_type(
-            text, emotion, session
-        )
+        activity = await generator.determine_activity_type(text, emotion, session)
 
         # Assert
         assert activity == ActivityType.COMFORT
@@ -377,9 +374,7 @@ class TestResponseGeneratorIntegration:
         # Act
         text = "Can you help me learn numbers?"
         emotion = EmotionResult("neutral", 0.7)
-        response = await generator.generate_contextual_response(
-            text, emotion, session
-        )
+        response = await generator.generate_contextual_response(text, emotion, session)
 
         # Assert
         assert isinstance(response, ResponseContext)
@@ -477,9 +472,7 @@ class TestMainServiceIntegration:
         audio_data = b"fake_audio_data"
 
         # Act
-        result = await service.process_voice_interaction(
-            session_id, audio_data
-        )
+        result = await service.process_voice_interaction(session_id, audio_data)
 
         # Assert
         assert result["success"] is True
@@ -516,9 +509,7 @@ class TestMainServiceIntegration:
         )
 
         # Act - Start session
-        start_result = await service.start_session(
-            "child-123", {"device": "esp32-001"}
-        )
+        start_result = await service.start_session("child-123", {"device": "esp32-001"})
 
         # Assert session started
         assert "session_id" in start_result

@@ -1,17 +1,20 @@
-"""
-Tests for COPPA Compliance Service
+"""Tests for COPPA Compliance Service
 Testing COPPA compliance service functionality for child data protection.
 """
 
-import pytest
-from unittest.mock import patch, Mock
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
 
-from src.infrastructure.security.coppa_compliance_service import (
-    COPPAComplianceService,
-)
+import pytest
+
 from src.infrastructure.security.child_data_encryption import (
     ChildDataEncryption,
+)
+from src.infrastructure.security.coppa_validator import (
+    COPPAValidator,
+    coppa_validator,
+    is_coppa_subject,
+    requires_parental_consent
 )
 
 
@@ -19,9 +22,7 @@ from src.infrastructure.security.child_data_encryption import (
 class MockCOPPAComplianceRecord:
     def __init__(self, **kwargs):
         self.child_id = kwargs.get("child_id")
-        self.consent_timestamp = kwargs.get(
-            "consent_timestamp", datetime.utcnow()
-        )
+        self.consent_timestamp = kwargs.get("consent_timestamp", datetime.utcnow())
         self.data_retention_expires = kwargs.get("data_retention_expires")
         self.consent_method = kwargs.get("consent_method")
         self.consent_ip_address = kwargs.get("consent_ip_address")
@@ -82,9 +83,7 @@ class TestCOPPAComplianceService:
             consent_method=consent_method,
             consent_ip_address=ip_address,
         )
-        mock_encryption_service.create_consent_record.return_value = (
-            mock_record
-        )
+        mock_encryption_service.create_consent_record.return_value = mock_record
 
         result = coppa_service.process_parental_consent(
             child_id, parent_email, consent_method, ip_address
@@ -158,9 +157,7 @@ class TestCOPPAComplianceService:
                 data_retention_expires=datetime.utcnow() + timedelta(days=90),
                 consent_method=case["consent_method"],
             )
-            mock_encryption_service.create_consent_record.return_value = (
-                mock_record
-            )
+            mock_encryption_service.create_consent_record.return_value = mock_record
 
             result = coppa_service.process_parental_consent(
                 case["child_id"],
@@ -286,9 +283,7 @@ class TestCOPPAComplianceService:
         def mock_should_delete(record):
             return record.child_id in ["child_expired_1", "child_expired_2"]
 
-        mock_encryption_service.should_delete_data.side_effect = (
-            mock_should_delete
-        )
+        mock_encryption_service.should_delete_data.side_effect = mock_should_delete
 
         result = coppa_service.check_data_retention_compliance()
 
@@ -312,9 +307,7 @@ class TestCOPPAComplianceService:
             # Should be able to parse back to datetime
             datetime.fromisoformat(expired_at)
 
-    def test_check_data_retention_compliance_empty_records(
-        self, coppa_service
-    ):
+    def test_check_data_retention_compliance_empty_records(self, coppa_service):
         """Test data retention compliance check with no consent records."""
         result = coppa_service.check_data_retention_compliance()
 
@@ -373,9 +366,7 @@ class TestCOPPAComplianceService:
                 consent_timestamp=datetime.utcnow(),
                 data_retention_expires=datetime.utcnow() + timedelta(days=90),
             )
-            mock_encryption_service.create_consent_record.return_value = (
-                mock_record
-            )
+            mock_encryption_service.create_consent_record.return_value = mock_record
 
             result = coppa_service.process_parental_consent(
                 child_id, parent_email, method, ip
@@ -394,9 +385,7 @@ class TestCOPPAComplianceService:
             record = coppa_service.consent_records[child_id]
             assert record.child_id == child_id
 
-    def test_consent_record_overwriting(
-        self, coppa_service, mock_encryption_service
-    ):
+    def test_consent_record_overwriting(self, coppa_service, mock_encryption_service):
         """Test that new consent overwrites existing consent for same child."""
         child_id = "child_overwrite"
 
@@ -406,9 +395,7 @@ class TestCOPPAComplianceService:
             consent_timestamp=datetime(2024, 1, 1, 10, 0, 0),
             consent_method="email_verification",
         )
-        mock_encryption_service.create_consent_record.return_value = (
-            mock_record_1
-        )
+        mock_encryption_service.create_consent_record.return_value = mock_record_1
 
         result_1 = coppa_service.process_parental_consent(
             child_id, "parent@email.com", "email_verification", "192.168.1.1"
@@ -423,9 +410,7 @@ class TestCOPPAComplianceService:
             consent_timestamp=datetime(2024, 1, 2, 10, 0, 0),
             consent_method="sms_verification",
         )
-        mock_encryption_service.create_consent_record.return_value = (
-            mock_record_2
-        )
+        mock_encryption_service.create_consent_record.return_value = mock_record_2
 
         result_2 = coppa_service.process_parental_consent(
             child_id, "parent@email.com", "sms_verification", "192.168.1.2"
@@ -435,9 +420,7 @@ class TestCOPPAComplianceService:
         assert coppa_service.consent_records[child_id] == mock_record_2
         assert len(coppa_service.consent_records) == 1  # Still only one record
 
-    def test_audit_trail_integration(
-        self, coppa_service, mock_encryption_service
-    ):
+    def test_audit_trail_integration(self, coppa_service, mock_encryption_service):
         """Test integration with audit trail functionality."""
         child_id = "child_audit"
         parent_email = "audit@email.com"
@@ -449,9 +432,7 @@ class TestCOPPAComplianceService:
             consent_timestamp=datetime.utcnow(),
             data_retention_expires=datetime.utcnow() + timedelta(days=90),
         )
-        mock_encryption_service.create_consent_record.return_value = (
-            mock_record
-        )
+        mock_encryption_service.create_consent_record.return_value = mock_record
 
         result = coppa_service.process_parental_consent(
             child_id, parent_email, consent_method, ip_address
@@ -505,9 +486,7 @@ class TestCOPPAComplianceService:
                 consent_timestamp=datetime.utcnow(),
                 data_retention_expires=datetime.utcnow() + timedelta(days=90),
             )
-            mock_encryption_service.create_consent_record.return_value = (
-                mock_record
-            )
+            mock_encryption_service.create_consent_record.return_value = mock_record
 
             try:
                 result = coppa_service.process_parental_consent(

@@ -52,9 +52,7 @@ class AudioProcessingService:
             A tuple containing the transcription and the safety level.
 
         """
-        transcription = await self.speech_processor.speech_to_text(
-            audio_data, language
-        )
+        transcription = await self.speech_processor.speech_to_text(audio_data, language)
         safety_level = await self.safety_monitor.check_audio_safety(audio_data)
         return transcription, safety_level
 

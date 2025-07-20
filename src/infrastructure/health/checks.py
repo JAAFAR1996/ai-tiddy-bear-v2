@@ -8,7 +8,7 @@ from sqlalchemy import text
 
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -94,9 +94,7 @@ async def check_openai() -> DependencyCheck:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 "https://api.openai.com/v1/models",
-                headers={
-                    "Authorization": f"Bearer {settings.ai.OPENAI_API_KEY}"
-                },
+                headers={"Authorization": f"Bearer {settings.ai.OPENAI_API_KEY}"},
                 timeout=10.0,
             )
         response_time = (asyncio.get_event_loop().time() - start_time) * 1000

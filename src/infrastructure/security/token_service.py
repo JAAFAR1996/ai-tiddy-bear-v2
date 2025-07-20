@@ -66,4 +66,37 @@ class TokenService:
         except (KeyError, TypeError) as e:
             logger.error(f"Invalid user data for refresh token: {e}")
             raise ValueError("Failed to create refresh token")
-        except JWTError a
+        except JWTError as e:
+            logger.error(f"JWT encoding error: {e}")
+            raise ValueError("Failed to create refresh token")
+
+    def verify_token(self, token: str) -> dict[str, Any]:
+        """Verify and decode JWT token."""
+        try:
+            payload = jwt.decode(
+                token, self.secret_key, algorithms=[self.algorithm]
+            )
+            return payload
+        except JWTError as e:
+            logger.error(f"JWT verification error: {e}")
+            raise ValueError("Invalid token")
+
+    def refresh_access_token(self, refresh_token: str) -> str:
+        """Create new access token from refresh token."""
+        try:
+            payload = self.verify_token(refresh_token)
+            
+            if payload.get("type") != "refresh":
+                raise ValueError("Invalid refresh token")
+            
+            user_data = {
+                "id": payload["sub"],
+                "email": payload["email"],
+                "role": payload.get("role", "user")
+            }
+            return self.create_access_token(user_data)
+        except ValueError:
+            raise
+        except Exception as e:
+            logger.error(f"Token refresh error: {e}")
+            raise ValueError("Failed to refresh token")

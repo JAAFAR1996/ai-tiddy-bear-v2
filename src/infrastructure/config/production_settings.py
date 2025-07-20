@@ -95,9 +95,7 @@ class ProductionSettings(
         return path
 
     @root_validator(pre=True)
-    def check_production_env_vars(
-        self, values: dict[str, Any]
-    ) -> dict[str, Any]:
+    def check_production_env_vars(self, values: dict[str, Any]) -> dict[str, Any]:
         """Performs a root validation to ensure critical environment variables
         are set for production.
 
@@ -117,9 +115,7 @@ class ProductionSettings(
                 "JWT_SECRET_KEY",
                 "OPENAI_API_KEY",
             ]
-            missing_vars = [
-                var for var in required_prod_vars if not os.getenv(var)
-            ]
+            missing_vars = [var for var in required_prod_vars if not os.getenv(var)]
             if missing_vars:
                 raise ValueError(
                     f"Missing critical production environment variables: {missing_vars}",

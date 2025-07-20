@@ -1,12 +1,10 @@
+import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
-import time
-
+from typing import Any
 
 # Child Safety Monitoring Component.
 # Specialized monitoring for child safety events and pattern detection.
-
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="monitoring")
@@ -18,8 +16,8 @@ class ChildSafetyMonitor:
     def __init__(self) -> None:
         """Initialize child safety monitor."""
         self.safety_events = deque(maxlen=10000)
-        self.safety_alerts: Dict[str, Dict[str, Any]] = {}
-        self.emergency_contacts: List[str] = []
+        self.safety_alerts: dict[str, dict[str, Any]] = {}
+        self.emergency_contacts: list[str] = []
         # Child safety thresholds
         self.inappropriate_content_threshold = 5  # Per hour
         self.emotional_distress_threshold = 3  # Per hour
@@ -31,7 +29,7 @@ class ChildSafetyMonitor:
         child_id: str,
         event_type: str,
         severity: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ) -> None:
         """Record a child safety event."""
         event = {
@@ -55,7 +53,7 @@ class ChildSafetyMonitor:
         )
 
     def _trigger_emergency_alert(
-        self, child_id: str, event_type: str, details: Dict[str, Any]
+        self, child_id: str, event_type: str, details: dict[str, Any]
     ) -> None:
         """Trigger emergency alert for critical child safety events."""
         alert_id = f"emergency_{child_id}_{int(time.time())}"
@@ -102,10 +100,7 @@ class ChildSafetyMonitor:
                 "excessive_inappropriate_content",
                 event_counts["inappropriate_content"],
             )
-        if (
-            event_counts["emotional_distress"]
-            >= self.emotional_distress_threshold
-        ):
+        if event_counts["emotional_distress"] >= self.emotional_distress_threshold:
             self._create_pattern_alert(
                 child_id,
                 "repeated_emotional_distress",
@@ -131,7 +126,7 @@ class ChildSafetyMonitor:
             f"Pattern alert created: {pattern_type} for child {child_id} (count: {count})"
         )
 
-    def get_child_safety_status(self, child_id: str) -> Dict[str, Any]:
+    def get_child_safety_status(self, child_id: str) -> dict[str, Any]:
         """Get safety status for a specific child."""
         now = datetime.utcnow()
         twenty_four_hours_ago = now - timedelta(hours=24)
@@ -141,8 +136,7 @@ class ChildSafetyMonitor:
             for event in self.safety_events
             if (
                 event["child_id"] == child_id
-                and datetime.fromisoformat(event["timestamp"])
-                > twenty_four_hours_ago
+                and datetime.fromisoformat(event["timestamp"]) > twenty_four_hours_ago
             )
         ]
         # Get active alerts for this child
@@ -162,7 +156,7 @@ class ChildSafetyMonitor:
             "active_alerts": active_alerts,
         }
 
-    def _calculate_safety_score(self, events: List[Dict[str, Any]]) -> float:
+    def _calculate_safety_score(self, events: list[dict[str, Any]]) -> float:
         """Calculate a safety score based on recent events."""
         if not events:
             return 100.0

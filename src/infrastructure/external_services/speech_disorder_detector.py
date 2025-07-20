@@ -1,11 +1,9 @@
-from datetime import datetime
-from typing import Dict, Any, Optional, List
-import asyncio
-import logging
+from typing import Any
+
 from .speech_analysis_base import (
-    SpeechAnalysisConfig,
     AudioValidator,
     FeatureExtractor,
+    SpeechAnalysisConfig,
     create_response_template,
 )
 from .speech_disorder_analyzer import DisorderAnalyzer
@@ -27,30 +25,22 @@ class SpeechDisorderDetector:
         self.feature_extractor = FeatureExtractor(self.config)
         self.disorder_analyzer = DisorderAnalyzer(self.config)
 
-    async def analyze_speech_for_disorders(
-        self, audio_data: bytes
-    ) -> Dict[str, Any]:
+    async def analyze_speech_for_disorders(self, audio_data: bytes) -> dict[str, Any]:
         """Analyze speech audio for potential disorders."""
         try:
             # Validate audio data
-            validation_result = await self.validator.validate_audio_data(
-                audio_data
-            )
+            validation_result = await self.validator.validate_audio_data(audio_data)
             if not validation_result["valid"]:
                 return self._create_error_response(validation_result["error"])
 
             # Extract audio features
-            features = await self.feature_extractor.extract_audio_features(
-                audio_data
-            )
+            features = await self.feature_extractor.extract_audio_features(audio_data)
             if "error" in features:
                 return self._create_error_response(features["error"])
 
             # Analyze for disorders
-            analysis_result = (
-                await self.disorder_analyzer.analyze_for_disorders(
-                    features,
-                )
+            analysis_result = await self.disorder_analyzer.analyze_for_disorders(
+                features,
             )
 
             # Add metadata
@@ -65,14 +55,14 @@ class SpeechDisorderDetector:
             logger.error(f"Speech disorder analysis failed: {e}")
             return self._create_error_response(f"Analysis failed: {e!s}")
 
-    def _create_error_response(self, error_message: str) -> Dict[str, Any]:
+    def _create_error_response(self, error_message: str) -> dict[str, Any]:
         """Create standardized error response."""
         response = create_response_template()
         response["error"] = error_message
         response["analysis_quality"] = "failed"
         return response
 
-    async def get_analysis_capabilities(self) -> Dict[str, Any]:
+    async def get_analysis_capabilities(self) -> dict[str, Any]:
         """Get information about analysis capabilities."""
         return {
             "supported_formats": self.config.supported_formats,
@@ -82,7 +72,7 @@ class SpeechDisorderDetector:
             "version": "1.0.0",
         }
 
-    async def validate_audio_format(self, audio_data: bytes) -> Dict[str, Any]:
+    async def validate_audio_format(self, audio_data: bytes) -> dict[str, Any]:
         """Validate audio format without full analysis."""
         return await self.validator.validate_audio_data(audio_data)
 
@@ -94,7 +84,7 @@ def create_speech_disorder_detector() -> SpeechDisorderDetector:
 
 
 # Backward compatibility
-async def analyze_speech_for_disorders(audio_data: bytes) -> Dict[str, Any]:
+async def analyze_speech_for_disorders(audio_data: bytes) -> dict[str, Any]:
     """Backward compatibility function."""
     detector = create_speech_disorder_detector()
     return await detector.analyze_speech_for_disorders(audio_data)

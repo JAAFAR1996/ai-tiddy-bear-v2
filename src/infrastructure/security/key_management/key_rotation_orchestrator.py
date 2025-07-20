@@ -49,9 +49,7 @@ class KeyRotationOrchestrator:
 
         # Initialize specialized services
         self.generator = KeyGenerator()
-        self.lifecycle_manager = KeyLifecycleManager(
-            self.storage, self.generator
-        )
+        self.lifecycle_manager = KeyLifecycleManager(self.storage, self.generator)
         self.policy_manager = RotationPolicyManager(self.storage)
         self.executor = RotationExecutor(
             self.storage,
@@ -63,9 +61,7 @@ class KeyRotationOrchestrator:
 
         logger.info("Key rotation orchestrator initialized")
 
-    def create_key(
-        self, key_type: KeyType, algorithm: str = "AES-256"
-    ) -> str | None:
+    def create_key(self, key_type: KeyType, algorithm: str = "AES-256") -> str | None:
         """Create a new key.
 
         Args:
@@ -93,9 +89,7 @@ class KeyRotationOrchestrator:
         """
         return self.executor.rotate_key(key_id, trigger)
 
-    def rotate_all_keys(
-        self, key_type: KeyType | None = None
-    ) -> list[RotationResult]:
+    def rotate_all_keys(self, key_type: KeyType | None = None) -> list[RotationResult]:
         """Rotate all keys of specified type.
 
         Args:

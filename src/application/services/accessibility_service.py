@@ -59,9 +59,7 @@ class AccessibilityService:
             The created AccessibilityProfile.
 
         """
-        self.logger.info(
-            f"Creating accessibility profile for child: {child_id}"
-        )
+        self.logger.info(f"Creating accessibility profile for child: {child_id}")
         profile = AccessibilityProfile(
             child_id=child_id,
             special_needs=needs,
@@ -95,13 +93,9 @@ class AccessibilityService:
         )
         profile = await self.repository.get_profile_by_child_id(child_id)
         if profile:
-            self.logger.info(
-                f"Accessibility profile found for child: {child_id}"
-            )
+            self.logger.info(f"Accessibility profile found for child: {child_id}")
         else:
-            self.logger.info(
-                f"Accessibility profile not found for child: {child_id}"
-            )
+            self.logger.info(f"Accessibility profile not found for child: {child_id}")
         return profile
 
     def _get_adaptations(self, needs: list[SpecialNeedType]) -> list[str]:
@@ -119,9 +113,7 @@ class AccessibilityService:
 
         adaptations = []
         for need in needs:
-            adaptations.extend(
-                self.config.adaptation_rules.get(need.value, [])
-            )
+            adaptations.extend(self.config.adaptation_rules.get(need.value, []))
         return list(set(adaptations))  # Remove duplicates
 
     def _get_accessibility_settings(
@@ -145,9 +137,7 @@ class AccessibilityService:
         }
         for need in needs:
             # Apply overrides from configuration
-            overrides = self.config.accessibility_settings_rules.get(
-                need.value, {}
-            )
+            overrides = self.config.accessibility_settings_rules.get(need.value, {})
             settings.update(overrides)
 
         # Ensure core settings are dynamically calculated if not overridden

@@ -1,20 +1,19 @@
-from collections import defaultdict, deque
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
 import threading
 import time
-from .child_safety_monitor import ChildSafetyMonitor
-from .types import Alert, AlertSeverity, MetricValue, MetricType, AlertStatus
-
+from collections import defaultdict, deque
+from datetime import datetime, timedelta
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+
+from .child_safety_monitor import ChildSafetyMonitor
+from .types import Alert, AlertSeverity, AlertStatus, MetricType, MetricValue
 
 logger = get_logger(__name__, component="monitoring")
 
 
 class ComprehensiveMonitoringService:
-    """
-    Enterprise monitoring service with child safety focus.
+    """Enterprise monitoring service with child safety focus.
     Features:
     - Real - time metrics collection
     - Child safety event monitoring
@@ -26,11 +25,9 @@ class ComprehensiveMonitoringService:
 
     def __init__(self) -> None:
         """Initialize comprehensive monitoring service."""
-        self.metrics: Dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=10000)
-        )
-        self.alerts: Dict[str, Alert] = {}
-        self.alert_rules: List[Dict[str, Any]] = []
+        self.metrics: dict[str, deque] = defaultdict(lambda: deque(maxlen=10000))
+        self.alerts: dict[str, Alert] = {}
+        self.alert_rules: list[dict[str, Any]] = []
         self.child_safety_monitor = ChildSafetyMonitor()
 
         # Performance tracking
@@ -63,7 +60,7 @@ class ComprehensiveMonitoringService:
         name: str,
         value: float,
         metric_type: MetricType = MetricType.GAUGE,
-        tags: Optional[Dict[str, str]] = None,
+        tags: dict[str, str] | None = None,
     ) -> None:
         """Record a metric value."""
         if tags is None:
@@ -112,7 +109,7 @@ class ComprehensiveMonitoringService:
     def record_security_event(
         self,
         event_type: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
         severity: str = "medium",
     ) -> None:
         """Record security - related events."""
@@ -146,7 +143,7 @@ class ComprehensiveMonitoringService:
         child_id: str,
         event_type: str,
         severity: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ) -> None:
         """Record child safety events."""
         self.child_safety_monitor.record_safety_event(
@@ -213,15 +210,17 @@ class ComprehensiveMonitoringService:
                 comparison = rule["comparison"]
                 should_alert = False
 
-                if comparison == ">" and metric.value > threshold:
-                    should_alert = True
-                elif comparison == "<" and metric.value < threshold:
-                    should_alert = True
-                elif comparison == "==" and metric.value == threshold:
+                if (
+                    (comparison == ">" and metric.value > threshold)
+                    or (comparison == "<" and metric.value < threshold)
+                    or (comparison == "==" and metric.value == threshold)
+                ):
                     should_alert = True
 
                 if should_alert:
-                    alert_id = f"{rule['name'].lower().replace(' ', '_')}_{int(time.time())}"
+                    alert_id = (
+                        f"{rule['name'].lower().replace(' ', '_')}_{int(time.time())}"
+                    )
                     self._create_alert(
                         alert_id,
                         rule["name"],
@@ -276,13 +275,9 @@ class ComprehensiveMonitoringService:
         if self.request_times:
             total_requests = len(self.request_times)
             error_requests = sum(
-                1
-                for req in self.request_times
-                if req.get("status_code", 200) >= 400
+                1 for req in self.request_times if req.get("status_code", 200) >= 400
             )
-            error_rate = (
-                error_requests / total_requests if total_requests > 0 else 0
-            )
+            error_rate = error_requests / total_requests if total_requests > 0 else 0
             self.record_metric("error_rate", error_rate, MetricType.GAUGE)
 
         # Calculate average response time
@@ -290,9 +285,7 @@ class ComprehensiveMonitoringService:
             avg_response_time = sum(
                 req.get("duration", 0) for req in self.request_times
             ) / len(self.request_times)
-            self.record_metric(
-                "avg_response_time", avg_response_time, MetricType.GAUGE
-            )
+            self.record_metric("avg_response_time", avg_response_time, MetricType.GAUGE)
 
         # Record active connections
         self.record_metric(
@@ -310,32 +303,23 @@ class ComprehensiveMonitoringService:
 
         # Auto-resolve old alerts
         for alert_id, alert in list(self.alerts.items()):
-            if (
-                alert.created_at < cutoff_time
-                and alert.status == AlertStatus.ACTIVE
-            ):
+            if alert.created_at < cutoff_time and alert.status == AlertStatus.ACTIVE:
                 alert.status = AlertStatus.RESOLVED
                 alert.resolved_at = datetime.utcnow()
                 logger.info(f"Auto-resolved old alert: {alert.title}")
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         """Get a summary of current metrics."""
         return {
             "total_metrics": len(self.metrics),
             "active_alerts": len(
-                [
-                    a
-                    for a in self.alerts.values()
-                    if a.status == AlertStatus.ACTIVE
-                ]
+                [a for a in self.alerts.values() if a.status == AlertStatus.ACTIVE]
             ),
             "total_requests": len(self.request_times),
             "error_rate": self._calculate_error_rate(),
             "avg_response_time": self._calculate_avg_response_time(),
             "active_connections": self.active_connections,
-            "child_safety_events": len(
-                self.child_safety_monitor.safety_events
-            ),
+            "child_safety_events": len(self.child_safety_monitor.safety_events),
         }
 
     def _calculate_error_rate(self) -> float:
@@ -344,9 +328,7 @@ class ComprehensiveMonitoringService:
             return 0.0
 
         error_count = sum(
-            1
-            for req in self.request_times
-            if req.get("status_code", 200) >= 400
+            1 for req in self.request_times if req.get("status_code", 200) >= 400
         )
         return error_count / len(self.request_times)
 

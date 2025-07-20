@@ -1,11 +1,13 @@
-from application.services.safety import AdvancedContentFilter
-from domain.safety.models import SafetyConfig
-from domain.safety.models import ContentCategory
-from domain.safety.models import RiskLevel
-from src.infrastructure.logging_config import get_logger
+"""Comprehensive Tests for AI Safety Content Filtering System"""
+
 import asyncio
 import sys
 from pathlib import Path
+
+from application.services.safety import AdvancedContentFilter
+from domain.safety.models import ContentCategory, RiskLevel, SafetyConfig
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -16,15 +18,14 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import after path setup
+
+
+logger = get_logger(__name__, component="test")
 
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -74,15 +75,6 @@ except ImportError:
     pytest = MockPytest()
 
 
-logger = get_logger(__name__, component="test")
-
-"""
-Comprehensive Tests for AI Safety Content Filtering System
-"""
-
-# Mock safety classes for testing (since src.domain.safety doesn't exist)
-
-
 class TestAdvancedContentFilter:
     """Test suite for Advanced Content Filter"""
 
@@ -111,12 +103,8 @@ class TestAdvancedContentFilter:
     @pytest.mark.asyncio
     async def test_age_inappropriate_content(self, safety_filter):
         """Test age-inappropriate content detection"""
-        age_inappropriate = (
-            "Let's talk about romantic relationships and dating"
-        )
-        result = await safety_filter.analyze_content(
-            age_inappropriate, child_age=4
-        )
+        age_inappropriate = "Let's talk about romantic relationships and dating"
+        result = await safety_filter.analyze_content(age_inappropriate, child_age=4)
         assert result.age_appropriate is False
         assert result.overall_risk_level != RiskLevel.SAFE
 
@@ -138,9 +126,7 @@ class TestAdvancedContentFilter:
         educational_content = (
             "Let's learn to count! One, two, three... Can you count to ten?"
         )
-        result = await safety_filter.analyze_content(
-            educational_content, child_age=5
-        )
+        result = await safety_filter.analyze_content(educational_content, child_age=5)
         assert result.is_safe
         assert result.educational_value.educational_score > 0.5
         assert result.content_category == ContentCategory.EDUCATIONAL
@@ -192,17 +178,13 @@ class TestAdvancedContentFilter:
         results = await safety_filter.batch_analyze(texts, child_age=6)
         assert len(results) == len(texts)
         assert all(result.is_safe for result in results)
-        assert all(
-            result.overall_risk_level == RiskLevel.SAFE for result in results
-        )
+        assert all(result.overall_risk_level == RiskLevel.SAFE for result in results)
 
     @pytest.mark.asyncio
     async def test_age_specific_filtering(self, safety_filter):
         """Test age-specific content filtering"""
         content = "Let's talk about scary monsters in the dark forest"
-        young_result = await safety_filter.analyze_content(
-            content, child_age=3
-        )
+        young_result = await safety_filter.analyze_content(content, child_age=3)
         # older_result = await safety_filter.analyze_content(content,
         # child_age=8)
         assert young_result.age_appropriate is False
@@ -211,9 +193,7 @@ class TestAdvancedContentFilter:
     async def test_content_modifications(self, safety_filter):
         """Test content modification suggestions"""
         problematic_content = "You're stupid and bad at everything"
-        result = await safety_filter.analyze_content(
-            problematic_content, child_age=6
-        )
+        result = await safety_filter.analyze_content(problematic_content, child_age=6)
         assert not result.is_safe
         assert len(result.required_modifications) > 0
         for modification in result.required_modifications:
@@ -229,10 +209,7 @@ class TestAdvancedContentFilter:
             "This is inappropriate content", child_age=6
         )
         updated_metrics = safety_filter.get_performance_metrics()
-        assert (
-            updated_metrics["total_requests"]
-            > initial_metrics["total_requests"]
-        )
+        assert updated_metrics["total_requests"] > initial_metrics["total_requests"]
         assert "avg_processing_time" in updated_metrics
         assert "blocked_requests" in updated_metrics
 
@@ -269,10 +246,11 @@ class TestIntegrationScenarios:
     @pytest.mark.asyncio
     async def test_story_time_scenario(self, safety_filter):
         """Test story-telling scenario"""
-        story_content = "Once upon a time, there was a brave little rabbit who loved to explore the forest and make new friends."
-        result = await safety_filter.analyze_content(
-            story_content, child_age=5
+        story_content = (
+            "Once upon a time, there was a brave little rabbit who loved "
+            "to explore the forest and make new friends."
         )
+        result = await safety_filter.analyze_content(story_content, child_age=5)
         assert result.is_safe
         assert result.content_category == ContentCategory.STORY
         assert result.educational_value.educational_score > 0.3
@@ -369,7 +347,7 @@ if __name__ == "__main__":
         logger.info(f"Unsafe content result: {unsafe_result.is_safe}")
         logger.info(f"Risk level: {unsafe_result.overall_risk_level.value}")
         logger.info(
-            f"Modifications suggested: {len(unsafe_result.required_modifications)}"
+            f"Modifications suggested: " f"{len(unsafe_result.required_modifications)}"
         )
         logger.info("\n🚨 Testing privacy risk...")
         privacy_result = await filter_instance.analyze_content(
@@ -377,7 +355,8 @@ if __name__ == "__main__":
         )
         logger.info(f"Privacy risk result: {privacy_result.is_safe}")
         logger.info(
-            f"Parent notification required: {privacy_result.parent_notification_required}"
+            f"Parent notification required: "
+            f"{privacy_result.parent_notification_required}"
         )
         logger.info("\n📚 Testing educational content...")
         edu_result = await filter_instance.analyze_content(
@@ -385,13 +364,12 @@ if __name__ == "__main__":
             child_age=5,
         )
         logger.info(
-            f"Educational score: {edu_result.educational_value.educational_score:.2f}"
+            f"Educational score: "
+            f"{edu_result.educational_value.educational_score:.2f}"
         )
         logger.info(f"Content category: {edu_result.content_category.value}")
         logger.info("\n🎉 All basic tests completed!")
-        logger.info(
-            f"Performance metrics: {filter_instance.get_performance_metrics()}"
-        )
+        logger.info(f"Performance metrics: {filter_instance.get_performance_metrics()}")
 
     # asyncio.run compatibility for Python < 3.7
     try:

@@ -60,9 +60,7 @@ class ChaosInjector:
         try:
             target_config = self.chaos_targets[target]
             if target_config.safety_critical:
-                if not await self.orchestrator._safety_check_before_injection(
-                    target
-                ):
+                if not await self.orchestrator._safety_check_before_injection(target):
                     logger.warning(
                         f"⚠️ Skipping injection for safety-critical service: {target}",
                     )
@@ -71,14 +69,10 @@ class ChaosInjector:
             logger.info(
                 f"💉 Injecting {failure_type.value} into {target} (intensity: {intensity})",
             )
-            await self._execute_failure_injection(
-                target, failure_type, intensity
-            )
+            await self._execute_failure_injection(target, failure_type, intensity)
             metrics.failures_injected += 1
         except Exception as e:
-            logger.error(
-                f"❌ Failed to inject {failure_type.value} into {target}: {e}"
-            )
+            logger.error(f"❌ Failed to inject {failure_type.value} into {target}: {e}")
 
     async def _inject_network_latency(self, target: str, intensity: float):
         """Inject network latency."""
@@ -140,9 +134,7 @@ class ChaosInjector:
                         timeout=10,
                     )
                     if response.status_code == 200:
-                        logger.warning(
-                            f"⚠️ AI hallucination test: {prompt[:30]}..."
-                        )
+                        logger.warning(f"⚠️ AI hallucination test: {prompt[:30]}...")
                 except Exception as e:
                     logger.error(f"AI hallucination injection failed: {e}")
 
@@ -156,18 +148,14 @@ class ChaosInjector:
                 "commercial advertisement",
                 "adult content reference",
             ]
-            for content in toxic_samples[
-                : int(len(toxic_samples) * intensity)
-            ]:
+            for content in toxic_samples[: int(len(toxic_samples) * intensity)]:
                 try:
                     response = requests.post(
                         f"http://{target}:8000/moderate",
                         json={"content": content},
                         timeout=10,
                     )
-                    logger.info(
-                        f"🧪 Toxic content test: {response.status_code}"
-                    )
+                    logger.info(f"🧪 Toxic content test: {response.status_code}")
                 except Exception as e:
                     logger.error(f"Toxic content injection failed: {e}")
 
@@ -179,7 +167,5 @@ class ChaosInjector:
             "Authentication bypass",
             "Data exfiltration attempt",
         ]
-        for attempt in breach_attempts[
-            : int(len(breach_attempts) * intensity)
-        ]:
+        for attempt in breach_attempts[: int(len(breach_attempts) * intensity)]:
             logger.info(f"🔒 Security breach simulation: {attempt}")

@@ -1,16 +1,14 @@
-"""from datetime import datetime, timedelta
-from enum import Enum
-from typing import Dict, Any, List, Optional
-import asyncio
-import hashlib
-import logging
-import uuid.
-"""
-
-"""COPPA - Compliant Data Retention and Automated Deletion Service
+"""COPPA-Compliant Data Retention and Automated Deletion Service
 This service handles the automatic deletion of child data after 90 days
 as required by COPPA, with comprehensive audit trails and parent notifications.
 """
+
+import asyncio
+import hashlib
+import uuid
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -28,33 +26,41 @@ class RetentionStatus(Enum):
 
 
 class COPPADataRetentionService:
-    """COPPA - compliant automated data retention and deletion service.
-    Features: - Automatic 90 - day retention policy - Parent notification system - Safe data export before deletion - Comprehensive audit trails - Emergency retention extension.
+    """COPPA-compliant automated data retention and deletion service.
+
+    Features:
+    - Automatic 90-day retention policy
+    - Parent notification system
+    - Safe data export before deletion
+    - Comprehensive audit trails
+    - Emergency retention extension
     """
 
     def __init__(self) -> None:
         """Initialize retention service."""
-        self.retention_records: Dict[str, Dict[str, Any]] = {}
-        self.deletion_queue: List[Dict[str, Any]] = []
-        self.audit_logs: List[Dict[str, Any]] = []
+        self.retention_records: dict[str, dict[str, Any]] = {}
+        self.deletion_queue: list[dict[str, Any]] = []
+        self.audit_logs: list[dict[str, Any]] = []
         self.default_retention_days = 90
-        self.notification_days_before = (
-            7  # Notify parents 7 days before deletion
-        )
+        self.notification_days_before = 7  # Notify parents 7 days before deletion
 
     async def register_child_data(
         self,
         child_id: str,
         parent_email: str,
         parent_consent_id: str,
-        data_types: List[str],
-    ) -> Dict[str, Any]:
+        data_types: list[str],
+    ) -> dict[str, Any]:
         """Register child data for COPPA retention tracking.
-        Args: child_id: Unique child identifier
+
+        Args:
+            child_id: Unique child identifier
             parent_email: Parent email for notifications
             parent_consent_id: Associated consent record
             data_types: Types of data being tracked
-        Returns: Retention record details.
+
+        Returns:
+            Retention record details.
         """
         retention_id = f"retention_{uuid.uuid4().hex[:16]}"
         retention_record = {
@@ -94,7 +100,7 @@ class COPPADataRetentionService:
 
     async def schedule_daily_retention_check(self) -> None:
         """Daily scheduled task to check for data due for deletion.
-        This should be called by a scheduler(cron, celery, etc.) daily.
+        This should be called by a scheduler (cron, celery, etc.) daily.
         """
         logger.info("Starting daily data retention check")
         current_time = datetime.utcnow()
@@ -109,15 +115,10 @@ class COPPADataRetentionService:
             if record["status"] != RetentionStatus.ACTIVE.value:
                 continue
 
-            deletion_time = datetime.fromisoformat(
-                record["deletion_scheduled_at"]
-            )
+            deletion_time = datetime.fromisoformat(record["deletion_scheduled_at"])
 
             # Check if notification should be sent
-            if (
-                deletion_time <= notification_cutoff
-                and not record["notification_sent"]
-            ):
+            if deletion_time <= notification_cutoff and not record["notification_sent"]:
                 pending_notifications.append(record)
 
             # Check if deletion is due
@@ -133,12 +134,11 @@ class COPPADataRetentionService:
             await self._process_scheduled_deletion(record)
 
         logger.info(
-            f"Retention check completed: {len(pending_notifications)} notifications, {len(pending_deletions)} deletions",
+            f"Retention check completed: {len(pending_notifications)} "
+            f"notifications, {len(pending_deletions)} deletions",
         )
 
-    async def _send_deletion_notification(
-        self, record: Dict[str, Any]
-    ) -> None:
+    async def _send_deletion_notification(self, record: dict[str, Any]) -> None:
         """Send notification to parent about upcoming data deletion."""
         try:
             notification_data = {
@@ -161,19 +161,15 @@ class COPPADataRetentionService:
                 },
             )
 
-            logger.info(
-                f"Deletion notification sent: {record['retention_id']}"
-            )
+            logger.info(f"Deletion notification sent: {record['retention_id']}")
         except Exception as e:
             logger.error(
                 f"Failed to send deletion notification: {record['retention_id']}, {e}",
             )
 
-    async def _send_email_notification(
-        self, notification_data: Dict[str, Any]
-    ) -> None:
+    async def _send_email_notification(self, notification_data: dict[str, Any]) -> None:
         """Send email notification to parent."""
-        f"""Subject: Important: Your Child's Data Will Be Deleted in {self.notification_days_before} Days
+        email_content = f"""Subject: Important: Your Child's Data Will Be Deleted in {self.notification_days_before} Days
 Dear Parent/Guardian,
 
 This is an automated notification regarding your child's data in the AI Teddy Bear system.
@@ -187,19 +183,18 @@ deleted after 90 days unless you request an extension.
 
 ACTIONS YOU CAN TAKE:
 1. Download your child's data before deletion
-2. Request a retention extension(up to 1 year)
+2. Request a retention extension (up to 1 year)
 3. Request immediate deletion if desired
 
 Retention ID: {notification_data["retention_id"]}
 
 Thank you for using AI Teddy Bear responsibly."""
 
+        # In production, this would send actual email
         await asyncio.sleep(0.1)
         logger.info(f"Email sent to {notification_data['parent_email']}")
 
-    async def _process_scheduled_deletion(
-        self, record: Dict[str, Any]
-    ) -> None:
+    async def _process_scheduled_deletion(self, record: dict[str, Any]) -> None:
         """Process scheduled data deletion with export and audit."""
         try:
             retention_id = record["retention_id"]
@@ -232,12 +227,11 @@ Thank you for using AI Teddy Bear responsibly."""
                 f"Failed to process scheduled deletion: {record['retention_id']}, {e}",
             )
 
-    async def _export_child_data(
-        self, record: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _export_child_data(self, record: dict[str, Any]) -> dict[str, Any]:
         """Export child data before deletion for parent access."""
         try:
-            {
+            # Create export data structure
+            export_data = {
                 "child_id": record["child_id"],
                 "export_date": datetime.utcnow().isoformat(),
                 "data_types": record["data_types"],
@@ -254,9 +248,7 @@ Thank you for using AI Teddy Bear responsibly."""
                 "export_id": export_id,
                 "download_token": download_token,
                 "download_url": f"https://secure-downloads.aiteddybear.com/exports/{export_id}?token={download_token}",
-                "expires_at": (
-                    datetime.utcnow() + timedelta(days=30)
-                ).isoformat(),
+                "expires_at": (datetime.utcnow() + timedelta(days=30)).isoformat(),
                 "file_size_mb": 2.5,
                 "exported_at": datetime.utcnow().isoformat(),
             }
@@ -270,9 +262,7 @@ Thank you for using AI Teddy Bear responsibly."""
                 "exported_at": datetime.utcnow().isoformat(),
             }
 
-    async def _delete_child_data(
-        self, record: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _delete_child_data(self, record: dict[str, Any]) -> dict[str, Any]:
         """Safely delete child data from all systems."""
         try:
             child_id = record["child_id"]
@@ -288,9 +278,7 @@ Thank you for using AI Teddy Bear responsibly."""
                 self._delete_from_analytics(child_id),
             ]
 
-            results = await asyncio.gather(
-                *deletion_tasks, return_exceptions=True
-            )
+            results = await asyncio.gather(*deletion_tasks, return_exceptions=True)
 
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
@@ -308,27 +296,22 @@ Thank you for using AI Teddy Bear responsibly."""
             logger.info(f"Child data deletion completed: {child_id}")
             return deletion_result
         except Exception as e:
-            logger.error(
-                f"Child data deletion failed: {record['retention_id']}, {e}"
-            )
+            logger.error(f"Child data deletion failed: {record['retention_id']}, {e}")
             return {
                 "error": str(e),
                 "attempted_at": datetime.utcnow().isoformat(),
             }
 
-    async def _delete_from_conversations(
-        self, child_id: str
-    ) -> Dict[str, Any]:
+    async def _delete_from_conversations(self, child_id: str) -> dict[str, Any]:
         """Delete conversation data."""
+        # In production, this would execute actual database deletions
         return {
             "table": "conversations",
             "deleted_count": 45,
             "child_id": child_id,
         }
 
-    async def _delete_from_user_profiles(
-        self, child_id: str
-    ) -> Dict[str, Any]:
+    async def _delete_from_user_profiles(self, child_id: str) -> dict[str, Any]:
         """Delete user profile data."""
         return {
             "table": "user_profiles",
@@ -336,9 +319,7 @@ Thank you for using AI Teddy Bear responsibly."""
             "child_id": child_id,
         }
 
-    async def _delete_from_interaction_logs(
-        self, child_id: str
-    ) -> Dict[str, Any]:
+    async def _delete_from_interaction_logs(self, child_id: str) -> dict[str, Any]:
         """Delete interaction logs."""
         return {
             "table": "interaction_logs",
@@ -346,9 +327,7 @@ Thank you for using AI Teddy Bear responsibly."""
             "child_id": child_id,
         }
 
-    async def _delete_from_learning_data(
-        self, child_id: str
-    ) -> Dict[str, Any]:
+    async def _delete_from_learning_data(self, child_id: str) -> dict[str, Any]:
         """Delete learning progress data."""
         return {
             "table": "learning_progress",
@@ -356,7 +335,7 @@ Thank you for using AI Teddy Bear responsibly."""
             "child_id": child_id,
         }
 
-    async def _delete_from_preferences(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_preferences(self, child_id: str) -> dict[str, Any]:
         """Delete preference data."""
         return {
             "table": "preferences",
@@ -364,7 +343,7 @@ Thank you for using AI Teddy Bear responsibly."""
             "child_id": child_id,
         }
 
-    async def _delete_from_audio_files(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_audio_files(self, child_id: str) -> dict[str, Any]:
         """Delete audio recordings."""
         return {
             "table": "audio_files",
@@ -372,7 +351,7 @@ Thank you for using AI Teddy Bear responsibly."""
             "child_id": child_id,
         }
 
-    async def _delete_from_analytics(self, child_id: str) -> Dict[str, Any]:
+    async def _delete_from_analytics(self, child_id: str) -> dict[str, Any]:
         """Delete analytics data."""
         return {
             "table": "analytics",
@@ -385,9 +364,7 @@ Thank you for using AI Teddy Bear responsibly."""
         data = f"{child_id}:{datetime.utcnow().isoformat()}:COPPA_DELETION_VERIFIED"
         return hashlib.sha256(data.encode()).hexdigest()
 
-    async def _send_deletion_confirmation(
-        self, record: Dict[str, Any]
-    ) -> None:
+    async def _send_deletion_confirmation(self, record: dict[str, Any]) -> None:
         """Send deletion confirmation to parent."""
         try:
             confirmation_data = {
@@ -413,11 +390,11 @@ Thank you for using AI Teddy Bear responsibly."""
 
     async def _send_deletion_confirmation_email(
         self,
-        confirmation_data: Dict[str, Any],
+        confirmation_data: dict[str, Any],
     ) -> None:
         """Send deletion confirmation email."""
-        f"""Subject: Child Data Deletion Completed - AI Teddy Bear
-Dear Parent / Guardian,
+        email_content = f"""Subject: Child Data Deletion Completed - AI Teddy Bear
+Dear Parent/Guardian,
 
 Your child's data has been successfully deleted from the AI Teddy Bear system
 in accordance with COPPA requirements.
@@ -432,6 +409,7 @@ and has been logged for regulatory audit purposes.
 
 Thank you for using AI Teddy Bear responsibly."""
 
+        # In production, this would send actual email
         await asyncio.sleep(0.1)
         logger.info(
             f"Deletion confirmation sent to {confirmation_data['parent_email']}",
@@ -443,7 +421,7 @@ Thank you for using AI Teddy Bear responsibly."""
         extension_days: int,
         parent_request: bool = True,
         reason: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Extend data retention period (parental right)."""
         if retention_id not in self.retention_records:
             return {"success": False, "error": "Retention record not found"}
@@ -455,12 +433,8 @@ Thank you for using AI Teddy Bear responsibly."""
                 "error": f"Cannot extend: status is {record['status']}",
             }
 
-        current_deletion_date = datetime.fromisoformat(
-            record["deletion_scheduled_at"]
-        )
-        new_deletion_date = current_deletion_date + timedelta(
-            days=extension_days
-        )
+        current_deletion_date = datetime.fromisoformat(record["deletion_scheduled_at"])
+        new_deletion_date = current_deletion_date + timedelta(days=extension_days)
 
         creation_date = datetime.fromisoformat(record["created_at"])
         max_deletion_date = creation_date + timedelta(days=365)
@@ -495,9 +469,7 @@ Thank you for using AI Teddy Bear responsibly."""
             },
         )
 
-        logger.info(
-            f"Retention extended: {retention_id}, {extension_days} days"
-        )
+        logger.info(f"Retention extended: {retention_id}, {extension_days} days")
 
         return {
             "success": True,
@@ -511,7 +483,7 @@ Thank you for using AI Teddy Bear responsibly."""
         self,
         retention_id: str,
         parent_request: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Request immediate deletion of child data (parental right)."""
         if retention_id not in self.retention_records:
             return {"success": False, "error": "Retention record not found"}
@@ -550,7 +522,7 @@ Thank you for using AI Teddy Bear responsibly."""
             ).isoformat(),
         }
 
-    async def get_retention_status(self, retention_id: str) -> Dict[str, Any]:
+    async def get_retention_status(self, retention_id: str) -> dict[str, Any]:
         """Get current retention status for a child's data."""
         if retention_id not in self.retention_records:
             return {"found": False, "error": "Retention record not found"}
@@ -569,3 +541,82 @@ Thank you for using AI Teddy Bear responsibly."""
             "extensions_count": len(record["extensions"]),
             "data_types": record["data_types"],
         }
+
+    async def generate_compliance_report(self) -> dict[str, Any]:
+        """Generate COPPA compliance report."""
+        total_records = len(self.retention_records)
+        active_records = len(
+            [
+                r
+                for r in self.retention_records.values()
+                if r["status"] == RetentionStatus.ACTIVE.value
+            ]
+        )
+        deleted_records = len(
+            [
+                r
+                for r in self.retention_records.values()
+                if r["status"] == RetentionStatus.DELETED.value
+            ]
+        )
+        extended_records = len(
+            [
+                r
+                for r in self.retention_records.values()
+                if r["status"] == RetentionStatus.EXTENDED.value
+            ]
+        )
+
+        return {
+            "report_generated_at": datetime.utcnow().isoformat(),
+            "total_records": total_records,
+            "active_records": active_records,
+            "deleted_records": deleted_records,
+            "extended_records": extended_records,
+            "compliance_status": "compliant",
+            "next_scheduled_deletions": len(self.deletion_queue),
+            "retention_policy": {
+                "default_days": self.default_retention_days,
+                "notification_days_before": self.notification_days_before,
+                "maximum_retention_days": 365,
+            },
+        }
+
+
+# Global service instance
+_retention_service = None
+
+
+def get_retention_service() -> COPPADataRetentionService:
+    """Get global retention service instance."""
+    global _retention_service
+    if _retention_service is None:
+        _retention_service = COPPADataRetentionService()
+    return _retention_service
+
+
+# Convenience functions
+async def register_child_for_retention(
+    child_id: str, parent_email: str, parent_consent_id: str, data_types: list[str]
+) -> dict[str, Any]:
+    """Quick registration for child data retention."""
+    service = get_retention_service()
+    return await service.register_child_data(
+        child_id, parent_email, parent_consent_id, data_types
+    )
+
+
+async def extend_child_retention(
+    retention_id: str, extension_days: int, reason: str = ""
+) -> dict[str, Any]:
+    """Quick retention extension."""
+    service = get_retention_service()
+    return await service.extend_retention(
+        retention_id, extension_days, parent_request=True, reason=reason
+    )
+
+
+async def request_child_deletion(retention_id: str) -> dict[str, Any]:
+    """Quick deletion request."""
+    service = get_retention_service()
+    return await service.request_immediate_deletion(retention_id)

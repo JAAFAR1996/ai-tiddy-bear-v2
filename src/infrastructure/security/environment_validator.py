@@ -3,7 +3,6 @@ import re
 import secrets
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 from src.domain.constants import COPPA_MAX_RETENTION_DAYS
 from src.infrastructure.logging_config import get_logger
@@ -68,18 +67,15 @@ class EnvironmentSecurityValidator:
     }
 
     @classmethod
-    def validate_all(cls) -> Tuple[bool, List[str]]:
-        """
-        Validate all environment variables
+    def validate_all(cls) -> tuple[bool, list[str]]:
+        """Validate all environment variables
         Returns: (is_valid, list_of_errors)
         """
         errors = []
         warnings = []
 
         if os.getenv("ENVIRONMENT") == "production" and Path(".env").exists():
-            errors.append(
-                "CRITICAL: .env file found in production environment!"
-            )
+            errors.append("CRITICAL: .env file found in production environment!")
 
         # Validate required secrets
         for var_name, rules in cls.REQUIRED_SECRETS.items():
@@ -132,9 +128,7 @@ class EnvironmentSecurityValidator:
         if os.getenv("PARENTAL_CONSENT_REQUIRED", "true").lower() != "true":
             errors.append("PARENTAL_CONSENT_REQUIRED must be 'true'")
 
-        retention_days = os.getenv(
-            "DATA_RETENTION_DAYS", str(COPPA_MAX_RETENTION_DAYS)
-        )
+        retention_days = os.getenv("DATA_RETENTION_DAYS", str(COPPA_MAX_RETENTION_DAYS))
         try:
             if int(retention_days) > COPPA_MAX_RETENTION_DAYS:
                 errors.append(
@@ -186,35 +180,29 @@ class EnvironmentSecurityValidator:
             for error in errors:
                 logger.error(f"❌ {error}")
             logger.error("=" * 60)
-            logger.error(
-                "Fix these security issues before starting the application"
-            )
+            logger.error("Fix these security issues before starting the application")
             logger.error("Generate secure secrets with:")
             logger.error(
-                "  python -c \"from src.infrastructure.security.environment_validator "
+                '  python -c "from src.infrastructure.security.environment_validator '
                 "import EnvironmentSecurityValidator; "
-                "EnvironmentSecurityValidator.generate_secure_secret()\""
+                'EnvironmentSecurityValidator.generate_secure_secret()"'
             )
             sys.exit(1)
         logger.info("✅ Environment security validation passed")
 
     @classmethod
-    def get_secure_config(cls) -> Dict[str, str]:
+    def get_secure_config(cls) -> dict[str, str]:
         """Get validated configuration with defaults for development only"""
         config = {}
 
         # Only provide defaults in development
-        is_development = (
-            os.getenv("ENVIRONMENT", "development") == "development"
-        )
+        is_development = os.getenv("ENVIRONMENT", "development") == "development"
         if is_development:
             for var_name in cls.REQUIRED_SECRETS:
                 value = os.getenv(var_name)
                 if not value or any(
                     d in value
-                    for d in cls.REQUIRED_SECRETS[var_name].get(
-                        "no_defaults", []
-                    )
+                    for d in cls.REQUIRED_SECRETS[var_name].get("no_defaults", [])
                 ):
                     if var_name == "DATABASE_URL":
                         config[var_name] = (
@@ -226,9 +214,7 @@ class EnvironmentSecurityValidator:
                         )
                     else:
                         config[var_name] = cls.generate_secure_secret()
-                    logger.warning(
-                        f"Generated development secret for {var_name}"
-                    )
+                    logger.warning(f"Generated development secret for {var_name}")
                 else:
                     config[var_name] = value
         else:

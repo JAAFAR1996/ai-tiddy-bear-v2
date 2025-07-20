@@ -1,13 +1,13 @@
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Any, Dict, Optional, List
-from uuid import uuid4
 import asyncio
 import hashlib
 import json
-import logging
 import os
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Optional
+from uuid import uuid4
+
 import aiofiles
 
 from src.infrastructure.logging_config import get_logger
@@ -97,10 +97,10 @@ class AuditConfig:
 
 @dataclass
 class AuditContext:
-    user_id: Optional[str] = None
-    child_id: Optional[str] = None
-    session_id: Optional[str] = None
-    ip_address: Optional[str] = None
+    user_id: str | None = None
+    child_id: str | None = None
+    session_id: str | None = None
+    ip_address: str | None = None
 
 
 @dataclass
@@ -114,10 +114,10 @@ class AuditEvent:
     category: AuditCategory
     description: str
     context: Optional["AuditContext"] = None
-    details: Optional[Dict[str, Any]] = None
-    checksum: Optional[str] = None
+    details: dict[str, Any] | None = None
+    checksum: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert audit event to dictionary for serialization."""
         result = asdict(self)
         result["timestamp"] = self.timestamp.isoformat()
@@ -147,7 +147,7 @@ class AuditLogger:
 
     def __init__(self, config: AuditConfig) -> None:
         self.config = config
-        self.audit_entries: List[AuditEvent] = []
+        self.audit_entries: list[AuditEvent] = []
         self.buffer_lock = asyncio.Lock()
         self._ensure_log_directory()
         self._start_background_tasks()
@@ -167,8 +167,8 @@ class AuditLogger:
         severity: AuditSeverity,
         category: AuditCategory,
         description: str,
-        context: Optional[AuditContext] = None,
-        details: Optional[Dict[str, Any]] = None,
+        context: AuditContext | None = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
         """Log a security audit event.
 
@@ -209,16 +209,12 @@ class AuditLogger:
             if severity in [AuditSeverity.ERROR, AuditSeverity.CRITICAL]:
                 await self._handle_critical_event(audit_event)
 
-            logger.debug(
-                f"Audit event logged: {event_id} - {event_type.value}"
-            )
+            logger.debug(f"Audit event logged: {event_id} - {event_type.value}")
             return event_id
         except Exception as e:
             logger.error(f"Failed to log audit event: {e}")
             # Fallback logging to ensure we don't lose critical events
-            logger.critical(
-                f"AUDIT_FALLBACK: {event_type.value} - {description}"
-            )
+            logger.critical(f"AUDIT_FALLBACK: {event_type.value} - {description}")
             return event_id
 
     async def log_child_interaction(
@@ -228,7 +224,7 @@ class AuditLogger:
         content: str,
         response: str,
         safety_score: float,
-        parent_id: Optional[str] = None,
+        parent_id: str | None = None,
     ) -> str:
         """Log child interaction for COPPA compliance and safety monitoring.
 
@@ -250,12 +246,8 @@ class AuditLogger:
             content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
             response_hash = hashlib.sha256(response.encode()).hexdigest()[:16]
         else:
-            content_hash = (
-                content[:100] + "..." if len(content) > 100 else content
-            )
-            response_hash = (
-                response[:100] + "..." if len(response) > 100 else response
-            )
+            content_hash = content[:100] + "..." if len(content) > 100 else content
+            response_hash = response[:100] + "..." if len(response) > 100 else response
 
         details = {
             "interaction_type": interaction_type,
@@ -288,7 +280,7 @@ class AuditLogger:
         child_id: str,
         incident_type: str,
         description: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
         """Log child safety incident for immediate investigation.
 
@@ -324,8 +316,8 @@ class AuditLogger:
         data_type: str,
         operation: str,
         resource_id: str,
-        child_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
+        child_id: str | None = None,
+        ip_address: str | None = None,
     ) -> str:
         """Log data access for COPPA compliance and security monitoring.
 
@@ -373,9 +365,9 @@ class AuditLogger:
         self,
         event_type: AuditEventType,
         child_id: str,
-        parent_id: Optional[str],
+        parent_id: str | None,
         description: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> str:
         """Log COPPA compliance events.
 
@@ -410,9 +402,7 @@ class AuditLogger:
             if event.severity == AuditSeverity.CRITICAL:
                 await self._send_security_alert(event)
         except Exception as e:
-            logger.error(
-                f"Failed to handle critical event {event.event_id}: {e}"
-            )
+            logger.error(f"Failed to handle critical event {event.event_id}: {e}")
 
     async def _send_security_alert(self, event: AuditEvent) -> None:
         """Send security alert for critical events."""
@@ -434,9 +424,7 @@ class AuditLogger:
                 await asyncio.sleep(self.config.flush_interval_seconds)
                 async with self.buffer_lock:
                     if len(self.audit_entries) >= self.config.batch_size:
-                        events_to_write = self.audit_entries[
-                            : self.config.batch_size
-                        ]
+                        events_to_write = self.audit_entries[: self.config.batch_size]
                         self.audit_entries = self.audit_entries[
                             self.config.batch_size :
                         ]
@@ -444,7 +432,7 @@ class AuditLogger:
             except Exception as e:
                 logger.error(f"Error in audit buffer flush: {e}")
 
-    async def _write_events_to_file(self, events: List[AuditEvent]) -> None:
+    async def _write_events_to_file(self, events: list[AuditEvent]) -> None:
         """Write audit events to encrypted log file."""
         if not events:
             return
@@ -473,12 +461,8 @@ class AuditLogger:
                 )
 
                 for filename in os.listdir(self.config.log_directory):
-                    if filename.startswith("audit_") and filename.endswith(
-                        ".jsonl"
-                    ):
-                        file_path = os.path.join(
-                            self.config.log_directory, filename
-                        )
+                    if filename.startswith("audit_") and filename.endswith(".jsonl"):
+                        file_path = os.path.join(self.config.log_directory, filename)
                         file_stat = os.stat(file_path)
                         file_date = datetime.fromtimestamp(file_stat.st_mtime)
 
@@ -490,7 +474,7 @@ class AuditLogger:
 
 
 # Global audit logger instance
-_audit_logger: Optional[AuditLogger] = None
+_audit_logger: AuditLogger | None = None
 
 
 def get_audit_logger() -> AuditLogger:

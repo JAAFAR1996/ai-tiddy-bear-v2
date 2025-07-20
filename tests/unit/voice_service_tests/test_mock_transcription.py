@@ -73,8 +73,8 @@ class TestMockTranscription:
     @pytest.mark.asyncio
     async def test_mock_transcription_returns_arabic_text(self, voice_service):
         """Test mock transcription returns appropriate Arabic text"""
-        text, confidence, segments, metadata = (
-            await voice_service._transcribe_mock(b"test_audio", "ar")
+        text, confidence, segments, metadata = await voice_service._transcribe_mock(
+            b"test_audio", "ar"
         )
 
         assert isinstance(text, str)

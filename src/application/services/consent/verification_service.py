@@ -1,39 +1,37 @@
-"""
-Parental Verification Service
+"""Parental Verification Service
 Handles all verification methods for parental identity confirmation
 required for COPPA compliance.
 """
 
-from datetime import datetime
-from typing import Dict, Any
 import re
 import secrets
-from .consent_models import (
-    VerificationMethod,
-    VerificationStatus,
-    VerificationAttempt,
-)
+from datetime import datetime
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+
+from .consent_models import (
+    VerificationAttempt,
+    VerificationMethod,
+    VerificationStatus,
+)
 
 logger = get_logger(__name__, component="services")
 
 
 class VerificationService:
-    """
-    Handles verification workflows with proper security measures and comprehensive audit trails for COPPA compliance.
-    """
+    """Handles verification workflows with proper security measures and comprehensive audit trails for COPPA compliance."""
 
     def __init__(self) -> None:
         """Initialize verification service."""
-        self.verification_attempts: Dict[str, VerificationAttempt] = {}
-        self.verification_codes: Dict[str, Dict[str, Any]] = {}
+        self.verification_attempts: dict[str, VerificationAttempt] = {}
+        self.verification_codes: dict[str, dict[str, Any]] = {}
 
     async def send_email_verification(
         self, email: str, consent_id: str
-    ) -> Dict[str, Any]:
-        """
-        Send email verification code to parent.
+    ) -> dict[str, Any]:
+        """Send email verification code to parent.
+
         Args:
             email: Parent's email address
             consent_id: Associated consent request ID
@@ -47,9 +45,7 @@ class VerificationService:
         masked_email = (
             email[:2] + "***@" + email.split("@")[1] if "@" in email else "***"
         )
-        logger.info(
-            f"Email verification code sent to {masked_email}: [REDACTED]"
-        )
+        logger.info(f"Email verification code sent to {masked_email}: [REDACTED]")
         # Store verification attempt
         self.verification_attempts[attempt_id] = VerificationAttempt(
             attempt_id=attempt_id,
@@ -67,9 +63,9 @@ class VerificationService:
 
     async def send_sms_verification(
         self, phone: str, consent_id: str
-    ) -> Dict[str, Any]:
-        """
-        Send SMS verification code to parent.
+    ) -> dict[str, Any]:
+        """Send SMS verification code to parent.
+
         Args:
             phone: Parent's phone number
             consent_id: Associated consent request ID
@@ -79,12 +75,8 @@ class VerificationService:
             return {"status": "error", "message": "Invalid phone format"}
         verification_code = self._generate_verification_code()
         attempt_id = f"sms_{consent_id}_{secrets.token_urlsafe(8)}"
-        masked_phone = (
-            phone[:3] + "***" + phone[-2:] if len(phone) > 5 else "***"
-        )
-        logger.info(
-            f"SMS verification code sent to {masked_phone}: [REDACTED]"
-        )
+        masked_phone = phone[:3] + "***" + phone[-2:] if len(phone) > 5 else "***"
+        logger.info(f"SMS verification code sent to {masked_phone}: [REDACTED]")
         self.verification_attempts[attempt_id] = VerificationAttempt(
             attempt_id=attempt_id,
             consent_id=consent_id,
@@ -99,9 +91,9 @@ class VerificationService:
             "message": "Verification code sent via SMS",
         }
 
-    async def verify_code(self, attempt_id: str, code: str) -> Dict[str, Any]:
-        """
-        Verify the submitted verification code.
+    async def verify_code(self, attempt_id: str, code: str) -> dict[str, Any]:
+        """Verify the submitted verification code.
+
         Args:
             attempt_id: Verification attempt identifier
             code: Code submitted by parent
@@ -116,11 +108,10 @@ class VerificationService:
             attempt.completed_at = datetime.utcnow().isoformat()
             logger.info(f"Verification successful for attempt: {attempt_id}")
             return {"status": "success", "message": "Verification successful"}
-        else:
-            attempt.status = VerificationStatus.FAILED
-            attempt.failure_reason = "Invalid verification code"
-            logger.warning(f"Verification failed for attempt: {attempt_id}")
-            return {"status": "error", "message": "Invalid verification code"}
+        attempt.status = VerificationStatus.FAILED
+        attempt.failure_reason = "Invalid verification code"
+        logger.warning(f"Verification failed for attempt: {attempt_id}")
+        return {"status": "error", "message": "Invalid verification code"}
 
     def _validate_email(self, email: str) -> bool:
         """Validate email format."""

@@ -114,9 +114,7 @@ class RotationStatistics:
                     "total_usage": total_usage,
                     "average_usage": avg_usage,
                     "most_used_key": (
-                        max(keys, key=lambda k: k.usage_count).key_id
-                        if keys
-                        else None
+                        max(keys, key=lambda k: k.usage_count).key_id if keys else None
                     ),
                 }
         return usage_report

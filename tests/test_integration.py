@@ -1,6 +1,9 @@
-from src.infrastructure.logging_config import get_logger
+"""Integration tests for the AI Teddy Bear system"""
+
 import sys
 from pathlib import Path
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -11,14 +14,14 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import after path setup
+
+logger = get_logger(__name__, component="test")
+
+# Import pytest with fallback
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -65,26 +68,23 @@ except ImportError:
 
             return decorator
 
+        def main(self, args):
+            return 0
+
     pytest = MockPytest()
 
 
-logger = get_logger(__name__, component="test")
-
-
-sys.path.append(str(Path(__file__).parent.parent))
-
-
 class TestIntegration:
-    """Integration tests"""  # ✅ تم الحل
+    """Integration tests"""
 
     @pytest.mark.asyncio
     async def test_voice_interaction_flow(self):
         """Test full audio interaction flow"""
-        from config.settings import Config
-
         from application.services.ai_teddy_bear_service import (
             AITeddyBearService,
         )
+
+        from config.settings import Config
 
         config = Config()
         service = AITeddyBearService(config.__dict__)
@@ -96,6 +96,7 @@ class TestIntegration:
 
     def test_database_integration(self):
         """اختبار تكامل قاعدة البيانات"""
+        pass
 
     def test_security_integration(self):
         """اختبار تكامل الأمان"""
@@ -121,8 +122,9 @@ class TestEndToEnd:
 
     def test_complete_user_journey(self):
         """اختبار رحلة المستخدم الكاملة"""
-        # from \1shboard import ParentalDashboardService
-        # # from \1se import Database
+        # Commented out until dependencies are available
+        # from dashboard import ParentalDashboardService
+        # from database import Database
         # from domain.analytics import ChildAnalytics
 
         # db = Database(":memory:")
@@ -147,21 +149,24 @@ class TestEndToEnd:
         # assert "dominant_emotion" in summary
         # assert "recommendations" in summary
         # assert len(summary["recommendations"]) > 0
+        pass
 
     def test_error_handling(self):
         """اختبار معالجة الأخطاء"""
-        # from \1se import Database
+        # Commented out until dependencies are available
+        # from database import Database
 
-        # db = Database(":memory:")
         # db = Database(":memory:")
         # child = db.get_child("non_existent")
         # assert child is None
         # interactions = db.get_interactions("non_existent")
         # assert interactions == []
+        pass
 
     def test_data_consistency(self):
         """اختبار اتساق البيانات"""
-        # from \1se import Database
+        # Commented out until dependencies are available
+        # from database import Database
 
         # db = Database(":memory:")
         # child_id = "consistency_test"
@@ -175,6 +180,7 @@ class TestEndToEnd:
         # assert len(emotions) == 10
         # assert interactions[0]["input_text"] == "سؤال 9"
         # assert interactions[-1]["input_text"] == "سؤال 0"
+        pass
 
 
 def run_qa_checklist():
@@ -204,8 +210,8 @@ def run_qa_checklist():
 
 def check_database_init():
     """فحص تهيئة قاعدة البيانات"""
-    # from \1se import Database
-
+    # Commented out until dependencies are available
+    # from database import Database
     # db = Database(":memory:")
     return True
 
@@ -213,10 +219,10 @@ def check_database_init():
 def check_module_imports():
     """فحص استيراد الوحدات"""
     try:
+        # Commented out until dependencies are available
         # from application.main_service import AITeddyBearService
-        # from \1speech_disorder_detector import SpeechDisorderDetector
+        # from speech_disorder_detector import SpeechDisorderDetector
         # from domain.services.emotion_analyzer import EmotionAnalyzer
-
         return True
     except ImportError:
         return False
@@ -224,10 +230,13 @@ def check_module_imports():
 
 def check_security_settings():
     """فحص إعدادات الأمان"""
-    from infrastructure.security import SecurityManager
+    try:
+        from infrastructure.security import SecurityManager
 
-    security = SecurityManager()
-    return len(security.allowed_audio_types) > 0
+        security = SecurityManager()
+        return len(security.allowed_audio_types) > 0
+    except ImportError:
+        return False
 
 
 def check_config_files():

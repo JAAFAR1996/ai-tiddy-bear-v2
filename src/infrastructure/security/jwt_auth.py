@@ -1,6 +1,7 @@
 """JWT Authentication module for FastAPI users"""
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 try:
@@ -8,61 +9,72 @@ try:
     from fastapi_users.authentication import (
         AuthenticationBackend,
         BearerTransport,
-        JWTStrategy
+        JWTStrategy,
     )
     from fastapi_users_sqlalchemy import (
         SQLAlchemyBaseUserTableUUID,
-        SQLAlchemyUserDatabase
+        SQLAlchemyUserDatabase,
     )
+
     FASTAPI_USERS_AVAILABLE = True
 except ImportError:
     FASTAPI_USERS_AVAILABLE = False
+
     # Mock classes for when fastapi-users is not installed
     class SQLAlchemyBaseUserTableUUID:
         pass
-    
+
     class SQLAlchemyUserDatabase:
         pass
-    
+
     class JWTStrategy:
         pass
-    
+
     class BearerTransport:
         pass
-    
+
     class AuthenticationBackend:
         pass
-    
+
     class FastAPIUsers:
         pass
+
 
 try:
     from src.infrastructure.config.settings import get_settings
 except ImportError:
+
     def get_settings():
         """Mock settings function"""
+
         class MockSettings:
             class Security:
                 JWT_SECRET_KEY = "your-secret-key-here"
+
             security = Security()
+
         return MockSettings()
 
+
 try:
-    from src.infrastructure.persistence.database import Base
+    from src.infrastructure.persistence.models.base import Base
 except ImportError:
     from sqlalchemy.orm import declarative_base
+
     Base = declarative_base()
 
 try:
     from src.infrastructure.security.vault_client import get_vault_client
 except ImportError:
+
     async def get_vault_client():
         """Mock vault client function"""
-        return None
+        return
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     """User model extending FastAPI Users base table"""
+
     __tablename__ = "users"
 
     # Additional fields for your user model, if any
@@ -72,12 +84,12 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 
 
 async def get_user_db(
-    session: AsyncSession
+    session: AsyncSession,
 ) -> AsyncGenerator[SQLAlchemyUserDatabase, None]:
     """Get user database instance"""
     if not FASTAPI_USERS_AVAILABLE:
         raise ImportError("fastapi-users is required but not installed")
-    
+
     yield SQLAlchemyUserDatabase(session, User)
 
 
@@ -85,7 +97,7 @@ async def get_jwt_strategy() -> JWTStrategy:
     """Get JWT strategy with secure configuration"""
     if not FASTAPI_USERS_AVAILABLE:
         raise ImportError("fastapi-users is required but not installed")
-    
+
     settings = get_settings()
     vault_client = await get_vault_client()
     jwt_secret = None
@@ -115,8 +127,7 @@ async def get_jwt_strategy() -> JWTStrategy:
 
     if len(jwt_secret) < 32:
         raise ValueError(
-            "JWT secret is too short. "
-            "Must be at least 32 characters for security."
+            "JWT secret is too short. " "Must be at least 32 characters for security."
         )
 
     # Check for insecure secrets
@@ -143,7 +154,7 @@ def create_auth_components():
     """Create authentication components"""
     if not FASTAPI_USERS_AVAILABLE:
         raise ImportError("fastapi-users is required but not installed")
-    
+
     bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
     auth_backend = AuthenticationBackend(

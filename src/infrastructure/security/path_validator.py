@@ -1,5 +1,4 @@
-"""
-Path Validation Security Service
+"""Path Validation Security Service
 This module provides secure path validation to prevent directory traversal attacks
 and ensure all file operations are restricted to authorized directories.
 """
@@ -8,7 +7,6 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Set
 
 from src.infrastructure.logging_config import get_logger
 
@@ -19,16 +17,15 @@ logger = get_logger(__name__, component="security")
 class PathPolicy:
     """Security policy for path operations"""
 
-    allowed_base_dirs: Set[str]
-    allowed_extensions: Set[str]
+    allowed_base_dirs: set[str]
+    allowed_extensions: set[str]
     max_path_length: int = 255
     allow_symlinks: bool = False
     case_sensitive: bool = True
 
 
 class PathValidator:
-    """
-    This service validates file paths and prevents directory traversal
+    """This service validates file paths and prevents directory traversal
     vulnerabilities while maintaining child safety compliance.
     """
 
@@ -49,8 +46,7 @@ class PathValidator:
     def __init__(self, policy: PathPolicy) -> None:
         self.policy = policy
         self._compiled_patterns = [
-            re.compile(pattern, re.IGNORECASE)
-            for pattern in self.TRAVERSAL_PATTERNS
+            re.compile(pattern, re.IGNORECASE) for pattern in self.TRAVERSAL_PATTERNS
         ]
         # Normalize base directories for consistent checking
         self.normalized_base_dirs = set()
@@ -60,11 +56,11 @@ class PathValidator:
             logger.debug(f"Added normalized base directory: {normalized}")
 
     def validate_path(self, user_path: str, operation: str = "read") -> bool:
-        """
-        Validate a user-provided path for security
+        """Validate a user-provided path for security
         Args:
             user_path: The path provided by user/API
             operation: Type of operation (read, write, execute)
+
         Returns:
             bool: True if path is safe, False otherwise
         """
@@ -82,9 +78,7 @@ class PathValidator:
                 return False
             # Check for traversal patterns
             if self._contains_traversal_patterns(user_path):
-                logger.warning(
-                    f"Path contains traversal patterns: {user_path}"
-                )
+                logger.warning(f"Path contains traversal patterns: {user_path}")
                 return False
             # Check for null bytes (directory traversal via null byte injection)
             if "\x00" in user_path:
@@ -98,9 +92,7 @@ class PathValidator:
                 return False
             # Check if path is within allowed base directories
             if not self._is_within_allowed_dirs(normalized_path):
-                logger.warning(
-                    f"Path outside allowed directories: {normalized_path}"
-                )
+                logger.warning(f"Path outside allowed directories: {normalized_path}")
                 return False
             # Check file extension if specified
             if self.policy.allowed_extensions:
@@ -117,9 +109,8 @@ class PathValidator:
             logger.error(f"Path validation error: {e}")
             return False
 
-    def sanitize_path(self, user_path: str) -> Optional[str]:
-        """
-        Sanitize a user path by removing dangerous components
+    def sanitize_path(self, user_path: str) -> str | None:
+        """Sanitize a user path by removing dangerous components
         Args:
             user_path: User-provided path
         Returns:
@@ -147,14 +138,12 @@ class PathValidator:
             logger.error(f"Path sanitization error: {e}")
             return None
 
-    def get_safe_path(
-        self, user_path: str, base_dir: str = None
-    ) -> Optional[str]:
-        """
-        Get a safe absolute path within the specified base directory
+    def get_safe_path(self, user_path: str, base_dir: str = None) -> str | None:
+        """Get a safe absolute path within the specified base directory
         Args:
             user_path: User-provided path
             base_dir: Base directory to restrict to (must be in allowed dirs)
+
         Returns:
             Optional[str]: Safe absolute path or None
         """
@@ -202,9 +191,7 @@ class PathValidator:
                 ):
                     return True
             except (AttributeError, TypeError, ValueError) as e:
-                logger.warning(
-                    f"Path validation error for base_dir '{base_dir}': {e}"
-                )
+                logger.warning(f"Path validation error for base_dir '{base_dir}': {e}")
                 continue
             except OSError as e:
                 logger.error(f"OS error during path validation: {e}")
@@ -213,8 +200,7 @@ class PathValidator:
 
 
 class SecureFileOperations:
-    """
-    Provides safe file operations that automatically validate paths
+    """Provides safe file operations that automatically validate paths
     before performing file system operations.
     """
 
@@ -222,22 +208,22 @@ class SecureFileOperations:
         self.validator = validator
 
     def safe_open(self, user_path: str, mode: str = "r", **kwargs):
-        """
-        Safely open a file after path validation
+        """Safely open a file after path validation
         Args:
             user_path: User-provided file path
             mode: File open mode
             **kwargs: Additional arguments for open()
+
         Returns:
-            File object or raises SecurityError
+            File object or raises PathSecurityError
         """
         if not self.validator.validate_path(
             user_path, "read" if "r" in mode else "write"
         ):
-            raise SecurityError(f"Path validation failed: {user_path}")
+            raise PathSecurityError(f"Path validation failed: {user_path}")
         safe_path = self.validator.get_safe_path(user_path)
         if not safe_path:
-            raise SecurityError(f"Cannot create safe path: {user_path}")
+            raise PathSecurityError(f"Cannot create safe path: {user_path}")
         try:
             return open(safe_path, mode, **kwargs)
         except Exception as e:
@@ -267,7 +253,7 @@ class SecureFileOperations:
             logger.error(f"File removal error: {e}")
             return False
 
-    def safe_listdir(self, user_path: str) -> List[str]:
+    def safe_listdir(self, user_path: str) -> list[str]:
         """Safely list directory contents"""
         if not self.validator.validate_path(user_path, "read"):
             return []
@@ -281,13 +267,12 @@ class SecureFileOperations:
             return []
 
 
-class SecurityError(Exception):
+class PathSecurityError(Exception):
     """Custom exception for security-related path errors"""
 
 
 def create_child_safe_validator() -> PathValidator:
-    """
-    Create a path validator with child-safe default policies
+    """Create a path validator with child-safe default policies
     Returns:
         PathValidator: Configured for child safety compliance
     """
@@ -321,8 +306,7 @@ def create_child_safe_validator() -> PathValidator:
 
 
 def create_secure_file_operations() -> SecureFileOperations:
-    """
-    Create secure file operations with child-safe validation
+    """Create secure file operations with child-safe validation
     Returns:
         SecureFileOperations: Ready for safe file operations
     """
@@ -331,8 +315,8 @@ def create_secure_file_operations() -> SecureFileOperations:
 
 
 # Global instances for easy access
-_default_validator: Optional[PathValidator] = None
-_default_file_ops: Optional[SecureFileOperations] = None
+_default_validator: PathValidator | None = None
+_default_file_ops: SecureFileOperations | None = None
 
 
 def get_path_validator() -> PathValidator:

@@ -105,9 +105,7 @@ class ParentalConsentEnforcer:
                 "message": "Parental consent not required for this age group",
             }
         # Find relevant consent record
-        consent_record = self._find_consent_record(
-            consent_records, operation_type
-        )
+        consent_record = self._find_consent_record(consent_records, operation_type)
         if not consent_record:
             return {
                 "consent_required": True,
@@ -187,9 +185,7 @@ class ParentalConsentEnforcer:
             "valid_consents": valid_consents,
             "can_interact": all_valid,
             "detailed_results": validation_results,
-            "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(
-                child_age
-            ),
+            "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(child_age),
             "message": self._generate_consent_message(
                 all_valid,
                 missing_consents,
@@ -213,8 +209,7 @@ class ParentalConsentEnforcer:
         if consent_record.status != ConsentStatus.GRANTED:
             return False
         return not (
-            consent_record.expires_at
-            and datetime.utcnow() > consent_record.expires_at
+            consent_record.expires_at and datetime.utcnow() > consent_record.expires_at
         )
 
     def _consent_record_to_dict(self, record: ConsentRecord) -> dict[str, Any]:
@@ -243,18 +238,12 @@ class ParentalConsentEnforcer:
             return "All required parental consents are valid"
         messages = []
         if missing_consents:
-            messages.append(
-                f"Missing consent for: {', '.join(missing_consents)}"
-            )
+            messages.append(f"Missing consent for: {', '.join(missing_consents)}")
         if expired_consents:
-            messages.append(
-                f"Expired consent for: {', '.join(expired_consents)}"
-            )
+            messages.append(f"Expired consent for: {', '.join(expired_consents)}")
         return "; ".join(messages)
 
-    def get_consent_requirements_summary(
-        self, child_age: int
-    ) -> dict[str, Any]:
+    def get_consent_requirements_summary(self, child_age: int) -> dict[str, Any]:
         """Get summary of consent requirements for a child's age.
 
         Args:
@@ -268,21 +257,15 @@ class ParentalConsentEnforcer:
         return {
             "child_age": child_age,
             "age_validation": age_validation.value,
-            "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(
-                child_age
-            ),
+            "coppa_applicable": COPPAAgeValidator.is_coppa_applicable(child_age),
             "consent_required": len(required_consents) > 0,
-            "required_consent_types": [
-                consent.value for consent in required_consents
-            ],
+            "required_consent_types": [consent.value for consent in required_consents],
             "total_required_consents": len(required_consents),
             "compliance_level": self._get_compliance_level(age_validation),
             "recommendations": self._get_consent_recommendations(child_age),
         }
 
-    def _get_compliance_level(
-        self, age_validation: AgeValidationResult
-    ) -> str:
+    def _get_compliance_level(self, age_validation: AgeValidationResult) -> str:
         """Get compliance level based on age validation."""
         if age_validation == AgeValidationResult.VALID_CHILD:
             return "strict_coppa_compliance"

@@ -1,9 +1,9 @@
-from src.domain.schemas import validate_against_schema
-from src.domain.contracts import ContractResult, ContractTest
-from typing import Dict, List, Optional
 import asyncio
 import sys
 from pathlib import Path
+
+from src.domain.contracts import ContractResult, ContractTest
+from src.domain.schemas import validate_against_schema
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -29,9 +29,7 @@ except ImportError:
                 setattr(self, key, value)
 
         def dict(self):
-            return {
-                k: v for k, v in self.__dict__.items() if not k.startswith("_")
-            }
+            return {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
 
         def json(self):
             import json
@@ -42,7 +40,7 @@ except ImportError:
         pass
 
 
-async def _prepare_url(framework, endpoint: str, test_data: Dict) -> str:
+async def _prepare_url(framework, endpoint: str, test_data: dict) -> str:
     """Prepares the request URL by substituting path parameters."""
     url = f"{framework.base_url}{endpoint}"
     for key, value in test_data.items():
@@ -51,7 +49,7 @@ async def _prepare_url(framework, endpoint: str, test_data: Dict) -> str:
     return url
 
 
-def _prepare_headers(contract_headers: Dict) -> Dict:
+def _prepare_headers(contract_headers: dict) -> dict:
     """Prepares the request headers."""
     return {
         "Content-Type": "application/json",
@@ -61,8 +59,8 @@ def _prepare_headers(contract_headers: Dict) -> Dict:
 
 
 async def _make_request(
-    framework, method: str, url: str, data: Dict, headers: Dict
-) -> tuple[Optional[Dict], int]:
+    framework, method: str, url: str, data: dict, headers: dict
+) -> tuple[dict | None, int]:
     """Makes an HTTP request using the specified method."""
     request_functions = {
         "GET": framework.session.get,
@@ -78,22 +76,18 @@ async def _make_request(
         request_kwargs["json"] = data
 
     async with request_function(url, **request_kwargs) as response:
-        response_data = (
-            await response.json() if response.status // 100 == 2 else None
-        )
+        response_data = await response.json() if response.status // 100 == 2 else None
         return response_data, response.status
 
 
 def _validate_response(
-    response_data: Optional[Dict], response_status: int, test: ContractTest
-) -> List[str]:
+    response_data: dict | None, response_status: int, test: ContractTest
+) -> list[str]:
     """Validates the HTTP response against the contract."""
     validation_errors = []
     if response_status == test.expected_status and response_data:
         try:
-            validate_against_schema(
-                response_data, test.contract.response_schema
-            )
+            validate_against_schema(response_data, test.contract.response_schema)
             for key in test.expected_response_keys:
                 if key not in response_data:
                     validation_errors.append(f"Missing required key: {key}")
@@ -103,32 +97,27 @@ def _validate_response(
 
 
 def _determine_test_status(
-    response_status: int, expected_status: int, validation_errors: List[str]
-) -> tuple[str, Optional[str]]:
+    response_status: int, expected_status: int, validation_errors: list[str]
+) -> tuple[str, str | None]:
     """Determines the final status of the test."""
     if response_status != expected_status:
         return (
             "failed",
             f"Expected status {expected_status}, got {response_status}",
         )
-    elif validation_errors:
+    if validation_errors:
         return "failed", "; ".join(validation_errors)
-    else:
-        return "passed", None
+    return "passed", None
 
 
-async def execute_contract_test(
-    framework, test: ContractTest
-) -> ContractResult:
+async def execute_contract_test(framework, test: ContractTest) -> ContractResult:
     """تنفيذ اختبار عقد واحد"""
     start_time = asyncio.get_event_loop().time()
 
     try:
         validate_against_schema(test.test_data, test.contract.request_schema)
 
-        url = await _prepare_url(
-            framework, test.contract.endpoint, test.test_data
-        )
+        url = await _prepare_url(framework, test.contract.endpoint, test.test_data)
         headers = _prepare_headers(test.contract.headers)
 
         response_data, response_status = await _make_request(
@@ -137,9 +126,7 @@ async def execute_contract_test(
 
         execution_time = asyncio.get_event_loop().time() - start_time
 
-        validation_errors = _validate_response(
-            response_data, response_status, test
-        )
+        validation_errors = _validate_response(response_data, response_status, test)
 
         status, error_message = _determine_test_status(
             response_status, test.expected_status, validation_errors

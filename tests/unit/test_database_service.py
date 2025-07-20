@@ -1,18 +1,17 @@
-"""
-Comprehensive Unit Tests for Database Service
-"""
+"""Comprehensive Unit Tests for Database Service"""
 
-import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
+
+import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
 
+from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.persistence.models.child_model import ChildModel
 from src.infrastructure.persistence.real_database_service import (
     DatabaseService,
 )
-from src.infrastructure.persistence.database import Database
-from src.infrastructure.persistence.models.child_model import ChildModel
 
 
 @pytest.fixture
@@ -87,9 +86,7 @@ class TestChildManagement:
     ):
         """Test handling duplicate child creation."""
         mock_database.get_session.return_value = mock_session
-        mock_session.commit.side_effect = IntegrityError(
-            "Duplicate", None, None
-        )
+        mock_session.commit.side_effect = IntegrityError("Duplicate", None, None)
 
         with pytest.raises(IntegrityError):
             await database_service.create_child(
@@ -167,9 +164,7 @@ class TestChildManagement:
         mock_result.rowcount = 0
         mock_session.execute.return_value = mock_result
 
-        success = await database_service.update_child(
-            child_id=str(uuid4()), age=8
-        )
+        success = await database_service.update_child(child_id=str(uuid4()), age=8)
 
         assert success is False
 
@@ -429,9 +424,7 @@ class TestDatabaseInitialization:
             init_database_service,
         )
 
-        service = init_database_service(
-            "postgresql://test:test@localhost/test"
-        )
+        service = init_database_service("postgresql://test:test@localhost/test")
 
         assert service is not None
         assert isinstance(service, DatabaseService)

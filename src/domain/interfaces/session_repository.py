@@ -13,9 +13,7 @@ class ISessionRepository(ABC):
         """Retrieves a session by its ID."""
 
     @abstractmethod
-    async def save(
-        self, session_data: SessionData, timeout_minutes: int
-    ) -> None:
+    async def save(self, session_data: SessionData, timeout_minutes: int) -> None:
         """Saves or updates session data, with an associated timeout."""
 
     @abstractmethod

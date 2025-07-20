@@ -28,9 +28,7 @@ async def auth_service(auth_config):
     return await create_auth_service(auth_config)
 
 
-@pytest.mark.skipif(
-    not FEDERATION_AVAILABLE, reason="Federation not available"
-)
+@pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
 class TestAuthentication:
     """Test authentication system."""
 
@@ -65,9 +63,7 @@ class TestAuthentication:
         assert user.username == "authuser"
 
         # Test failed authentication
-        user = await auth_service.authenticate_user(
-            "authuser", "wrongpassword"
-        )
+        user = await auth_service.authenticate_user("authuser", "wrongpassword")
         assert user is None
 
     @pytest.mark.asyncio
@@ -126,9 +122,7 @@ class TestAuthentication:
             username="admin",
             email="admin@test.com",
             role=UserRole.ADMIN,
-            permissions=auth_service.RolePermissions.get_permissions(
-                UserRole.ADMIN
-            ),
+            permissions=auth_service.RolePermissions.get_permissions(UserRole.ADMIN),
         )
 
         parent_user = User(
@@ -136,36 +130,22 @@ class TestAuthentication:
             username="parent",
             email="parent@test.com",
             role=UserRole.PARENT,
-            permissions=auth_service.RolePermissions.get_permissions(
-                UserRole.PARENT
-            ),
+            permissions=auth_service.RolePermissions.get_permissions(UserRole.PARENT),
             children_ids=["child-123"],
         )
 
         # Test admin permissions
+        assert auth_service.check_permission(admin_user, Permission.READ_CHILD) is True
         assert (
-            auth_service.check_permission(admin_user, Permission.READ_CHILD)
-            is True
-        )
-        assert (
-            auth_service.check_permission(admin_user, Permission.ADMIN_SYSTEM)
-            is False
+            auth_service.check_permission(admin_user, Permission.ADMIN_SYSTEM) is False
         )
 
         # Test parent permissions
+        assert auth_service.check_permission(parent_user, Permission.READ_CHILD) is True
         assert (
-            auth_service.check_permission(parent_user, Permission.READ_CHILD)
-            is True
-        )
-        assert (
-            auth_service.check_permission(parent_user, Permission.DELETE_CHILD)
-            is False
+            auth_service.check_permission(parent_user, Permission.DELETE_CHILD) is False
         )
 
         # Test child access
-        assert (
-            auth_service.check_child_access(parent_user, "child-123") is True
-        )
-        assert (
-            auth_service.check_child_access(parent_user, "child-456") is False
-        )
+        assert auth_service.check_child_access(parent_user, "child-123") is True
+        assert auth_service.check_child_access(parent_user, "child-456") is False

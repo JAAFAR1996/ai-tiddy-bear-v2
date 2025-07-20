@@ -1,10 +1,9 @@
-"""
-Centralized Exception Handling System
-"""
+"""Centralized Exception Handling System"""
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
@@ -46,17 +45,15 @@ class ErrorCode(Enum):
 
 
 class BaseApplicationException(Exception):
-    """
-    Base exception class for all application exceptions.
-    """
+    """Base exception class for all application exceptions."""
 
     def __init__(
         self,
         message: str,
         error_code: ErrorCode,
-        details: Optional[Dict[str, Any]] = None,
-        user_message: Optional[str] = None,
-        child_friendly_message: Optional[str] = None,
+        details: dict[str, Any] | None = None,
+        user_message: str | None = None,
+        child_friendly_message: str | None = None,
     ) -> None:
         super().__init__(message)
         self.message = message
@@ -123,7 +120,7 @@ class ExternalServiceException(BaseApplicationException):
     def __init__(
         self,
         service_name: str,
-        original_exception: Optional[Exception] = None,
+        original_exception: Exception | None = None,
         **kwargs,
     ):
         message = f"Error communicating with external service: {service_name}"

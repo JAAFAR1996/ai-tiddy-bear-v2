@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -44,11 +44,11 @@ class TestResult(BaseModel):
     test_type: str  # unit, integration, e2e, security, performance
     status: str  # passed, failed, skipped, error
     duration_ms: float
-    coverage_percent: Optional[float] = None
-    performance_metrics: Optional[Dict[str, Any]] = None
-    security_score: Optional[float] = None
-    child_safety_score: Optional[float] = None
-    error_message: Optional[str] = None
+    coverage_percent: float | None = None
+    performance_metrics: dict[str, Any] | None = None
+    security_score: float | None = None
+    child_safety_score: float | None = None
+    error_message: str | None = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
@@ -57,7 +57,7 @@ class TestSuite(BaseModel):
 
     name: str
     description: str
-    test_results: List[TestResult] = field(default_factory=list)
+    test_results: list[TestResult] = field(default_factory=list)
     total_tests: int = 0
     passed_tests: int = 0
     failed_tests: int = 0

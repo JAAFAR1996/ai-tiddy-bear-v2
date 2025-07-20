@@ -1,13 +1,13 @@
-"""
-Tests for Password Hasher
+"""Tests for Password Hasher
 Testing secure password hashing and verification using bcrypt.
 """
 
-import pytest
-from unittest.mock import patch, Mock
-import bcrypt
-import time
 import threading
+import time
+from unittest.mock import Mock, patch
+
+import bcrypt
+import pytest
 
 from src.infrastructure.security.password_hasher import PasswordHasher
 
@@ -145,9 +145,7 @@ class TestPasswordHasher:
 
             # Verify the hash uses the correct number of rounds
             assert hashed.startswith(f"$2b${rounds:02d}$")
-            assert bcrypt.checkpw(
-                password.encode("utf-8"), hashed.encode("utf-8")
-            )
+            assert bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
     def test_hash_password_salt_uniqueness(self, password_hasher):
         """Test that same password produces different hashes (due to salt)."""
@@ -250,9 +248,7 @@ class TestPasswordHasher:
 
             assert result is False
             # Verify dummy hash operation was called
-            mock_hash.assert_called_once_with(
-                "a" * password_hasher.password_min_length
-            )
+            mock_hash.assert_called_once_with("a" * password_hasher.password_min_length)
 
     def test_verify_password_invalid_hash_format(self, password_hasher):
         """Test verifying against various invalid hash formats."""
@@ -270,9 +266,7 @@ class TestPasswordHasher:
 
         for invalid_hash in invalid_hashes:
             with patch.object(password_hasher, "hash_password") as mock_hash:
-                result = password_hasher.verify_password(
-                    password, invalid_hash
-                )
+                result = password_hasher.verify_password(password, invalid_hash)
 
                 assert result is False
                 # Verify dummy hash operation was called for timing attack
@@ -310,9 +304,7 @@ class TestPasswordHasher:
         hashed = password_hasher.hash_password(password)
 
         correct_result = password_hasher.verify_password(password, hashed)
-        wrong_result = password_hasher.verify_password(
-            password_with_space, hashed
-        )
+        wrong_result = password_hasher.verify_password(password_with_space, hashed)
 
         assert correct_result is True
         assert wrong_result is False
@@ -364,9 +356,7 @@ class TestPasswordHasher:
                     "a" * password_hasher.password_min_length
                 )
 
-    def test_verify_password_encoding_exception_handling(
-        self, password_hasher
-    ):
+    def test_verify_password_encoding_exception_handling(self, password_hasher):
         """Test handling of encoding exceptions during verification."""
         password = "correctpassword123"
         valid_hash = password_hasher.hash_password(password)
@@ -514,9 +504,7 @@ class TestPasswordHasher:
 
     def test_password_hasher_logging_behavior(self, password_hasher):
         """Test that password hasher logs appropriate messages."""
-        with patch(
-            "src.infrastructure.security.password_hasher.logger"
-        ) as mock_logger:
+        with patch("src.infrastructure.security.password_hasher.logger") as mock_logger:
             # Test successful operations (should not log errors)
             password = "loggingtest123"
             hashed = password_hasher.hash_password(password)
@@ -628,9 +616,7 @@ class TestPasswordHasher:
         null_password = "password\x00with\x00nulls"
         if len(null_password) >= password_hasher.password_min_length:
             hashed = password_hasher.hash_password(null_password)
-            assert (
-                password_hasher.verify_password(null_password, hashed) is True
-            )
+            assert password_hasher.verify_password(null_password, hashed) is True
 
     def test_password_hasher_error_message_security(self, password_hasher):
         """Test that error messages don't leak sensitive information."""
@@ -643,9 +629,7 @@ class TestPasswordHasher:
         assert "security requirements" in error_message
 
         # Test with bcrypt exception
-        with patch(
-            "bcrypt.gensalt", side_effect=Exception("internal bcrypt error")
-        ):
+        with patch("bcrypt.gensalt", side_effect=Exception("internal bcrypt error")):
             with pytest.raises(ValueError) as exc_info:
                 password_hasher.hash_password("validpassword123")
 

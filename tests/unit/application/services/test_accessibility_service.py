@@ -1,15 +1,15 @@
-"""
-Comprehensive test suite for application/services/accessibility_service.py
+"""Comprehensive test suite for application/services/accessibility_service.py
 
 This test file validates the AccessibilityService including
 profile creation, retrieval, adaptation recommendations, and
 accessibility settings management for children with special needs.
 """
 
-import pytest
 import logging
 from unittest.mock import Mock, patch
 from uuid import UUID, uuid4
+
+import pytest
 
 from src.application.services.accessibility_service import AccessibilityService
 from src.domain.value_objects.accessibility import (
@@ -140,13 +140,9 @@ def sample_special_needs():
 class TestAccessibilityService:
     """Test suite for AccessibilityService."""
 
-    def test_init_sets_dependencies(
-        self, mock_repository, mock_config, mock_logger
-    ):
+    def test_init_sets_dependencies(self, mock_repository, mock_config, mock_logger):
         """Test that constructor properly sets dependencies."""
-        service = AccessibilityService(
-            mock_repository, mock_config, mock_logger
-        )
+        service = AccessibilityService(mock_repository, mock_config, mock_logger)
 
         assert service.repository is mock_repository
         assert service.config is mock_config
@@ -268,16 +264,12 @@ class TestAccessibilityService:
     ):
         """Test successful retrieval of existing accessibility profile."""
         # Arrange - Create profile first
-        created_profile = (
-            await accessibility_service.create_accessibility_profile(
-                sample_child_id, sample_special_needs
-            )
+        created_profile = await accessibility_service.create_accessibility_profile(
+            sample_child_id, sample_special_needs
         )
 
         # Act
-        result = await accessibility_service.get_accessibility_profile(
-            sample_child_id
-        )
+        result = await accessibility_service.get_accessibility_profile(sample_child_id)
 
         # Assert
         assert result is not None
@@ -292,9 +284,7 @@ class TestAccessibilityService:
     ):
         """Test retrieval of non-existent accessibility profile."""
         # Act
-        result = await accessibility_service.get_accessibility_profile(
-            sample_child_id
-        )
+        result = await accessibility_service.get_accessibility_profile(sample_child_id)
 
         # Assert
         assert result is None
@@ -324,10 +314,7 @@ class TestAccessibilityService:
 
         accessibility_service.logger.info.assert_called_once()
         info_call = accessibility_service.logger.info.call_args[0][0]
-        assert (
-            f"Accessibility profile found for child: {sample_child_id}"
-            in info_call
-        )
+        assert f"Accessibility profile found for child: {sample_child_id}" in info_call
 
     @pytest.mark.asyncio
     async def test_get_accessibility_profile_logging_not_found(
@@ -348,8 +335,7 @@ class TestAccessibilityService:
         accessibility_service.logger.info.assert_called_once()
         info_call = accessibility_service.logger.info.call_args[0][0]
         assert (
-            f"Accessibility profile not found for child: {sample_child_id}"
-            in info_call
+            f"Accessibility profile not found for child: {sample_child_id}" in info_call
         )
 
     @pytest.mark.asyncio
@@ -359,15 +345,11 @@ class TestAccessibilityService:
         """Test handling of repository errors during profile retrieval."""
         # Arrange
         accessibility_service.repository.should_raise_exception = True
-        accessibility_service.repository.exception_message = (
-            "Database connection error"
-        )
+        accessibility_service.repository.exception_message = "Database connection error"
 
         # Act & Assert
         with pytest.raises(Exception) as exc_info:
-            await accessibility_service.get_accessibility_profile(
-                sample_child_id
-            )
+            await accessibility_service.get_accessibility_profile(sample_child_id)
 
         assert "Database connection error" in str(exc_info.value)
 
@@ -467,9 +449,7 @@ class TestAccessibilityService:
         }
         assert result == expected
 
-    def test_get_accessibility_settings_visual_impairment(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_visual_impairment(self, accessibility_service):
         """Test accessibility settings for visual impairment."""
         # Arrange
         needs = [SpecialNeedType.VISUAL_IMPAIRMENT]
@@ -482,9 +462,7 @@ class TestAccessibilityService:
         assert result["audio_enabled"] is True
         assert result["high_contrast"] is True
 
-    def test_get_accessibility_settings_hearing_impairment(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_hearing_impairment(self, accessibility_service):
         """Test accessibility settings for hearing impairment."""
         # Arrange
         needs = [SpecialNeedType.HEARING_IMPAIRMENT]
@@ -497,9 +475,7 @@ class TestAccessibilityService:
         assert result["visual_enabled"] is True
         assert result["subtitles_enabled"] is True
 
-    def test_get_accessibility_settings_motor_impairment(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_motor_impairment(self, accessibility_service):
         """Test accessibility settings for motor impairment."""
         # Arrange
         needs = [SpecialNeedType.MOTOR_IMPAIRMENT]
@@ -511,9 +487,7 @@ class TestAccessibilityService:
         assert result["simplified_ui"] is True
         assert result["voice_control"] is True
 
-    def test_get_accessibility_settings_cognitive_delay(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_cognitive_delay(self, accessibility_service):
         """Test accessibility settings for cognitive delay."""
         # Arrange
         needs = [SpecialNeedType.COGNITIVE_DELAY]
@@ -525,9 +499,7 @@ class TestAccessibilityService:
         assert result["simplified_ui"] is True
         assert result["slower_pace"] is True
 
-    def test_get_accessibility_settings_multiple_needs(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_multiple_needs(self, accessibility_service):
         """Test accessibility settings for multiple special needs."""
         # Arrange
         needs = [
@@ -562,15 +534,13 @@ class TestAccessibilityService:
         assert result["voice_control"] is True
         assert result["slower_pace"] is True
 
-    def test_get_accessibility_settings_config_override(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_config_override(self, accessibility_service):
         """Test that config overrides are applied correctly."""
         # Arrange
         needs = [SpecialNeedType.VISUAL_IMPAIRMENT]
-        accessibility_service.config.accessibility_settings_rules[
-            "visual_impairment"
-        ]["custom_setting"] = "custom_value"
+        accessibility_service.config.accessibility_settings_rules["visual_impairment"][
+            "custom_setting"
+        ] = "custom_value"
 
         # Act
         result = accessibility_service._get_accessibility_settings(needs)
@@ -578,9 +548,7 @@ class TestAccessibilityService:
         # Assert
         assert result["custom_setting"] == "custom_value"
 
-    def test_get_accessibility_settings_speech_impairment(
-        self, accessibility_service
-    ):
+    def test_get_accessibility_settings_speech_impairment(self, accessibility_service):
         """Test accessibility settings for speech impairment."""
         # Arrange
         needs = [SpecialNeedType.SPEECH_IMPAIRMENT]
@@ -616,17 +584,13 @@ class TestAccessibilityService:
     ):
         """Test complete workflow of creating and retrieving a profile."""
         # Create profile
-        created_profile = (
-            await accessibility_service.create_accessibility_profile(
-                sample_child_id, sample_special_needs
-            )
+        created_profile = await accessibility_service.create_accessibility_profile(
+            sample_child_id, sample_special_needs
         )
 
         # Retrieve profile
-        retrieved_profile = (
-            await accessibility_service.get_accessibility_profile(
-                sample_child_id
-            )
+        retrieved_profile = await accessibility_service.get_accessibility_profile(
+            sample_child_id
         )
 
         # Assert
@@ -660,12 +624,8 @@ class TestAccessibilityService:
         assert profile_1.special_needs != profile_2.special_needs
 
         # Verify retrieval
-        retrieved_1 = await accessibility_service.get_accessibility_profile(
-            child_id_1
-        )
-        retrieved_2 = await accessibility_service.get_accessibility_profile(
-            child_id_2
-        )
+        retrieved_1 = await accessibility_service.get_accessibility_profile(child_id_1)
+        retrieved_2 = await accessibility_service.get_accessibility_profile(child_id_2)
 
         assert retrieved_1.special_needs == needs_1
         assert retrieved_2.special_needs == needs_2
@@ -688,7 +648,7 @@ class TestAccessibilityService:
         # Act - Create profiles concurrently
         create_tasks = [
             accessibility_service.create_accessibility_profile(child_id, needs)
-            for child_id, needs in zip(child_ids, needs_list)
+            for child_id, needs in zip(child_ids, needs_list, strict=False)
         ]
         created_profiles = await asyncio.gather(*create_tasks)
 
@@ -793,17 +753,13 @@ class TestAccessibilityService:
         assert callable(accessibility_service._get_adaptations)
         assert callable(accessibility_service._get_accessibility_settings)
 
-    def test_service_dependencies_injection(
-        self, mock_repository, mock_config
-    ):
+    def test_service_dependencies_injection(self, mock_repository, mock_config):
         """Test that service properly accepts dependency injection."""
         # Different logger
         custom_logger = Mock(spec=logging.Logger)
 
         # Act
-        service = AccessibilityService(
-            mock_repository, mock_config, custom_logger
-        )
+        service = AccessibilityService(mock_repository, mock_config, custom_logger)
 
         # Assert
         assert service.repository is mock_repository

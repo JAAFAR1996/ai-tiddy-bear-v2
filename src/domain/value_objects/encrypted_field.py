@@ -30,9 +30,7 @@ class EncryptedField(SecureFieldInterface[Any]):
             encryption_service: Service to handle encryption operations
 
         """
-        self._encryption_service = (
-            encryption_service or NullEncryptionService()
-        )
+        self._encryption_service = encryption_service or NullEncryptionService()
         self._original_value = value
         self._encrypted_data = self._serialize_and_encrypt(value)
         self._is_encrypted = self._encryption_service.is_available()
@@ -69,9 +67,7 @@ class EncryptedField(SecureFieldInterface[Any]):
             return None
 
         if self._is_encrypted:
-            decrypted_str = self._encryption_service.decrypt(
-                self._encrypted_data
-            )
+            decrypted_str = self._encryption_service.decrypt(self._encrypted_data)
             return self._deserialize_value(decrypted_str)
 
         return self._deserialize_value(self._encrypted_data)
@@ -116,9 +112,7 @@ class EncryptedField(SecureFieldInterface[Any]):
 
         """
         instance = cls.__new__(cls)
-        instance._encryption_service = (
-            encryption_service or NullEncryptionService()
-        )
+        instance._encryption_service = encryption_service or NullEncryptionService()
         instance._encrypted_data = encrypted_data
         instance._is_encrypted = instance._encryption_service.is_available()
         instance._original_value = None  # Will be determined on first access

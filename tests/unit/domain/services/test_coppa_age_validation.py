@@ -1,16 +1,16 @@
-"""
-Tests for COPPA Age Validation Service
+"""Tests for COPPA Age Validation Service
 Testing centralized age validation for COPPA compliance.
 """
 
 from datetime import date
+
 from freezegun import freeze_time
 
 from src.domain.services.coppa_age_validation import (
-    COPPAAgeValidator,
     AgeValidationResult,
-    validate_child_age,
+    COPPAAgeValidator,
     is_age_coppa_compliant,
+    validate_child_age,
 )
 
 
@@ -24,9 +24,7 @@ class TestAgeValidationResult:
         assert AgeValidationResult.VALID_ADULT.value == "valid_adult"
         assert AgeValidationResult.TOO_YOUNG.value == "too_young"
         assert AgeValidationResult.INVALID_AGE.value == "invalid_age"
-        assert (
-            AgeValidationResult.MISSING_BIRTHDATE.value == "missing_birthdate"
-        )
+        assert AgeValidationResult.MISSING_BIRTHDATE.value == "missing_birthdate"
 
 
 class TestCOPPAAgeValidator:
@@ -265,9 +263,7 @@ class TestCOPPAAgeValidator:
     def test_get_safety_level_all_results(self):
         """Test safety level mapping for all validation results."""
         assert (
-            COPPAAgeValidator._get_safety_level(
-                AgeValidationResult.VALID_CHILD
-            )
+            COPPAAgeValidator._get_safety_level(AgeValidationResult.VALID_CHILD)
             == "high_protection"
         )
         assert (
@@ -275,9 +271,7 @@ class TestCOPPAAgeValidator:
             == "moderate_protection"
         )
         assert (
-            COPPAAgeValidator._get_safety_level(
-                AgeValidationResult.VALID_ADULT
-            )
+            COPPAAgeValidator._get_safety_level(AgeValidationResult.VALID_ADULT)
             == "standard_protection"
         )
         assert (
@@ -285,44 +279,30 @@ class TestCOPPAAgeValidator:
             == "blocked"
         )
         assert (
-            COPPAAgeValidator._get_safety_level(
-                AgeValidationResult.INVALID_AGE
-            )
+            COPPAAgeValidator._get_safety_level(AgeValidationResult.INVALID_AGE)
             == "blocked"
         )
         assert (
-            COPPAAgeValidator._get_safety_level(
-                AgeValidationResult.MISSING_BIRTHDATE
-            )
+            COPPAAgeValidator._get_safety_level(AgeValidationResult.MISSING_BIRTHDATE)
             == "blocked"
         )
 
     # _get_compliance_notes tests
     def test_get_compliance_notes_all_results(self):
         """Test compliance notes for all validation results."""
-        notes = COPPAAgeValidator._get_compliance_notes(
-            AgeValidationResult.VALID_CHILD
-        )
+        notes = COPPAAgeValidator._get_compliance_notes(AgeValidationResult.VALID_CHILD)
         assert "COPPA compliance required" in notes
 
-        notes = COPPAAgeValidator._get_compliance_notes(
-            AgeValidationResult.VALID_TEEN
-        )
+        notes = COPPAAgeValidator._get_compliance_notes(AgeValidationResult.VALID_TEEN)
         assert "Parental consent recommended" in notes
 
-        notes = COPPAAgeValidator._get_compliance_notes(
-            AgeValidationResult.VALID_ADULT
-        )
+        notes = COPPAAgeValidator._get_compliance_notes(AgeValidationResult.VALID_ADULT)
         assert "Standard privacy protection" in notes
 
-        notes = COPPAAgeValidator._get_compliance_notes(
-            AgeValidationResult.TOO_YOUNG
-        )
+        notes = COPPAAgeValidator._get_compliance_notes(AgeValidationResult.TOO_YOUNG)
         assert "Age too young" in notes
 
-        notes = COPPAAgeValidator._get_compliance_notes(
-            AgeValidationResult.INVALID_AGE
-        )
+        notes = COPPAAgeValidator._get_compliance_notes(AgeValidationResult.INVALID_AGE)
         assert "Invalid age data" in notes
 
         notes = COPPAAgeValidator._get_compliance_notes(

@@ -1,8 +1,13 @@
-import numpy as np
-from unittest.mock import AsyncMock, patch
+"""Unit Tests for Homomorphic Encryption System.
+
+Security Team Implementation - Task 9 Tests
+Author: Security Team Lead
+"""
+
 import hashlib
 import sys
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -13,6 +18,7 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Import numpy with fallback
 try:
     import numpy as np
 except ImportError:
@@ -49,22 +55,10 @@ except ImportError:
 
     np = MockNumpy()
 
-"""
-Unit Tests for Homomorphic Encryption System.
-
-Security Team Implementation - Task 9 Tests
-Author: Security Team Lead
-"""
-
-
+# Import pytest with fallback
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -93,6 +87,12 @@ except ImportError:
 
                     return decorator
 
+                def skipif(self, condition, reason=""):
+                    def decorator(func):
+                        return func
+
+                    return decorator
+
             return MockMark()
 
         def raises(self, exception):
@@ -111,6 +111,9 @@ except ImportError:
 
             return decorator
 
+        def main(self, args):
+            return 0
+
     pytest = MockPytest()
 
 # Import the modules to test
@@ -125,11 +128,10 @@ try:
 
     HE_IMPORTS_AVAILABLE = True
     import_error = ""
-    TENSEAL_AVAILABLE = True
-    TENSEAL_AVAILABLE = True  # Define TENSEAL_AVAILABLE
 except ImportError as e:
     HE_IMPORTS_AVAILABLE = False
     import_error = str(e)
+    TENSEAL_AVAILABLE = False
 
 
 class TestHEConfig:
@@ -174,9 +176,7 @@ class TestHomomorphicEncryption:
         assert he_service.emotion_processor is not None
 
     @pytest.mark.asyncio
-    @pytest.mark.skipif(
-        not HE_IMPORTS_AVAILABLE, reason="TenSEAL not available"
-    )
+    @pytest.mark.skipif(not HE_IMPORTS_AVAILABLE, reason="TenSEAL not available")
     async def test_encrypt_voice_features(self, he_service):
         """Test voice feature encryption."""
         if not HE_IMPORTS_AVAILABLE:
@@ -186,9 +186,7 @@ class TestHomomorphicEncryption:
         child_id = "test_child_456"
 
         he_service.audit_logger = AsyncMock()
-        encrypted_data = await he_service.encrypt_voice_features(
-            features, child_id
-        )
+        encrypted_data = await he_service.encrypt_voice_features(features, child_id)
 
         assert isinstance(encrypted_data, EncryptedData)
         assert encrypted_data.data_type == "voice_features"

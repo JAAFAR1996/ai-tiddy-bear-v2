@@ -1,34 +1,105 @@
-"""from typing import Any, Dict, List, Set
-import logging
-import re
-from .validation_config import InputValidationConfig, ValidationSeverity
-from .validation_rules import get_default_validation_rules, get_profanity_words.
+"""Input Sanitization Logic
+Extracted from input_validation.py to reduce file size
 """
 
-"""Input Sanitization Logic
-Extracted from input_validation.py to reduce file size"""
+import re
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
+
+try:
+    from .validation_config import InputValidationConfig, ValidationSeverity
+    from .validation_rules import get_default_validation_rules, get_profanity_words
+except ImportError:
+    # Fallback definitions for missing dependencies
+    from dataclasses import dataclass
+    from enum import Enum
+
+    class ValidationSeverity(Enum):
+        LOW = "low"
+        MEDIUM = "medium"
+        HIGH = "high"
+        CRITICAL = "critical"
+
+    @dataclass
+    class ValidationRule:
+        pattern: str
+        message: str
+        severity: ValidationSeverity
+        action: str = "warn"
+
+    @dataclass
+    class InputValidationConfig:
+        dangerous_patterns: list[ValidationRule] = None
+        enable_profanity_filter: bool = True
+        child_max_string_length: int = 100
+        max_string_length: int = 1000
+        child_safe_pattern: str = r"^[a-zA-Z0-9\s\.\,\!\?\-\'\"]*$"
+        max_object_depth: int = 10
+        max_array_length: int = 100
+        child_max_array_length: int = 50
+
+    def get_default_validation_rules():
+        return [
+            ValidationRule(
+                pattern=r"<script[^>]*>.*?</script>",
+                message="XSS script tag detected",
+                severity=ValidationSeverity.HIGH,
+                action="block",
+            ),
+            ValidationRule(
+                pattern=r"javascript:",
+                message="JavaScript injection attempt",
+                severity=ValidationSeverity.HIGH,
+                action="block",
+            ),
+            ValidationRule(
+                pattern=r"(\b(DROP|DELETE|INSERT|UPDATE|SELECT)\b)",
+                message="SQL injection attempt",
+                severity=ValidationSeverity.CRITICAL,
+                action="block",
+            ),
+        ]
+
+    def get_profanity_words():
+        # Basic profanity list - in production, use a comprehensive list
+        return {
+            "bad",
+            "ugly",
+            "stupid",
+            "hate",
+            "kill",
+            "die",
+            "damn",
+            "hell",
+            "idiot",
+            "moron",
+            "loser",
+            "freak",
+            "weird",
+            "gross",
+            "sick",
+        }
 
 
 class InputSanitizer:
     """Sanitizes user input for child safety and security."""
 
     def __init__(self, config: InputValidationConfig) -> None:
-        self.config = config
+        self.config = config or InputValidationConfig()
         # Set default patterns if not provided
-        if not config.dangerous_patterns:
-            config.dangerous_patterns = get_default_validation_rules()
+        if not self.config.dangerous_patterns:
+            self.config.dangerous_patterns = get_default_validation_rules()
         self.compiled_patterns = self._compile_patterns()
         # Load profanity words if enabled
-        if config.enable_profanity_filter:
+        if self.config.enable_profanity_filter:
             self.profanity_words = get_profanity_words()
         else:
             self.profanity_words = set()
 
-    def _compile_patterns(self) -> List[tuple]:
+    def _compile_patterns(self) -> list[tuple]:
         """Compile regex patterns for performance."""
         compiled = []
         for rule in self.config.dangerous_patterns:
@@ -44,12 +115,16 @@ class InputSanitizer:
         value: str,
         is_child_input: bool = False,
         context: str = "general",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Sanitize string input with comprehensive validation
-        Args: value: String to sanitize
+
+        Args:
+            value: String to sanitize
             is_child_input: Whether input comes from child user
-            context: Context of the input(message, name, etc.)
-        Returns: Dict with sanitized value and validation results.
+            context: Context of the input (message, name, etc.)
+
+        Returns:
+            Dict with sanitized value and validation results.
         """
         result = {
             "original": value,
@@ -124,9 +199,7 @@ class InputSanitizer:
             # Profanity filter
             if self.config.enable_profanity_filter and self.profanity_words:
                 words = result["sanitized"].lower().split()
-                contains_profanity = any(
-                    word in self.profanity_words for word in words
-                )
+                contains_profanity = any(word in self.profanity_words for word in words)
                 if contains_profanity:
                     result["violations"].append(
                         {
@@ -167,9 +240,7 @@ class InputSanitizer:
                 "warnings": [],
             }
 
-    def sanitize_json(
-        self, data: Any, is_child_input: bool = False
-    ) -> Dict[str, Any]:
+    def sanitize_json(self, data: Any, is_child_input: bool = False) -> dict[str, Any]:
         """Sanitize JSON data recursively."""
         result = {
             "original": data,
@@ -203,7 +274,7 @@ class InputSanitizer:
         data: Any,
         is_child_input: bool,
         depth: int,
-        result: Dict,
+        result: dict,
     ) -> Any:
         """Recursively sanitize JSON data."""
         # Check depth limit
@@ -241,13 +312,11 @@ class InputSanitizer:
                     result["violations"].extend(key_result["violations"])
                     result["is_safe"] = False
                 # Sanitize value
-                sanitized[key_result["sanitized"]] = (
-                    self._sanitize_json_recursive(
-                        value,
-                        is_child_input,
-                        depth + 1,
-                        result,
-                    )
+                sanitized[key_result["sanitized"]] = self._sanitize_json_recursive(
+                    value,
+                    is_child_input,
+                    depth + 1,
+                    result,
                 )
             return sanitized
         if isinstance(data, list):
@@ -268,15 +337,11 @@ class InputSanitizer:
                 result["is_safe"] = False
                 data = data[:max_length]
             return [
-                self._sanitize_json_recursive(
-                    item, is_child_input, depth + 1, result
-                )
+                self._sanitize_json_recursive(item, is_child_input, depth + 1, result)
                 for item in data
             ]
         if isinstance(data, str):
-            string_result = self.sanitize_string(
-                data, is_child_input, "json_string"
-            )
+            string_result = self.sanitize_string(data, is_child_input, "json_string")
             if not string_result["is_safe"]:
                 result["violations"].extend(string_result["violations"])
                 result["warnings"].extend(string_result["warnings"])
@@ -284,3 +349,34 @@ class InputSanitizer:
             return string_result["sanitized"]
         # Numbers, booleans, None - return as-is
         return data
+
+
+# Global instance for easy access
+_sanitizer_instance = None
+
+
+def get_input_sanitizer(config: InputValidationConfig = None) -> InputSanitizer:
+    """Get global input sanitizer instance."""
+    global _sanitizer_instance
+    if _sanitizer_instance is None:
+        _sanitizer_instance = InputSanitizer(config or InputValidationConfig())
+    return _sanitizer_instance
+
+
+# Convenience functions
+def sanitize_child_input(text: str, context: str = "message") -> dict[str, Any]:
+    """Quick sanitization for child input."""
+    sanitizer = get_input_sanitizer()
+    return sanitizer.sanitize_string(text, is_child_input=True, context=context)
+
+
+def sanitize_adult_input(text: str, context: str = "general") -> dict[str, Any]:
+    """Quick sanitization for adult input."""
+    sanitizer = get_input_sanitizer()
+    return sanitizer.sanitize_string(text, is_child_input=False, context=context)
+
+
+def is_safe_for_children(text: str) -> bool:
+    """Quick check if text is safe for children."""
+    result = sanitize_child_input(text)
+    return result["is_safe"]

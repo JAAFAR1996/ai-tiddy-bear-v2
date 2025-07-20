@@ -1,11 +1,9 @@
-"""
-Content Safety Validators - أدوات التحقق من أمان المحتوى
-"""
+"""Content Safety Validators - أدوات التحقق من أمان المحتوى"""
 
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from faker import Faker
 
@@ -18,10 +16,10 @@ class ContentValidationResult:
 
     is_safe: bool
     confidence: float
-    violation_type: Optional[str] = None
-    reason: Optional[str] = None
-    suggested_alternative: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    violation_type: str | None = None
+    reason: str | None = None
+    suggested_alternative: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class ContentSafetyValidator:
@@ -139,7 +137,7 @@ class ContentSafetyValidator:
             metadata={"age": age, "content_length": len(content)},
         )
 
-    def _get_age_group(self, age: int) -> Optional[Dict[str, Any]]:
+    def _get_age_group(self, age: int) -> dict[str, Any] | None:
         """Get age group guidelines"""
         for (min_age, max_age), guidelines in self.age_guidelines.items():
             if min_age <= age <= max_age:
@@ -250,9 +248,7 @@ class AgeAppropriateContentGenerator:
     def generate(self, age: int, topic: str = "general") -> str:
         """Generate age-appropriate content"""
         # Find closest age group
-        age_key = min(
-            self.content_templates.keys(), key=lambda x: abs(x - age)
-        )
+        age_key = min(self.content_templates.keys(), key=lambda x: abs(x - age))
 
         # Get templates for age and topic
         templates = self.content_templates[age_key].get(
@@ -295,7 +291,7 @@ class COPPAComplianceChecker:
             "last_interaction_timestamp",
         }
 
-    def check_data_collection(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def check_data_collection(self, data: dict[str, Any]) -> dict[str, Any]:
         """Check if data collection is COPPA compliant"""
         violations = []
 
@@ -336,7 +332,7 @@ class COPPAComplianceChecker:
                 return True
         return False
 
-    def check_parental_consent(self, consent_data: Dict[str, Any]) -> bool:
+    def check_parental_consent(self, consent_data: dict[str, Any]) -> bool:
         """Verify parental consent is properly obtained"""
         required_fields = [
             "parent_id",

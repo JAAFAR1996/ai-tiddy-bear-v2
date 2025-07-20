@@ -1,12 +1,11 @@
-"""
-Tests for Security Manager
+"""Tests for Security Manager
 Testing core security functions for passwords, tokens, and cryptographic operations.
 """
 
-from unittest.mock import patch, Mock
 import hashlib
 import threading
 import time
+from unittest.mock import Mock, patch
 
 from src.infrastructure.security.security_manager import (
     SecurityManager,
@@ -172,10 +171,7 @@ class TestSecurityManager:
         hashed = SecurityManager.hash_password(password)
 
         assert SecurityManager.verify_password(password, hashed) is True
-        assert (
-            SecurityManager.verify_password("different_unicode", hashed)
-            is False
-        )
+        assert SecurityManager.verify_password("different_unicode", hashed) is False
 
     def test_verify_password_invalid_hash(self):
         """Test verifying password with invalid hash."""
@@ -257,9 +253,7 @@ class TestSecurityManager:
 
     def test_generate_secure_token_randomness(self):
         """Test that generated tokens have good randomness."""
-        tokens = [
-            SecurityManager.generate_secure_token(32) for _ in range(100)
-        ]
+        tokens = [SecurityManager.generate_secure_token(32) for _ in range(100)]
 
         # Test character distribution
         all_chars = "".join(tokens)
@@ -397,18 +391,14 @@ class TestSecurityManager:
         # Times should be similar (within reasonable variation)
         if len(times) > 1:
             ratio = max(times) / min(times)
-            assert (
-                ratio < 2.0
-            )  # Allow some variation but not extreme differences
+            assert ratio < 2.0  # Allow some variation but not extreme differences
 
     def test_generate_file_signature_basic(self):
         """Test basic file signature generation."""
         file_content = b"test file content"
         secret_key = "secret_key"
 
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert isinstance(signature, str)
         assert len(signature) == 64  # SHA256 hex = 64 characters
@@ -420,12 +410,8 @@ class TestSecurityManager:
         content2 = b"file content 2"
         secret_key = "secret_key"
 
-        signature1 = SecurityManager.generate_file_signature(
-            content1, secret_key
-        )
-        signature2 = SecurityManager.generate_file_signature(
-            content2, secret_key
-        )
+        signature1 = SecurityManager.generate_file_signature(content1, secret_key)
+        signature2 = SecurityManager.generate_file_signature(content2, secret_key)
 
         assert signature1 != signature2
 
@@ -435,12 +421,8 @@ class TestSecurityManager:
         key1 = "secret_key_1"
         key2 = "secret_key_2"
 
-        signature1 = SecurityManager.generate_file_signature(
-            file_content, key1
-        )
-        signature2 = SecurityManager.generate_file_signature(
-            file_content, key2
-        )
+        signature1 = SecurityManager.generate_file_signature(file_content, key1)
+        signature2 = SecurityManager.generate_file_signature(file_content, key2)
 
         assert signature1 != signature2
 
@@ -449,9 +431,7 @@ class TestSecurityManager:
         file_content = b""
         secret_key = "secret_key"
 
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert isinstance(signature, str)
         assert len(signature) == 64
@@ -461,9 +441,7 @@ class TestSecurityManager:
         file_content = b"test content"
         secret_key = ""
 
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert isinstance(signature, str)
         assert len(signature) == 64
@@ -473,9 +451,7 @@ class TestSecurityManager:
         file_content = b"x" * 1000000  # 1MB of data
         secret_key = "secret_key"
 
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert isinstance(signature, str)
         assert len(signature) == 64
@@ -485,9 +461,7 @@ class TestSecurityManager:
         file_content = bytes(range(256))  # All possible byte values
         secret_key = "secret_key"
 
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert isinstance(signature, str)
         assert len(signature) == 64
@@ -497,9 +471,7 @@ class TestSecurityManager:
         file_content = b"test content"
         secret_key = "sëcrét_këy_🔐"
 
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert isinstance(signature, str)
         assert len(signature) == 64
@@ -509,12 +481,8 @@ class TestSecurityManager:
         file_content = b"consistent test content"
         secret_key = "consistent_key"
 
-        signature1 = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
-        signature2 = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature1 = SecurityManager.generate_file_signature(file_content, secret_key)
+        signature2 = SecurityManager.generate_file_signature(file_content, secret_key)
 
         assert signature1 == signature2
 
@@ -528,9 +496,7 @@ class TestSecurityManager:
             mock_hmac_instance.hexdigest.return_value = "fake_signature"
             mock_hmac.return_value = mock_hmac_instance
 
-            result = SecurityManager.generate_file_signature(
-                file_content, secret_key
-            )
+            result = SecurityManager.generate_file_signature(file_content, secret_key)
 
             mock_hmac.assert_called_once_with(
                 secret_key.encode("utf-8"), file_content, hashlib.sha256
@@ -607,9 +573,7 @@ class TestSecurityManagerIntegration:
             assert SecurityManager.verify_password(password, hashed)
 
             # Wrong password should not verify
-            assert not SecurityManager.verify_password(
-                password + "wrong", hashed
-            )
+            assert not SecurityManager.verify_password(password + "wrong", hashed)
 
     def test_token_generation_security_properties(self):
         """Test token generation security properties."""
@@ -651,9 +615,7 @@ class TestSecurityManagerIntegration:
     def test_file_signature_integration(self):
         """Test file signature integration and verification workflow."""
         # Simulate file integrity checking workflow
-        original_content = (
-            b"Important file content that must not be tampered with"
-        )
+        original_content = b"Important file content that must not be tampered with"
         secret_key = SecurityManager.generate_secure_token()
 
         # Generate signature for original content
@@ -670,9 +632,7 @@ class TestSecurityManagerIntegration:
         )
 
         # Detect tampering
-        tampered_content = (
-            b"Important file content that HAS BEEN tampered with"
-        )
+        tampered_content = b"Important file content that HAS BEEN tampered with"
         tampered_signature = SecurityManager.generate_file_signature(
             tampered_content, secret_key
         )
@@ -693,13 +653,9 @@ class TestSecurityManagerIntegration:
                 verified = SecurityManager.verify_password(password, hashed)
                 token = SecurityManager.generate_secure_token()
                 compared = SecurityManager.secure_compare(token, token)
-                signature = SecurityManager.generate_file_signature(
-                    b"test", "key"
-                )
+                signature = SecurityManager.generate_file_signature(b"test", "key")
 
-                results.append(
-                    (verified, compared, len(token), len(signature))
-                )
+                results.append((verified, compared, len(token), len(signature)))
             except Exception as e:
                 errors.append(e)
 
@@ -738,9 +694,7 @@ class TestSecurityManagerIntegration:
 
         # Use hashed password as file content
         file_content = hashed_password.encode("utf-8")
-        signature = SecurityManager.generate_file_signature(
-            file_content, secret_key
-        )
+        signature = SecurityManager.generate_file_signature(file_content, secret_key)
 
         # Verify all components work together
         assert SecurityManager.verify_password(password, hashed_password)
@@ -800,9 +754,7 @@ class TestSecurityManagerIntegration:
 
         # Test with large file content
         large_content = b"x" * 1000000  # 1MB
-        signature = SecurityManager.generate_file_signature(
-            large_content, "key"
-        )
+        signature = SecurityManager.generate_file_signature(large_content, "key")
         assert len(signature) == 64
 
     def test_error_handling_robustness(self):
@@ -865,25 +817,17 @@ class TestSecurityManagerGlobalInstance:
 
         # Static method calls
         static_hash = SecurityManager.hash_password(password)
-        static_verified = SecurityManager.verify_password(
-            password, static_hash
-        )
+        static_verified = SecurityManager.verify_password(password, static_hash)
         static_token = SecurityManager.generate_secure_token()
         static_compared = SecurityManager.secure_compare("test", "test")
-        static_signature = SecurityManager.generate_file_signature(
-            b"test", "key"
-        )
+        static_signature = SecurityManager.generate_file_signature(b"test", "key")
 
         # Instance method calls
         instance_hash = security_manager.hash_password(password)
-        instance_verified = security_manager.verify_password(
-            password, instance_hash
-        )
+        instance_verified = security_manager.verify_password(password, instance_hash)
         instance_token = security_manager.generate_secure_token()
         instance_compared = security_manager.secure_compare("test", "test")
-        instance_signature = security_manager.generate_file_signature(
-            b"test", "key"
-        )
+        instance_signature = security_manager.generate_file_signature(b"test", "key")
 
         # Results should be functionally equivalent
         assert static_verified is True
@@ -935,17 +879,13 @@ class TestSecurityManagerChildSafety:
         child_key = SecurityManager.generate_secure_token()
 
         # Generate signature for integrity
-        signature = SecurityManager.generate_file_signature(
-            child_data_bytes, child_key
-        )
+        signature = SecurityManager.generate_file_signature(child_data_bytes, child_key)
 
         # Verify signature
         verification_signature = SecurityManager.generate_file_signature(
             child_data_bytes, child_key
         )
-        assert SecurityManager.secure_compare(
-            signature, verification_signature
-        )
+        assert SecurityManager.secure_compare(signature, verification_signature)
 
     def test_parental_password_security(self):
         """Test parental password security features."""
@@ -964,16 +904,12 @@ class TestSecurityManagerChildSafety:
 
             # Should not verify with similar but wrong passwords
             assert not SecurityManager.verify_password(password + "x", hashed)
-            assert not SecurityManager.verify_password(
-                password.lower(), hashed
-            )
+            assert not SecurityManager.verify_password(password.lower(), hashed)
 
     def test_session_token_security(self):
         """Test session token security for child interactions."""
         # Generate session tokens for child sessions
-        session_tokens = [
-            SecurityManager.generate_secure_token(32) for _ in range(10)
-        ]
+        session_tokens = [SecurityManager.generate_secure_token(32) for _ in range(10)]
 
         # All should be unique
         assert len(set(session_tokens)) == len(session_tokens)
@@ -997,18 +933,14 @@ class TestSecurityManagerChildSafety:
         content_key = SecurityManager.generate_secure_token()
 
         for content in child_contents:
-            signature = SecurityManager.generate_file_signature(
-                content, content_key
-            )
+            signature = SecurityManager.generate_file_signature(content, content_key)
 
             # Verify signature
             assert len(signature) == 64
             verification_signature = SecurityManager.generate_file_signature(
                 content, content_key
             )
-            assert SecurityManager.secure_compare(
-                signature, verification_signature
-            )
+            assert SecurityManager.secure_compare(signature, verification_signature)
 
     def test_secure_child_data_comparison(self):
         """Test secure comparison of child data."""
@@ -1028,9 +960,7 @@ class TestSecurityManagerChildSafety:
         assert SecurityManager.secure_compare(session_token, session_token)
 
         different_token = SecurityManager.generate_secure_token()
-        assert not SecurityManager.secure_compare(
-            session_token, different_token
-        )
+        assert not SecurityManager.secure_compare(session_token, different_token)
 
     def test_coppa_compliance_features(self):
         """Test COPPA compliance features."""

@@ -1,5 +1,4 @@
-"""
-Robust Encryption Service with No Silent Failures
+"""Robust Encryption Service with No Silent Failures
 Ensures all encryption operations are properly validated and logged for COPPA compliance.
 """
 
@@ -9,7 +8,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -24,7 +23,7 @@ except ImportError:
     class MockAuditIntegration:
         async def log_security_event(self, **kwargs):
             logger.info(f"Audit event: {kwargs}")
-    
+
     def get_audit_integration():
         return MockAuditIntegration()
 
@@ -35,11 +34,11 @@ class EncryptionResult:
     def __init__(
         self,
         success: bool,
-        data: Optional[str] = None,
-        error: Optional[str] = None,
-        operation_id: Optional[str] = None,
-        key_id: Optional[str] = None,
-        algorithm: Optional[str] = None,
+        data: str | None = None,
+        error: str | None = None,
+        operation_id: str | None = None,
+        key_id: str | None = None,
+        algorithm: str | None = None,
     ):
         self.success = success
         self.data = data
@@ -82,8 +81,7 @@ class EncryptionConfig:
 
 
 class RobustEncryptionService:
-    """
-    Robust encryption service that never fails silently.
+    """Robust encryption service that never fails silently.
     Features:
     - Never fails silently - all failures are logged and raised
     - Comprehensive audit logging for all operations
@@ -95,12 +93,12 @@ class RobustEncryptionService:
     - Operation tracing and monitoring
     """
 
-    def __init__(self, config: Optional[EncryptionConfig] = None):
+    def __init__(self, config: EncryptionConfig | None = None):
         self.config = config or EncryptionConfig()
         self.audit_integration = get_audit_integration()
-        self._encryption_keys: Dict[str, bytes] = {}
-        self._key_metadata: Dict[str, Dict[str, Any]] = {}
-        self._operation_log: List[Dict[str, Any]] = []
+        self._encryption_keys: dict[str, bytes] = {}
+        self._key_metadata: dict[str, dict[str, Any]] = {}
+        self._operation_log: list[dict[str, Any]] = []
         # Initialize encryption system
         self._initialize_encryption_system()
 
@@ -116,21 +114,19 @@ class RobustEncryptionService:
             logger.info("Robust encryption service initialized successfully")
         except Exception as e:
             logger.critical(f"Failed to initialize encryption service: {e}")
-            raise RuntimeError(
-                f"Encryption service initialization failed: {e}"
-            )
+            raise RuntimeError(f"Encryption service initialization failed: {e}")
 
     def _import_crypto_dependencies(self) -> None:
         """Import and verify cryptographic dependencies."""
         try:
             global Fernet, AESGCM, ChaCha20Poly1305, PBKDF2HMAC, hashes
             from cryptography.fernet import Fernet
+            from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.ciphers.aead import (
                 AESGCM,
                 ChaCha20Poly1305,
             )
             from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-            from cryptography.hazmat.primitives import hashes
 
             self._crypto_available = True
             logger.info("Cryptography dependencies loaded successfully")
@@ -202,21 +198,15 @@ class RobustEncryptionService:
         try:
             test_data = "encryption_test_data"
             # Test encryption
-            encrypt_result = self.encrypt(
-                test_data, policy=EncryptionPolicy.REQUIRED
-            )
+            encrypt_result = self.encrypt(test_data, policy=EncryptionPolicy.REQUIRED)
             if not encrypt_result.success:
-                raise RuntimeError(
-                    f"Encryption test failed: {encrypt_result.error}"
-                )
+                raise RuntimeError(f"Encryption test failed: {encrypt_result.error}")
             # Test decryption
             decrypt_result = self.decrypt(
                 encrypt_result.data, policy=EncryptionPolicy.REQUIRED
             )
             if not decrypt_result.success:
-                raise RuntimeError(
-                    f"Decryption test failed: {decrypt_result.error}"
-                )
+                raise RuntimeError(f"Decryption test failed: {decrypt_result.error}")
             if decrypt_result.data != test_data:
                 raise RuntimeError("Encryption/decryption test data mismatch")
             logger.info("Encryption capabilities verified successfully")
@@ -229,10 +219,10 @@ class RobustEncryptionService:
         plaintext: str,
         key_id: str = "default",
         policy: EncryptionPolicy = EncryptionPolicy.REQUIRED,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> EncryptionResult:
-        """
-        Encrypt data with comprehensive error handling and auditing.
+        """Encrypt data with comprehensive error handling and auditing.
+
         Args:
             plaintext: Data to encrypt
             key_id: Encryption key identifier
@@ -248,10 +238,7 @@ class RobustEncryptionService:
             if not plaintext:
                 if policy == EncryptionPolicy.OPTIONAL:
                     return EncryptionResult(True, "", None, operation_id)
-                else:
-                    raise ValueError(
-                        "Cannot encrypt empty data with current policy"
-                    )
+                raise ValueError("Cannot encrypt empty data with current policy")
             if len(plaintext.encode()) > self.config.max_plaintext_size:
                 raise ValueError(
                     f"Plaintext exceeds maximum size: {self.config.max_plaintext_size}"
@@ -266,11 +253,10 @@ class RobustEncryptionService:
                     return EncryptionResult(
                         True, plaintext, None, operation_id
                     )  # Return plaintext
-                else:
-                    await self._log_encryption_event(
-                        "encryption_failed", operation_id, error_msg, context
-                    )
-                    raise RuntimeError(error_msg)
+                await self._log_encryption_event(
+                    "encryption_failed", operation_id, error_msg, context
+                )
+                raise RuntimeError(error_msg)
             # Get encryption key
             if key_id not in self._encryption_keys:
                 error_msg = f"Encryption key not found: {key_id}"
@@ -298,10 +284,7 @@ class RobustEncryptionService:
                 verify_result = await self.decrypt(
                     encrypted_data, key_id, EncryptionPolicy.REQUIRED
                 )
-                if (
-                    not verify_result.success
-                    or verify_result.data != plaintext
-                ):
+                if not verify_result.success or verify_result.data != plaintext:
                     error_msg = "Encryption integrity verification failed"
                     await self._log_encryption_event(
                         "encryption_failed", operation_id, error_msg, context
@@ -327,7 +310,7 @@ class RobustEncryptionService:
                 algorithm=self.config.algorithm,
             )
         except Exception as e:
-            error_msg = f"Encryption failed: {str(e)}"
+            error_msg = f"Encryption failed: {e!s}"
             logger.error(
                 f"Encryption error (operation_id: {operation_id}): {error_msg}"
             )
@@ -341,22 +324,19 @@ class RobustEncryptionService:
                     f"Encryption failed but policy is optional - returning plaintext "
                     f"(operation_id: {operation_id})"
                 )
-                return EncryptionResult(
-                    True, plaintext, error_msg, operation_id
-                )
-            else:
-                # REQUIRED or MANDATORY - must fail
-                return EncryptionResult(False, None, error_msg, operation_id)
+                return EncryptionResult(True, plaintext, error_msg, operation_id)
+            # REQUIRED or MANDATORY - must fail
+            return EncryptionResult(False, None, error_msg, operation_id)
 
     async def decrypt(
         self,
         ciphertext: str,
         key_id: str = "default",
         policy: EncryptionPolicy = EncryptionPolicy.REQUIRED,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> EncryptionResult:
-        """
-        Decrypt data with comprehensive error handling and auditing.
+        """Decrypt data with comprehensive error handling and auditing.
+
         Args:
             ciphertext: Data to decrypt
             key_id: Encryption key identifier
@@ -372,9 +352,8 @@ class RobustEncryptionService:
             if not ciphertext:
                 return EncryptionResult(True, "", None, operation_id)
             # Check if this might be plaintext (for backwards compatibility)
-            if (
-                policy == EncryptionPolicy.OPTIONAL
-                and not self._looks_like_ciphertext(ciphertext)
+            if policy == EncryptionPolicy.OPTIONAL and not self._looks_like_ciphertext(
+                ciphertext
             ):
                 logger.info(
                     f"Data appears to be plaintext - returning as-is "
@@ -391,11 +370,10 @@ class RobustEncryptionService:
                     return EncryptionResult(
                         True, ciphertext, None, operation_id
                     )  # Return as-is
-                else:
-                    await self._log_encryption_event(
-                        "decryption_failed", operation_id, error_msg, context
-                    )
-                    raise RuntimeError(error_msg)
+                await self._log_encryption_event(
+                    "decryption_failed", operation_id, error_msg, context
+                )
+                raise RuntimeError(error_msg)
             # Get decryption key
             if key_id not in self._encryption_keys:
                 error_msg = f"Decryption key not found: {key_id}"
@@ -444,7 +422,7 @@ class RobustEncryptionService:
                 algorithm=self.config.algorithm,
             )
         except Exception as e:
-            error_msg = f"Decryption failed: {str(e)}"
+            error_msg = f"Decryption failed: {e!s}"
             logger.error(
                 f"Decryption error (operation_id: {operation_id}): {error_msg}"
             )
@@ -458,12 +436,9 @@ class RobustEncryptionService:
                     f"Decryption failed but policy is optional - returning ciphertext "
                     f"(operation_id: {operation_id})"
                 )
-                return EncryptionResult(
-                    True, ciphertext, error_msg, operation_id
-                )
-            else:
-                # REQUIRED or MANDATORY - must fail
-                return EncryptionResult(False, None, error_msg, operation_id)
+                return EncryptionResult(True, ciphertext, error_msg, operation_id)
+            # REQUIRED or MANDATORY - must fail
+            return EncryptionResult(False, None, error_msg, operation_id)
 
     async def _encrypt_aes_gcm(
         self, plaintext: str, key: bytes, operation_id: str
@@ -506,9 +481,7 @@ class RobustEncryptionService:
         """Decrypt using ChaCha20-Poly1305."""
         if not encrypted_data.startswith("ChaCha20:"):
             raise ValueError("Invalid ChaCha20 format")
-        data = base64.b64decode(
-            encrypted_data[9:]
-        )  # Remove "ChaCha20:" prefix
+        data = base64.b64decode(encrypted_data[9:])  # Remove "ChaCha20:" prefix
         nonce = data[:12]
         ciphertext = data[12:]
         cipher = ChaCha20Poly1305(key)
@@ -566,8 +539,7 @@ class RobustEncryptionService:
         """Heuristic to determine if data looks like encrypted content."""
         # Check for encryption prefixes
         if any(
-            data.startswith(prefix)
-            for prefix in ["AES-GCM:", "ChaCha20:", "Fernet:"]
+            data.startswith(prefix) for prefix in ["AES-GCM:", "ChaCha20:", "Fernet:"]
         ):
             return True
         # Check if it looks like base64
@@ -584,7 +556,7 @@ class RobustEncryptionService:
         event_type: str,
         operation_id: str,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> None:
         """Log encryption operations for audit purposes."""
         try:
@@ -615,7 +587,7 @@ class RobustEncryptionService:
         """Check if encryption service is available and operational."""
         return self._crypto_available and len(self._encryption_keys) > 0
 
-    def get_encryption_status(self) -> Dict[str, Any]:
+    def get_encryption_status(self) -> dict[str, Any]:
         """Get current encryption service status."""
         return {
             "available": self.is_available(),
@@ -628,11 +600,11 @@ class RobustEncryptionService:
 
 
 # Global service instance
-_encryption_service: Optional[RobustEncryptionService] = None
+_encryption_service: RobustEncryptionService | None = None
 
 
 def get_encryption_service(
-    config: Optional[EncryptionConfig] = None,
+    config: EncryptionConfig | None = None,
 ) -> RobustEncryptionService:
     """Get or create global encryption service instance."""
     global _encryption_service

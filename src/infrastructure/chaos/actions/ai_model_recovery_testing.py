@@ -1,9 +1,9 @@
 """AI Model Recovery Testing Module
-AI System Chaos Actions for Testing AI Model Recovery After Failures"""
+AI System Chaos Actions for Testing AI Model Recovery After Failures
+"""
 
 import asyncio
-import logging
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 
@@ -13,8 +13,8 @@ logger = get_logger(__name__, component="chaos")
 
 
 async def test_ai_model_recovery(
-    configuration: Dict[str, Any] = None,
-) -> Dict[str, Any]:
+    configuration: dict[str, Any] = None,
+) -> dict[str, Any]:
     """Test AI model recovery after failure."""
     logger.info("🔄 Testing AI model recovery")
     try:

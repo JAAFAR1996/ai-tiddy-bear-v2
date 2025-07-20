@@ -1,9 +1,9 @@
+import asyncio
+import time
+from collections.abc import Callable
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Optional, Dict
-import asyncio
-import logging
-import time
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -111,9 +111,7 @@ class CircuitBreaker:
             self._record_failure()
             raise
 
-    async def call_async(
-        self, func: Callable, *args: Any, **kwargs: Any
-    ) -> Any:
+    async def call_async(self, func: Callable, *args: Any, **kwargs: Any) -> Any:
         """Call async function through circuit breaker.
 
         Args:
@@ -145,7 +143,7 @@ class CircuitBreaker:
             self._record_failure()
             raise
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current circuit breaker status."""
         return {
             "state": self.state.value,
@@ -192,11 +190,7 @@ def circuit_breaker(
             return breaker.call(func, *args, **kwargs)
 
         # Add status method to decorated function
-        wrapper = (
-            async_wrapper
-            if asyncio.iscoroutinefunction(func)
-            else sync_wrapper
-        )
+        wrapper = async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
         wrapper.circuit_breaker = breaker
         wrapper.get_circuit_status = breaker.get_status
         return wrapper
@@ -205,7 +199,7 @@ def circuit_breaker(
 
 
 # Global circuit breakers for common external services
-_circuit_breakers: Dict[str, CircuitBreaker] = {}
+_circuit_breakers: dict[str, CircuitBreaker] = {}
 
 
 def get_circuit_breaker(
@@ -235,9 +229,6 @@ def get_circuit_breaker(
     return _circuit_breakers[name]
 
 
-def get_all_circuit_breaker_status() -> Dict[str, Dict[str, Any]]:
+def get_all_circuit_breaker_status() -> dict[str, dict[str, Any]]:
     """Get status of all circuit breakers."""
-    return {
-        name: breaker.get_status()
-        for name, breaker in _circuit_breakers.items()
-    }
+    return {name: breaker.get_status() for name, breaker in _circuit_breakers.items()}

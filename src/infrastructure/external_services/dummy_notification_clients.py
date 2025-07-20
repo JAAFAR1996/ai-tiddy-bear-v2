@@ -14,9 +14,7 @@ logger = get_logger(__name__, component="dummy_notification_clients")
 class DummyEmailClient(IEmailClient):
     """Dummy implementation of IEmailClient for simulation purposes."""
 
-    async def send_email(
-        self, recipient: str, subject: str, body: str
-    ) -> bool:
+    async def send_email(self, recipient: str, subject: str, body: str) -> bool:
         self.logger.info(
             f"[DUMMY EMAIL] Sending email to {recipient} with subject: {subject}",
         )
@@ -29,9 +27,7 @@ class DummyEmailClient(IEmailClient):
 class DummySMSClient(ISMSClient):
     """Dummy implementation of ISMSClient for simulation purposes."""
 
-    async def send_sms(
-        self, recipient_phone_number: str, message: str
-    ) -> bool:
+    async def send_sms(self, recipient_phone_number: str, message: str) -> bool:
         self.logger.info(
             f"[DUMMY SMS] Sending SMS to {recipient_phone_number}: {message}",
         )

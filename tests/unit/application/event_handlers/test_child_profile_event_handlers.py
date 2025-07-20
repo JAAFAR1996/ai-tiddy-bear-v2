@@ -1,16 +1,16 @@
-"""
-Comprehensive test suite for application/event_handlers/child_profile_event_handlers.py
+"""Comprehensive test suite for application/event_handlers/child_profile_event_handlers.py
 
 This test file validates all aspects of the child profile event handlers
 including event processing, async operations, error handling, and data consistency.
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
+from datetime import UTC, datetime
+from typing import Any
+from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
+
+import pytest
 
 from src.application.event_handlers.child_profile_event_handlers import (
     ChildProfileEventHandlers,
@@ -19,16 +19,14 @@ from src.application.interfaces.read_model_interfaces import (
     IChildProfileReadModel,
     IChildProfileReadModelStore,
 )
-from src.domain.events.child_registered import ChildRegistered
 from src.domain.events.child_profile_updated import ChildProfileUpdated
+from src.domain.events.child_registered import ChildRegistered
 
 
 class MockChildProfileReadModel(IChildProfileReadModel):
     """Mock implementation of IChildProfileReadModel for testing."""
 
-    def __init__(
-        self, id: str, name: str, age: int, preferences: Dict[str, Any]
-    ):
+    def __init__(self, id: str, name: str, age: int, preferences: dict[str, Any]):
         self._id = id
         self._name = name
         self._age = age
@@ -55,11 +53,11 @@ class MockChildProfileReadModel(IChildProfileReadModel):
         self._age = value
 
     @property
-    def preferences(self) -> Dict[str, Any]:
+    def preferences(self) -> dict[str, Any]:
         return self._preferences
 
     @preferences.setter
-    def preferences(self, value: Dict[str, Any]):
+    def preferences(self, value: dict[str, Any]):
         self._preferences = value
 
 
@@ -77,9 +75,7 @@ class MockReadModelStore(IChildProfileReadModelStore):
         self.save_called = True
         self.models[model.id] = model
 
-    async def get_by_id(
-        self, child_id: str
-    ) -> Optional[IChildProfileReadModel]:
+    async def get_by_id(self, child_id: str) -> IChildProfileReadModel | None:
         self.get_by_id_called = True
         return self.models.get(child_id)
 
@@ -87,7 +83,7 @@ class MockReadModelStore(IChildProfileReadModelStore):
         self.delete_by_id_called = True
         return self.models.pop(child_id, None) is not None
 
-    async def update(self, child_id: str, updates: Dict[str, Any]) -> bool:
+    async def update(self, child_id: str, updates: dict[str, Any]) -> bool:
         self.update_called = True
         model = self.models.get(child_id)
         if model:
@@ -114,7 +110,7 @@ def sample_child_registered_event():
     """Create a sample ChildRegistered event."""
     return ChildRegistered(
         event_id=uuid4(),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         child_id=uuid4(),
         name="Test Child",
         age=8,
@@ -180,9 +176,7 @@ class TestChildProfileEventHandlers:
     @patch(
         "src.application.event_handlers.child_profile_event_handlers.create_child_profile_read_model"
     )
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_registered_logs_success(
         self,
         mock_logger,
@@ -215,9 +209,7 @@ class TestChildProfileEventHandlers:
     @patch(
         "src.application.event_handlers.child_profile_event_handlers.create_child_profile_read_model"
     )
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_registered_error_handling(
         self,
         mock_logger,
@@ -269,9 +261,7 @@ class TestChildProfileEventHandlers:
         assert child_profile_event_handlers.read_model_store.save_called
 
     @pytest.mark.asyncio
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_profile_updated_not_found(
         self,
         mock_logger,
@@ -291,9 +281,7 @@ class TestChildProfileEventHandlers:
         assert not child_profile_event_handlers.read_model_store.save_called
 
     @pytest.mark.asyncio
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_profile_updated_no_changes(
         self, mock_logger, child_profile_event_handlers
     ):
@@ -328,9 +316,7 @@ class TestChildProfileEventHandlers:
         assert not child_profile_event_handlers.read_model_store.save_called
 
     @pytest.mark.asyncio
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_profile_updated_partial_changes(
         self, mock_logger, child_profile_event_handlers
     ):
@@ -363,9 +349,7 @@ class TestChildProfileEventHandlers:
         assert child_profile_event_handlers.read_model_store.save_called
 
     @pytest.mark.asyncio
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_profile_updated_preference_changes(
         self, mock_logger, child_profile_event_handlers
     ):
@@ -401,9 +385,7 @@ class TestChildProfileEventHandlers:
         assert child_profile_event_handlers.read_model_store.save_called
 
     @pytest.mark.asyncio
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_profile_updated_logs_changes(
         self, mock_logger, child_profile_event_handlers
     ):
@@ -438,9 +420,7 @@ class TestChildProfileEventHandlers:
         assert "2 preference changes" in debug_call_args
 
     @pytest.mark.asyncio
-    @patch(
-        "src.application.event_handlers.child_profile_event_handlers.logger"
-    )
+    @patch("src.application.event_handlers.child_profile_event_handlers.logger")
     async def test_handle_child_profile_updated_error_handling(
         self,
         mock_logger,
@@ -465,9 +445,7 @@ class TestChildProfileEventHandlers:
         assert "Failed to handle child profile update" in error_call_args
 
     @pytest.mark.asyncio
-    async def test_async_save_with_async_store(
-        self, child_profile_event_handlers
-    ):
+    async def test_async_save_with_async_store(self, child_profile_event_handlers):
         """Test _async_save method with async-capable store."""
         # Arrange
         mock_model = MockChildProfileReadModel("test_id", "Test", 8, {})
@@ -494,12 +472,8 @@ class TestChildProfileEventHandlers:
         mock_loop.run_in_executor = AsyncMock()
 
         # Remove async_save to test fallback
-        if hasattr(
-            child_profile_event_handlers.read_model_store, "async_save"
-        ):
-            delattr(
-                child_profile_event_handlers.read_model_store, "async_save"
-            )
+        if hasattr(child_profile_event_handlers.read_model_store, "async_save"):
+            delattr(child_profile_event_handlers.read_model_store, "async_save")
 
         # Act
         await child_profile_event_handlers._async_save(mock_model)
@@ -512,15 +486,13 @@ class TestChildProfileEventHandlers:
         )
 
     @pytest.mark.asyncio
-    async def test_async_get_by_id_with_async_store(
-        self, child_profile_event_handlers
-    ):
+    async def test_async_get_by_id_with_async_store(self, child_profile_event_handlers):
         """Test _async_get_by_id method with async-capable store."""
         # Arrange
         child_id = "test_id"
         mock_model = MockChildProfileReadModel(child_id, "Test", 8, {})
-        child_profile_event_handlers.read_model_store.async_get_by_id = (
-            AsyncMock(return_value=mock_model)
+        child_profile_event_handlers.read_model_store.async_get_by_id = AsyncMock(
+            return_value=mock_model
         )
 
         # Act
@@ -546,9 +518,7 @@ class TestChildProfileEventHandlers:
         mock_loop.run_in_executor = AsyncMock(return_value=mock_model)
 
         # Remove async_get_by_id to test fallback
-        if hasattr(
-            child_profile_event_handlers.read_model_store, "async_get_by_id"
-        ):
+        if hasattr(child_profile_event_handlers.read_model_store, "async_get_by_id"):
             delattr(
                 child_profile_event_handlers.read_model_store,
                 "async_get_by_id",
@@ -572,8 +542,8 @@ class TestChildProfileEventHandlers:
         """Test _async_get_by_id returns None when child not found."""
         # Arrange
         child_id = "nonexistent_id"
-        child_profile_event_handlers.read_model_store.async_get_by_id = (
-            AsyncMock(return_value=None)
+        child_profile_event_handlers.read_model_store.async_get_by_id = AsyncMock(
+            return_value=None
         )
 
         # Act
@@ -583,16 +553,14 @@ class TestChildProfileEventHandlers:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_concurrent_event_handling(
-        self, child_profile_event_handlers
-    ):
+    async def test_concurrent_event_handling(self, child_profile_event_handlers):
         """Test handling multiple events concurrently."""
         # Arrange
         events = []
         for i in range(5):
             event = ChildRegistered(
                 event_id=uuid4(),
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 child_id=uuid4(),
                 name=f"Child {i}",
                 age=5 + i,
@@ -634,7 +602,7 @@ class TestChildProfileEventHandlers:
         # Arrange
         event = ChildRegistered(
             event_id=uuid4(),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             child_id=uuid4(),
             name="Test Child",
             age=6,
@@ -690,16 +658,14 @@ class TestChildProfileEventHandlers:
         assert existing_model.preferences["favorite_color"] == "blue"
 
     @pytest.mark.asyncio
-    async def test_event_handling_performance(
-        self, child_profile_event_handlers
-    ):
+    async def test_event_handling_performance(self, child_profile_event_handlers):
         """Test that event handling completes within reasonable time."""
         import time
 
         # Arrange
         event = ChildRegistered(
             event_id=uuid4(),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             child_id=uuid4(),
             name="Performance Test",
             age=7,
@@ -781,9 +747,7 @@ class TestChildProfileEventHandlers:
 
         # Should not contain child's name or other PII
         assert sample_child_registered_event.name not in debug_call_args
-        assert (
-            str(sample_child_registered_event.child_id) not in debug_call_args
-        )
+        assert str(sample_child_registered_event.child_id) not in debug_call_args
 
         # Should contain age as it's not PII in context
         assert str(sample_child_registered_event.age) in debug_call_args

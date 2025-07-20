@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
-from .models import AIResponse
+from src.application.dto.ai_response import AIResponse
 from .utils import AIServiceUtils
 
 try:
@@ -32,9 +32,7 @@ class AITeddyBearService:
     - Comprehensive error handling.
     """
 
-    def __init__(
-        self, openai_api_key: str, redis_cache=None, settings=None
-    ) -> None:
+    def __init__(self, openai_api_key: str, redis_cache=None, settings=None) -> None:
         if not openai_api_key:
             raise ValueError("OpenAI API key is required for production use")
         self.client = AsyncOpenAI(api_key=openai_api_key)
@@ -56,16 +54,14 @@ class AITeddyBearService:
             "scary content",
             "personal information",
         ]
-        logger.info(
-            "AI Teddy Bear Service initialized with production configuration"
-        )
+        logger.info("AI Teddy Bear Service initialized with production configuration")
 
     async def generate_response(
         self,
         message: str,
         child_age: int,
         child_name: str,
-        context: List[Dict[str, str]] | None = None,
+        context: list[dict[str, str]] | None = None,
         parent_guidelines: str | None = None,
     ) -> AIResponse:
         """Generate safe, age-appropriate AI response."""
@@ -139,7 +135,7 @@ class AITeddyBearService:
             # Return safe fallback response
             return await self._get_fallback_response(child_name, child_age)
 
-    async def _moderate_content(self, content: str) -> Dict[str, Any]:
+    async def _moderate_content(self, content: str) -> dict[str, Any]:
         """Use OpenAI moderation API to check content safety."""
         try:
             moderation = await self.client.moderations.create(input=content)
@@ -194,7 +190,7 @@ class AITeddyBearService:
         self,
         content: str,
         child_age: int,
-        moderation_result: Dict,
+        moderation_result: dict,
     ) -> AIResponse:
         """Process and validate AI response."""
         # Content safety analysis
@@ -220,9 +216,7 @@ class AITeddyBearService:
             moderation_flags=moderation_flags,
         )
 
-    def _calculate_safety_score(
-        self, content: str, moderation_result: Dict
-    ) -> float:
+    def _calculate_safety_score(self, content: str, moderation_result: dict) -> float:
         """Calculate content safety score."""
         return AIServiceUtils.calculate_safety_score(
             content,
@@ -238,7 +232,7 @@ class AITeddyBearService:
         """Simple sentiment analysis."""
         return AIServiceUtils.analyze_sentiment(content)
 
-    def _extract_topics(self, content: str) -> List[str]:
+    def _extract_topics(self, content: str) -> list[str]:
         """Extract main topics from content."""
         return AIServiceUtils.extract_topics(content)
 
@@ -265,9 +259,7 @@ class AITeddyBearService:
             logger.warning(f"Cache retrieval error: {e}")
         return None
 
-    async def _cache_response(
-        self, cache_key: str, response: AIResponse
-    ) -> None:
+    async def _cache_response(self, cache_key: str, response: AIResponse) -> None:
         """Cache the response for future use."""
         try:
             if self.redis_cache:

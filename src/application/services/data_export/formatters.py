@@ -1,18 +1,18 @@
 """Data Export Formatters
-Provides different formatters for exporting child data in various formats."""
+Provides different formatters for exporting child data in various formats.
+"""
 
-from datetime import datetime
-from typing import Dict, List, Any, Optional
-import base64
 import csv
 import json
-import logging
 import xml.etree.ElementTree as ET
-from io import StringIO, BytesIO
 import zipfile
-from .types import ExportFormat, ExportMetadata
+from datetime import datetime
+from io import BytesIO, StringIO
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+
+from .types import ExportFormat, ExportMetadata
 
 logger = get_logger(__name__, component="services")
 
@@ -24,15 +24,13 @@ class BaseFormatter:
         """Initialize formatter with export metadata."""
         self.metadata = metadata
 
-    def format_data(self, data: Dict[str, Any]) -> bytes:
+    def format_data(self, data: dict[str, Any]) -> bytes:
         """Format data into target format."""
         raise NotImplementedError("Subclasses must implement format_data")
 
     def get_file_extension(self) -> str:
         """Get file extension for this format."""
-        raise NotImplementedError(
-            "Subclasses must implement get_file_extension"
-        )
+        raise NotImplementedError("Subclasses must implement get_file_extension")
 
     def get_mime_type(self) -> str:
         """Get MIME type for this format."""
@@ -42,7 +40,7 @@ class BaseFormatter:
 class JSONFormatter(BaseFormatter):
     """Formats data as JSON."""
 
-    def format_data(self, data: Dict[str, Any]) -> bytes:
+    def format_data(self, data: dict[str, Any]) -> bytes:
         """Format data as JSON."""
         try:
             # Add metadata to export
@@ -59,9 +57,7 @@ class JSONFormatter(BaseFormatter):
                 "data": data,
             }
             # Convert datetime objects to ISO format
-            json_str = json.dumps(
-                export_data, indent=2, default=self._json_serializer
-            )
+            json_str = json.dumps(export_data, indent=2, default=self._json_serializer)
             return json_str.encode("utf-8")
         except Exception as e:
             logger.error(f"Error formatting JSON data: {e}")
@@ -83,7 +79,7 @@ class JSONFormatter(BaseFormatter):
 class CSVFormatter(BaseFormatter):
     """Formats data as CSV."""
 
-    def format_data(self, data: Dict[str, Any]) -> bytes:
+    def format_data(self, data: dict[str, Any]) -> bytes:
         """Format data as CSV."""
         try:
             output = StringIO()
@@ -132,9 +128,7 @@ class CSVFormatter(BaseFormatter):
                     for key, value in records.items():
                         if isinstance(value, datetime):
                             value = value.isoformat()
-                        writer.writerow(
-                            [key, str(value) if value is not None else ""]
-                        )
+                        writer.writerow([key, str(value) if value is not None else ""])
 
                 output.write("\n")
 
@@ -153,7 +147,7 @@ class CSVFormatter(BaseFormatter):
 class XMLFormatter(BaseFormatter):
     """Formats data as XML."""
 
-    def format_data(self, data: Dict[str, Any]) -> bytes:
+    def format_data(self, data: dict[str, Any]) -> bytes:
         """Format data as XML."""
         try:
             # Create root element
@@ -165,12 +159,8 @@ class XMLFormatter(BaseFormatter):
                 metadata_elem,
                 "export_timestamp",
             ).text = self.metadata.export_timestamp.isoformat()
-            ET.SubElement(metadata_elem, "child_id").text = (
-                self.metadata.child_id
-            )
-            ET.SubElement(metadata_elem, "parent_id").text = (
-                self.metadata.parent_id
-            )
+            ET.SubElement(metadata_elem, "child_id").text = self.metadata.child_id
+            ET.SubElement(metadata_elem, "parent_id").text = self.metadata.parent_id
             ET.SubElement(
                 metadata_elem,
                 "data_version",
@@ -221,9 +211,7 @@ class XMLFormatter(BaseFormatter):
                 self._add_dict_to_element(child_elem, value)
             elif isinstance(value, list):
                 for i, item in enumerate(value):
-                    item_elem = ET.SubElement(
-                        parent, str(key), {"index": str(i)}
-                    )
+                    item_elem = ET.SubElement(parent, str(key), {"index": str(i)})
                     if isinstance(item, dict):
                         self._add_dict_to_element(item_elem, item)
                     else:
@@ -248,19 +236,17 @@ class ArchiveFormatter(BaseFormatter):
     def __init__(
         self,
         metadata: ExportMetadata,
-        formatters: List[BaseFormatter],
+        formatters: list[BaseFormatter],
     ) -> None:
         """Initialize with metadata and list of formatters to include."""
         super().__init__(metadata)
         self.formatters = formatters
 
-    def format_data(self, data: Dict[str, Any]) -> bytes:
+    def format_data(self, data: dict[str, Any]) -> bytes:
         """Create ZIP archive with multiple format files."""
         try:
             buffer = BytesIO()
-            with zipfile.ZipFile(
-                buffer, "w", zipfile.ZIP_DEFLATED
-            ) as zip_file:
+            with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
                 # Add a README file
                 readme_content = self._generate_readme()
                 zip_file.writestr("README.txt", readme_content)

@@ -7,7 +7,7 @@ import secrets
 import bcrypt
 
 
-class SecurityManager:
+class CoreSecurityManager:
     """Provides centralized security functions for the application."""
 
     @staticmethod
@@ -89,4 +89,4 @@ class SecurityManager:
 
 
 # Example of a global instance, though dependency injection is preferred
-security_manager = SecurityManager()
+security_manager = CoreSecurityManager()

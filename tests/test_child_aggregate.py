@@ -1,7 +1,7 @@
-from typing import Any, Dict, List
-import uuid
 import sys
+import uuid
 from pathlib import Path
+from typing import Any
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -28,8 +28,8 @@ class ChildAggregate:
         self.age = age
         self.parent_id = parent_id
         self.language_preference = language_preference
-        self.active_sessions: List[str] = []
-        self._domain_events: List[Dict[str, Any]] = []
+        self.active_sessions: list[str] = []
+        self._domain_events: list[dict[str, Any]] = []
 
     def can_start_session(self) -> bool:
         """Check if child can start a new session"""

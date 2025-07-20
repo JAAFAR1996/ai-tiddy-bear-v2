@@ -1,14 +1,15 @@
 """Clean, focused verification service extracted from 513-line monolith.
-Provides COPPA-compliant parent-child relationship verification."""
+Provides COPPA-compliant parent-child relationship verification.
+"""
 
 import logging
 from datetime import datetime
-from typing import Dict, Any, Optional, List
-from uuid import UUID
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
 
 from .relationship_manager import RelationshipManager
-from .verification_models import RelationshipType, RelationshipStatus
-from src.infrastructure.logging_config import get_logger
+from .verification_models import RelationshipType
 
 logger = get_logger(__name__, component="parent_child_verification_service")
 
@@ -29,10 +30,8 @@ class ParentChildVerificationService:
         logger: logging.Logger = logger,
     ) -> None:
         """Initialize verification service with relationship manager."""
-        self.relationship_manager = (
-            relationship_manager or RelationshipManager()
-        )
-        self.access_logs: Dict[str, List[Dict[str, Any]]] = {}
+        self.relationship_manager = relationship_manager or RelationshipManager()
+        self.access_logs: dict[str, list[dict[str, Any]]] = {}
         self.logger = logger
 
     async def establish_relationship(
@@ -40,8 +39,8 @@ class ParentChildVerificationService:
         parent_id: str,
         child_id: str,
         relationship_type: str,
-        verification_evidence: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        verification_evidence: list[str] | None = None,
+    ) -> dict[str, Any]:
         """Establish a new parent-child relationship.
 
         Args:
@@ -115,9 +114,7 @@ class ParentChildVerificationService:
             parent_id=parent_id,
             child_id=child_id,
             access_granted=is_valid,
-            verification_type=(
-                "strong" if require_strong_verification else "standard"
-            ),
+            verification_type=("strong" if require_strong_verification else "standard"),
         )
         return is_valid
 
@@ -128,14 +125,12 @@ class ParentChildVerificationService:
         - Requiring a re-entry of a parental PIN or password.
         - Multi-factor authentication prompt.
         """
-        self.logger.debug(
-            f"Simulating strong verification for parent: {parent_id}"
-        )
+        self.logger.debug(f"Simulating strong verification for parent: {parent_id}")
         import random
 
         return random.choice([True, True, True, False])
 
-    async def get_parent_children(self, parent_id: str) -> List[str]:
+    async def get_parent_children(self, parent_id: str) -> list[str]:
         """Get all children associated with a verified parent.
 
         Args:
@@ -150,7 +145,7 @@ class ParentChildVerificationService:
         )
         return children
 
-    async def get_child_guardians(self, child_id: str) -> List[str]:
+    async def get_child_guardians(self, child_id: str) -> list[str]:
         """Get all verified parents/guardians for a child.
 
         Args:
@@ -169,8 +164,8 @@ class ParentChildVerificationService:
         self,
         relationship_id: str,
         verification_method: str = "manual_review",
-        evidence: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        evidence: list[str] | None = None,
+    ) -> dict[str, Any]:
         """Approve a pending relationship after verification.
 
         Args:
@@ -233,7 +228,7 @@ class ParentChildVerificationService:
         self,
         parent_id: str,
         limit: int = 50,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get access audit trail for a parent.
 
         Args:
@@ -247,7 +242,6 @@ class ParentChildVerificationService:
             return []
 
         self.logger.info(
-            f"Retrieving access audit trail for parent {parent_id}. "
-            f"Limit: {limit}",
+            f"Retrieving access audit trail for parent {parent_id}. " f"Limit: {limit}",
         )
         return self.access_logs[parent_id][-limit:]

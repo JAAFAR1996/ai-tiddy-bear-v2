@@ -1,5 +1,4 @@
-"""
-Provides secure management of environment variables with validation and protection.
+"""Provides secure management of environment variables with validation and protection.
 
 This module defines classes and utilities for handling sensitive environment
 variables, including their validation, logging, and masking. It ensures that
@@ -8,14 +7,11 @@ adhere to security best practices.
 """
 
 import hashlib
-import logging
 import os
 import re
 from collections import OrderedDict
-from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Set
 
 from src.infrastructure.logging_config import get_logger
 
@@ -96,7 +92,7 @@ class EnvDatabaseType(str, Enum):
 
 
 # Sensitive environment variable patterns (regex)
-SENSITIVE_PATTERNS: List[re.Pattern] = [
+SENSITIVE_PATTERNS: list[re.Pattern] = [
     re.compile(pattern, re.IGNORECASE) for pattern in EnvPattern
 ]
 
@@ -106,23 +102,20 @@ class SecureEnvironmentManager:
 
     def __init__(self) -> None:
         """Initializes the SecureEnvironmentManager."""
-        self._loaded_env_vars: Dict[str, str] = OrderedDict()
-        self._sensitive_env_vars: Set[str] = set()
-        self.errors: List[str] = []  # Initialize errors list
+        self._loaded_env_vars: dict[str, str] = OrderedDict()
+        self._sensitive_env_vars: set[str] = set()
+        self.errors: list[str] = []  # Initialize errors list
         self._load_environment()
 
     def _load_environment(self) -> None:
-        """
-        Loads environment variables and identifies sensitive ones.
-        """
+        """Loads environment variables and identifies sensitive ones."""
         for key, value in os.environ.items():
             self._loaded_env_vars[key] = value
             if self._is_sensitive(key):
                 self._sensitive_env_vars.add(key)
 
     def _is_sensitive(self, key: str) -> bool:
-        """
-        Checks if an environment variable key matches any sensitive patterns.
+        """Checks if an environment variable key matches any sensitive patterns.
 
         Args:
             key: The environment variable key.
@@ -135,10 +128,8 @@ class SecureEnvironmentManager:
                 return True
         return False
 
-    def get_env_var(self, key: str,
-                    default: Optional[str] = None) -> Optional[str]:
-        """
-        Retrieves an environment variable's value.
+    def get_env_var(self, key: str, default: str | None = None) -> str | None:
+        """Retrieves an environment variable's value.
 
         Args:
             key: The environment variable key.
@@ -152,9 +143,8 @@ class SecureEnvironmentManager:
             logger.debug(f"Accessing sensitive environment variable: {key}")
         return value
 
-    def get_masked_env_vars(self) -> Dict[str, str]:
-        """
-        Returns a dictionary of all environment variables with sensitive ones masked.
+    def get_masked_env_vars(self) -> dict[str, str]:
+        """Returns a dictionary of all environment variables with sensitive ones masked.
 
         Returns:
             A dictionary of environment variables with sensitive values replaced by asterisks.
@@ -167,9 +157,8 @@ class SecureEnvironmentManager:
                 masked_vars[key] = value
         return masked_vars
 
-    def validate_required_env_vars(self, required_vars: List[EnvVar]) -> None:
-        """
-        Validates that all required environment variables are set.
+    def validate_required_env_vars(self, required_vars: list[EnvVar]) -> None:
+        """Validates that all required environment variables are set.
 
         Args:
             required_vars: A list of EnvVar enums representing required variables.
@@ -181,12 +170,10 @@ class SecureEnvironmentManager:
             var.value for var in required_vars if var.value not in self._loaded_env_vars
         ]
         if missing_vars:
-            raise ValueError(
-                f"Missing required environment variables: {missing_vars}")
+            raise ValueError(f"Missing required environment variables: {missing_vars}")
 
     def hash_sensitive_value(self, value: str) -> str:
-        """
-        Hashes a sensitive string value using SHA256.
+        """Hashes a sensitive string value using SHA256.
 
         Args:
             value: The string value to hash.
@@ -198,8 +185,7 @@ class SecureEnvironmentManager:
 
     @lru_cache(maxsize=1)
     def get_instance(self) -> "SecureEnvironmentManager":
-        """
-        Returns a singleton instance of SecureEnvironmentManager.
+        """Returns a singleton instance of SecureEnvironmentManager.
 
         Returns:
             The singleton instance of SecureEnvironmentManager.

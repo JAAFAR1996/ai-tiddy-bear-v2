@@ -1,13 +1,12 @@
-"""
-ChatGPT Client for AI Teddy Bear - Main Client Class
-"""
+"""ChatGPT Client for AI Teddy Bear - Main Client Class"""
 
 import os
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 try:
     from openai import OpenAI
+
     OPENAI_AVAILABLE = True
 except ImportError as e:
     # Production environment MUST have OpenAI dependency
@@ -17,9 +16,10 @@ except ImportError as e:
     ) from e
 
 from src.infrastructure.logging_config import get_logger
-from .safety_filter import SafetyFilter
-from .response_enhancer import ResponseEnhancer
+
 from .fallback_responses import FallbackResponseGenerator
+from .response_enhancer import ResponseEnhancer
+from .safety_filter import SafetyFilter
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -52,8 +52,8 @@ class ChatGPTClient:
         self,
         message: str,
         child_age: int,
-        child_preferences: Dict[str, Any] = None,
-    ) -> Dict[str, Any]:
+        child_preferences: dict[str, Any] = None,
+    ) -> dict[str, Any]:
         """Generate child-safe response from ChatGPT with content filtering."""
         try:
             # Create child-safe system prompt
@@ -82,26 +82,18 @@ class ChatGPTClient:
             )
             raw_response = response.choices[0].message.content
             # Check response safety
-            response_safety = self.safety_filter.analyze_response_safety(
-                raw_response
-            )
+            response_safety = self.safety_filter.analyze_response_safety(raw_response)
             if not response_safety["safe"]:
-                return (
-                    await self.fallback_generator.generate_fallback_response(
-                        message, child_age, child_preferences
-                    )
+                return await self.fallback_generator.generate_fallback_response(
+                    message, child_age, child_preferences
                 )
             # Enhance response for children
-            enhanced_response = (
-                self.response_enhancer.enhance_response_for_children(
-                    raw_response, child_age, child_preferences
-                )
+            enhanced_response = self.response_enhancer.enhance_response_for_children(
+                raw_response, child_age, child_preferences
             )
             return {
                 "response": enhanced_response,
-                "emotion": self.response_enhancer.detect_emotion(
-                    enhanced_response
-                ),
+                "emotion": self.response_enhancer.detect_emotion(enhanced_response),
                 "safety_analysis": response_safety,
                 "age_appropriate": True,
                 "source": "chatgpt",
@@ -114,7 +106,7 @@ class ChatGPTClient:
             )
 
     def _create_child_safe_system_prompt(
-        self, child_age: int, preferences: Dict[str, Any] = None
+        self, child_age: int, preferences: dict[str, Any] = None
     ) -> str:
         """Create child-safe system prompt with age-appropriate guidelines."""
         preferences = preferences or {}

@@ -1,18 +1,18 @@
-"""
-Unit tests for COPPA consent verification system
+"""Unit tests for COPPA consent verification system
 Ensures parental consent is properly enforced across all child data collection points
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi import HTTPException
 
+from src.infrastructure.security.coppa.consent_manager import ConsentManager
 from src.presentation.api.middleware.consent_verification import (
-    ConsentVerificationRoute,
     ConsentVerificationMiddleware,
+    ConsentVerificationRoute,
     require_consent,
 )
-from src.infrastructure.security.coppa.consent_manager import ConsentManager
 
 
 class TestConsentVerificationRoute:
@@ -81,9 +81,7 @@ class TestConsentVerificationRoute:
     async def test_verify_consent_success(self, mock_consent_manager):
         """Test successful consent verification"""
         # Mock consent manager to return True for all consent types
-        mock_consent_manager.verify_parental_consent = AsyncMock(
-            return_value=True
-        )
+        mock_consent_manager.verify_parental_consent = AsyncMock(return_value=True)
 
         route = ConsentVerificationRoute(
             path="/children/{child_id}",
@@ -304,7 +302,6 @@ class TestConsentIntegration:
     @pytest.mark.asyncio
     async def test_consent_enforcement_edge_cases(self):
         """Test edge cases in consent enforcement"""
-
         # Test with missing child_id
         route = ConsentVerificationRoute(
             path="/test",

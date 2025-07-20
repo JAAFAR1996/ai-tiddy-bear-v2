@@ -1,12 +1,12 @@
-from datetime import datetime
-from typing import Optional
-import logging
 import time
+from datetime import datetime
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..models import HealthCheckResult, HealthStatus
 
 from src.infrastructure.logging_config import get_logger
+
+from ..models import HealthCheckResult, HealthStatus
 
 logger = get_logger(__name__, component="infrastructure")
 
@@ -14,9 +14,7 @@ logger = get_logger(__name__, component="infrastructure")
 class DatabaseHealthCheck:
     """Database connectivity and performance health check."""
 
-    def __init__(
-        self, database_session: Optional[AsyncSession] = None
-    ) -> None:
+    def __init__(self, database_session: AsyncSession | None = None) -> None:
         self.database_session = database_session
 
     async def check(self) -> HealthCheckResult:
@@ -49,9 +47,7 @@ class DatabaseHealthCheck:
                 # Check connection pool stats
                 pool_stats = {
                     "size": (
-                        session.bind.pool.size()
-                        if hasattr(session.bind, "pool")
-                        else 0
+                        session.bind.pool.size() if hasattr(session.bind, "pool") else 0
                     ),
                     "checked_in": (
                         session.bind.pool.checkedin()

@@ -1,21 +1,21 @@
-"""
-Input Validation ASGI Middleware
+"""Input Validation ASGI Middleware
 Extracted from input_validation.py to reduce file size
 """
 
 import json
+
 from fastapi import HTTPException, Request
+
+from src.infrastructure.logging_config import get_logger
+
 from .sanitizer import InputSanitizer
 from .validation_config import InputValidationConfig
-from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
 
 class InputValidationMiddleware:
-    """
-    ASGI middleware for input validation and sanitization
-    """
+    """ASGI middleware for input validation and sanitization"""
 
     def __init__(self, app, config: InputValidationConfig = None) -> None:
         self.app = app
@@ -34,9 +34,7 @@ class InputValidationMiddleware:
             try:
                 body = await request.body()
                 if body:
-                    validated_body = await self._validate_request_body(
-                        body, request
-                    )
+                    validated_body = await self._validate_request_body(body, request)
                     # Replace request body with validated version
                     scope["body"] = validated_body
             except HTTPException:
@@ -44,14 +42,10 @@ class InputValidationMiddleware:
                 raise
             except Exception as e:
                 logger.error(f"Input validation error: {e}")
-                raise HTTPException(
-                    status_code=400, detail="Request validation failed"
-                )
+                raise HTTPException(status_code=400, detail="Request validation failed")
         await self.app(scope, receive, send)
 
-    async def _validate_request_body(
-        self, body: bytes, request: Request
-    ) -> bytes:
+    async def _validate_request_body(self, body: bytes, request: Request) -> bytes:
         """Validate and sanitize request body"""
         try:
             # Determine if this is child input
@@ -71,9 +65,7 @@ class InputValidationMiddleware:
                 # Check if sanitization was successful
                 if not result["is_safe"]:
                     critical_violations = [
-                        v
-                        for v in result["violations"]
-                        if v["severity"] == "critical"
+                        v for v in result["violations"] if v["severity"] == "critical"
                     ]
                     if critical_violations:
                         logger.error(
@@ -94,9 +86,7 @@ class InputValidationMiddleware:
                 )
                 if not result["is_safe"]:
                     critical_violations = [
-                        v
-                        for v in result["violations"]
-                        if v["severity"] == "critical"
+                        v for v in result["violations"] if v["severity"] == "critical"
                     ]
                     if critical_violations:
                         raise HTTPException(
@@ -108,9 +98,7 @@ class InputValidationMiddleware:
             raise
         except Exception as e:
             logger.error(f"Error validating request body: {e}")
-            raise HTTPException(
-                status_code=400, detail="Request validation failed"
-            )
+            raise HTTPException(status_code=400, detail="Request validation failed")
 
     def _is_child_request(self, request: Request) -> bool:
         """Determine if request comes from child user"""
@@ -121,13 +109,9 @@ class InputValidationMiddleware:
                 return user.get("role") == "child"
             # Check for child-specific endpoints
             child_endpoints = ["/process-audio", "/children/", "/story/"]
-            return any(
-                endpoint in request.url.path for endpoint in child_endpoints
-            )
+            return any(endpoint in request.url.path for endpoint in child_endpoints)
         except (AttributeError, ValueError) as e:
-            logger.warning(
-                f"Error determining if request is child-related: {e}"
-            )
+            logger.warning(f"Error determining if request is child-related: {e}")
             # Default to child input for safety
             return True
         except Exception as e:

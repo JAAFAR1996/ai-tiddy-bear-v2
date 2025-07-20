@@ -1,11 +1,10 @@
-"""
-Consent Management Data Models
+"""Consent Management Data Models
 Defines the core data structures for COPPA - compliant consent management.
 """
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any
 
 
 class VerificationMethod(Enum):
@@ -30,23 +29,6 @@ class VerificationStatus(Enum):
 
 
 @dataclass
-class ConsentRecord:
-    """Core consent record structure."""
-
-    consent_id: str
-    parent_id: str
-    child_id: str
-    feature: str
-    status: str
-    requested_at: str
-    expiry_date: str
-    granted_at: Optional[str] = None
-    revoked_at: Optional[str] = None
-    verification_method: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-
-
-@dataclass
 class VerificationAttempt:
     """Verification attempt tracking."""
 
@@ -55,6 +37,6 @@ class VerificationAttempt:
     method: VerificationMethod
     status: VerificationStatus
     attempted_at: str
-    completed_at: Optional[str] = None
-    failure_reason: Optional[str] = None
-    verification_code: Optional[str] = None
+    completed_at: str | None = None
+    failure_reason: str | None = None
+    verification_code: str | None = None

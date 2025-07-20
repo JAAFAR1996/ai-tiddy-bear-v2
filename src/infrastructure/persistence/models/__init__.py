@@ -1,5 +1,5 @@
-from .child_model import ChildModel
-from .conversation_model import ConversationModel
+from .child_models import ChildModel
+from .conversation_models import ConversationModel, MessageModel
 from .user_model import UserModel
 
 __all__ = ["ChildModel", "ConversationModel", "UserModel"]

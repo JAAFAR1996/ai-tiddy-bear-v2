@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING, Optional, Dict, Any
+"""Dependency injection configuration for the application."""
+
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from src.domain.repositories.child_repository import ChildRepository
-    from src.domain.repositories.event_store import EventStore
+    from src.infrastructure.persistence.child_repository import ChildRepository
 
 try:
     from fastapi import Depends
@@ -18,13 +19,13 @@ from src.infrastructure.repositories.event_sourced_child_repository import (
 )
 
 
-def get_event_store() -> "EventStore":
+def get_event_store() -> EventStore:
     # In a real application, this would be a singleton or managed by a DI container
     return InMemoryEventStore()
 
 
 def get_child_repository(
-    event_store: "EventStore" = Depends(get_event_store),
+    event_store: EventStore = Depends(get_event_store),
 ) -> "ChildRepository":
     return EventSourcedChildRepository(event_store)
 
@@ -32,13 +33,13 @@ def get_child_repository(
 # Mock implementations for missing dependencies
 class MockManageChildProfileUseCase:
     """Mock manage child profile use case."""
-    
+
     async def create_child_profile(
         self,
         name: str,
         age: int,
-        preferences: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        preferences: dict[str, Any],
+    ) -> dict[str, Any]:
         return {
             "id": "mock-id",
             "name": name,
@@ -46,7 +47,7 @@ class MockManageChildProfileUseCase:
             "preferences": preferences,
         }
 
-    async def get_child_profile(self, child_id: str) -> Dict[str, Any]:
+    async def get_child_profile(self, child_id: str) -> dict[str, Any]:
         return {
             "id": str(child_id),
             "name": "Mock Child",
@@ -57,10 +58,10 @@ class MockManageChildProfileUseCase:
     async def update_child_profile(
         self,
         child_id: str,
-        name: Optional[str] = None,
-        age: Optional[int] = None,
-        preferences: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        name: str | None = None,
+        age: int | None = None,
+        preferences: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         return {
             "id": str(child_id),
             "name": name or "Mock Child",
@@ -74,8 +75,8 @@ class MockManageChildProfileUseCase:
 
 class MockGenerateDynamicStoryUseCase:
     """Mock generate dynamic story use case."""
-    
-    async def generate_story(self, child_id: str, prompt: str) -> Dict[str, Any]:
+
+    async def generate_story(self, child_id: str, prompt: str) -> dict[str, Any]:
         return {
             "story_id": "story-123",
             "title": "The Mock Adventure",

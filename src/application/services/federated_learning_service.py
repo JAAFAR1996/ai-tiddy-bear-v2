@@ -55,14 +55,9 @@ class FederatedLearningService:
             True if the update passes privacy validation, False otherwise.
 
         """
-        self.logger.debug(
-            "Performing privacy validation on local model update..."
-        )
+        self.logger.debug("Performing privacy validation on local model update...")
         # Placeholder for actual robust privacy validation logic
-        if (
-            "weights" not in local_model_update
-            or "bias" not in local_model_update
-        ):
+        if "weights" not in local_model_update or "bias" not in local_model_update:
             self.logger.warning(
                 "Model update missing 'weights' or 'bias'. Privacy validation failed.",
             )
@@ -121,9 +116,7 @@ class FederatedLearningService:
         # await self.event_bus.publish(ModelUpdateProcessed(device_id,
         # local_model_update))
 
-    def _aggregate_model_update(
-        self, local_model_update: dict[str, Any]
-    ) -> None:
+    def _aggregate_model_update(self, local_model_update: dict[str, Any]) -> None:
         """Aggregates the local model update into the global model.
 
         Args:

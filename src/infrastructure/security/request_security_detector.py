@@ -36,9 +36,7 @@ class RequestSecurityDetector:
 
         return security_events
 
-    def _detect_sql_injection_attempt(
-        self, request_info: dict[str, Any]
-    ) -> bool:
+    def _detect_sql_injection_attempt(self, request_info: dict[str, Any]) -> bool:
         """Detect potential SQL injection attempts."""
         sql_patterns = [
             "union select",
@@ -58,8 +56,7 @@ class RequestSecurityDetector:
         text_to_check = [
             request_info["path"].lower(),
             " ".join(
-                str(v).lower()
-                for v in request_info.get("query_params", {}).values()
+                str(v).lower() for v in request_info.get("query_params", {}).values()
             ),
         ]
 
@@ -97,8 +94,7 @@ class RequestSecurityDetector:
         text_to_check = [
             request_info["path"].lower(),
             " ".join(
-                str(v).lower()
-                for v in request_info.get("query_params", {}).values()
+                str(v).lower() for v in request_info.get("query_params", {}).values()
             ),
         ]
 
@@ -117,9 +113,7 @@ class RequestSecurityDetector:
 
         return False
 
-    def _detect_path_traversal_attempt(
-        self, request_info: dict[str, Any]
-    ) -> bool:
+    def _detect_path_traversal_attempt(self, request_info: dict[str, Any]) -> bool:
         """Detect potential path traversal attempts."""
         path = request_info["path"]
 
@@ -129,9 +123,7 @@ class RequestSecurityDetector:
         # Also check query parameters for path traversal
         query_params = request_info.get("query_params", {})
         for param_value in query_params.values():
-            if isinstance(
-                param_value, str
-            ) and not self.path_validator.validate_path(
+            if isinstance(param_value, str) and not self.path_validator.validate_path(
                 param_value,
                 "read",
             ):

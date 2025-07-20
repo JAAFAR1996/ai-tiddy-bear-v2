@@ -1,7 +1,8 @@
-from src.infrastructure.logging_config import get_logger
-from typing import Any
 import sys
 from pathlib import Path
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -93,9 +94,7 @@ def test_backward_compatibility() -> Any:
         )
 
         features = get_available_features()
-        logger.info(
-            f"✅ get_available_features() returned {len(features)} features"
-        )
+        logger.info(f"✅ get_available_features() returned {len(features)} features")
         audio_available = check_feature_compatibility("audio_processing")
         logger.info(
             f"✅ check_feature_compatibility('audio_processing') = {audio_available}"
@@ -117,9 +116,7 @@ def test_backward_compatibility() -> Any:
         )
 
         assert AudioWidget is ModernAudioWidget, "AudioWidget alias incorrect"
-        assert (
-            AudioEngine is AudioProcessingEngine
-        ), "AudioEngine alias incorrect"
+        assert AudioEngine is AudioProcessingEngine, "AudioEngine alias incorrect"
         assert MainWindow is TeddyMainWindow, "MainWindow alias incorrect"
         logger.info("✅ All aliases point to correct classes")
         total_tests += 1
@@ -129,19 +126,16 @@ def test_backward_compatibility() -> Any:
         total_tests += 1
     logger.info("\n" + "=" * 60)
     logger.info("📊 BACKWARD COMPATIBILITY TEST RESULTS:")
-    logger.info(
-        f"✅ Passed: {total_tests - len(failed_imports)}/{total_tests}"
-    )
+    logger.info(f"✅ Passed: {total_tests - len(failed_imports)}/{total_tests}")
     logger.info(f"❌ Failed: {len(failed_imports)}/{total_tests}")
     if failed_imports:
         logger.info("\n❌ Failed Imports:")
         for imp in failed_imports:
             logger.info(f"   - {imp}")
         return False
-    else:
-        logger.info("\n🎉 ALL BACKWARD COMPATIBILITY TESTS PASSED!")
-        logger.info("   Old code will continue to work without modification!")
-        return True
+    logger.info("\n🎉 ALL BACKWARD COMPATIBILITY TESTS PASSED!")
+    logger.info("   Old code will continue to work without modification!")
+    return True
 
 
 if __name__ == "__main__":

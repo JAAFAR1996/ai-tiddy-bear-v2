@@ -1,11 +1,11 @@
-"""
-Tests for API Security Manager
+"""Tests for API Security Manager
 Testing API-level security including rate limiting and input sanitization.
 """
 
-import pytest
-from unittest.mock import patch
 import time
+from unittest.mock import patch
+
+import pytest
 
 from src.infrastructure.security.api_security_manager import APISecurityManager
 
@@ -267,9 +267,7 @@ class TestAPISecurityManager:
             assert result["sanitized_input"] == safe_input
             assert len(result["blocked_content"]) == 0
 
-    def test_validate_child_input_sensitive_information(
-        self, security_manager
-    ):
+    def test_validate_child_input_sensitive_information(self, security_manager):
         """Test child input validation with sensitive information."""
         sensitive_inputs = [
             "My password is secret123",
@@ -285,9 +283,7 @@ class TestAPISecurityManager:
 
             assert result["is_safe"] is False
             assert len(result["blocked_content"]) > 0
-            assert (
-                "sensitive information" in result["blocked_content"][0].lower()
-            )
+            assert "sensitive information" in result["blocked_content"][0].lower()
 
     def test_validate_child_input_excessive_caps(self, security_manager):
         """Test detection of excessive capital letters."""

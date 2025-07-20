@@ -1,5 +1,6 @@
 from typing import Protocol
-from src.domain.value_objects.age_group import AgeGroup
+
+from src.domain.value_objects.child_preferences import AgeGroup
 
 
 class AgeFilter(Protocol):

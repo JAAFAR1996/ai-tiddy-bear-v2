@@ -14,9 +14,5 @@ from src.infrastructure.config.base_settings import BaseApplicationSettings
 class ContentModerationSettings(BaseApplicationSettings):
     """Configuration settings for content moderation."""
 
-    ADDITIONAL_BLOCKED_WORDS: list[str] = Field(
-        [], env="ADDITIONAL_BLOCKED_WORDS"
-    )
+    ADDITIONAL_BLOCKED_WORDS: list[str] = Field([], env="ADDITIONAL_BLOCKED_WORDS")
     MAX_CONTENT_LENGTH: int = Field(1000, env="MAX_CONTENT_LENGTH")
-    SAFETY_THRESHOLD: float = Field(0.7, env="SAFETY_THRESHOLD")
-    # Add other content moderation settings here

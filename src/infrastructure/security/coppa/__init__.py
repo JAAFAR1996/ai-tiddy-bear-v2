@@ -1,8 +1,7 @@
 """COPPA Compliance Package
 Enterprise-grade COPPA compliance with modular architecture.
 """
-
-from .consent_manager import ConsentManager, get_consent_manager
+from .consent_manager import COPPAConsentManager
 from .data_models import (
     AuditLogEntry,
     ChildData,
@@ -12,11 +11,16 @@ from .data_models import (
 )
 from .data_retention import DataRetentionManager, get_retention_manager
 
+
+def get_consent_manager() -> COPPAConsentManager:
+    """Factory function to get COPPA consent manager instance."""
+    return COPPAConsentManager()
+
 __all__ = [
     "AuditLogEntry",
     # Data models
     "ChildData",
-    "ConsentManager",
+    "COPPAConsentManager",
     "DataDeletionRequest",
     # Managers
     "DataRetentionManager",

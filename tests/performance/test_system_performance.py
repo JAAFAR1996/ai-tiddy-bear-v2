@@ -1,17 +1,18 @@
-from src.infrastructure.logging_config import get_logger
-import random
 import asyncio
 import gc
+import random
+import sys
 import time
-from typing import Dict
+from pathlib import Path
+
 import numpy as np
 import psutil
 from application.services.audio_service import AudioService
 from application.services.cleanup_service import CleanupService
 from application.services.interaction_service import InteractionService
+
+from src.infrastructure.logging_config import get_logger
 from tests.framework import PerformanceTestCase
-import sys
-from pathlib import Path
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -162,13 +163,9 @@ class TestSystemPerformance(PerformanceTestCase):
                     )
                     op_duration = (time.perf_counter() - op_start) * 1000
                     operation_times.append(op_duration)
-                    self.record_operation(
-                        f"user_{user.id}_interaction", op_duration
-                    )
+                    self.record_operation(f"user_{user.id}_interaction", op_duration)
                 except Exception:
-                    self.record_operation(
-                        f"user_{user.id}_interaction_failed", -1
-                    )
+                    self.record_operation(f"user_{user.id}_interaction_failed", -1)
                 await asyncio.sleep((random.randint(100, 500)) / 1000.0)
             return operation_times
 
@@ -176,12 +173,8 @@ class TestSystemPerformance(PerformanceTestCase):
         results = await asyncio.gather(*tasks, return_exceptions=True)
         metrics = self.stop_performance_tracking()
         duration = time.time() - start_time
-        successful_users = sum(
-            1 for r in results if not isinstance(r, Exception)
-        )
-        total_operations = sum(
-            len(r) for r in results if not isinstance(r, Exception)
-        )
+        successful_users = sum(1 for r in results if not isinstance(r, Exception))
+        total_operations = sum(len(r) for r in results if not isinstance(r, Exception))
         error_rate = (len(results) - successful_users) / len(results)
         assert duration < 30, f"Test took {duration}s, expected < 30s"
         assert error_rate < 0.01, f"Error rate {error_rate * 100}% exceeds 1%"
@@ -191,9 +184,7 @@ class TestSystemPerformance(PerformanceTestCase):
         cpu_percent = psutil.cpu_percent(interval=1)
         memory_percent = psutil.virtual_memory().percent
         assert cpu_percent < 80, f"CPU usage {cpu_percent}% exceeds 80%"
-        assert (
-            memory_percent < 85
-        ), f"Memory usage {memory_percent}% exceeds 85%"
+        assert memory_percent < 85, f"Memory usage {memory_percent}% exceeds 85%"
         self.assert_performance_within_limits(metrics)
         logger.info("\nPerformance Summary:")
         logger.info(f"- Total Users: {num_users}")
@@ -224,18 +215,10 @@ class TestSystemPerformance(PerformanceTestCase):
         p95_latency = np.percentile(latencies, 95)
         p99_latency = np.percentile(latencies, 99)
         max_latency = np.max(latencies)
-        assert (
-            avg_latency < 50
-        ), f"Average latency {avg_latency:.2f}ms exceeds 50ms"
-        assert (
-            p95_latency < 100
-        ), f"P95 latency {p95_latency:.2f}ms exceeds 100ms"
-        assert (
-            p99_latency < 200
-        ), f"P99 latency {p99_latency:.2f}ms exceeds 200ms"
-        assert (
-            max_latency < 500
-        ), f"Max latency {max_latency:.2f}ms exceeds 500ms"
+        assert avg_latency < 50, f"Average latency {avg_latency:.2f}ms exceeds 50ms"
+        assert p95_latency < 100, f"P95 latency {p95_latency:.2f}ms exceeds 100ms"
+        assert p99_latency < 200, f"P99 latency {p99_latency:.2f}ms exceeds 200ms"
+        assert max_latency < 500, f"Max latency {max_latency:.2f}ms exceeds 500ms"
         jitter = np.std(latencies)
         assert jitter < 20, f"Latency jitter {jitter:.2f}ms too high"
         logger.info("\nAudio Streaming Latency:")
@@ -291,15 +274,11 @@ class TestSystemPerformance(PerformanceTestCase):
     async def test_database_query_performance(self):
         """اختبار أداء استعلامات قاعدة البيانات"""
         num_children = 100
-        children = [
-            self.test_data_builder.create_child() for _ in range(num_children)
-        ]
+        children = [self.test_data_builder.create_child() for _ in range(num_children)]
         query_tests = [
             {
                 "name": "Single child lookup",
-                "query": lambda: self.data_repository.get_child(
-                    children[0].id
-                ),
+                "query": lambda: self.data_repository.get_child(children[0].id),
                 "expected_ms": 10,
             },
             {
@@ -383,9 +362,7 @@ class TestSystemPerformance(PerformanceTestCase):
                         data=test.get("data", {}),
                     )
                 else:
-                    await self.simulate_api_call(
-                        test["endpoint"], method="GET"
-                    )
+                    await self.simulate_api_call(test["endpoint"], method="GET")
                 response_time = (time.perf_counter() - start) * 1000
                 response_times.append(response_time)
             avg_time = np.mean(response_times)
@@ -404,7 +381,7 @@ class TestSystemPerformance(PerformanceTestCase):
         return random.randbytes(size)
 
     async def simulate_api_call(
-        self, endpoint: str, method: str = "GET", data: Dict = None
+        self, endpoint: str, method: str = "GET", data: dict = None
     ):
         """Simulate API call for testing"""
         # Generate a random float between 0.001 and 0.01

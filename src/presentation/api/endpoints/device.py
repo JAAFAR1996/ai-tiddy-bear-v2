@@ -1,7 +1,9 @@
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+
 from src.application.services.ai_orchestration_service import (
     AIOrchestrationService,
 )
@@ -12,7 +14,6 @@ from src.infrastructure.dependencies import (
     get_ai_orchestration_service,
     get_audio_processing_service,
 )
-
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="api")
@@ -42,13 +43,13 @@ class DeviceRegistration(BaseModel):
         max_length=20,
         description="Firmware version (semantic versioning: x.y.z)",
     )  # ✅
-    child_name: Optional[str] = Field(
+    child_name: str | None = Field(
         None,
         min_length=1,
         max_length=100,
         description="Child's name (optional, 1-100 characters)",
     )  # ✅
-    child_age: Optional[int] = Field(
+    child_age: int | None = Field(
         None,
         ge=3,
         le=13,
@@ -62,14 +63,12 @@ class DeviceStatus(BaseModel):
     device_id: str = Field(
         ..., min_length=8, max_length=64, pattern=r"^[A-Za-z0-9_-]+$"
     )
-    status: str = Field(
-        ..., pattern=r"^(online|offline|maintenance|error)$"
-    )  # ✅
+    status: str = Field(..., pattern=r"^(online|offline|maintenance|error)$")  # ✅
     last_seen: str = Field(..., description="ISO 8601 timestamp")  # ✅
-    battery_level: Optional[int] = Field(
+    battery_level: int | None = Field(
         None, ge=0, le=100, description="Battery level percentage (0-100)"
     )  # ✅
-    wifi_strength: Optional[int] = Field(
+    wifi_strength: int | None = Field(
         None,
         ge=-100,
         le=0,
@@ -77,16 +76,14 @@ class DeviceStatus(BaseModel):
     )  # ✅
 
 
-@router.post("/register", response_model=Dict[str, Any])
+@router.post("/register", response_model=dict[str, Any])
 async def register_device(
     device: DeviceRegistration,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Register new ESP32 device"""
     try:
         # Generate unique device token
-        device_token = (
-            f"tddy_{device.device_id}_{hash(device.device_id) % 10000}"
-        )
+        device_token = f"tddy_{device.device_id}_{hash(device.device_id) % 10000}"
 
         # Store device in database with proper persistence
         device_data = {
@@ -95,7 +92,7 @@ async def register_device(
             "firmware_version": device.firmware_version,
             "child_name": device.child_name,
             "child_age": device.child_age,
-            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "registered_at": datetime.now(UTC).isoformat(),
             "status": "active",
             "device_token": device_token,
         }
@@ -117,7 +114,7 @@ async def register_device(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Device registration failed: {str(e)}",
+            detail=f"Device registration failed: {e!s}",
         )
 
 
@@ -135,7 +132,7 @@ async def get_device_status(
     try:
         # In a real implementation, this would fetch from database
         # For now, we return a mock status based on device_id
-        current_time = datetime.now(timezone.utc).isoformat()
+        current_time = datetime.now(UTC).isoformat()
 
         # Basic device status logic
         device_status = {
@@ -151,10 +148,10 @@ async def get_device_status(
         )
         return DeviceStatus(**device_status)
     except Exception as e:
-        logger.error(f"Error getting device status for {device_id}: {str(e)}")
+        logger.error(f"Error getting device status for {device_id}: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get device status: {str(e)}",
+            detail=f"Failed to get device status: {e!s}",
         )
 
 
@@ -179,7 +176,7 @@ class AudioUploadRequest(BaseModel):
         le=48000,
         description="Audio sample rate (8000-48000 Hz)",
     )
-    duration_ms: Optional[int] = Field(
+    duration_ms: int | None = Field(
         None,
         ge=100,
         le=30000,
@@ -192,10 +189,8 @@ async def upload_audio(
     request: AudioUploadRequest,
     audio_data: bytes = Field(..., description="Audio file data"),
     ai_service: AIOrchestrationService = Depends(get_ai_orchestration_service),
-    voice_service: AudioProcessingService = Depends(
-        get_audio_processing_service
-    ),
-) -> Dict[str, Any]:
+    voice_service: AudioProcessingService = Depends(get_audio_processing_service),
+) -> dict[str, Any]:
     """Handle audio upload from ESP32"""
     try:
         if len(audio_data) == 0:
@@ -215,9 +210,7 @@ async def upload_audio(
         transcript, _ = await voice_service.process_audio_input(
             audio_data, "en-US"
         )  # Assuming language
-        response = await ai_service.get_ai_response(
-            transcript, request.device_id
-        )
+        response = await ai_service.get_ai_response(transcript, request.device_id)
 
         return {
             "status": "success",
@@ -228,7 +221,7 @@ async def upload_audio(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Audio processing failed: {str(e)}",
+            detail=f"Audio processing failed: {e!s}",
         )
 
 
@@ -254,8 +247,7 @@ async def get_device_config(
         description="Valid device identifier",
     )
 ) -> DeviceConfig:
-    """
-    Get device configuration with child safety parameters.
+    """Get device configuration with child safety parameters.
     Returns optimized configuration for child interaction including
     audio settings and safety timeouts.
     """

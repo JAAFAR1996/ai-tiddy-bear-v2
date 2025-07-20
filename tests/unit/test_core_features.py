@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import Mock, AsyncMock
 import logging
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 # Configure logging for tests (optional, pytest handles its own logging)
 logging.basicConfig(
@@ -41,14 +42,10 @@ def mock_ai_service():
 @pytest.fixture
 def mock_parental_control_service():
     mock = Mock()
-    mock.check_time_limit.side_effect = lambda limit, usage: {
-        "allowed": usage <= limit
+    mock.check_time_limit.side_effect = lambda limit, usage: {"allowed": usage <= limit}
+    mock.check_content_access.side_effect = lambda content_type, allowed_types: {
+        "allowed": content_type in allowed_types
     }
-    mock.check_content_access.side_effect = (
-        lambda content_type, allowed_types: {
-            "allowed": content_type in allowed_types
-        }
-    )
     mock.get_activity_summary.return_value = {
         "total_time": 120,
         "interaction_count": 50,
@@ -95,9 +92,7 @@ def mock_input_validator():
 
 
 # Test functions
-def test_child_safety_protection(
-    mock_coppa_service, mock_content_filter_service
-):
+def test_child_safety_protection(mock_coppa_service, mock_content_filter_service):
     logger.info("\nTesting Feature: Child Safety Protection")
 
     # Test COPPA compliance
@@ -110,21 +105,17 @@ def test_child_safety_protection(
 
     # Test content filtering
     assert (
-        mock_content_filter_service.is_safe_for_children("safe content", 5)[
-            "safe"
-        ]
+        mock_content_filter_service.is_safe_for_children("safe content", 5)["safe"]
         is True
     )
     assert (
-        mock_content_filter_service.is_safe_for_children("unsafe content", 5)[
-            "safe"
-        ]
+        mock_content_filter_service.is_safe_for_children("unsafe content", 5)["safe"]
         is False
     )
     assert (
-        mock_content_filter_service.is_safe_for_children(
-            "inappropriate language", 5
-        )["safe"]
+        mock_content_filter_service.is_safe_for_children("inappropriate language", 5)[
+            "safe"
+        ]
         is False
     )
 
@@ -149,14 +140,8 @@ def test_parental_controls(mock_parental_control_service):
     logger.info("\nTesting Feature: Parental Controls")
 
     # Time limits
-    assert (
-        mock_parental_control_service.check_time_limit(30, 25)["allowed"]
-        is True
-    )
-    assert (
-        mock_parental_control_service.check_time_limit(30, 35)["allowed"]
-        is False
-    )
+    assert mock_parental_control_service.check_time_limit(30, 25)["allowed"] is True
+    assert mock_parental_control_service.check_time_limit(30, 35)["allowed"] is False
 
     # Content restrictions
     assert (
@@ -166,9 +151,9 @@ def test_parental_controls(mock_parental_control_service):
         is True
     )
     assert (
-        mock_parental_control_service.check_content_access(
-            "gaming", ["educational"]
-        )["allowed"]
+        mock_parental_control_service.check_content_access("gaming", ["educational"])[
+            "allowed"
+        ]
         is False
     )
 
@@ -190,9 +175,7 @@ def test_security_features(
 
     # Encryption
     encrypted_data = mock_security_service.encrypt_sensitive_data("test_data")
-    decrypted_data = mock_security_service.decrypt_sensitive_data(
-        encrypted_data
-    )
+    decrypted_data = mock_security_service.decrypt_sensitive_data(encrypted_data)
     assert decrypted_data == "test_data"
 
     # JWT
@@ -205,18 +188,10 @@ def test_security_features(
     assert "P@ssw0rd" in password  # Check for a part of the mock password
 
     # Input validation
+    assert mock_input_validator.validate("test@example.com", "email")["valid"] is True
+    assert mock_input_validator.validate("invalid-email", "email")["valid"] is False
     assert (
-        mock_input_validator.validate("test@example.com", "email")["valid"]
-        is True
-    )
-    assert (
-        mock_input_validator.validate("invalid-email", "email")["valid"]
-        is False
-    )
-    assert (
-        mock_input_validator.validate("admin'; DROP TABLE--", "username")[
-            "valid"
-        ]
+        mock_input_validator.validate("admin'; DROP TABLE--", "username")["valid"]
         is False
     )
 
@@ -231,12 +206,8 @@ def test_api_endpoints_importability():
     children_module = importlib.import_module(
         "src.presentation.api.endpoints.children.routes"
     )
-    chat_module = importlib.import_module(
-        "src.presentation.api.endpoints.chat"
-    )
-    auth_module = importlib.import_module(
-        "src.presentation.api.endpoints.auth"
-    )
+    chat_module = importlib.import_module("src.presentation.api.endpoints.chat")
+    auth_module = importlib.import_module("src.presentation.api.endpoints.auth")
 
     assert hasattr(children_module, "router")
     assert hasattr(chat_module, "router")

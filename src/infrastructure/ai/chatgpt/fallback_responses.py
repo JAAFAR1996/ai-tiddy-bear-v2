@@ -1,10 +1,8 @@
-"""
-Fallback Response Generator for ChatGPT - Safe Responses When API Fails
-"""
+"""Fallback Response Generator for ChatGPT - Safe Responses When API Fails"""
 
 import random
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -108,8 +106,8 @@ class FallbackResponseGenerator:
         ]
 
     async def generate_fallback_response(
-        self, message: str, child_age: int, preferences: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, message: str, child_age: int, preferences: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """توليد استجابة احتياطية آمنة"""
         preferences = preferences or {}
         # اختيار استجابة مناسبة للعمر
@@ -142,19 +140,15 @@ class FallbackResponseGenerator:
 
     async def generate_safety_redirect_response(
         self, message: str, child_age: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """توليد استجابة لإعادة التوجيه الآمن"""
         # تحديد نوع المحتوى غير المناسب
         message_lower = message.lower()
         redirect_type = "inappropriate"  # Default
-        if any(
-            word in message_lower
-            for word in ["fight", "violence", "hurt", "kill"]
-        ):
+        if any(word in message_lower for word in ["fight", "violence", "hurt", "kill"]):
             redirect_type = "violence"
         elif any(
-            word in message_lower
-            for word in ["scary", "monster", "nightmare", "ghost"]
+            word in message_lower for word in ["scary", "monster", "nightmare", "ghost"]
         ):
             redirect_type = "scary"
         # اختيار استجابة إعادة توجيه
@@ -208,7 +202,7 @@ class FallbackResponseGenerator:
         )
 
     def get_conversation_starter(
-        self, child_age: int, interests: List[str] = None
+        self, child_age: int, interests: list[str] = None
     ) -> str:
         """الحصول على بداية محادثة"""
         interests = interests or ["learning", "playing"]

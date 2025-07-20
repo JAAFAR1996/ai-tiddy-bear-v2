@@ -1,22 +1,22 @@
-"""
-Tests for Comprehensive Rate Limiter
+"""Tests for Comprehensive Rate Limiter
 Testing backwards compatibility imports and child safety rate limiting.
 """
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from src.infrastructure.security.comprehensive_rate_limiter import (
-    RateLimitType,
-    RateLimitStrategy,
-    RateLimitConfig,
-    RateLimitState,
-    RateLimitResult,
     ComprehensiveRateLimiter,
-    get_rate_limiter,
-    check_child_interaction_limit,
-    check_auth_rate_limit,
+    RateLimitConfig,
+    RateLimitResult,
+    RateLimitState,
+    RateLimitStrategy,
+    RateLimitType,
     check_api_rate_limit,
+    check_auth_rate_limit,
+    check_child_interaction_limit,
+    get_rate_limiter,
 )
 
 
@@ -275,16 +275,16 @@ class TestRateLimiterIntegration:
     def test_rate_limiter_import_chain(self):
         """Test that all imports work together."""
         from src.infrastructure.security.comprehensive_rate_limiter import (
-            RateLimitType,
-            RateLimitStrategy,
-            RateLimitConfig,
-            RateLimitState,
-            RateLimitResult,
             ComprehensiveRateLimiter,
-            get_rate_limiter,
-            check_child_interaction_limit,
-            check_auth_rate_limit,
+            RateLimitConfig,
+            RateLimitResult,
+            RateLimitState,
+            RateLimitStrategy,
+            RateLimitType,
             check_api_rate_limit,
+            check_auth_rate_limit,
+            check_child_interaction_limit,
+            get_rate_limiter,
         )
 
         # All imports should succeed
@@ -347,9 +347,7 @@ class TestRateLimiterIntegration:
             interaction_types = ["audio", "text", "image", "video"]
 
             for interaction_type in interaction_types:
-                result = check_child_interaction_limit(
-                    "test_child", interaction_type
-                )
+                result = check_child_interaction_limit("test_child", interaction_type)
                 assert result is not None
 
         except Exception as e:
@@ -476,9 +474,7 @@ class TestRateLimiterMockCompatibility:
             ]
 
             for child_id, interaction_type in params:
-                result = check_child_interaction_limit(
-                    child_id, interaction_type
-                )
+                result = check_child_interaction_limit(child_id, interaction_type)
                 assert result is not None or result is False
 
         except Exception as e:
@@ -497,9 +493,7 @@ class TestRateLimiterMockCompatibility:
             ]
 
             for child_id, interaction_type in edge_cases:
-                result = check_child_interaction_limit(
-                    child_id, interaction_type
-                )
+                result = check_child_interaction_limit(child_id, interaction_type)
                 # Should handle gracefully
                 assert result is not None or result is False
 

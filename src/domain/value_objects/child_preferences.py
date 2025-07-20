@@ -7,70 +7,94 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
-class AgeGroup(Enum):
-    """Age groups for children with corresponding values for safety checks."""
 
-    TODDLER = 3  # 2-4 years
-    PRESCHOOL = 5  # 4-6 years
-    EARLY_SCHOOL = 7  # 6-8 years
-    SCHOOL = 10  # 8-12 years
-    TWEEN = 12  # 10-13 years
-    TEEN = 15  # 13-18 years
+
+class AgeGroup(Enum):
+    """Age groups for children with safety-appropriate categorization."""
+    
+    TODDLER = "toddler"
+    PRESCHOOL = "preschool"
+    EARLY_SCHOOL = "early_school"
+    SCHOOL_AGE = "school_age"
+    PRE_TEEN = "pre_teen"
+    TEEN = "teen"
+
+    @staticmethod
+    def from_age(age: int) -> "AgeGroup":
+        """Convert numeric age to appropriate age group."""
+        if 0 <= age <= 2:
+            return AgeGroup.TODDLER
+        if 3 <= age <= 5:
+            return AgeGroup.PRESCHOOL
+        if 6 <= age <= 8:
+            return AgeGroup.EARLY_SCHOOL
+        if 9 <= age <= 12:
+            return AgeGroup.SCHOOL_AGE
+        if 13 <= age <= 15:
+            return AgeGroup.PRE_TEEN
+        return AgeGroup.TEEN
 
 
 @dataclass
 class ChildPreferences:
-    """Child Preferences Value Object
-    Represents a child's preferences for interaction, learning, and communication.
-    This is a pure domain value object without external dependencies.
-    """
-
-    language: str = "ar"
-    favorite_topics: list[str] = field(default_factory=list)
-    voice_preference: str | None = "friendly"
-    learning_level: int = 1  # 1-5, for adaptive complexity
-    vocabulary_size: int = 0  # Estimated vocabulary size
-    preferred_learning_style: str | None = None  # e.g., "auditory", "visual"
-    interaction_history_summary: str | None = (
-        None  # Summary of past interactions
-    )
-    emotional_tendencies: dict[str, float] = field(
-        default_factory=dict,
-    )  # e.g., {"happy": 0.7, "sad": 0.1}
-    age: int = 8  # Child's age in years
-
-    def __post_init__(self) -> None:
-        """Validate child preferences after initialization."""
-        self._validate_language()
-        self._validate_learning_level()
-        self._validate_age()
-
-    def _validate_language(self) -> None:
-        """Validate language preference."""
-        if self.language not in ["ar", "en", "fr", "es"]:
-            raise ValueError("Unsupported language")
-
-    def _validate_learning_level(self) -> None:
-        """Validate learning level."""
-        if not 1 <= self.learning_level <= 5:
-            raise ValueError("Learning level must be between 1 and 5")
-
-    def _validate_age(self) -> None:
-        """Validate age range."""
-        if not 2 <= self.age <= 18:
-            raise ValueError("Age must be between 2 and 18 years")
-
-    @property
-    def age_group(self) -> AgeGroup:
-        """Compute age group based on child's age."""
-        if self.age <= 4:
-            return AgeGroup.TODDLER
-        if self.age <= 6:
-            return AgeGroup.PRESCHOOL
-        if self.age <= 8:
-            return AgeGroup.EARLY_SCHOOL
-        if self.age <= 12:
-            return AgeGroup.SCHOOL
-        if self.age <= 13:
-            return AgeGroup.TWEEN
-        return AgeGroup.TEEN
+    """Value object for child preferences and settings."""
+    
+    language: str = "en"
+    interests: list[str] = field(default_factory=list)
+    favorite_colors: list[str] = field(default_factory=list)
+    favorite_characters: list[str] = field(default_factory=list)
+    story_themes: list[str] = field(default_factory=list)
+    learning_pace: str = "medium"
+    audio_preferences: dict[str, any] = field(default_factory=dict)
+    age_group: AgeGroup = None
+    
+    def __post_init__(self):
+        """Validate preferences after initialization."""
+        # Validate language
+        if not self.language:
+            self.language = "en"
+        
+        # Validate learning pace
+        valid_paces = ["slow", "medium", "fast", "adaptive"]
+        if self.learning_pace not in valid_paces:
+            self.learning_pace = "medium"
+    
+    def to_dict(self) -> dict[str, any]:
+        """Convert to dictionary representation."""
+        return {
+            "language": self.language,
+            "interests": self.interests,
+            "favorite_colors": self.favorite_colors,
+            "favorite_characters": self.favorite_characters,
+            "story_themes": self.story_themes,
+            "learning_pace": self.learning_pace,
+            "audio_preferences": self.audio_preferences,
+            "age_group": self.age_group.value if self.age_group else None
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, any]) -> "ChildPreferences":
+        """Create from dictionary representation."""
+        age_group = None
+        if "age_group" in data and data["age_group"]:
+            age_group = AgeGroup(data["age_group"])
+        
+        return cls(
+            language=data.get("language", "en"),
+            interests=data.get("interests", []),
+            favorite_colors=data.get("favorite_colors", []),
+            favorite_characters=data.get("favorite_characters", []),
+            story_themes=data.get("story_themes", []),
+            learning_pace=data.get("learning_pace", "medium"),
+            audio_preferences=data.get("audio_preferences", {}),
+            age_group=age_group
+        )
+    
+    def get_content_filters(self) -> dict[str, any]:
+        """Get content filtering rules based on preferences."""
+        return {
+            "age_appropriate": True,
+            "language": self.language,
+            "excluded_themes": [],  # Can be extended based on parental controls
+            "preferred_themes": self.story_themes
+        }

@@ -1,59 +1,249 @@
-# AI Teddy Bear - Core Production Dependencies
-# Version: 2.0.0
+# AI Teddy Bear v5 - Production Dependencies
+# Version: 5.0.0
 # Python: >=3.11
-# Generated from pyproject.toml - DO NOT EDIT MANUALLY
+# Last Updated: 2025-01-18
+# Security Level: High (Child-Safe Application)
 
-# Core Framework
+# ================================
+# CORE FRAMEWORK & WEB SERVER
+# ================================
 fastapi==0.115.5
 uvicorn[standard]==0.27.0
 pydantic==2.10.2
 pydantic-settings==2.1.0
+pydantic-extra-types==2.1.0  # Enhanced validation types for child safety
 
-# Database & ORM
+# ================================
+# DATABASE & PERSISTENCE
+# ================================
 sqlalchemy[asyncio]==2.0.25
 asyncpg==0.29.0
 alembic==1.13.1
+redis==5.0.1
+hiredis==2.3.2
 
-# Authentication & Security - Exact pinning for security-sensitive libraries
+# ================================
+# AUTHENTICATION & SECURITY
+# ================================
+# Exact pinning for security-sensitive libraries
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.20
 cryptography==43.0.1
+pyjwt==2.8.0  # JWT token handling
+argon2-cffi==23.1.0  # Secure password hashing
 
-# Child Safety & COPPA Compliance
-slowapi~=0.1.9  # Rate limiting for child safety
-pydantic-extra-types~=2.1.0  # Enhanced validation types
-python-dateutil~=2.8.2  # COPPA age verification
-iso8601~=2.0.0  # Timezone handling for age verification
-msgpack~=1.0.7  # Secure data serialization
-orjson~=3.9.10  # Fast JSON processing for content filtering
+# ================================
+# CHILD SAFETY & COPPA COMPLIANCE
+# ================================
+slowapi==0.1.9  # Rate limiting for child protection
+fastapi-limiter==0.1.6  # Advanced rate limiting with Redis backend
+python-dateutil==2.8.2  # COPPA age verification
+iso8601==2.0.0  # Timezone handling for age verification
+phonenumbers==8.13.27  # Phone number validation for parental consent
+email-validator==2.1.0  # Email validation
 
-# AI Services
+# ================================
+# AI & MACHINE LEARNING
+# ================================
 openai==1.55.0
+anthropic==0.40.0  # Claude AI integration
+transformers==4.37.2  # Local AI models
+torch==2.2.0  # PyTorch for local processing
+sentence-transformers==2.3.1  # Semantic similarity
+numpy==1.26.3
+scikit-learn==1.4.0  # ML utilities
 
-# Caching & Storage
-redis==5.0.1
-hiredis==2.3.2
+# ================================
+# AUDIO PROCESSING & SPEECH
+# ================================
+librosa==0.10.1  # Audio analysis
+soundfile==0.12.1  # Audio file handling
+speechrecognition==3.10.1  # Speech to text
+pydub==0.25.1  # Audio manipulation
+webrtcvad==2.0.10  # Voice activity detection
 
-# HTTP & External APIs
+# ================================
+# TEXT PROCESSING & NLP
+# ================================
+spacy==3.7.2  # Natural language processing
+langdetect==1.0.9  # Language detection
+textblob==0.17.1  # Text processing
+nltk==3.8.1  # Natural language toolkit
+profanity-check==1.0.3  # Content filtering
+
+# ================================
+# DATA SERIALIZATION & FORMATS
+# ================================
+msgpack==1.0.7  # Secure data serialization
+orjson==3.9.10  # Fast JSON processing
+pyyaml==6.0.1  # YAML configuration
+toml==0.10.2  # TOML configuration
+
+# ================================
+# HTTP & EXTERNAL APIS
+# ================================
 httpx==0.26.0
-requests~=2.31.0 # Added for chaos engineering modules
+requests==2.31.0
+aiohttp==3.9.1  # Async HTTP client
+websockets==12.0  # WebSocket support
 
-# Dependency Injection
-dependency-injector==4.41.0
-
-# Monitoring
+# ================================
+# MONITORING & OBSERVABILITY
+# ================================
 prometheus-client==0.19.0
 sentry-sdk[fastapi]==1.39.1
+structlog==23.2.0  # Structured logging
+loguru==0.7.2  # Enhanced logging
 
-# Data Validation
-email-validator==2.1.0
+# ================================
+# TESTING & QUALITY ASSURANCE
+# ================================
+pytest==7.4.4
+pytest-asyncio==0.23.2
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+httpx==0.26.0  # For testing HTTP requests
+factory-boy==3.3.0  # Test data factories
 
-# Environment Management
+# ================================
+# DEVELOPMENT & CODE QUALITY
+# ================================
+black==23.12.1  # Code formatting
+isort==5.13.2  # Import sorting
+flake8==7.0.0  # Linting
+mypy==1.8.0  # Type checking
+bandit==1.7.5  # Security linting
+safety==2.3.5  # Dependency vulnerability scanning
+
+# ================================
+# DEPENDENCY INJECTION & PATTERNS
+# ================================
+dependency-injector==4.41.0
+injector==0.21.0  # Alternative DI framework
+
+# ================================
+# GRAPHQL & API FEDERATION
+# ================================
+strawberry-graphql[fastapi]==0.276.0
+graphql-core==3.2.3
+ariadne==0.20.0
+graphene==3.3
+
+# ================================
+# TASK QUEUE & BACKGROUND JOBS
+# ================================
+celery==5.3.4  # Background task processing
+redis==5.0.1  # Message broker for celery
+flower==2.0.1  # Celery monitoring
+
+# ================================
+# ENVIRONMENT & CONFIGURATION
+# ================================
 python-dotenv==1.0.0
+environs==11.0.0  # Environment variable parsing
+click==8.1.7  # CLI commands
 
-# GraphQL Federation
-strawberry-graphql[fastapi]~=0.276.0 # Updated to a compatible and recent version to resolve installation issues.
-graphql-core~=3.2.3
-ariadne~=0.20.0
-graphene~=3.3
+# ================================
+# IMAGE & MEDIA PROCESSING
+# ================================
+pillow==10.2.0  # Image processing
+opencv-python==4.9.0.80  # Computer vision
+imageio==2.33.1  # Image I/O
+
+# ================================
+# ENCRYPTION & PRIVACY
+# ================================
+fernet==3.1  # Symmetric encryption
+pyotp==2.9.0  # TOTP for 2FA
+bcrypt==4.1.2  # Password hashing
+
+# ================================
+# UTILITIES & HELPERS
+# ================================
+python-slugify==8.0.1  # URL-safe strings
+humanize==4.9.0  # Human-readable formats
+rich==13.7.0  # Rich text and beautiful formatting
+typer==0.9.0  # Modern CLI framework
+pathlib2==2.3.7  # Enhanced path operations
+
+# ================================
+# SCHEDULING & CRON
+# ================================
+apscheduler==3.10.4  # Advanced Python Scheduler
+croniter==2.0.1  # Cron expression parser
+
+# ================================
+# LOCALIZATION & INTERNATIONALIZATION
+# ================================
+babel==2.14.0  # Internationalization
+pytz==2023.3  # Timezone support
+
+# ================================
+# PERFORMANCE & OPTIMIZATION
+# ================================
+psutil==5.9.7  # System and process utilities
+memory-profiler==0.61.0  # Memory usage profiling
+line-profiler==4.1.1  # Line-by-line profiling
+
+# ================================
+# EDGE COMPUTING & IoT
+# ================================
+# For ESP32 and edge device communication
+pyserial==3.5  # Serial communication
+paho-mqtt==1.6.1  # MQTT client for IoT
+bleak==0.21.1  # Bluetooth Low Energy
+
+# ================================
+# CONTENT MODERATION & SAFETY
+# ================================
+detoxify==0.5.2  # Toxicity detection
+better-profanity==0.7.0  # Profanity filtering
+perspective-api==1.0.1  # Google Perspective API client
+
+# ================================
+# MACHINE LEARNING OPERATIONS
+# ================================
+mlflow==2.9.2  # ML lifecycle management
+wandb==0.16.1  # Experiment tracking
+optuna==3.5.0  # Hyperparameter optimization
+
+# ================================
+# SECURITY SCANNING & COMPLIANCE
+# ================================
+semgrep==1.52.0  # Static analysis security scanner
+pip-audit==2.6.2  # Audit Python packages for known vulnerabilities
+
+# ================================
+# DOCUMENTATION & API
+# ================================
+mkdocs==1.5.3  # Documentation generator
+mkdocs-material==9.5.3  # Material theme for MkDocs
+
+# ================================
+# MICROSERVICES & ORCHESTRATION
+# ================================
+kubernetes==29.0.0  # Kubernetes client
+docker==7.0.0  # Docker client
+
+# ================================
+# ADDITIONAL CONSTRAINTS
+# ================================
+# Pin critical security dependencies
+setuptools>=65.0.0  # Security vulnerability fixes
+wheel>=0.38.0  # Security vulnerability fixes
+pip>=23.0.0  # Latest security fixes
+
+# ================================
+# DEVELOPMENT NOTES
+# ================================
+# 1. All security-sensitive packages are exactly pinned
+# 2. Child safety libraries are prioritized
+# 3. Audio processing capabilities for voice interaction
+# 4. ML libraries for local AI processing
+# 5. Comprehensive testing and quality tools
+# 6. Edge computing support for ESP32 integration
+# 7. Content moderation for child protection
+# 8. Monitoring and observability for production
+# 9. International support for multi-language
+# 10. Performance optimization tools

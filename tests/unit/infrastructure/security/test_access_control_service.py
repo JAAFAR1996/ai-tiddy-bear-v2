@@ -1,17 +1,17 @@
-"""
-Tests for Access Control Service
+"""Tests for Access Control Service
 Testing COPPA-compliant parent-child access control with comprehensive auditing.
 """
 
-import pytest
-from unittest.mock import patch
-from datetime import datetime, timedelta
 import asyncio
+from datetime import datetime, timedelta
+from unittest.mock import patch
+
+import pytest
 
 from src.infrastructure.security.access_control_service import (
+    AccessAction,
     AccessControlService,
     AccessLevel,
-    AccessAction,
 )
 
 
@@ -50,9 +50,7 @@ class TestAccessControlService:
         assert AccessAction.UPDATE_PROFILE.value == "update_profile"
         assert AccessAction.DELETE_PROFILE.value == "delete_profile"
         assert AccessAction.READ_CONVERSATIONS.value == "read_conversations"
-        assert (
-            AccessAction.DELETE_CONVERSATIONS.value == "delete_conversations"
-        )
+        assert AccessAction.DELETE_CONVERSATIONS.value == "delete_conversations"
         assert AccessAction.READ_ANALYTICS.value == "read_analytics"
         assert AccessAction.EXPORT_DATA.value == "export_data"
         assert AccessAction.MANAGE_SETTINGS.value == "manage_settings"
@@ -68,16 +66,10 @@ class TestAccessControlService:
 
         # Test permission hierarchies
         full_parent_perms = service.access_permissions[AccessLevel.FULL_PARENT]
-        shared_parent_perms = service.access_permissions[
-            AccessLevel.SHARED_PARENT
-        ]
-        temp_guardian_perms = service.access_permissions[
-            AccessLevel.TEMPORARY_GUARDIAN
-        ]
+        shared_parent_perms = service.access_permissions[AccessLevel.SHARED_PARENT]
+        temp_guardian_perms = service.access_permissions[AccessLevel.TEMPORARY_GUARDIAN]
         read_only_perms = service.access_permissions[AccessLevel.READ_ONLY]
-        emergency_perms = service.access_permissions[
-            AccessLevel.EMERGENCY_CONTACT
-        ]
+        emergency_perms = service.access_permissions[AccessLevel.EMERGENCY_CONTACT]
 
         # Full parent should have most permissions
         assert len(full_parent_perms) >= len(shared_parent_perms)
@@ -227,9 +219,7 @@ class TestAccessControlService:
             parent_id, child_id, AccessLevel.FULL_PARENT, "government_id"
         )
 
-        access_result = await service.verify_access(
-            parent_id, child_id, action
-        )
+        access_result = await service.verify_access(parent_id, child_id, action)
         token_id = access_result["access_token"]
 
         # Validate the token
@@ -238,9 +228,7 @@ class TestAccessControlService:
         )
 
         assert validation_result["valid"] is True
-        assert (
-            validation_result["access_level"] == AccessLevel.FULL_PARENT.value
-        )
+        assert validation_result["access_level"] == AccessLevel.FULL_PARENT.value
         assert "relationship_id" in validation_result
 
     @pytest.mark.asyncio
@@ -284,9 +272,7 @@ class TestAccessControlService:
             parent_id, child_id, AccessLevel.FULL_PARENT, "government_id"
         )
 
-        access_result = await service.verify_access(
-            parent_id, child_id, action
-        )
+        access_result = await service.verify_access(parent_id, child_id, action)
         token_id = access_result["access_token"]
 
         # Try to validate with wrong action
@@ -309,9 +295,7 @@ class TestAccessControlService:
             parent_id, child_id, AccessLevel.FULL_PARENT, "government_id"
         )
 
-        access_result = await service.verify_access(
-            parent_id, child_id, action
-        )
+        access_result = await service.verify_access(parent_id, child_id, action)
         token_id = access_result["access_token"]
 
         # First validation should succeed
@@ -344,9 +328,7 @@ class TestAccessControlService:
         )
 
         # Verify access (should generate audit log)
-        await service.verify_access(
-            parent_id, child_id, AccessAction.READ_PROFILE
-        )
+        await service.verify_access(parent_id, child_id, AccessAction.READ_PROFILE)
 
         # Should have at least 2 new audit entries
         assert len(service.audit_logs) >= initial_audit_count + 2
@@ -367,9 +349,7 @@ class TestAccessControlService:
         child_id = "child_failed"
         action = AccessAction.READ_PROFILE
 
-        initial_failed_count = len(
-            service.failed_access_attempts.get(parent_id, [])
-        )
+        initial_failed_count = len(service.failed_access_attempts.get(parent_id, []))
 
         # Attempt access without relationship
         await service.verify_access(parent_id, child_id, action)
@@ -565,9 +545,7 @@ class TestAccessControlService:
 
         # Verify access concurrently
         tasks = [
-            service.verify_access(
-                parent_id, child_id, AccessAction.READ_PROFILE
-            )
+            service.verify_access(parent_id, child_id, AccessAction.READ_PROFILE)
             for child_id in child_ids
         ]
 

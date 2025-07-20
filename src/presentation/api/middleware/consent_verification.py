@@ -1,15 +1,16 @@
-"""from typing import Dict, Any, Optional, Callable, Awaitable
-import logging
-from fastapi import HTTPException, Request, Response
-from fastapi.routing import APIRoute
-from src.infrastructure.security.coppa import get_consent_manager.
-"""
-
 """COPPA Consent Verification Middleware
 Ensures parental consent is verified at all child data collection points
 """
 
+import json
+from collections.abc import Awaitable, Callable
+from typing import Any
+
+from fastapi import HTTPException, Request, Response
+from fastapi.routing import APIRoute
+
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.coppa import get_consent_manager
 
 logger = get_logger(__name__, component="middleware")
 
@@ -24,12 +25,10 @@ class ConsentVerificationRoute(APIRoute):
         path: str,
         endpoint: Callable[..., Any],
         *,
-        require_consent_types: Optional[list] = None,
+        require_consent_types: list | None = None,
         **kwargs,
     ) -> None:
-        self.require_consent_types = require_consent_types or [
-            "data_collection"
-        ]
+        self.require_consent_types = require_consent_types or ["data_collection"]
         super().__init__(path, endpoint, **kwargs)
 
     def get_route_handler(self) -> Callable[[Request], Awaitable[Response]]:
@@ -54,7 +53,7 @@ class ConsentVerificationRoute(APIRoute):
 
         return custom_route_handler
 
-    async def _extract_child_id(self, request: Request) -> Optional[str]:
+    async def _extract_child_id(self, request: Request) -> str | None:
         """Extract child_id from various parts of the request."""
         try:
             # Check path parameters
@@ -73,8 +72,6 @@ class ConsentVerificationRoute(APIRoute):
 
                 # Try to parse JSON body
                 if body:
-                    import json
-
                     try:
                         data = json.loads(body.decode())
                         if isinstance(data, dict) and "child_id" in data:
@@ -139,9 +136,7 @@ class ConsentVerificationRoute(APIRoute):
                 detail="Failed to verify parental consent",
             )
 
-    async def _log_data_collection(
-        self, request: Request, child_id: str
-    ) -> None:
+    async def _log_data_collection(self, request: Request, child_id: str) -> None:
         """Log the data collection event for audit trail."""
         try:
             from src.infrastructure.security.coppa.data_models import (
@@ -179,8 +174,9 @@ class ConsentVerificationRoute(APIRoute):
 
 def require_consent(*consent_types: str):
     """Decorator to mark endpoints that require specific consent types
-    Usage: @ require_consent("data_collection", "voice_recording")
-        @ router.post("/process-audio") async def process_audio(...): ...
+    Usage: @require_consent("data_collection", "voice_recording")
+           @router.post("/process-audio")
+           async def process_audio(...): ...
     """
 
     def decorator(func):
@@ -197,7 +193,7 @@ class ConsentVerificationMiddleware:
     def __init__(
         self,
         app,
-        consent_required_paths: Optional[Dict[str, list]] = None,
+        consent_required_paths: dict[str, list] | None = None,
     ) -> None:
         self.app = app
         self.consent_required_paths = consent_required_paths or {

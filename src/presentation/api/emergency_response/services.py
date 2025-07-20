@@ -1,17 +1,17 @@
-"""from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-import asyncio
-import json
-import logging
-from sqlalchemy.ext.asyncio import AsyncSession
-import httpx
-import redis.asyncio as redis
-from .models import EmergencyAlert, NotificationRequest, ResponseAction, SystemStatus.
-"""
-
 """Emergency Response Services - Core business logic for emergency handling"""
 
+import asyncio
+import json
+from datetime import UTC, datetime
+from typing import Any
+
+import httpx
+import redis.asyncio as redis
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.infrastructure.logging_config import get_logger
+
+from .models import EmergencyAlert, NotificationRequest, ResponseAction, SystemStatus
 
 logger = get_logger(__name__, component="api")
 
@@ -19,9 +19,7 @@ logger = get_logger(__name__, component="api")
 class EmergencyResponseService:
     """خدمة الاستجابة الطارئة."""
 
-    def __init__(
-        self, redis_client: redis.Redis, db_session: AsyncSession
-    ) -> None:
+    def __init__(self, redis_client: redis.Redis, db_session: AsyncSession) -> None:
         self.redis = redis_client
         self.db = db_session
         self.alert_handlers = {
@@ -31,9 +29,7 @@ class EmergencyResponseService:
             "CONTENT_VIOLATION": self._handle_content_violation_alert,
         }
 
-    async def process_alert(
-        self, alert_data: Dict[str, Any]
-    ) -> EmergencyAlert:
+    async def process_alert(self, alert_data: dict[str, Any]) -> EmergencyAlert:
         """معالجة تنبيه طارئ."""
         alert = EmergencyAlert(**alert_data)
         # حفظ التنبيه في Redis للمعالجة السريعة
@@ -43,9 +39,7 @@ class EmergencyResponseService:
             json.dumps(alert.dict(), default=str),
         )
         # تحديد نوع المعالج المطلوب
-        handler = self.alert_handlers.get(
-            alert.severity, self._handle_default_alert
-        )
+        handler = self.alert_handlers.get(alert.severity, self._handle_default_alert)
         # تنفيذ المعالجة
         await handler(alert)
         logger.info(f"Alert {alert.id} processed successfully")
@@ -127,9 +121,7 @@ class EmergencyResponseService:
             ResponseAction(
                 action_type="UPDATE_FILTER",
                 target="ai_service",
-                parameters={
-                    "pattern": alert.metadata.get("violation_pattern")
-                },
+                parameters={"pattern": alert.metadata.get("violation_pattern")},
             ),
         ]
         await self._execute_actions(actions)
@@ -144,17 +136,15 @@ class EmergencyResponseService:
         )
         await self._execute_actions([action])
 
-    async def _execute_actions(self, actions: List[ResponseAction]):
+    async def _execute_actions(self, actions: list[ResponseAction]):
         """تنفيذ قائمة الإجراءات."""
         for action in actions:
             try:
-                action.executed_at = datetime.now(timezone.utc)
+                action.executed_at = datetime.now(UTC)
                 # هنا يتم تنفيذ الإجراء الفعلي
                 await self._execute_single_action(action)
                 action.success = True
-                logger.info(
-                    f"Action {action.action_type} executed successfully"
-                )
+                logger.info(f"Action {action.action_type} executed successfully")
             except Exception as e:
                 action.success = False
                 action.error_message = str(e)
@@ -164,6 +154,29 @@ class EmergencyResponseService:
         """تنفيذ إجراء واحد."""
         # تنفيذ مؤقت - في الواقع سيتم استدعاء الخدمات المناسبة
         await asyncio.sleep(0.1)  # محاكاة وقت التنفيذ
+
+    async def get_emergency_logs(
+        self, child_id: str | None = None, limit: int = 50
+    ) -> list[dict[str, Any]]:
+        """الحصول على سجلات الطوارئ."""
+        try:
+            # هذا مجرد مثال - في التطبيق الحقيقي سيتم استعلام قاعدة البيانات
+            logs = []
+            # محاكاة بعض السجلات
+            for i in range(min(limit, 10)):
+                log_entry = {
+                    "id": f"log_{i}",
+                    "timestamp": datetime.now(UTC).isoformat(),
+                    "type": "safety_check",
+                    "child_id": child_id or f"child_{i}",
+                    "message": f"Emergency log entry {i}",
+                    "severity": "info",
+                }
+                logs.append(log_entry)
+            return logs
+        except Exception as e:
+            logger.error(f"Error fetching emergency logs: {e}")
+            return []
 
 
 class SystemMonitorService:
@@ -178,13 +191,12 @@ class SystemMonitorService:
             "notification-service:8003",
         ]
 
-    async def check_system_health(self) -> List[SystemStatus]:
+    async def check_system_health(self) -> list[SystemStatus]:
         """فحص صحة جميع خدمات النظام."""
         statuses = []
         async with httpx.AsyncClient() as client:
             tasks = [
-                self._check_service_health(client, service)
-                for service in self.services
+                self._check_service_health(client, service) for service in self.services
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             for i, result in enumerate(results):
@@ -192,7 +204,7 @@ class SystemMonitorService:
                     status = SystemStatus(
                         service_name=self.services[i],
                         status="error",
-                        last_check=datetime.now(timezone.utc),
+                        last_check=datetime.now(UTC),
                         response_time_ms=0.0,
                         error_message=str(result),
                     )
@@ -207,18 +219,14 @@ class SystemMonitorService:
         service: str,
     ) -> SystemStatus:
         """فحص صحة خدمة واحدة."""
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now(UTC)
         try:
-            response = await client.get(
-                f"http://{service}/health", timeout=5.0
-            )
-            end_time = datetime.now(timezone.utc)
+            response = await client.get(f"http://{service}/health", timeout=5.0)
+            end_time = datetime.now(UTC)
             response_time = (end_time - start_time).total_seconds() * 1000
             return SystemStatus(
                 service_name=service,
-                status=(
-                    "healthy" if response.status_code == 200 else "unhealthy"
-                ),
+                status=("healthy" if response.status_code == 200 else "unhealthy"),
                 last_check=end_time,
                 response_time_ms=response_time,
                 error_message=(
@@ -228,7 +236,7 @@ class SystemMonitorService:
                 ),
             )
         except Exception as e:
-            end_time = datetime.now(timezone.utc)
+            end_time = datetime.now(UTC)
             return SystemStatus(
                 service_name=service,
                 status="error",
@@ -237,8 +245,41 @@ class SystemMonitorService:
                 error_message=str(e),
             )
 
+    async def get_system_metrics(self) -> dict[str, Any]:
+        """الحصول على مقاييس النظام."""
+        try:
+            metrics = {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "services_count": len(self.services),
+                "redis_info": {},
+                "alerts_count": 0,
+            }
 
-class NotificationService:
+            # الحصول على معلومات Redis
+            try:
+                redis_info = await self.redis.info()
+                metrics["redis_info"] = {
+                    "connected_clients": redis_info.get("connected_clients", 0),
+                    "used_memory": redis_info.get("used_memory_human", "0B"),
+                    "uptime_in_seconds": redis_info.get("uptime_in_seconds", 0),
+                }
+            except Exception as e:
+                logger.error(f"Error getting Redis info: {e}")
+
+            # عدد التنبيهات النشطة
+            try:
+                alert_keys = await self.redis.keys("alert:*")
+                metrics["alerts_count"] = len(alert_keys)
+            except Exception as e:
+                logger.error(f"Error counting alerts: {e}")
+
+            return metrics
+        except Exception as e:
+            logger.error(f"Error getting system metrics: {e}")
+            return {"error": str(e)}
+
+
+class EmergencyNotificationService:
     """خدمة الإشعارات."""
 
     def __init__(self, redis_client: redis.Redis) -> None:
@@ -254,13 +295,56 @@ class NotificationService:
                 "contacts": request.parent_contacts,
                 "message": request.message,
                 "priority": request.priority,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
-            await self.redis.lpush(
-                "notification_queue", json.dumps(notification_data)
-            )
+            await self.redis.lpush("notification_queue", json.dumps(notification_data))
             logger.info(f"Notification queued for alert {request.alert_id}")
             return True
         except Exception as e:
             logger.error(f"Failed to queue notification: {e}")
+            return False
+
+    async def get_notification_history(
+        self, child_id: str | None = None, limit: int = 50
+    ) -> list[dict[str, Any]]:
+        """الحصول على تاريخ الإشعارات."""
+        try:
+            # محاكاة البيانات - في التطبيق الحقيقي سيتم استعلام قاعدة البيانات
+            notifications = []
+            for i in range(min(limit, 10)):
+                notification = {
+                    "id": f"notification_{i}",
+                    "timestamp": datetime.now(UTC).isoformat(),
+                    "child_id": child_id or f"child_{i}",
+                    "message": f"Notification message {i}",
+                    "priority": "medium",
+                    "sent": True,
+                    "delivered": True,
+                }
+                notifications.append(notification)
+            return notifications
+        except Exception as e:
+            logger.error(f"Error fetching notification history: {e}")
+            return []
+
+    async def send_emergency_sms(
+        self, phone_numbers: list[str], message: str, child_id: str | None = None
+    ) -> bool:
+        """إرسال رسائل SMS طارئة."""
+        try:
+            # محاكاة إرسال SMS - في التطبيق الحقيقي سيتم تكامل مع خدمة SMS
+            sms_data = {
+                "phone_numbers": phone_numbers,
+                "message": message,
+                "child_id": child_id,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "type": "emergency_sms",
+            }
+
+            await self.redis.lpush("sms_queue", json.dumps(sms_data))
+
+            logger.critical(f"Emergency SMS queued for {len(phone_numbers)} recipients")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to queue emergency SMS: {e}")
             return False

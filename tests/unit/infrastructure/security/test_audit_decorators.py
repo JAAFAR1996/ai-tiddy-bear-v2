@@ -1,23 +1,23 @@
-"""
-Tests for Audit Decorators
+"""Tests for Audit Decorators
 Testing automatic audit trail creation decorators for security operations.
 """
 
-import pytest
-from unittest.mock import patch, Mock, AsyncMock
-from datetime import datetime
 import asyncio
 import inspect
+from datetime import datetime
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 from src.infrastructure.security.audit_decorators import (
     audit_authentication,
+    audit_child_create,
+    audit_child_delete,
+    audit_child_update,
     audit_data_access,
-    audit_security_event,
     audit_login,
     audit_logout,
-    audit_child_create,
-    audit_child_update,
-    audit_child_delete,
+    audit_security_event,
 )
 
 
@@ -41,9 +41,7 @@ class TestAuditDecorators:
     @pytest.fixture
     def mock_datetime(self):
         """Mock datetime for consistent testing."""
-        with patch(
-            "src.infrastructure.security.audit_decorators.datetime"
-        ) as mock_dt:
+        with patch("src.infrastructure.security.audit_decorators.datetime") as mock_dt:
             mock_dt.utcnow.return_value = datetime(2024, 1, 15, 10, 30, 0)
             yield mock_dt
 
@@ -58,9 +56,7 @@ class TestAuditDecorators:
 
         # Test the decorated function
         result = asyncio.run(
-            test_login(
-                "user@example.com", "password", ip_address="192.168.1.100"
-            )
+            test_login("user@example.com", "password", ip_address="192.168.1.100")
         )
 
         # Verify function result
@@ -69,9 +65,7 @@ class TestAuditDecorators:
 
         # Verify audit logging was called
         mock_audit_integration.log_authentication_event.assert_called_once()
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
 
         assert call_args["event_type"] == "login"
         assert call_args["user_email"] == "user@example.com"
@@ -95,9 +89,7 @@ class TestAuditDecorators:
 
         # Verify audit logging was called with failure
         mock_audit_integration.log_authentication_event.assert_called_once()
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
 
         assert call_args["event_type"] == "login"
         assert call_args["user_email"] == "user@example.com"
@@ -118,9 +110,7 @@ class TestAuditDecorators:
             mock_loop = Mock()
             mock_get_loop.return_value = mock_loop
 
-            result = test_logout(
-                "user@example.com", ip_address="192.168.1.101"
-            )
+            result = test_logout("user@example.com", ip_address="192.168.1.101")
 
         # Verify function result
         assert result["success"] is True
@@ -150,14 +140,10 @@ class TestAuditDecorators:
         user_data = {"email": "custom@example.com"}
         request_info = {"client_ip": "10.0.0.1"}
 
-        result = asyncio.run(
-            change_password(user_data, "new_pass", request_info)
-        )
+        result = asyncio.run(change_password(user_data, "new_pass", request_info))
 
         # Verify custom extractors were used
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
         assert call_args["user_email"] == "custom@example.com"
         assert call_args["ip_address"] == "10.0.0.1"
 
@@ -171,9 +157,7 @@ class TestAuditDecorators:
             return {"child_id": child_id, "name": "Test Child"}
 
         result = asyncio.run(
-            get_child_profile(
-                "user_123", "child_456", ip_address="192.168.1.200"
-            )
+            get_child_profile("user_123", "child_456", ip_address="192.168.1.200")
         )
 
         # Verify function result
@@ -182,9 +166,7 @@ class TestAuditDecorators:
 
         # Verify audit logging was called
         mock_audit_integration.log_child_data_operation.assert_called_once()
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
 
         assert call_args["operation"] == "read"
         assert call_args["child_id"] == "child_456"
@@ -203,15 +185,11 @@ class TestAuditDecorators:
 
         with pytest.raises(PermissionError, match="Access denied"):
             asyncio.run(
-                update_child_profile(
-                    "user_123", "child_456", {"name": "New Name"}
-                )
+                update_child_profile("user_123", "child_456", {"name": "New Name"})
             )
 
         # Verify audit logging was called with failure
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["details"]["success"] is False
         assert call_args["details"]["error"] == "Access denied"
 
@@ -250,9 +228,7 @@ class TestAuditDecorators:
             extract_user_id,
             extract_ip,
         )
-        async def create_child_profile(
-            profile_data, auth_context, request_meta
-        ):
+        async def create_child_profile(profile_data, auth_context, request_meta):
             return {"success": True}
 
         profile_data = {"child_id": "new_child_789"}
@@ -264,9 +240,7 @@ class TestAuditDecorators:
         )
 
         # Verify custom extractors were used
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["child_id"] == "new_child_789"
         assert call_args["user_id"] == "parent_456"
         assert call_args["ip_address"] == "203.0.113.1"
@@ -349,9 +323,7 @@ class TestAuditDecorators:
         result = asyncio.run(user_login("test@example.com", "password"))
 
         # Verify audit logging was called with login event type
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
         assert call_args["event_type"] == "login"
         assert call_args["user_email"] == "test@example.com"
 
@@ -367,9 +339,7 @@ class TestAuditDecorators:
         result = asyncio.run(user_logout("test@example.com", "session_456"))
 
         # Verify audit logging was called with logout event type
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
         assert call_args["event_type"] == "logout"
         assert call_args["user_email"] == "test@example.com"
 
@@ -387,9 +357,7 @@ class TestAuditDecorators:
         )
 
         # Verify audit logging was called with create operation
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["operation"] == "create"
         assert call_args["data_type"] == "child_profile"
         assert call_args["child_id"] == "child_789"
@@ -404,14 +372,10 @@ class TestAuditDecorators:
         async def update_child(user_id, child_id, updates):
             return {"success": True, "updated_fields": list(updates.keys())}
 
-        result = asyncio.run(
-            update_child("parent_456", "child_789", {"age": 9})
-        )
+        result = asyncio.run(update_child("parent_456", "child_789", {"age": 9}))
 
         # Verify audit logging was called with update operation
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["operation"] == "update"
         assert call_args["data_type"] == "child_profile"
 
@@ -427,15 +391,11 @@ class TestAuditDecorators:
         result = asyncio.run(delete_child("parent_789", "child_456"))
 
         # Verify audit logging was called with delete operation
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["operation"] == "delete"
         assert call_args["data_type"] == "child_profile"
 
-    def test_decorator_preserves_function_metadata(
-        self, mock_audit_integration
-    ):
+    def test_decorator_preserves_function_metadata(self, mock_audit_integration):
         """Test that decorators preserve original function metadata."""
 
         @audit_authentication("test")
@@ -470,9 +430,7 @@ class TestAuditDecorators:
                 # Should log the audit error
                 mock_logger.error.assert_called()
 
-    def test_decorator_with_no_event_loop(
-        self, mock_audit_integration, mock_datetime
-    ):
+    def test_decorator_with_no_event_loop(self, mock_audit_integration, mock_datetime):
         """Test decorator behavior when no event loop is available."""
 
         @audit_authentication("login")
@@ -480,9 +438,7 @@ class TestAuditDecorators:
             return {"success": True}
 
         # Mock get_event_loop to raise RuntimeError
-        with patch(
-            "asyncio.get_event_loop", side_effect=RuntimeError("No event loop")
-        ):
+        with patch("asyncio.get_event_loop", side_effect=RuntimeError("No event loop")):
             # Function should still work
             result = sync_function("test@example.com")
             assert result["success"] is True
@@ -500,9 +456,7 @@ class TestAuditDecorators:
         result = asyncio.run(test_function_no_args())
         assert result["success"] is True
 
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
         assert call_args["user_email"] == "unknown"
 
     def test_argument_extraction_from_object_attributes(
@@ -522,9 +476,7 @@ class TestAuditDecorators:
         result = asyncio.run(test_function(user, "password"))
 
         # Should extract email from user object
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
         assert call_args["user_email"] == "object@example.com"
 
     def test_audit_data_access_fallback_extraction(
@@ -545,9 +497,7 @@ class TestAuditDecorators:
         result = asyncio.run(test_function(context, "child_456"))
 
         # Should extract from fallback methods
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["user_id"] == "fallback_user_123"
         assert call_args["child_id"] == "child_456"  # From second argument
 
@@ -562,9 +512,7 @@ class TestAuditDecorators:
         result = asyncio.run(slow_function("timing@example.com"))
 
         # Verify timing was measured
-        call_args = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_authentication_event.call_args[1]
         duration_ms = call_args["details"]["duration_ms"]
         assert duration_ms >= 100  # Should be at least 100ms
         # But not too much more (allowing for test overhead)
@@ -580,18 +528,14 @@ class TestAuditDecorators:
         async def admin_function(email, action):
             return {"success": True, "action": action}
 
-        result = asyncio.run(
-            admin_function("admin@example.com", "delete_user")
-        )
+        result = asyncio.run(admin_function("admin@example.com", "delete_user"))
 
         # Both decorators should have been applied
         assert mock_audit_integration.log_authentication_event.call_count == 1
         assert mock_audit_integration.log_security_event.call_count == 1
 
         # Verify both audit logs have correct information
-        auth_call = mock_audit_integration.log_authentication_event.call_args[
-            1
-        ]
+        auth_call = mock_audit_integration.log_authentication_event.call_args[1]
         security_call = mock_audit_integration.log_security_event.call_args[1]
 
         assert auth_call["event_type"] == "admin_login"
@@ -603,9 +547,7 @@ class TestAuditDecorators:
         """Test decorators with complex function signatures."""
 
         @audit_data_access("update", "child_profile")
-        async def complex_function(
-            self, *args, user_id=None, child_id=None, **kwargs
-        ):
+        async def complex_function(self, *args, user_id=None, child_id=None, **kwargs):
             return {"updated": True}
 
         # Test with various argument combinations
@@ -623,9 +565,7 @@ class TestAuditDecorators:
         assert result["updated"] is True
 
         # Verify extraction worked with complex signature
-        call_args = mock_audit_integration.log_child_data_operation.call_args[
-            1
-        ]
+        call_args = mock_audit_integration.log_child_data_operation.call_args[1]
         assert call_args["user_id"] == "complex_user"
         assert call_args["child_id"] == "complex_child"
 
@@ -657,9 +597,7 @@ class TestAuditDecorators:
         def sync_function(email):
             return {"success": True}
 
-        with patch(
-            "asyncio.get_event_loop", side_effect=RuntimeError("No loop")
-        ):
+        with patch("asyncio.get_event_loop", side_effect=RuntimeError("No loop")):
             with patch(
                 "src.infrastructure.security.audit_decorators.logger"
             ) as mock_logger:

@@ -1,11 +1,11 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from .models import ContractTestSuite
 
 
 def _calculate_overall_results(
-    test_suites: Dict[str, ContractTestSuite],
-) -> Dict[str, Any]:
+    test_suites: dict[str, ContractTestSuite],
+) -> dict[str, Any]:
     """حساب النتائج الإجمالية"""
     total_tests = sum(suite.total_tests for suite in test_suites.values())
     passed_tests = sum(suite.passed_tests for suite in test_suites.values())
@@ -24,7 +24,7 @@ def _calculate_overall_results(
     }
 
 
-def _generate_recommendations(framework) -> List[str]:
+def _generate_recommendations(framework) -> list[str]:
     """توليد توصيات لتحسين العقود"""
     recommendations = []
 

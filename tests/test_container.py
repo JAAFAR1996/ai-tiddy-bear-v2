@@ -1,7 +1,8 @@
-from infrastructure.di.container import Container as AppContainer
 import asyncio
 import sys
 from pathlib import Path
+
+from infrastructure.di.container import Container as AppContainer
 
 # Add src to path
 src_path = Path(__file__).parent

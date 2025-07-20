@@ -18,9 +18,7 @@ class AudioStreamer:
     def disconnect(self, child_id: str) -> None:
         del self.connections[child_id]
 
-    async def stream_audio_to_child(
-        self, child_id: str, audio_data: bytes
-    ) -> None:
+    async def stream_audio_to_child(self, child_id: str, audio_data: bytes) -> None:
         if child_id in self.connections:
             await self.connections[child_id].send_bytes(audio_data)
 

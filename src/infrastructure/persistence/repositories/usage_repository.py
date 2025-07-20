@@ -8,7 +8,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.security.database_input_validator import (
     SecurityError,
     database_input_validation,
@@ -81,9 +81,7 @@ class UsageRepository:
             raise
 
     @database_input_validation("usage_statistics")
-    async def get_usage_summary(
-        self, child_id: str, days: int = 30
-    ) -> dict[str, Any]:
+    async def get_usage_summary(self, child_id: str, days: int = 30) -> dict[str, Any]:
         """Get usage summary for a child over a period.
 
         Args:
@@ -95,9 +93,7 @@ class UsageRepository:
 
         """
         # Mock implementation
-        logger.info(
-            f"Fetching usage summary for child {child_id} for last {days} days"
-        )
+        logger.info(f"Fetching usage summary for child {child_id} for last {days} days")
         return {
             "child_id": child_id,
             "total_duration_minutes": 120,

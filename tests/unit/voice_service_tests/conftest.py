@@ -1,9 +1,9 @@
 """Conftest for voice service tests"""
 
 # Mock classes for voice service tests
-from enum import Enum
 from dataclasses import dataclass
-from typing import Dict, Any
+from enum import Enum
+from typing import Any
 
 
 class AudioFormat(Enum):
@@ -34,7 +34,7 @@ class AudioRequest:
     audio_data: bytes
     format: AudioFormat
     child_id: str
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
 
 @dataclass
@@ -42,4 +42,4 @@ class TranscriptionResult:
     text: str
     confidence: float
     language: str = "en"
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import Request, Response
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 
 from src.application.services.audit_service import AuditService
@@ -33,9 +33,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     def __init__(self, app) -> None:
         super().__init__(app)
         self.settings = get_settings()
-        self.is_production = (
-            self.settings.application.ENVIRONMENT == "production"
-        )
+        self.is_production = self.settings.application.ENVIRONMENT == "production"
         self.request_security_detector = RequestSecurityDetector()
         self.audit_service = AuditService()
 
@@ -119,11 +117,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             )
 
         # Detect and log security events
-        security_events = (
-            self.request_security_detector.detect_security_events(
-                request_info,
-                response_info,
-            )
+        security_events = self.request_security_detector.detect_security_events(
+            request_info,
+            response_info,
         )
 
         if security_events:
@@ -137,9 +133,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 "user_agent": request_info["user_agent"][:100],
                 "status_code": response_info["status_code"],
             }
-            logger.warning(
-                f"Security Event: {json.dumps(security_log, default=str)}"
-            )
+            logger.warning(f"Security Event: {json.dumps(security_log, default=str)}")
 
         return response
 
@@ -180,16 +174,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                             info["body"] = {"_error": "Invalid JSON"}
                     elif "application/x-www-form-urlencoded" in content_type:
                         # Form data - don't log for child safety
-                        info["body"] = {
-                            "_note": "Form data not logged for privacy"
-                        }
+                        info["body"] = {"_note": "Form data not logged for privacy"}
                     elif "multipart/form-data" in content_type:
                         # File upload - don't log content
                         info["body"] = {"_note": "File upload detected"}
                     else:
-                        info["body"] = {
-                            "_note": f"Content type: {content_type}"
-                        }
+                        info["body"] = {"_note": f"Content type: {content_type}"}
             except Exception as e:
                 info["body"] = {"_error": f"Failed to read body: {e!s}"}
 
@@ -213,9 +203,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             "status_code": response.status_code,
             "headers": dict(response.headers),
             "process_time": round(process_time, 3),
-            "content_length": response.headers.get(
-                "content-length", "unknown"
-            ),
+            "content_length": response.headers.get("content-length", "unknown"),
         }
 
     def _sanitize_data(self, data: Any) -> Any:
@@ -233,14 +221,10 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 key_lower = key.lower()
 
                 # Check for sensitive patterns
-                if any(
-                    pattern in key_lower for pattern in self.sensitive_patterns
-                ):
+                if any(pattern in key_lower for pattern in self.sensitive_patterns):
                     sanitized[key] = "[REDACTED]"
                 # Check for child data that requires special handling
-                elif any(
-                    field in key_lower for field in self.child_data_fields
-                ):
+                elif any(field in key_lower for field in self.child_data_fields):
                     if self.is_production:
                         sanitized[key] = "[CHILD_DATA_PROTECTED]"
                     else:
@@ -274,9 +258,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Log root requests
         return request.url.path == "/"
 
-    def _should_log_response(
-        self, request: Request, response: Response
-    ) -> bool:
+    def _should_log_response(self, request: Request, response: Response) -> bool:
         """Determine if response should be logged."""
         # Always log errors
         if response.status_code >= 400:
@@ -288,13 +270,10 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     def _requires_audit_log(self, request: Request) -> bool:
         """Check if request requires audit logging for COPPA compliance."""
         return any(
-            request.url.path.startswith(endpoint)
-            for endpoint in self.audit_endpoints
+            request.url.path.startswith(endpoint) for endpoint in self.audit_endpoints
         )
 
-    def _log_request(
-        self, request_info: dict[str, Any], timestamp: str
-    ) -> None:
+    def _log_request(self, request_info: dict[str, Any], timestamp: str) -> None:
         """Log request information."""
         log_data = {
             "type": "request",
@@ -302,9 +281,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             "method": request_info["method"],
             "path": request_info["path"],
             "client_ip": request_info["client_ip"],
-            "user_agent": request_info["user_agent"][
-                :200
-            ],  # Truncate user agent
+            "user_agent": request_info["user_agent"][:200],  # Truncate user agent
         }
 
         # Add query params if present

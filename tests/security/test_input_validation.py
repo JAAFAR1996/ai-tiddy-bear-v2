@@ -1,6 +1,4 @@
-"""
-Security tests for input validation
-"""
+"""Security tests for input validation"""
 
 import pytest
 from pydantic import ValidationError
@@ -35,9 +33,7 @@ class TestChildModelValidation:
     def test_xss_in_name_blocked(self):
         """Test that XSS patterns in names are blocked."""
         with pytest.raises(ValidationError, match="invalid characters"):
-            ChildCreateRequest(
-                name="Alice<script>alert('xss')</script>", age=7
-            )
+            ChildCreateRequest(name="Alice<script>alert('xss')</script>", age=7)
 
     def test_dangerous_characters_blocked(self):
         """Test that dangerous characters are blocked."""
@@ -88,9 +84,7 @@ class TestChildModelValidation:
         assert len(request.interests) == 3
 
         # Too many interests
-        with pytest.raises(
-            ValidationError, match="Maximum.*interests allowed"
-        ):
+        with pytest.raises(ValidationError, match="Maximum.*interests allowed"):
             ChildCreateRequest(
                 name="Test",
                 age=7,
@@ -116,9 +110,7 @@ class TestChildModelValidation:
 
         # Non-string interest
         with pytest.raises(ValidationError, match="must be strings"):
-            ChildCreateRequest(
-                name="Test", age=7, interests=["reading", 123, "music"]
-            )
+            ChildCreateRequest(name="Test", age=7, interests=["reading", 123, "music"])
 
     def test_language_validation(self):
         """Test language validation."""
@@ -207,9 +199,7 @@ class TestGeneralValidation:
             validate_child_data({"interests": "not a list"})
 
         with pytest.raises(ValueError, match="Maximum.*interests allowed"):
-            validate_child_data(
-                {"interests": [f"interest_{i}" for i in range(25)]}
-            )
+            validate_child_data({"interests": [f"interest_{i}" for i in range(25)]})
 
         # Invalid language
         with pytest.raises(ValueError, match="must be one of"):
@@ -251,9 +241,7 @@ class TestSecurityEdgeCases:
         ]
 
         with pytest.raises(ValidationError):
-            ChildCreateRequest(
-                name="Test", age=7, interests=malicious_interests
-            )
+            ChildCreateRequest(name="Test", age=7, interests=malicious_interests)
 
     def test_case_insensitive_sql_patterns(self):
         """Test that SQL injection patterns are caught regardless of case."""

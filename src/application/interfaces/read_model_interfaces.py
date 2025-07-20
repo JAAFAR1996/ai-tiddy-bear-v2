@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any
+from typing import Any
 
 """
 Read Model Interfaces for Application Layer
@@ -28,7 +28,7 @@ class IChildProfileReadModel(ABC):
 
     @property
     @abstractmethod
-    def preferences(self) -> Dict[str, Any]:
+    def preferences(self) -> dict[str, Any]:
         """Child preferences."""
 
 
@@ -40,9 +40,7 @@ class IChildProfileReadModelStore(ABC):
         """Save child profile read model."""
 
     @abstractmethod
-    async def get_by_id(
-        self, child_id: str
-    ) -> Optional[IChildProfileReadModel]:
+    async def get_by_id(self, child_id: str) -> IChildProfileReadModel | None:
         """Get child profile by ID."""
 
     @abstractmethod
@@ -50,35 +48,14 @@ class IChildProfileReadModelStore(ABC):
         """Delete child profile by ID."""
 
     @abstractmethod
-    async def update(self, child_id: str, updates: Dict[str, Any]) -> bool:
+    async def update(self, child_id: str, updates: dict[str, Any]) -> bool:
         """Update child profile."""
 
 
-class IEventBus(ABC):
-    """Interface for event bus messaging."""
-
-    @abstractmethod
-    async def publish(
-        self, event_name: str, event_data: Dict[str, Any]
-    ) -> None:
-        """Publish an event."""
-
-    @abstractmethod
-    async def subscribe(self, event_name: str, handler_func) -> None:
-        """Subscribe to an event."""
-
-    @abstractmethod
-    async def unsubscribe(self, event_name: str, handler_func) -> None:
-        """Unsubscribe from an event."""
-
-
-class IExternalAPIClient(ABC):
     """Interface for external API clients."""
 
     @abstractmethod
-    async def make_request(
-        self, endpoint: str, data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def make_request(self, endpoint: str, data: dict[str, Any]) -> dict[str, Any]:
         """Make an API request."""
 
     @abstractmethod
@@ -86,27 +63,6 @@ class IExternalAPIClient(ABC):
         """Check API health status."""
 
 
-class ISettingsProvider(ABC):
-    """Interface for application settings."""
-
-    @abstractmethod
-    def get_setting(self, key: str, default: Any = None) -> Any:
-        """Get a configuration setting."""
-
-    @abstractmethod
-    def get_database_url(self) -> str:
-        """Get database connection URL."""
-
-    @abstractmethod
-    def get_api_key(self, service: str) -> Optional[str]:
-        """Get API key for external service."""
-
-    @abstractmethod
-    def is_production(self) -> bool:
-        """Check if running in production."""
-
-
-class IConsentManager(ABC):
     """Interface for COPPA consent management."""
 
     @abstractmethod
@@ -114,7 +70,7 @@ class IConsentManager(ABC):
         """Verify parental consent for operation."""
 
     @abstractmethod
-    async def get_consent_status(self, child_id: str) -> Dict[str, Any]:
+    async def get_consent_status(self, child_id: str) -> dict[str, Any]:
         """Get consent status details."""
 
     @abstractmethod
@@ -124,7 +80,7 @@ class IConsentManager(ABC):
 
 # Factory functions for creating implementations
 def create_child_profile_read_model(
-    child_id: str, name: str, age: int, preferences: Dict[str, Any]
+    child_id: str, name: str, age: int, preferences: dict[str, Any]
 ) -> IChildProfileReadModel:
     """Factory function for creating child profile read models
     This will be implemented by the infrastructure layer.

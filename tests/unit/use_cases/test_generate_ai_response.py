@@ -1,11 +1,12 @@
-from application.dto.ai_response import AIResponse
+import sys
+from pathlib import Path
+from unittest.mock import AsyncMock
+from uuid import uuid4
+
+from src.application.dto.ai_response import AIResponse
 from application.use_cases.generate_ai_response import (
     GenerateAIResponseUseCase,
 )
-from uuid import uuid4
-from unittest.mock import AsyncMock
-import sys
-from pathlib import Path
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -110,9 +111,7 @@ class TestGenerateAIResponseUseCase:
         voice_id = "child-voice-1"
         audio_data = b"generated_audio"
 
-        use_case.ai_orchestration_service.get_ai_response.return_value = (
-            ai_response
-        )
+        use_case.ai_orchestration_service.get_ai_response.return_value = ai_response
         use_case.audio_processing_service.generate_audio_response.return_value = (
             audio_data
         )
@@ -147,18 +146,14 @@ class TestGenerateAIResponseUseCase:
         )
 
     @pytest.mark.asyncio
-    async def test_execute_with_minimal_parameters(
-        self, use_case, ai_response
-    ):
+    async def test_execute_with_minimal_parameters(self, use_case, ai_response):
         """Test AI response generation with minimal parameters."""
         # Setup
         child_id = uuid4()
         user_input = "Hi!"
         audio_data = b"minimal_audio"
 
-        use_case.ai_orchestration_service.get_ai_response.return_value = (
-            ai_response
-        )
+        use_case.ai_orchestration_service.get_ai_response.return_value = ai_response
         use_case.audio_processing_service.generate_audio_response.return_value = (
             audio_data
         )
@@ -200,9 +195,7 @@ class TestGenerateAIResponseUseCase:
             conversation_id=str(uuid4()),
         )
 
-        use_case.ai_orchestration_service.get_ai_response.return_value = (
-            unsafe_response
-        )
+        use_case.ai_orchestration_service.get_ai_response.return_value = unsafe_response
         use_case.audio_processing_service.generate_audio_response.return_value = (
             b"safety_audio"
         )
@@ -241,9 +234,7 @@ class TestGenerateAIResponseUseCase:
         voice_id = "educational-voice"
         audio_data = b"educational_audio"
 
-        use_case.ai_orchestration_service.get_ai_response.return_value = (
-            ai_response
-        )
+        use_case.ai_orchestration_service.get_ai_response.return_value = ai_response
         use_case.audio_processing_service.generate_audio_response.return_value = (
             audio_data
         )
@@ -271,19 +262,15 @@ class TestGenerateAIResponseUseCase:
         )
 
     @pytest.mark.asyncio
-    async def test_execute_audio_generation_failure(
-        self, use_case, ai_response
-    ):
+    async def test_execute_audio_generation_failure(self, use_case, ai_response):
         """Test handling when audio generation fails."""
         # Setup
         child_id = uuid4()
         user_input = "Hello!"
 
-        use_case.ai_orchestration_service.get_ai_response.return_value = (
-            ai_response
-        )
-        use_case.audio_processing_service.generate_audio_response.side_effect = Exception(
-            "Audio service unavailable"
+        use_case.ai_orchestration_service.get_ai_response.return_value = ai_response
+        use_case.audio_processing_service.generate_audio_response.side_effect = (
+            Exception("Audio service unavailable")
         )
 
         # Execute - should not fail completely
@@ -329,10 +316,7 @@ class TestGenerateAIResponseUseCase:
         )
 
         # Verify
-        assert (
-            result.response_text
-            == "¡Hola! Estoy muy bien, gracias por preguntar."
-        )
+        assert result.response_text == "¡Hola! Estoy muy bien, gracias por preguntar."
         assert result.emotion == "happy"
 
     @pytest.mark.asyncio

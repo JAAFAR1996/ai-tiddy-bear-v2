@@ -1,23 +1,21 @@
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
+
 from dependency_injector.wiring import Provide
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials  # ✅
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
-from .middleware.consent_verification import (
-    ConsentVerificationRoute,
-    require_consent,
-)  # ✅ Consent verification
+
 from src.application.services.ai_orchestration_service import (
     AIOrchestrationService,
 )
 from src.infrastructure.di.container import Container
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.real_database_service import (
     DatabaseService,
 )
 
-
-from src.infrastructure.logging_config import get_logger
+from .middleware.consent_verification import require_consent
 
 logger = get_logger(__name__, component="api")
 
@@ -27,7 +25,7 @@ security = HTTPBearer()
 
 async def get_current_user_esp32(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Verify user authentication for ESP32 endpoints"""
     try:
         from src.infrastructure.security.real_auth_service import (
@@ -86,25 +84,19 @@ class DeviceStatusRequest(BaseModel):
 
 
 # ESP32 Audio Processing Endpoint
-@require_consent(
-    "data_collection", "voice_recording"
-)  # ✅ Requires parental consent
+@require_consent("data_collection", "voice_recording")
 @router.post("/process-audio", response_model=AudioResponse)
 async def process_audio(
     request: AudioRequest,
-    current_user: Dict[str, Any] = Depends(
-        get_current_user_esp32
-    ),  # ✅ - Authentication added
+    current_user: dict[str, Any] = Depends(get_current_user_esp32),
     ai_orchestration_service: AIOrchestrationService = Depends(
         Provide[Container.ai_orchestration_service]
     ),
-    database_service: DatabaseService = Depends(
-        Provide[Container.database_service]
-    ),
+    database_service: DatabaseService = Depends(Provide[Container.database_service]),
 ):
     """Process audio from ESP32 device"""
     try:
-        # ✅ Verify parental consent before processing child data
+        # Verify parental consent before processing child data
         from src.infrastructure.security.coppa import get_consent_manager
 
         consent_manager = get_consent_manager()
@@ -160,7 +152,7 @@ async def process_audio(
             {
                 "emotion": ai_response.emotion,
                 "safety_check": ai_response.safety_analysis.model_dump(),
-                "response_type": ai_response.response_type,  # Assuming AIResponse has this attribute
+                "response_type": ai_response.response_type,
             },
         )
 
@@ -173,18 +165,14 @@ async def process_audio(
             timestamp=datetime.now().isoformat(),
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error processing audio: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error processing audio: {e!s}")
 
 
 # Device Status Endpoint
 @router.post("/device-status")
 async def update_device_status(
     request: DeviceStatusRequest,
-    current_user: Dict[str, Any] = Depends(
-        get_current_user_esp32
-    ),  # ✅ - Authentication added
+    current_user: dict[str, Any] = Depends(get_current_user_esp32),
 ):
     """Update ESP32 device status"""
     # In a real implementation, this would update device status in database
@@ -213,9 +201,7 @@ async def health_check():
 @router.get("/config/{device_id}")
 async def get_device_config(
     device_id: str,
-    current_user: Dict[str, Any] = Depends(
-        get_current_user_esp32
-    ),  # ✅ - Authentication added
+    current_user: dict[str, Any] = Depends(get_current_user_esp32),
 ):
     """Get device configuration"""
     return {

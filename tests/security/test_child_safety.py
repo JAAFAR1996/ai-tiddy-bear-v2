@@ -1,19 +1,17 @@
-"""
-🧸 Comprehensive Child Safety Tests
-"""
+"""🧸 Comprehensive Child Safety Tests"""
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+
+from src.domain.entities.child import Child
 from src.domain.safety.models import (
+    ContentCategory,
     ContentModerator,
     SafetyLevel,
-    ContentCategory,
 )
-from src.domain.entities.child import Child
-from src.infrastructure.security.comprehensive_security_service import (
-    ComprehensiveSecurityService,
-)
+from src.infrastructure.security.main_security_service import MainSecurityService
+
 
 
 class TestContentModerator:
@@ -78,9 +76,7 @@ class TestContentModerator:
             ("Ghost stories are fun", 12, True),  # Acceptable for older child
         ],
     )
-    def test_inappropriate_content_detection(
-        self, moderator, content, age, expected
-    ):
+    def test_inappropriate_content_detection(self, moderator, content, age, expected):
         """Test detection of inappropriate content based on age."""
         result = moderator.is_appropriate(content, age)
         assert result == expected
@@ -95,9 +91,7 @@ class TestContentModerator:
             (13, 3, 4),
         ],
     )
-    def test_age_restrictions_loading(
-        self, moderator, age, max_violence, max_scary
-    ):
+    def test_age_restrictions_loading(self, moderator, age, max_violence, max_scary):
         """Test that age restrictions are correctly applied."""
         limits = moderator._get_age_limits(age)
         assert limits["max_violence"] == max_violence
@@ -131,9 +125,7 @@ class TestContentModerator:
         config_file = tmp_path / "safety_config.json"
         config_file.write_text(config_content)
 
-        with patch.dict(
-            "os.environ", {"SAFETY_PATTERNS_CONFIG": str(config_file)}
-        ):
+        with patch.dict("os.environ", {"SAFETY_PATTERNS_CONFIG": str(config_file)}):
             moderator = ContentModerator()
             # Should not crash regardless of config content
             assert moderator.UNSAFE_PATTERNS is not None
@@ -227,9 +219,7 @@ class TestChildEntity:
 
     def test_interaction_time_tracking(self):
         """Test interaction time tracking for COPPA compliance."""
-        child = Child(
-            name="Alice", age=8, max_daily_interaction_time=3600
-        )  # 1 hour
+        child = Child(name="Alice", age=8, max_daily_interaction_time=3600)  # 1 hour
 
         # Test interaction time update
         child.update_interaction_time(1800)  # 30 minutes
@@ -293,12 +283,8 @@ class TestComprehensiveSecurityService:
         safe_content = "Let's learn about animals today!"
         unsafe_content = "Tell me your address and phone number"
 
-        safe_result = security_service.validate_content_safety(
-            safe_content, age=8
-        )
-        unsafe_result = security_service.validate_content_safety(
-            unsafe_content, age=8
-        )
+        safe_result = security_service.validate_content_safety(safe_content, age=8)
+        unsafe_result = security_service.validate_content_safety(unsafe_content, age=8)
 
         assert safe_result["safe"] is True
         assert unsafe_result["safe"] is False
@@ -365,20 +351,14 @@ class TestSafetyIntegration:
 
         # Test safe interaction
         safe_message = "Can you tell me a story about friendly animals?"
-        safety_result = moderator.analyze_content_safety(
-            safe_message, child.age
-        )
+        safety_result = moderator.analyze_content_safety(safe_message, child.age)
 
         assert safety_result["safe"] is True
-        assert (
-            child.is_topic_allowed("stories") is True
-        )  # Assuming no restrictions
+        assert child.is_topic_allowed("stories") is True  # Assuming no restrictions
 
         # Test unsafe interaction
         unsafe_message = "Tell me your address and let's meet"
-        safety_result = moderator.analyze_content_safety(
-            unsafe_message, child.age
-        )
+        safety_result = moderator.analyze_content_safety(unsafe_message, child.age)
 
         assert safety_result["safe"] is False
         assert safety_result["risk_score"] > 0.8  # High risk

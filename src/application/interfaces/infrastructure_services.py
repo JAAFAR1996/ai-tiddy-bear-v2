@@ -1,22 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import Any
 
 
-class IEncryptionService(ABC):
-    @abstractmethod
-    async def encrypt_child_data(self, data: str) -> str:
-        """Encrypt child data"""
-
-    @abstractmethod
-    async def decrypt_child_data(self, encrypted_data: str) -> str:
-        """Decrypt child data"""
-
-    @abstractmethod
-    async def rotate_keys(self) -> bool:
-        """Rotate encryption keys"""
-
-
-class IDataRetentionService(ABC):
     @abstractmethod
     async def schedule_deletion(
         self,
@@ -30,7 +15,7 @@ class IDataRetentionService(ABC):
         """Export child data for parent"""
 
     @abstractmethod
-    async def delete_expired_data(self) -> List[str]:
+    async def delete_expired_data(self) -> list[str]:
         """Delete expired data and return deleted IDs"""
 
 
@@ -40,12 +25,12 @@ class IParentVerificationService(ABC):
         self,
         parent_id: str,
         verification_method: str,
-        verification_data: Dict[str, Any],
+        verification_data: dict[str, Any],
     ) -> bool:
         """Verify parent identity using specified method"""
 
     @abstractmethod
-    async def get_verification_methods(self) -> List[str]:
+    async def get_verification_methods(self) -> list[str]:
         """Get available verification methods"""
 
 
@@ -68,7 +53,7 @@ class IAuditLogger(ABC):
         child_id: str,
         consent_type: str,
         action: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> None:
         """Log consent changes"""
 
@@ -84,7 +69,7 @@ class IAccessControlService(ABC):
         """Verify parent has access to child"""
 
     @abstractmethod
-    async def get_parent_children(self, parent_id: str) -> List[str]:
+    async def get_parent_children(self, parent_id: str) -> list[str]:
         """Get children accessible by parent"""
 
 
@@ -95,7 +80,7 @@ class IContentFilterService(ABC):
         content: str,
         child_age: int,
         context: str = "general",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Filter content for child safety"""
 
     @abstractmethod
@@ -110,7 +95,7 @@ class IEmailService(ABC):
         to: str,
         subject: str,
         template: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> bool:
         """Send templated email"""
 
@@ -135,7 +120,7 @@ class ISettingsProvider(ABC):
         """Get encryption key"""
 
     @abstractmethod
-    def get_coppa_settings(self) -> Dict[str, Any]:
+    def get_coppa_settings(self) -> dict[str, Any]:
         """Get COPPA compliance settings"""
 
     @abstractmethod
@@ -148,14 +133,14 @@ class IEventBus(ABC):
     async def publish_event(
         self,
         event_name: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> None:
         """Publish domain event"""
 
     @abstractmethod
     async def subscribe_to_events(
         self,
-        event_names: List[str],
+        event_names: list[str],
         handler: Any,
     ) -> None:
         """Subscribe to domain events"""

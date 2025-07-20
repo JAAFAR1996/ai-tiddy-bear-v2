@@ -1,19 +1,19 @@
-"""
-Tests for COPPA Validator
+"""Tests for COPPA Validator
 Testing COPPA age validation, compliance levels, and child safety requirements.
 """
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from src.infrastructure.security.coppa_validator import (
-    COPPAValidator,
     COPPAComplianceLevel,
     COPPAValidationResult,
+    COPPAValidator,
     coppa_validator,
+    get_data_retention_days,
     is_coppa_subject,
     requires_parental_consent,
-    get_data_retention_days,
     validate_child_age,
 )
 
@@ -24,13 +24,8 @@ class TestCOPPAComplianceLevel:
     def test_coppa_compliance_levels(self):
         """Test COPPA compliance level enumeration."""
         assert COPPAComplianceLevel.UNDER_COPPA.value == "under_coppa"
-        assert (
-            COPPAComplianceLevel.COPPA_TRANSITION.value == "coppa_transition"
-        )
-        assert (
-            COPPAComplianceLevel.GENERAL_PROTECTION.value
-            == "general_protection"
-        )
+        assert COPPAComplianceLevel.COPPA_TRANSITION.value == "coppa_transition"
+        assert COPPAComplianceLevel.GENERAL_PROTECTION.value == "general_protection"
 
     def test_coppa_compliance_level_coverage(self):
         """Test all COPPA compliance levels are defined."""
@@ -163,20 +158,10 @@ class TestCOPPAValidator:
             assert result.compliance_level == COPPAComplianceLevel.UNDER_COPPA
             assert result.parental_consent_required is True
             assert result.data_retention_days == 90
-            assert (
-                result.special_protections["enhanced_content_filtering"]
-                is True
-            )
-            assert (
-                result.special_protections["restricted_data_sharing"] is True
-            )
-            assert (
-                result.special_protections["parental_oversight_required"]
-                is True
-            )
-            assert (
-                result.special_protections["anonymized_analytics_only"] is True
-            )
+            assert result.special_protections["enhanced_content_filtering"] is True
+            assert result.special_protections["restricted_data_sharing"] is True
+            assert result.special_protections["parental_oversight_required"] is True
+            assert result.special_protections["anonymized_analytics_only"] is True
 
     @pytest.mark.parametrize("age", [3, 7, 12, 13, 15, 16])
     def test_validate_age_compliance_coppa_disabled(
@@ -186,9 +171,7 @@ class TestCOPPAValidator:
         result = validator.validate_age_compliance(age)
 
         assert result.is_coppa_subject is False
-        assert (
-            result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
-        )
+        assert result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
         assert result.parental_consent_required is False
         assert result.data_retention_days == 365 * 2
         assert result.age_verified is True
@@ -199,9 +182,7 @@ class TestCOPPAValidator:
 
         # COPPA-specific protections disabled
         assert result.special_protections["restricted_data_sharing"] is False
-        assert (
-            result.special_protections["parental_oversight_required"] is False
-        )
+        assert result.special_protections["parental_oversight_required"] is False
         assert result.special_protections["anonymized_analytics_only"] is False
         assert result.special_protections["audit_trail_required"] is False
 
@@ -225,14 +206,10 @@ class TestCOPPAValidator:
         result = validator.validate_age_compliance(16)
 
         assert result.is_coppa_subject is False
-        assert (
-            result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
-        )
+        assert result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
         assert result.parental_consent_required is False
         assert result.data_retention_days == 365
-        assert (
-            result.special_protections["enhanced_content_filtering"] is False
-        )
+        assert result.special_protections["enhanced_content_filtering"] is False
         assert result.special_protections["restricted_data_sharing"] is False
 
     @pytest.mark.parametrize(
@@ -273,9 +250,7 @@ class TestCOPPAValidator:
         """Test age validation for ages too old without strict validation."""
         # Should not raise exception when strict_validation=False
         result = validator.validate_age_compliance(17, strict_validation=False)
-        assert (
-            result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
-        )
+        assert result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
 
     def test_validate_age_compliance_coppa_disabled_age_limits(
         self, validator, mock_coppa_disabled
@@ -306,9 +281,7 @@ class TestCOPPAValidator:
         assert result == expected
 
     @pytest.mark.parametrize("age", [3, 7, 12, 13, 15, 16])
-    def test_is_coppa_subject_disabled(
-        self, validator, mock_coppa_disabled, age
-    ):
+    def test_is_coppa_subject_disabled(self, validator, mock_coppa_disabled, age):
         """Test is_coppa_subject method when COPPA is disabled."""
         result = validator.is_coppa_subject(age)
         assert result is False
@@ -345,9 +318,7 @@ class TestCOPPAValidator:
         result = validator.get_data_retention_period(age)
         assert result == 365 * 2  # 2 years when COPPA disabled
 
-    def test_get_data_retention_period_invalid_age(
-        self, validator, mock_coppa_enabled
-    ):
+    def test_get_data_retention_period_invalid_age(self, validator, mock_coppa_enabled):
         """Test data retention period with invalid age uses COPPA retention."""
         result = validator.get_data_retention_period(-1)
         assert result == 90  # COPPA_RETENTION_DAYS
@@ -432,17 +403,13 @@ class TestCOPPAValidator:
         result = validator.validate_age_range(age, min_age, max_age)
         assert result == expected
 
-    def test_validate_age_range_default_params(
-        self, validator, mock_coppa_enabled
-    ):
+    def test_validate_age_range_default_params(self, validator, mock_coppa_enabled):
         """Test age range validation with default parameters."""
         assert validator.validate_age_range(5) is True
         assert validator.validate_age_range(2) is False
         assert validator.validate_age_range(14) is False
 
-    def test_validate_age_range_invalid_type(
-        self, validator, mock_coppa_enabled
-    ):
+    def test_validate_age_range_invalid_type(self, validator, mock_coppa_enabled):
         """Test age range validation with invalid data type."""
         assert validator.validate_age_range("5") is False
         assert validator.validate_age_range(5.5) is False
@@ -493,17 +460,13 @@ class TestCOPPAValidatorGlobalFunctions:
             (16, False),
         ],
     )
-    def test_is_coppa_subject_function_enabled(
-        self, mock_coppa_enabled, age, expected
-    ):
+    def test_is_coppa_subject_function_enabled(self, mock_coppa_enabled, age, expected):
         """Test global is_coppa_subject function when COPPA is enabled."""
         result = is_coppa_subject(age)
         assert result == expected
 
     @pytest.mark.parametrize("age", [3, 7, 12, 13, 15, 16])
-    def test_is_coppa_subject_function_disabled(
-        self, mock_coppa_disabled, age
-    ):
+    def test_is_coppa_subject_function_disabled(self, mock_coppa_disabled, age):
         """Test global is_coppa_subject function when COPPA is disabled."""
         result = is_coppa_subject(age)
         assert result is False
@@ -554,9 +517,7 @@ class TestCOPPAValidatorGlobalFunctions:
         assert result == expected_days
 
     @pytest.mark.parametrize("age", [3, 7, 12, 13, 15, 16])
-    def test_get_data_retention_days_function_disabled(
-        self, mock_coppa_disabled, age
-    ):
+    def test_get_data_retention_days_function_disabled(self, mock_coppa_disabled, age):
         """Test global get_data_retention_days function when COPPA is disabled."""
         result = get_data_retention_days(age)
         assert result == 365 * 2
@@ -573,9 +534,7 @@ class TestCOPPAValidatorGlobalFunctions:
         result = validate_child_age(7)
         assert isinstance(result, COPPAValidationResult)
         assert result.is_coppa_subject is False
-        assert (
-            result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
-        )
+        assert result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
 
 
 class TestCOPPAValidatorGlobalInstance:
@@ -614,9 +573,7 @@ class TestCOPPAValidatorEdgeCases:
         """Test that validator initializes with empty cache."""
         assert validator._validation_cache == {}
 
-    def test_special_protections_structure(
-        self, validator, mock_coppa_enabled
-    ):
+    def test_special_protections_structure(self, validator, mock_coppa_enabled):
         """Test that special protections have correct structure."""
         result = validator.validate_age_compliance(7)
 
@@ -630,9 +587,7 @@ class TestCOPPAValidatorEdgeCases:
         }
 
         assert set(result.special_protections.keys()) == expected_keys
-        assert all(
-            isinstance(v, bool) for v in result.special_protections.values()
-        )
+        assert all(isinstance(v, bool) for v in result.special_protections.values())
 
     def test_age_boundary_conditions(self, validator, mock_coppa_enabled):
         """Test age boundary conditions."""
@@ -653,9 +608,7 @@ class TestCOPPAValidatorEdgeCases:
 
     def test_logging_integration(self, validator, mock_coppa_enabled):
         """Test that validation includes logging."""
-        with patch(
-            "src.infrastructure.security.coppa_validator.logger"
-        ) as mock_logger:
+        with patch("src.infrastructure.security.coppa_validator.logger") as mock_logger:
             validator.validate_age_compliance(7)
             mock_logger.info.assert_called_once()
 
@@ -668,9 +621,7 @@ class TestCOPPAValidatorEdgeCases:
 
     def test_error_logging_integration(self, validator, mock_coppa_enabled):
         """Test error logging for invalid ages."""
-        with patch(
-            "src.infrastructure.security.coppa_validator.logger"
-        ) as mock_logger:
+        with patch("src.infrastructure.security.coppa_validator.logger") as mock_logger:
             result = validator.is_coppa_subject(-1)
             assert result is True
             mock_logger.warning.assert_called_once()
@@ -678,13 +629,9 @@ class TestCOPPAValidatorEdgeCases:
             log_call = mock_logger.warning.call_args[0][0]
             assert "Invalid age for COPPA check" in log_call
 
-    def test_data_retention_error_handling(
-        self, validator, mock_coppa_enabled
-    ):
+    def test_data_retention_error_handling(self, validator, mock_coppa_enabled):
         """Test data retention error handling."""
-        with patch(
-            "src.infrastructure.security.coppa_validator.logger"
-        ) as mock_logger:
+        with patch("src.infrastructure.security.coppa_validator.logger") as mock_logger:
             result = validator.get_data_retention_period(-1)
             assert result == 90  # COPPA_RETENTION_DAYS
             mock_logger.warning.assert_called_once()
@@ -698,9 +645,7 @@ class TestCOPPAValidatorEdgeCases:
         assert COPPAValidator.COPPA_RETENTION_DAYS == 90
         assert COPPAValidator.TRANSITION_RETENTION_DAYS == 365
 
-    def test_validation_result_type_consistency(
-        self, validator, mock_coppa_enabled
-    ):
+    def test_validation_result_type_consistency(self, validator, mock_coppa_enabled):
         """Test that validation result types are consistent."""
         result = validator.validate_age_compliance(7)
 
@@ -727,19 +672,14 @@ class TestCOPPAValidatorEdgeCases:
 
         assert result1.is_coppa_subject == result2.is_coppa_subject
         assert result1.compliance_level == result2.compliance_level
-        assert (
-            result1.parental_consent_required
-            == result2.parental_consent_required
-        )
+        assert result1.parental_consent_required == result2.parental_consent_required
         assert result1.data_retention_days == result2.data_retention_days
         assert result1.special_protections == result2.special_protections
         assert result1.age_verified == result2.age_verified
 
     def test_coppa_disabled_logging(self, validator, mock_coppa_disabled):
         """Test logging when COPPA is disabled."""
-        with patch(
-            "src.infrastructure.security.coppa_validator.logger"
-        ) as mock_logger:
+        with patch("src.infrastructure.security.coppa_validator.logger") as mock_logger:
             validator.validate_age_compliance(7)
             mock_logger.debug.assert_called_once()
 
@@ -768,25 +708,15 @@ class TestCOPPAValidatorEdgeCases:
 
         # Should not raise without strict validation
         result = validator.validate_age_compliance(17, strict_validation=False)
-        assert (
-            result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
-        )
+        assert result.compliance_level == COPPAComplianceLevel.GENERAL_PROTECTION
 
     def test_transition_age_range(self, validator, mock_coppa_enabled):
         """Test transition age range (13-15) handling."""
         for age in [13, 14, 15]:
             result = validator.validate_age_compliance(age)
-            assert (
-                result.compliance_level
-                == COPPAComplianceLevel.COPPA_TRANSITION
-            )
+            assert result.compliance_level == COPPAComplianceLevel.COPPA_TRANSITION
             assert result.is_coppa_subject is False
             assert result.parental_consent_required is False
             assert result.data_retention_days == 365
-            assert (
-                result.special_protections["enhanced_content_filtering"]
-                is True
-            )
-            assert (
-                result.special_protections["restricted_data_sharing"] is False
-            )
+            assert result.special_protections["enhanced_content_filtering"] is True
+            assert result.special_protections["restricted_data_sharing"] is False

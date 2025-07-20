@@ -1,10 +1,11 @@
-from application.dto.child_data import ChildData
-from datetime import datetime, timedelta
-from httpx import AsyncClient
-from uuid import uuid4
-from unittest.mock import AsyncMock, patch
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
+from uuid import uuid4
+
+from application.dto.child_data import ChildData
+from httpx import AsyncClient
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -115,9 +116,7 @@ class TestParentalDashboardEndpoints:
             "application.use_cases.manage_child_profile.ManageChildProfileUseCase"
         ) as mock_use_case:
             mock_use_case_instance = AsyncMock()
-            mock_use_case_instance.get_children_for_parent.return_value = [
-                child_data
-            ]
+            mock_use_case_instance.get_children_for_parent.return_value = [child_data]
             mock_use_case.return_value = mock_use_case_instance
 
             response = await client.get(
@@ -153,9 +152,7 @@ class TestParentalDashboardEndpoints:
                 age=5,
                 preferences=child_data_input["preferences"],
             )
-            mock_use_case_instance.create_child_profile.return_value = (
-                created_child
-            )
+            mock_use_case_instance.create_child_profile.return_value = created_child
             mock_use_case.return_value = mock_use_case_instance
 
             response = await client.post(
@@ -171,17 +168,13 @@ class TestParentalDashboardEndpoints:
             assert data["preferences"]["language"] == "es"
 
     @pytest.mark.asyncio
-    async def test_update_child_profile(
-        self, client, auth_headers, child_data
-    ):
+    async def test_update_child_profile(self, client, auth_headers, child_data):
         """Test updating child profile."""
         child_id = str(child_data.id)
         update_data = {
             "name": "Emma Rose",
             "age": 8,
-            "preferences": {
-                "interests": ["animals", "stories", "music", "art"]
-            },
+            "preferences": {"interests": ["animals", "stories", "music", "art"]},
         }
 
         with patch(
@@ -194,9 +187,7 @@ class TestParentalDashboardEndpoints:
                 age=8,
                 preferences=update_data["preferences"],
             )
-            mock_use_case_instance.update_child_profile.return_value = (
-                updated_child
-            )
+            mock_use_case_instance.update_child_profile.return_value = updated_child
             mock_use_case.return_value = mock_use_case_instance
 
             response = await client.put(
@@ -212,9 +203,7 @@ class TestParentalDashboardEndpoints:
             assert "art" in data["preferences"]["interests"]
 
     @pytest.mark.asyncio
-    async def test_delete_child_profile(
-        self, client, auth_headers, child_data
-    ):
+    async def test_delete_child_profile(self, client, auth_headers, child_data):
         """Test deleting child profile."""
         child_id = str(child_data.id)
 
@@ -232,9 +221,7 @@ class TestParentalDashboardEndpoints:
             assert response.status_code == 204
 
     @pytest.mark.asyncio
-    async def test_get_conversation_history(
-        self, client, auth_headers, child_data
-    ):
+    async def test_get_conversation_history(self, client, auth_headers, child_data):
         """Test getting conversation history for child."""
         child_id = str(child_data.id)
         mock_conversations = [
@@ -242,9 +229,7 @@ class TestParentalDashboardEndpoints:
                 "id": str(uuid4()),
                 "child_id": child_id,
                 "started_at": datetime.utcnow().isoformat(),
-                "ended_at": (
-                    datetime.utcnow() + timedelta(minutes=5)
-                ).isoformat(),
+                "ended_at": (datetime.utcnow() + timedelta(minutes=5)).isoformat(),
                 "message_count": 8,
                 "summary": "Conversation about favorite animals",
                 "safety_score": 0.95,
@@ -253,13 +238,9 @@ class TestParentalDashboardEndpoints:
             {
                 "id": str(uuid4()),
                 "child_id": child_id,
-                "started_at": (
-                    datetime.utcnow() - timedelta(hours=2)
-                ).isoformat(),
+                "started_at": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
                 "ended_at": (
-                    datetime.utcnow()
-                    - timedelta(hours=2)
-                    + timedelta(minutes=10)
+                    datetime.utcnow() - timedelta(hours=2) + timedelta(minutes=10)
                 ).isoformat(),
                 "message_count": 15,
                 "summary": "Story time about brave knights",
@@ -372,9 +353,7 @@ class TestParentalDashboardEndpoints:
             "application.services.analytics_service.AnalyticsService"
         ) as mock_service:
             mock_service_instance = AsyncMock()
-            mock_service_instance.get_child_analytics.return_value = (
-                mock_analytics
-            )
+            mock_service_instance.get_child_analytics.return_value = mock_analytics
             mock_service.return_value = mock_service_instance
 
             response = await client.get(
@@ -389,9 +368,7 @@ class TestParentalDashboardEndpoints:
             assert data["learning_progress"]["engagement_level"] == "high"
 
     @pytest.mark.asyncio
-    async def test_update_parental_controls(
-        self, client, auth_headers, child_data
-    ):
+    async def test_update_parental_controls(self, client, auth_headers, child_data):
         """Test updating parental controls."""
         child_id = str(child_data.id)
         controls_data = {
@@ -453,9 +430,7 @@ class TestParentalDashboardEndpoints:
             "application.services.esp32_device_service.ESP32DeviceService"
         ) as mock_service:
             mock_service_instance = AsyncMock()
-            mock_service_instance.get_device_status.return_value = (
-                mock_device_status
-            )
+            mock_service_instance.get_device_status.return_value = mock_device_status
             mock_service.return_value = mock_service_instance
 
             response = await client.get(
@@ -532,9 +507,7 @@ class TestParentalDashboardEndpoints:
         assert "conversations" in data
 
     @pytest.mark.asyncio
-    async def test_filtering_and_sorting(
-        self, client, auth_headers, child_data
-    ):
+    async def test_filtering_and_sorting(self, client, auth_headers, child_data):
         """Test filtering and sorting in analytics."""
         child_id = str(child_data.id)
 

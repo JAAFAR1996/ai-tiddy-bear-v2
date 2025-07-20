@@ -3,7 +3,7 @@ from uuid import UUID
 
 from src.application.dto.child_data import ChildData
 from src.domain.entities.child_profile import ChildProfile
-from src.domain.repositories.child_repository import ChildRepository
+from src.infrastructure.persistence.child_repository import ChildRepository
 from src.infrastructure.messaging.kafka_event_bus import KafkaEventBus
 from src.infrastructure.read_models.child_profile_read_model import (
     ChildProfileReadModelStore,
@@ -39,9 +39,7 @@ class ManageChildProfileUseCase:
         )
 
     async def get_child_profile(self, child_id: UUID) -> ChildData | None:
-        child_read_model = self.child_profile_read_model_store.get_by_id(
-            child_id
-        )
+        child_read_model = self.child_profile_read_model_store.get_by_id(child_id)
         if child_read_model:
             return ChildData(
                 id=child_read_model.id,

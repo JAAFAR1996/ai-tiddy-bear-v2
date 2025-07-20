@@ -23,6 +23,4 @@ class Session(Base):
     interaction_count = Column(Integer, default=0)
     ended_at = Column(DateTime, nullable=True)
     end_reason = Column(Text, nullable=True)
-    session_data = Column(
-        Text, nullable=True
-    )  # Store JSON string of session data
+    session_data = Column(Text, nullable=True)  # Store JSON string of session data

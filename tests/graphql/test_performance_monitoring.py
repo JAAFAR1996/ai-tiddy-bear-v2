@@ -10,9 +10,7 @@ except ImportError:
     FEDERATION_AVAILABLE = False
 
 
-@pytest.mark.skipif(
-    not FEDERATION_AVAILABLE, reason="Federation not available"
-)
+@pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
 class TestPerformanceMonitoring:
     """Test performance monitoring."""
 
@@ -24,9 +22,7 @@ class TestPerformanceMonitoring:
 
             # Start monitoring
             query = 'query { child(id: "123") { name } }'
-            query_hash = await monitor.start_query_monitoring(
-                query, {}, "getChild"
-            )
+            query_hash = await monitor.start_query_monitoring(query, {}, "getChild")
 
             assert query_hash is not None
             assert monitor.current_queries == 1

@@ -1,13 +1,20 @@
+#!/usr/bin/env python3
+
+"""Comprehensive Unit Tests for Child Repository
+Tests all CRUD operations, search functionality, and business logic
+"""
+
+import os
+import sys
+import tempfile
+from datetime import date, datetime, timedelta
+from pathlib import Path
+from unittest.mock import Mock
+
+from domain.entities.child import Child
 from infrastructure.persistence.child_sqlite_repository import (
     ChildSQLiteRepository,
 )
-from domain.entities.child import Child
-from unittest.mock import Mock
-from datetime import date, datetime, timedelta
-import tempfile
-import os
-import sys
-from pathlib import Path
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -18,22 +25,11 @@ src_path = src_path / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-# !/usr/bin/env python3
-
-"""
-Comprehensive Unit Tests for Child Repository
-Tests all CRUD operations,  search functionality,  and business logic
-"""
-
+# Import after path setup
 
 try:
     import pytest
 except ImportError:
-    try:
-        from common.mock_pytest import pytest
-    except ImportError:
-        pass
-
     # Mock pytest when not available
     class MockPytest:
         def fixture(self, *args, **kwargs):
@@ -79,6 +75,9 @@ except ImportError:
                 return func
 
             return decorator
+
+        def main(self, args):
+            return 0
 
     pytest = MockPytest()
 
@@ -157,9 +156,9 @@ class TestChildRepositoryBasicOperations:
     @pytest.mark.asyncio
     async def test_create_child(self, child_repository, sample_child):
         """Test creating a new child"""
-        #  Act
+        # Act
         result = await child_repository.create(sample_child)
-        #  Assert
+        # Assert
         assert result is not None
         assert result.id is not None
         assert result.name == sample_child.name
@@ -169,46 +168,43 @@ class TestChildRepositoryBasicOperations:
     @pytest.mark.asyncio
     async def test_get_child_by_id(self, child_repository, sample_child):
         """Test retrieving a child by ID"""
-        #  Arrange
+        # Arrange
         created_child = await child_repository.create(sample_child)
-        #  Act
+        # Act
         retrieved_child = await child_repository.get_by_id(created_child.id)
-        #  Assert
+        # Assert
         assert retrieved_child is not None
         assert retrieved_child.id == created_child.id
         assert retrieved_child.name == sample_child.name
-        assert (
-            retrieved_child.personality_traits
-            == sample_child.personality_traits
-        )
+        assert retrieved_child.personality_traits == sample_child.personality_traits
 
     @pytest.mark.asyncio
     async def test_update_child(self, child_repository, sample_child):
         """Test updating an existing child"""
-        #  Arrange
+        # Arrange
         created_child = await child_repository.create(sample_child)
         created_child.name = "Alice Updated"
         created_child.age = 9
-        #  Act
+        # Act
         updated_child = await child_repository.update(created_child)
-        #  Assert
+        # Assert
         assert updated_child.name == "Alice Updated"
         assert updated_child.age == 9
 
     @pytest.mark.asyncio
     async def test_delete_child(self, child_repository, sample_child):
         """Test soft deleting a child"""
-        #  Arrange
+        # Arrange
         created_child = await child_repository.create(sample_child)
-        #  Act
+        # Act
         delete_result = await child_repository.delete(created_child.id)
-        #  Assert
+        # Assert
         assert delete_result is True
 
     @pytest.mark.asyncio
     async def test_list_children(self, child_repository):
         """Test listing multiple children"""
-        #  Arrange
+        # Arrange
         children_data = [
             {"name": "Alice", "age": 8},
             {"name": "Bob", "age": 10},
@@ -223,9 +219,9 @@ class TestChildRepositoryBasicOperations:
                 learning_preferences={},
             )
             created_children.append(await child_repository.create(child))
-        #  Act
+        # Act
         all_children = await child_repository.list()
-        #  Assert
+        # Assert
         assert len(all_children) >= 3
 
 
@@ -235,18 +231,18 @@ class TestChildRepositorySearchAndFiltering:
     @pytest.mark.asyncio
     async def test_find_by_name(self, child_repository, sample_child):
         """Test finding a child by name"""
-        #  Arrange
+        # Arrange
         await child_repository.create(sample_child)
-        #  Act
+        # Act
         found_child = await child_repository.find_by_name(sample_child.name)
-        #  Assert
+        # Assert
         assert found_child is not None
         assert found_child.name == sample_child.name
 
     @pytest.mark.asyncio
     async def test_find_by_age_range(self, child_repository):
         """Test finding children by age range"""
-        #  Arrange
+        # Arrange
         children = [
             Child(
                 name="Young",
@@ -269,9 +265,9 @@ class TestChildRepositorySearchAndFiltering:
         ]
         for child in children:
             await child_repository.create(child)
-        #  Act
+        # Act
         children_in_range = await child_repository.find_by_age_range(6, 10)
-        #  Assert
+        # Assert
         assert len(children_in_range) >= 1
         ages = [child.age for child in children_in_range]
         assert all(6 <= age <= 10 for age in ages)
@@ -283,7 +279,7 @@ class TestChildRepositoryBusinessLogic:
     @pytest.mark.asyncio
     async def test_get_children_needing_attention(self, child_repository):
         """Test finding children that need attention"""
-        #  Arrange
+        # Arrange
         old_interaction_child = Child(
             name="Old Interaction",
             age=8,
@@ -300,25 +296,19 @@ class TestChildRepositoryBusinessLogic:
         )
         await child_repository.create(old_interaction_child)
         await child_repository.create(special_needs_child)
-        #  Act
-        attention_needed = (
-            await child_repository.get_children_needing_attention()
-        )
-        #  Assert
+        # Act
+        attention_needed = await child_repository.get_children_needing_attention()
+        # Assert
         assert len(attention_needed) >= 2
 
     @pytest.mark.asyncio
-    async def test_get_engagement_insights(
-        self, child_repository, sample_child
-    ):
+    async def test_get_engagement_insights(self, child_repository, sample_child):
         """Test generating engagement insights"""
-        #  Arrange
+        # Arrange
         created_child = await child_repository.create(sample_child)
-        #  Act
-        insights = await child_repository.get_engagement_insights(
-            created_child.id
-        )
-        #  Assert
+        # Act
+        insights = await child_repository.get_engagement_insights(created_child.id)
+        # Assert
         assert insights is not None
         assert "child_id" in insights
         assert "engagement_level" in insights
@@ -327,5 +317,5 @@ class TestChildRepositoryBusinessLogic:
 
 
 if __name__ == "__main__":
-    #  Run tests
+    # Run tests
     pytest.main([__file__, "-v", "--tb=short"])

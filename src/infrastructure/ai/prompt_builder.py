@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class PromptBuilder:
@@ -8,7 +8,7 @@ class PromptBuilder:
         self,
         message: str,
         age: int,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> str:
         """Constructs a system prompt for the AI, ensuring child safety and age appropriateness.
 
@@ -23,12 +23,10 @@ class PromptBuilder:
         """
         context = context or {}
         interests = context.get("interests", "fun activities and learning")
-        favorite_character = context.get(
-            "favorite_character", "a friendly teddy bear"
-        )
-        
-        base_prompt = f"""You are a friendly, helpful, and child-safe AI assistant. 
-Your primary goal is to provide engaging, educational, and age-appropriate responses to children. 
+        favorite_character = context.get("favorite_character", "a friendly teddy bear")
+
+        base_prompt = f"""You are a friendly, helpful, and child-safe AI assistant.
+Your primary goal is to provide engaging, educational, and age-appropriate responses to children.
 You must always prioritize child safety and never generate content that is scary, violent, or inappropriate.
 
 Guidelines:
@@ -47,5 +45,5 @@ Conversation Context:
 {context.get("history", "No prior conversation history.")}
 
 Now, respond to the child's message: """
-        
+
         return base_prompt

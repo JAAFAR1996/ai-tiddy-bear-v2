@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Any
-import logging
+from typing import Any
+
 from .chatgpt_client import ChatGPTClient
 
 """ChatGPT service with COPPA compliance management"""
@@ -28,8 +28,8 @@ class ChatGPTService:
         self,
         child_id: str,
         message: str,
-        child_profile: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        child_profile: dict[str, Any],
+    ) -> dict[str, Any]:
         """Chat with child while respecting COPPA."""
         try:
             if COPPA_AVAILABLE:
@@ -82,37 +82,33 @@ class ChatGPTService:
         self,
         child_id: str,
         theme: str,
-        child_profile: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        child_profile: dict[str, Any],
+    ) -> dict[str, Any]:
         """Generate personalized story for child."""
         story_prompt = (
             f"Tell me a short, fun story about {theme} suitable for a "
             f"{child_profile.get('age', 6)}-year-old"
         )
-        return await self.chat_with_child(
-            child_id, story_prompt, child_profile
-        )
+        return await self.chat_with_child(child_id, story_prompt, child_profile)
 
     async def answer_question(
         self,
         child_id: str,
         question: str,
-        child_profile: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        child_profile: dict[str, Any],
+    ) -> dict[str, Any]:
         """Answer child's questions in an educational way."""
         educational_prompt = (
             f"Please explain this in a simple, educational way for a "
             f"{child_profile.get('age', 6)}-year-old: {question}"
         )
-        return await self.chat_with_child(
-            child_id, educational_prompt, child_profile
-        )
+        return await self.chat_with_child(child_id, educational_prompt, child_profile)
 
     async def get_conversation_history(
         self,
         child_id: str,
         limit: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get conversation history."""
         if child_id not in self.conversation_history:
             return []
@@ -122,7 +118,7 @@ class ChatGPTService:
         self,
         child_id: str,
         message: str,
-        response: Dict[str, Any],
+        response: dict[str, Any],
     ):
         """Log safety concerns for review."""
         safety_log = {

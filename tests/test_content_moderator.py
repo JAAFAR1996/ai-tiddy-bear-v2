@@ -1,6 +1,7 @@
-from domain.safety.models import ContentModerator, ProfanityRule
 import sys
 from pathlib import Path
+
+from domain.safety.models import ContentModerator, ProfanityRule
 
 # Add src to path
 src_path = Path(__file__).parent

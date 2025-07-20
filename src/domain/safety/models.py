@@ -129,9 +129,7 @@ class SafetyAnalysisResult:
     educational_value: EducationalValue | None = None
     context_analysis: ContextAnalysis | None = None
     bias_analysis: BiasAnalysis | None = None
-    required_modifications: list[ContentModification] = field(
-        default_factory=list
-    )
+    required_modifications: list[ContentModification] = field(default_factory=list)
 
     # Metadata
     analysis_id: UUID = field(default_factory=uuid4)
@@ -212,9 +210,7 @@ class SafetyConfig:
             "personal_info": [
                 r"\b(address|phone|email|password|location|where.*live)\b",
             ],
-            "scary": [
-                r"\b(scary|ghost|monster|nightmare|death|die|afraid|terror)\b"
-            ],
+            "scary": [r"\b(scary|ghost|monster|nightmare|death|die|afraid|terror)\b"],
             "inappropriate_contact": [
                 r"\b(meet.*person|stranger|secret|don't.*tell)\b",
             ],

@@ -1,7 +1,7 @@
 """Injection Security Tests"""
 
 import re
-from typing import Any, Dict
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -13,7 +13,7 @@ logger = get_logger(__name__, component="security")
 class InjectionTester(BaseSecurityTester):
     """Tests for various injection vulnerabilities"""
 
-    def test_code_injection(self) -> Dict[str, Any]:
+    def test_code_injection(self) -> dict[str, Any]:
         """Test for code injection vulnerabilities"""
         issues = []
         dangerous_patterns = [
@@ -50,7 +50,7 @@ class InjectionTester(BaseSecurityTester):
             recommendations=recommendations,
         )
 
-    def test_sql_injection(self) -> Dict[str, Any]:
+    def test_sql_injection(self) -> dict[str, Any]:
         """Test for SQL injection vulnerabilities"""
         issues = []
         sql_patterns = [
@@ -89,7 +89,7 @@ class InjectionTester(BaseSecurityTester):
             recommendations=recommendations,
         )
 
-    def test_xss_vulnerabilities(self) -> Dict[str, Any]:
+    def test_xss_vulnerabilities(self) -> dict[str, Any]:
         """Test for Cross-Site Scripting (XSS) vulnerabilities"""
         issues = []
         xss_patterns = [
@@ -142,7 +142,7 @@ class InjectionTester(BaseSecurityTester):
             recommendations=recommendations,
         )
 
-    def test_path_traversal(self) -> Dict[str, Any]:
+    def test_path_traversal(self) -> dict[str, Any]:
         """Test for path traversal vulnerabilities"""
         issues = []
         path_patterns = [

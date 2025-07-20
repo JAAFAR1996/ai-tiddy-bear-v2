@@ -1,10 +1,10 @@
-"""
-Tests for AI Response Generator Module
+"""Tests for AI Response Generator Module
 Testing production-grade AI response generation with comprehensive child safety.
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 
 from src.application.services.ai.modules.response_generator import (
     ResponseGenerator,
@@ -58,9 +58,7 @@ class TestResponseGenerator:
                 "src.application.services.ai.modules.response_generator.OPENAI_AVAILABLE",
                 True,
             ):
-                generator = ResponseGenerator(
-                    api_key="test_key", model="gpt-4"
-                )
+                generator = ResponseGenerator(api_key="test_key", model="gpt-4")
 
                 assert generator.model == "gpt-4"
                 assert generator.max_response_length == 500
@@ -141,9 +139,7 @@ class TestResponseGenerator:
         assert "timestamp" in result
 
     @pytest.mark.asyncio
-    async def test_generate_response_invalid_input(
-        self, generator_with_openai
-    ):
+    async def test_generate_response_invalid_input(self, generator_with_openai):
         """Test response generation with invalid input."""
         # None input
         with pytest.raises(ValueError, match="Valid input text required"):
@@ -158,9 +154,7 @@ class TestResponseGenerator:
             await generator_with_openai.generate_response(123)
 
     @pytest.mark.asyncio
-    async def test_generate_response_input_too_long(
-        self, generator_with_openai
-    ):
+    async def test_generate_response_input_too_long(self, generator_with_openai):
         """Test response generation with input exceeding maximum length."""
         long_input = "x" * (generator_with_openai.max_input_length + 1)
 
@@ -193,8 +187,7 @@ class TestResponseGenerator:
         assert "[محذوف]" in result["text"]
         assert len(result["warnings"]) > 0
         assert any(
-            "Unsafe content detected" in warning
-            for warning in result["warnings"]
+            "Unsafe content detected" in warning for warning in result["warnings"]
         )
 
     @pytest.mark.asyncio
@@ -232,9 +225,7 @@ class TestResponseGenerator:
             SafetyLevel.MODERATE,
         )
 
-        assert (
-            result["text"] == "دعنا نتعلم عن الألوان! الأحمر والأزرق والأصفر."
-        )
+        assert result["text"] == "دعنا نتعلم عن الألوان! الأحمر والأزرق والأصفر."
         assert result["model"] == "gpt-4"
         assert result["usage"] == 30
 
@@ -246,10 +237,7 @@ class TestResponseGenerator:
         # Check system prompt includes educational instruction
         messages = call_args[1]["messages"]
         system_prompt = messages[0]["content"]
-        assert (
-            "التعليم" in system_prompt
-            or "educational" in system_prompt.lower()
-        )
+        assert "التعليم" in system_prompt or "educational" in system_prompt.lower()
 
     @pytest.mark.asyncio
     async def test_generate_openai_response_story(
@@ -286,9 +274,7 @@ class TestResponseGenerator:
         self, generator_with_openai, mock_openai_client
     ):
         """Test OpenAI response generation with API error."""
-        mock_openai_client.chat.completions.create.side_effect = Exception(
-            "API Error"
-        )
+        mock_openai_client.chat.completions.create.side_effect = Exception("API Error")
 
         result = await generator_with_openai._generate_openai_response(
             "test",
@@ -325,15 +311,11 @@ class TestResponseGenerator:
             assert "أحمد" in result["text"]
             # Check that response is contextually appropriate
             if expected_keyword == "story":
-                assert any(
-                    word in result["text"] for word in ["قصة", "كان", "حكاية"]
-                )
+                assert any(word in result["text"] for word in ["قصة", "كان", "حكاية"])
             elif expected_keyword == "لعب":
                 assert any(word in result["text"] for word in ["لعب", "نلعب"])
             elif expected_keyword == "تعلم":
-                assert any(
-                    word in result["text"] for word in ["تعلم", "نتعلم"]
-                )
+                assert any(word in result["text"] for word in ["تعلم", "نتعلم"])
 
     @pytest.mark.asyncio
     async def test_filter_response_safe_content(self, generator_with_openai):
@@ -362,9 +344,7 @@ class TestResponseGenerator:
         assert len(result["warnings"]) > 0
 
     @pytest.mark.asyncio
-    async def test_filter_response_length_truncation(
-        self, generator_with_openai
-    ):
+    async def test_filter_response_length_truncation(self, generator_with_openai):
         """Test response filtering with length truncation."""
         long_response = "a" * (generator_with_openai.max_response_length + 100)
 
@@ -376,9 +356,7 @@ class TestResponseGenerator:
         assert "Response too long, truncating" in result["warnings"]
 
     @pytest.mark.asyncio
-    async def test_filter_response_complexity_check(
-        self, generator_with_openai
-    ):
+    async def test_filter_response_complexity_check(self, generator_with_openai):
         """Test response filtering for complexity in strict mode."""
         complex_response = "Undoubtedly, the phenomenological manifestation of consciousness demonstrates extraordinary complexity"
 
@@ -390,16 +368,12 @@ class TestResponseGenerator:
         assert any("too complex" in warning for warning in result["warnings"])
 
     @pytest.mark.asyncio
-    async def test_generate_safety_redirect_response(
-        self, generator_with_openai
-    ):
+    async def test_generate_safety_redirect_response(self, generator_with_openai):
         """Test safety redirect response generation."""
         warnings = ["Unsafe content detected: personal information"]
 
-        result = (
-            await generator_with_openai._generate_safety_redirect_response(
-                warnings, SafetyLevel.STRICT, "أحمد"
-            )
+        result = await generator_with_openai._generate_safety_redirect_response(
+            warnings, SafetyLevel.STRICT, "أحمد"
         )
 
         assert result["success"] is True
@@ -480,9 +454,7 @@ class TestResponseGenerator:
             assert result["child_age"] == age
 
     @pytest.mark.asyncio
-    async def test_response_generation_without_openai(
-        self, generator_without_openai
-    ):
+    async def test_response_generation_without_openai(self, generator_without_openai):
         """Test response generation when OpenAI is not available."""
         result = await generator_without_openai.generate_response(
             text="مرحبا", child_context={"age": 6, "name": "علي"}
@@ -563,9 +535,7 @@ class TestResponseGenerator:
             mock_response.usage.total_tokens = 25
             return mock_response
 
-        mock_openai_client.chat.completions.create.side_effect = (
-            delayed_response
-        )
+        mock_openai_client.chat.completions.create.side_effect = delayed_response
 
         result = await generator_with_openai.generate_response(
             text="test", child_context={"age": 6, "name": "test"}
@@ -595,20 +565,12 @@ class TestResponseGenerator:
 
     def test_safety_system_prompts_configuration(self, generator_with_openai):
         """Test that safety system prompts are properly configured."""
-        assert (
-            SafetyLevel.STRICT in generator_with_openai.safety_system_prompts
-        )
-        assert (
-            SafetyLevel.MODERATE in generator_with_openai.safety_system_prompts
-        )
-        assert (
-            SafetyLevel.RELAXED in generator_with_openai.safety_system_prompts
-        )
+        assert SafetyLevel.STRICT in generator_with_openai.safety_system_prompts
+        assert SafetyLevel.MODERATE in generator_with_openai.safety_system_prompts
+        assert SafetyLevel.RELAXED in generator_with_openai.safety_system_prompts
 
         # Check that prompts contain appropriate age references
-        strict_prompt = generator_with_openai.safety_system_prompts[
-            SafetyLevel.STRICT
-        ]
+        strict_prompt = generator_with_openai.safety_system_prompts[SafetyLevel.STRICT]
         assert "3-6" in strict_prompt
 
         moderate_prompt = generator_with_openai.safety_system_prompts[

@@ -1,14 +1,14 @@
-"""
-Safety Filter for ChatGPT - Child Safety Content Filtering
-"""
+"""Safety Filter for ChatGPT - Child Safety Content Filtering"""
 
-from typing import Dict, List, Any
 import re
+from typing import Any
+
 from src.domain.constants import (
-    MAX_RESPONSE_LENGTH,
     MAX_NEGATIVE_INDICATORS as NEGATIVE_THRESHOLD,
 )
-
+from src.domain.constants import (
+    MAX_RESPONSE_LENGTH,
+)
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
@@ -69,7 +69,7 @@ class SafetyFilter:
             "Redirect inappropriate questions to safe topics",
         ]
 
-    def analyze_message_safety(self, message: str) -> Dict[str, Any]:
+    def analyze_message_safety(self, message: str) -> dict[str, Any]:
         """Analyze message safety for child - appropriate content."""
         message_lower = message.lower()
         # Check for forbidden words
@@ -128,7 +128,7 @@ class SafetyFilter:
             )
         return cleaned_message
 
-    def analyze_response_safety(self, response: str) -> Dict[str, Any]:
+    def analyze_response_safety(self, response: str) -> dict[str, Any]:
         """Analyze response safety for child - appropriate content."""
         response_lower = response.lower()
         # Check for forbidden words in response
@@ -156,9 +156,7 @@ class SafetyFilter:
             "wrong",
         ]
         negative_count = sum(
-            1
-            for indicator in negative_indicators
-            if indicator in response_lower
+            1 for indicator in negative_indicators if indicator in response_lower
         )
         if negative_count > NEGATIVE_THRESHOLD:
             return {
@@ -182,9 +180,7 @@ class SafetyFilter:
             "reason": "Response is safe and appropriate for children",
         }
 
-    def check_age_appropriateness(
-        self, content: str, child_age: int
-    ) -> Dict[str, Any]:
+    def check_age_appropriateness(self, content: str, child_age: int) -> dict[str, Any]:
         """Check content appropriateness for child age."""
         age_inappropriate_content = {
             (0, 4): ["complex", "difficult", "advanced", "sophisticated"],
@@ -199,9 +195,7 @@ class SafetyFilter:
         ) in age_inappropriate_content.items():
             if age_range[0] <= child_age <= age_range[1]:
                 found_words = [
-                    word
-                    for word in inappropriate_words
-                    if word in content_lower
+                    word for word in inappropriate_words if word in content_lower
                 ]
                 if found_words:
                     return {
@@ -215,7 +209,7 @@ class SafetyFilter:
             "reason": f"Content is appropriate for {child_age}-year-old",
         }
 
-    def get_safe_alternative_topics(self, unsafe_topic: str) -> List[str]:
+    def get_safe_alternative_topics(self, unsafe_topic: str) -> list[str]:
         """Get safe alternative topics for redirection."""
         topic_alternatives = {
             "violence": ["friendship", "cooperation", "helping others"],

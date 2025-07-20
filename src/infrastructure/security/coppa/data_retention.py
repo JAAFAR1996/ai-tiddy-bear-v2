@@ -7,6 +7,7 @@ When disabled, uses longer retention periods and bypasses COPPA-specific deletio
 import hashlib
 import secrets
 from datetime import datetime, timedelta
+from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
@@ -30,9 +31,7 @@ class DataRetentionManager:
         if is_coppa_enabled():
             self.default_retention_days = 90  # COPPA strict retention
             self.warning_days_before_deletion = 14
-            logger.info(
-                "Data retention initialized with COPPA compliance enabled"
-            )
+            logger.info("Data retention initialized with COPPA compliance enabled")
         else:
             self.default_retention_days = 365 * 2  # 2 years for development
             self.warning_days_before_deletion = 30  # Longer warning period
@@ -71,13 +70,19 @@ class DataRetentionManager:
         COPPA CONDITIONAL: Uses COPPA config to determine retention period.
         """
         # COPPA CONDITIONAL: Use the centralized retention calculation
-        return get_data_retention_days(child_data.age)
+        base_retention = get_data_retention_days(child_data.age)
 
         # Adjust based on consent types
-        if child_data.voice_recording_consent:
+        if (
+            hasattr(child_data, "voice_recording_consent")
+            and child_data.voice_recording_consent
+        ):
             # Voice data has shorter retention
             return min(base_retention, 30)
-        if child_data.usage_analytics_consent:
+        if (
+            hasattr(child_data, "usage_analytics_consent")
+            and child_data.usage_analytics_consent
+        ):
             # Analytics can be retained longer
             return min(base_retention, 180)
         return base_retention
@@ -107,9 +112,7 @@ class DataRetentionManager:
             logger.info(f"Scheduled automatic deletion for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Failed to schedule deletion for child {child_id}: {e}"
-            )
+            logger.error(f"Failed to schedule deletion for child {child_id}: {e}")
             return False
 
     async def process_expired_data(self) -> dict[str, int]:
@@ -128,26 +131,20 @@ class DataRetentionManager:
                 try:
                     # Check if parent has been notified
                     if not child_data.get("parent_notified", False):
-                        notification_sent = (
-                            await self.notify_parent_before_deletion(
-                                child_data["child_id"],
-                                child_data["deletion_date"],
-                            )
+                        notification_sent = await self.notify_parent_before_deletion(
+                            child_data["child_id"],
+                            child_data["deletion_date"],
                         )
                         if notification_sent:
                             results["notified"] += 1
                             # Mark as notified and give 14 days grace period
-                            await self._mark_parent_notified(
-                                child_data["child_id"]
-                            )
+                            await self._mark_parent_notified(child_data["child_id"])
                             continue
 
                     # Check if grace period has passed
                     if self._is_grace_period_expired(child_data):
-                        deletion_success = (
-                            await self._perform_graduated_deletion(
-                                child_data["child_id"],
-                            )
+                        deletion_success = await self._perform_graduated_deletion(
+                            child_data["child_id"],
                         )
                         if deletion_success:
                             results["deleted"] += 1
@@ -212,9 +209,7 @@ class DataRetentionManager:
             logger.info(f"Marked parent notified for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Error marking parent notified for child {child_id}: {e}"
-            )
+            logger.error(f"Error marking parent notified for child {child_id}: {e}")
             return False
 
     def _is_grace_period_expired(self, child_data: dict[str, Any]) -> bool:
@@ -239,59 +234,43 @@ class DataRetentionManager:
             # Phase 1: Delete voice recordings (most sensitive)
             voice_deleted = await self._delete_voice_data(child_id)
             if not voice_deleted:
-                logger.error(
-                    f"Failed to delete voice data for child {child_id}"
-                )
+                logger.error(f"Failed to delete voice data for child {child_id}")
                 return False
 
             # Phase 2: Delete conversation history
-            conversations_deleted = await self._delete_conversation_data(
-                child_id
-            )
+            conversations_deleted = await self._delete_conversation_data(child_id)
             if not conversations_deleted:
-                logger.error(
-                    f"Failed to delete conversation data for child {child_id}"
-                )
+                logger.error(f"Failed to delete conversation data for child {child_id}")
                 return False
 
             # Phase 3: Delete interaction analytics
             analytics_deleted = await self._delete_analytics_data(child_id)
             if not analytics_deleted:
-                logger.error(
-                    f"Failed to delete analytics data for child {child_id}"
-                )
+                logger.error(f"Failed to delete analytics data for child {child_id}")
                 return False
 
             # Phase 4: Delete profile data (keep basic audit trail)
             profile_deleted = await self._delete_profile_data(child_id)
             if not profile_deleted:
-                logger.error(
-                    f"Failed to delete profile data for child {child_id}"
-                )
+                logger.error(f"Failed to delete profile data for child {child_id}")
                 return False
 
             # Phase 5: Create deletion audit record
             audit_logged = await self._create_deletion_audit_record(child_id)
             if not audit_logged:
-                logger.warning(
-                    f"Failed to create audit record for child {child_id}"
-                )
+                logger.warning(f"Failed to create audit record for child {child_id}")
 
             logger.info(f"Completed graduated deletion for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Error in graduated deletion for child {child_id}: {e}"
-            )
+            logger.error(f"Error in graduated deletion for child {child_id}: {e}")
             return False
 
     async def _delete_voice_data(self, child_id: str) -> bool:
         """Securely delete all voice recordings for a child."""
         try:
             # SECURITY: Use secure deletion with cryptographic verification
-            sanitized_id = hashlib.sha256(
-                f"child_{child_id}".encode()
-            ).hexdigest()[:8]
+            sanitized_id = hashlib.sha256(f"child_{child_id}".encode()).hexdigest()[:8]
 
             # In production:
             # 1. DELETE FROM voice_recordings WHERE child_id = ?
@@ -304,12 +283,8 @@ class DataRetentionManager:
             )
             return True
         except Exception as e:
-            sanitized_id = hashlib.sha256(
-                f"child_{child_id}".encode()
-            ).hexdigest()[:8]
-            logger.error(
-                f"Error deleting voice data for child {sanitized_id}: {e}"
-            )
+            sanitized_id = hashlib.sha256(f"child_{child_id}".encode()).hexdigest()[:8]
+            logger.error(f"Error deleting voice data for child {sanitized_id}: {e}")
             return False
 
     async def _delete_conversation_data(self, child_id: str) -> bool:
@@ -319,9 +294,7 @@ class DataRetentionManager:
             logger.info(f"Deleted conversation data for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Error deleting conversation data for child {child_id}: {e}"
-            )
+            logger.error(f"Error deleting conversation data for child {child_id}: {e}")
             return False
 
     async def _delete_analytics_data(self, child_id: str) -> bool:
@@ -331,9 +304,7 @@ class DataRetentionManager:
             logger.info(f"Deleted analytics data for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Error deleting analytics data for child {child_id}: {e}"
-            )
+            logger.error(f"Error deleting analytics data for child {child_id}: {e}")
             return False
 
     async def _delete_profile_data(self, child_id: str) -> bool:
@@ -344,15 +315,13 @@ class DataRetentionManager:
             logger.info(f"Anonymized profile data for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Error deleting profile data for child {child_id}: {e}"
-            )
+            logger.error(f"Error deleting profile data for child {child_id}: {e}")
             return False
 
     async def _create_deletion_audit_record(self, child_id: str) -> bool:
         """Create audit record for data deletion."""
         try:
-            {
+            audit_record = {
                 "child_id": child_id,
                 "deletion_date": datetime.utcnow().isoformat(),
                 "deletion_reason": "COPPA retention period expired",
@@ -364,9 +333,7 @@ class DataRetentionManager:
             logger.info(f"Created deletion audit record for child {child_id}")
             return True
         except Exception as e:
-            logger.error(
-                f"Error creating audit record for child {child_id}: {e}"
-            )
+            logger.error(f"Error creating audit record for child {child_id}: {e}")
             return False
 
     async def _log_compliance_summary(self, results: dict[str, int]) -> None:
@@ -418,9 +385,7 @@ class DataRetentionManager:
             )
             return True
         except Exception as e:
-            logger.error(
-                f"Failed to extend retention for child {child_id}: {e}"
-            )
+            logger.error(f"Failed to extend retention for child {child_id}: {e}")
             return False
 
     async def generate_retention_report(self) -> dict[str, Any]:

@@ -85,14 +85,14 @@ class TeddyBearException(Exception):
         super().__init__(message)
         self.severity = severity
         self.context = context or ErrorContext()
-        self.user_message = (
-            user_message or self._generate_child_friendly_message()
-        )
+        self.user_message = user_message or self._generate_child_friendly_message()
 
     def _generate_child_friendly_message(self) -> str:
         """Generate appropriate error message for children."""
         if self.severity == ErrorSeverity.CRITICAL:
-            return "I need to talk to your parent or guardian about something important."
+            return (
+                "I need to talk to your parent or guardian about something important."
+            )
         if self.severity == ErrorSeverity.HIGH:
             return "Something isn't working right now. Let's try again in a moment."
         return "Oops! Let me try that again for you."
@@ -126,9 +126,7 @@ class ParentalConsentRequiredException(TeddyBearException):
 
         """
         message = f"Parental consent required for feature: {feature}"
-        user_message = (
-            "I need permission from your parent or guardian to do that."
-        )
+        user_message = "I need permission from your parent or guardian to do that."
         # Enhance context with consent-specific information
         if context is None:
             context = ErrorContext()
@@ -150,9 +148,7 @@ class CircuitBreakerOpenException(TeddyBearException):
     Indicates that a service is temporarily unavailable for safety reasons.
     """
 
-    def __init__(
-        self, service_name: str, context: ErrorContext | None = None
-    ) -> None:
+    def __init__(self, service_name: str, context: ErrorContext | None = None) -> None:
         """Initialize circuit breaker exception.
 
         Args:
@@ -160,10 +156,10 @@ class CircuitBreakerOpenException(TeddyBearException):
             context: Additional context
 
         """
-        message = f"Service temporarily unavailable: {service_name} (circuit breaker open)"
-        user_message = (
-            "I'm having trouble right now. Let's try again in a few minutes!"
+        message = (
+            f"Service temporarily unavailable: {service_name} (circuit breaker open)"
         )
+        user_message = "I'm having trouble right now. Let's try again in a few minutes!"
         # Enhance context with circuit breaker information
         if context is None:
             context = ErrorContext()

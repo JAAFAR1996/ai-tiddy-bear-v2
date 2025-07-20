@@ -45,7 +45,7 @@ wait_for_db() {
         if python3 -c "
 import sys
 import asyncio
-from src.infrastructure.persistence.database import Database
+from src.infrastructure.persistence.database_manager import Database
 
 async def check_db():
     try:

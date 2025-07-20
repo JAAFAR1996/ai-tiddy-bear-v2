@@ -17,17 +17,17 @@ from .test_executor import execute_contract_test
 from .validator import validate_against_schema
 
 __all__ = [
-    "test_ai_service_contracts",
-    "test_audio_service_contracts",
-    "test_child_service_contracts",
     "ContractDefinition",
     "ContractResult",
     "ContractTest",
     "ContractTestSuite",
-    "test_parent_service_contracts",
     "_calculate_overall_results",
     "_generate_recommendations",
-    "test_security_service_contracts",
     "execute_contract_test",
+    "test_ai_service_contracts",
+    "test_audio_service_contracts",
+    "test_child_service_contracts",
+    "test_parent_service_contracts",
+    "test_security_service_contracts",
     "validate_against_schema",
 ]

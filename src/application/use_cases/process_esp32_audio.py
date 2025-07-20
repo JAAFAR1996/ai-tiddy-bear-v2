@@ -1,11 +1,9 @@
-"""
-ESP32 Audio Processing Use Case
-Handles the complete workflow of processing audio input from ESP32 devices, 
+"""ESP32 Audio Processing Use Case
+Handles the complete workflow of processing audio input from ESP32 devices,
 including speech-to-text, AI response generation, and text-to-speech output
 with comprehensive child safety measures.
 """
 
-from typing import Optional
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
@@ -15,7 +13,7 @@ from src.application.dto.esp32_request import ESP32Request
 from src.application.services.ai_orchestration_service import AIOrchestrationService
 from src.application.services.audio_processing_service import AudioProcessingService
 from src.application.services.conversation_service import ConversationService
-from src.domain.repositories.child_repository import ChildRepository
+from src.infrastructure.persistence.child_repository import ChildRepository
 from src.domain.value_objects.safety_level import SafetyLevel
 
 
@@ -63,7 +61,7 @@ class ProcessESP32AudioUseCase:
         """Execute the complete ESP32 audio processing workflow.
 
         Processes audio input through a comprehensive pipeline including
-        transcription, safety validation, AI response generation, and 
+        transcription, safety validation, AI response generation, and
         audio output generation with child safety measures.
 
         Args:
@@ -79,7 +77,7 @@ class ProcessESP32AudioUseCase:
             ```python
             use_case = ProcessESP32AudioUseCase(...)
             response = await use_case.execute(
-                ESP32Request(child_id="child_123", audio_data=audio_bytes, 
+                ESP32Request(child_id="child_123", audio_data=audio_bytes,
                            language_code="en"))
             ```
 
@@ -106,14 +104,10 @@ class ProcessESP32AudioUseCase:
         # 2. Get child profile and conversation history
         child_profile = await self.child_repository.get_by_id(request.child_id)
         if not child_profile:
-            raise HTTPException(
-                status_code=404, detail="Child profile not found"
-            )
+            raise HTTPException(status_code=404, detail="Child profile not found")
 
-        conversation_history = (
-            await self.conversation_service.get_conversation_history(
-                request.child_id,
-            )
+        conversation_history = await self.conversation_service.get_conversation_history(
+            request.child_id,
         )
 
         # Extract relevant parts for AI context
@@ -138,9 +132,7 @@ class ProcessESP32AudioUseCase:
             UUID(ai_response.conversation_id)
             if isinstance(ai_response.conversation_id, str)
             else (
-                ai_response.conversation_id
-                if ai_response.conversation_id
-                else uuid4()
+                ai_response.conversation_id if ai_response.conversation_id else uuid4()
             )
         )
         await self.conversation_service.update_conversation_analysis(
@@ -163,19 +155,15 @@ class ProcessESP32AudioUseCase:
         )
 
         # Update emotional tendencies based on AI response emotion
-        current_emotion_score = (
-            child_profile.preferences.emotional_tendencies.get(
-                ai_response.emotion,
-                0.0,
-            )
+        current_emotion_score = child_profile.preferences.emotional_tendencies.get(
+            ai_response.emotion,
+            0.0,
         )
         child_profile.preferences.emotional_tendencies[ai_response.emotion] = (
             current_emotion_score + 1.0
         ) / 2.0  # Simple averaging
 
-        await self.child_repository.save(
-            child_profile
-        )  # Save updated child profile
+        await self.child_repository.save(child_profile)  # Save updated child profile
 
         # 5. Generate audio response
         audio_output = await self.audio_processing_service.generate_audio_response(
