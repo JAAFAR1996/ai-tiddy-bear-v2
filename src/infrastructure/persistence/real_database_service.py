@@ -34,10 +34,5 @@ def get_sql_injection_prevention():
 
 
 
-def validate_database_operation(*args, **kwargs):
-    return {"data": args[2]}
-
-
-    return DummySession()
 
 

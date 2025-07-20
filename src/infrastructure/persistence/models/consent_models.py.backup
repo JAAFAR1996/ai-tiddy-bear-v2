@@ -71,7 +71,7 @@ class ConsentModel(Base):
 
     # Verification
     verification_method: Mapped[str] = mapped_column(String(100), nullable=False)
-    verification_event_consent_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    verification_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     __table_args__ = (Index("idx_consent_parent_type", "parent_id", "consent_type"),)
 
@@ -113,7 +113,7 @@ class SafetyEventModel(Base):
         nullable=False,
     )
     details: Mapped[str] = mapped_column(Text, nullable=False)
-    event_consent_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    event_metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     # Tracking
     event_time: Mapped[datetime] = mapped_column(

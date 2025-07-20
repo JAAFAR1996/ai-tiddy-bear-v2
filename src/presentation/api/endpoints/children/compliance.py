@@ -12,7 +12,7 @@ from src.infrastructure.security.coppa_validator import (
     requires_parental_consent
 )
 from src.infrastructure.config.settings import Settings, get_settings
-from src.infrastructure.security.coppa import COPPAConsentManager
+from src.infrastructure.security.coppa import COPPAConsentManager, get_consent_manager
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -90,15 +90,7 @@ def get_compliance_validator(
     """Get compliance validator instance."""
     return ComplianceValidator(settings)
 
-def get_consent_manager() -> COPPAConsentManager:
-    """Get consent manager instance."""
-    coppa = COPPAValidator()
-    return COPPAConsentManager()
 
-def get_retention_manager() -> DataRetentionManager:
-    """Get data retention manager instance."""
-    coppa = COPPAValidator()
-    return DataRetentionManager(coppa)
 
 # API Endpoints
 @router.post("/consent", response_model=ConsentResponse)

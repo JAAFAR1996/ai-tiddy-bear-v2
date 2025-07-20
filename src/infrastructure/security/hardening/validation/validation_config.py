@@ -4,6 +4,7 @@ Extracted from input_validation.py to reduce file size
 
 from dataclasses import dataclass, field
 from enum import Enum
+from .validation_rules import get_default_validation_rules
 
 
 
@@ -42,10 +43,3 @@ class InputValidationConfig:
             self.dangerous_patterns = get_default_validation_rules()
 
 
-def get_default_validation_rules():
-    """Get default validation rules."""
-    return [
-        ValidationRule(r"<script[^>]*>.*?</script>", ValidationSeverity.CRITICAL, "block"),
-        ValidationRule(r"javascript:", ValidationSeverity.HIGH, "block"),
-        ValidationRule(r"on\w+\s*=", ValidationSeverity.HIGH, "block"),
-    ]

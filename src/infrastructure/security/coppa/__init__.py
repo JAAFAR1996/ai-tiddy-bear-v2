@@ -4,7 +4,7 @@ Enterprise-grade COPPA compliance with modular architecture.
 from .consent_manager import COPPAConsentManager
 from .data_models import (
     AuditLogEntry,
-    ChildData,
+    COPPAChildData,
     DataDeletionRequest,
     DataRetentionPolicy,
     ParentConsent,
@@ -19,7 +19,7 @@ def get_consent_manager() -> COPPAConsentManager:
 __all__ = [
     "AuditLogEntry",
     # Data models
-    "ChildData",
+    "COPPAChildData",
     "COPPAConsentManager",
     "DataDeletionRequest",
     # Managers

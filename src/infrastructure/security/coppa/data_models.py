@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, field_validator
 from src.domain.constants import COPPA_AGE_THRESHOLD, MINIMUM_CHILD_AGE
 
 
-class ChildData(BaseModel):
+class COPPAChildData(BaseModel):
     """Production child data model with comprehensive validation."""
 
     child_id: str = Field(..., description="Unique child identifier")
@@ -263,7 +263,7 @@ class DataDeletionRequest(BaseModel):
 # Export all models
 __all__ = [
     "AuditLogEntry",
-    "ChildData",
+    "COPPAChildData",
     "DataDeletionRequest",
     "DataRetentionPolicy",
     "ParentConsent",

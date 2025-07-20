@@ -10,9 +10,7 @@ import logging
 from uuid import UUID
 
 from src.domain.entities.conversation import Conversation
-from src.domain.repositories.conversation_repository import (
-    ConversationRepository,
-)
+from src.domain.interfaces import IConversationRepository as ConversationRepository
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="conversation_service")

@@ -13,7 +13,7 @@ from src.infrastructure.logging_config import get_logger
 
 from ..coppa_validator import get_data_retention_days
 from ...config.coppa_config import is_coppa_enabled
-from .data_models import ChildData, DataDeletionRequest, DataRetentionPolicy
+from .data_models import COPPAChildData, DataDeletionRequest, DataRetentionPolicy
 
 logger = get_logger(__name__, component="security")
 
@@ -42,7 +42,7 @@ class DataRetentionManager:
 
     async def create_retention_policy(
         self,
-        child_data: ChildData,
+        child_data: COPPAChildData,
     ) -> DataRetentionPolicy:
         """Create data retention policy for a child
         COPPA CONDITIONAL: Policy varies based on COPPA compliance setting.
@@ -66,7 +66,7 @@ class DataRetentionManager:
         )
         return policy
 
-    def calculate_retention_period(self, child_data: ChildData) -> int:
+    def calculate_retention_period(self, child_data: COPPAChildData) -> int:
         """Calculate appropriate retention period based on child's data
         COPPA CONDITIONAL: Uses COPPA config to determine retention period.
         """

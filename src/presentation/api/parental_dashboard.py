@@ -67,7 +67,7 @@ class UpdateChildRequest(BaseModel):
     )
 
 
-class ConsentRequest(BaseModel):
+class ParentConsentRequest(BaseModel):
     consent_types: list[str] = Field(
         ...,
         description="List of consent types to grant",
@@ -223,7 +223,7 @@ async def request_consent_verification(
 @router.post("/children/{child_id}/consent/grant")
 async def grant_parental_consent(
     child_id: UUID,
-    request: ConsentRequest,
+    request: ParentConsentRequest,
     current_user: UserInfo = Depends(get_current_parent),
 ) -> dict[str, Any]:
     try:

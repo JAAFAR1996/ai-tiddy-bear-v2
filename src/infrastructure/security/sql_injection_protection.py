@@ -1,5 +1,6 @@
 """Unified SQL Injection Protection System"""
 
+from src.infrastructure.security.validation.query_validator import QueryValidationResult
 from collections import defaultdict
 from datetime import datetime
 from typing import Any
@@ -360,12 +361,6 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 
 @dataclass
-class QueryValidationResult:
-    safe: bool
-    errors: List[str]
-    warnings: List[str]
-    threat_level: str = "low"
-    
 class SecureQueryBuilder:
     def build_insert(self, table: str, data: Dict[str, Any]) -> tuple:
         # Mock implementation - safe placeholder

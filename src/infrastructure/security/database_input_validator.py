@@ -9,10 +9,10 @@ from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.sql_injection_protection import (
-    QueryValidationResult,
     get_secure_query_builder,
     get_sql_injection_prevention,
 )
+from src.infrastructure.security.validation.query_validator import QueryValidationResult
 
 logger = get_logger(__name__, component="security")
 

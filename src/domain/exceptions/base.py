@@ -8,58 +8,7 @@ from enum import Enum
 from typing import Any
 
 
-class ErrorSeverity(Enum):
-    """Error severity levels for proper escalation and logging.
-    Used to categorize errors by their impact on child safety and system operation.
-    """
-
-    LOW = "low"  # Minor issues, system continues normally
-    MEDIUM = "medium"  # Notable issues, may affect user experience
-    HIGH = "high"  # Serious issues, may affect functionality
-    CRITICAL = "critical"  # Critical issues, may affect child safety
-
-
-class ErrorContext:
-    """Enhanced error context for comprehensive debugging and audit trails.
-    Provides detailed context information for errors including child safety
-    implications and system state information.
-    """
-
-    def __init__(
-        self,
-        child_id: str | None = None,
-        parent_id: str | None = None,
-        feature: str | None = None,
-        timestamp: datetime | None = None,
-        additional_data: dict[str, Any] | None = None,
-    ) -> None:
-        """Initialize error context with comprehensive details.
-
-        Args:
-            child_id: Child identifier if error relates to specific child
-            parent_id: Parent identifier if error relates to parental controls
-            feature: Feature name where error occurred
-            timestamp: When the error occurred (defaults to now)
-            additional_data: Additional context information
-
-        """
-        self.child_id = child_id
-        self.parent_id = parent_id
-        self.feature = feature
-        self.timestamp = timestamp or datetime.utcnow()
-        self.additional_data = additional_data or {}
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert context to dictionary for logging and serialization."""
-        return {
-            "child_id": self.child_id,
-            "parent_id": self.parent_id,
-            "feature": self.feature,
-            "timestamp": self.timestamp.isoformat(),
-            "additional_data": self.additional_data,
-        }
-
-
+from src.infrastructure.error_handling import ErrorSeverity, ErrorContext
 class TeddyBearException(Exception):
     """Base exception class for all AI Teddy Bear system errors.
     Provides structured error handling with severity levels, context,

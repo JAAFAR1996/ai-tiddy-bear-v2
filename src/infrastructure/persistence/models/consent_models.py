@@ -12,16 +12,8 @@ from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.domain.models.consent_models import ConsentType
 from src.infrastructure.persistence.models.base import Base
-
-
-class ConsentType(enum.Enum):
-    """Types of parental consent."""
-
-    DATA_COLLECTION = "data_collection"
-    VOICE_RECORDING = "voice_recording"
-    USAGE_ANALYTICS = "usage_analytics"
-    MARKETING = "marketing"
 
 
 class SafetyEventType(enum.Enum):

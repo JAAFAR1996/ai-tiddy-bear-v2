@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from src.domain.interfaces import IConversationRepository
 from typing import Optional, List
 from uuid import UUID
 
@@ -10,26 +11,14 @@ from src.domain.entities.conversation import Conversation
 from src.infrastructure.persistence.models.conversation_models import ConversationModel
 
 
-class ConversationRepository(ABC):
-    @abstractmethod
-    async def add(self, conversation: Conversation) -> None:
-        pass
+class ConversationRepository(IConversationRepository):
+    """Async repository interface for conversation operations."""
+    pass
 
-    @abstractmethod
-    async def get_by_id(self, conversation_id: str) -> Conversation | None:
-        pass
 
-    @abstractmethod
-    async def get_by_child_id(self, child_id: str) -> list[Conversation]:
-        pass
 
-    @abstractmethod
-    async def update(self, conversation: Conversation) -> None:
-        pass
 
-    @abstractmethod
-    async def delete(self, conversation_id: str) -> None:
-        pass
+
 
 
 class AsyncSQLAlchemyConversationRepo(ConversationRepository):

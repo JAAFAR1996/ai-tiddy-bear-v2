@@ -7,12 +7,7 @@ from sqlalchemy.sql import func
 Base = declarative_base()
 
 
-class SessionStatus(Enum):
-    ACTIVE = "active"
-    ENDED = "ended"
-    TIMEOUT = "timeout"
-
-
+from src.application.services.session.session_models import SessionStatus
 class Session(Base):
     __tablename__ = "sessions"
     id = Column(String, primary_key=True)
