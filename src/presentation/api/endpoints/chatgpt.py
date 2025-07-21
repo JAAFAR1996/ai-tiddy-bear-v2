@@ -7,7 +7,7 @@ from typing import Any
 try:
     from fastapi import APIRouter, Depends, HTTPException, status
     from pydantic import BaseModel
-    from src.presentation.api.models.validation_models import ConversationRequest
+    from src.domain.models.validation_models import ConversationRequest
 except ImportError as e:
     raise ImportError(f"Missing core dependencies: {e}") from e
 
@@ -258,7 +258,7 @@ async def get_age_appropriate_topics(child_age: int):
             ],
             "activities": ["Complex Games", "Creative Projects", "Debates"],
             "learning_goals": ["Advanced thinking", "Ethical reasoning"],
-        ],
+        },
     }
 
     topics = topics_by_age.get(child_age, topics_by_age[6])

@@ -64,8 +64,6 @@ class CacheInvalidationStrategy:
         return await self.invalidate_pattern(pattern)
 
     async def clear_expired(self) -> int:
-        """Clear expired entries(Redis handles this automatically with TTL)."""
-        # This is a placeholder - Redis automatically removes expired keys
-        # But we can use this for custom expiration logic if needed
+        """Clear expired entries (Redis handles this automatically via TTL)."""
         logger.debug("Redis handles expiration automatically via TTL")
         return 0

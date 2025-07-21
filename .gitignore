@@ -53,3 +53,7 @@ site/
 # Temporary
 tmp/
 temp/
+
+# IDE settings
+.claude/
+*.local.json

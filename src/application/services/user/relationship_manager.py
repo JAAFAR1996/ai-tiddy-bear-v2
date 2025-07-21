@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
 
-from .verification_models import (
+from src.domain.models.verification_models import (
     RelationshipRecord,
     RelationshipStatus,
     RelationshipType,

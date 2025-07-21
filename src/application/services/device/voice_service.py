@@ -1,24 +1,36 @@
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.config.settings import Settings
+from src.domain.value_objects.safety_level import SafetyLevel
+from src.domain.models.voice_models import (
+    AudioValidationResult,
+    SpeechToTextResult,
+    TextToSpeechResult,
+)
+from src.application.interfaces.safety_monitor import SafetyMonitor
+from fastapi import HTTPException, UploadFile
+import asyncio
+
+
+class STTServiceNotConfiguredError(RuntimeError):
+    def __init__(self):
+        super().__init__(
+            "Production STT service not configured. Cannot transcribe audio."
+        )
+
+
+class TTSServiceNotConfiguredError(RuntimeError):
+    def __init__(self):
+        super().__init__(
+            "Production TTS service not configured. Cannot synthesize audio."
+        )
+
+
 """Provides services for voice-related functionalities.
 
 This module defines the `VoiceService` responsible for processing audio from
 devices like ESP32, and managing voice-related features such as Whisper model
 integration. It aims to provide robust voice interaction capabilities.
 """
-
-import asyncio
-
-from fastapi import HTTPException, UploadFile
-
-from src.api.endpoints.voice_models import (
-    AudioValidationResult,
-    SpeechToTextResult,
-    TextToSpeechResult,
-)
-from src.application.interfaces.safety_monitor import SafetyMonitor
-from src.domain.value_objects.safety_level import SafetyLevel
-
-from src.infrastructure.config.settings import Settings
-from src.infrastructure.logging_config import get_logger
 
 
 class VoiceService:
@@ -33,7 +45,8 @@ class VoiceService:
 
         Args:
             settings: Application settings for audio and safety configurations.
-            safety_monitor: The SafetyMonitor instance for comprehensive content validation.
+            safety_monitor: The SafetyMonitor instance for comprehensive
+                content validation.
 
         """
         self.settings = settings
@@ -102,8 +115,17 @@ class VoiceService:
                 raise HTTPException(status_code=400, detail=validation_result.error)
 
             await audio_file.read()
-            # Placeholder for actual STT service call
-            transcript = f"This is a placeholder transcript for audio from child aged {child_age}."
+            # تحقق من وجود خدمة STT فعلية
+            if not hasattr(self, 'stt_service') or self.stt_service is None:
+                self.logger.critical(
+                    "No production STT service configured. "
+                    "Cannot transcribe audio."
+                )
+                raise STTServiceNotConfiguredError()
+            transcript = await self.stt_service.transcribe(
+                audio_file,
+                child_age=child_age
+            )
 
             # Perform content safety analysis on the transcript
             safety_result = await self.safety_monitor.check_content_safety(
@@ -197,9 +219,18 @@ class VoiceService:
                     processing_time_ms=0,
                 )
 
-            # Placeholder for actual TTS service call
-            audio_data = b"dummy_audio_data"
-            voice_used = f"{voice_preference}_voice"
+            # تحقق من وجود خدمة TTS فعلية
+            if not hasattr(self, 'tts_service') or self.tts_service is None:
+                self.logger.critical(
+                    "No production TTS service configured. "
+                    "Cannot synthesize audio."
+                )
+                raise TTSServiceNotConfiguredError()
+            audio_data, voice_used = await self.tts_service.synthesize(
+                text,
+                child_age=child_age,
+                voice_preference=voice_preference
+            )
 
             end_time = asyncio.get_event_loop().time()
             processing_time_ms = int((end_time - start_time) * 1000)

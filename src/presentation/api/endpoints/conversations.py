@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
-from src.presentation.api.models.validation_models import ConversationRequest
+from src.domain.models.validation_models import ConversationRequest
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer

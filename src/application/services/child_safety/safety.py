@@ -10,7 +10,7 @@ It ensures that all AI responses and user inputs adhere to strict child safety g
 from typing import Any
 
 from src.application.interfaces.ai_provider import AIProvider
-from src.domain.safety.models import (
+from src.domain.models.safety_models import (
     ContentCategory,
     ContentModification,
     ContextAnalysis,

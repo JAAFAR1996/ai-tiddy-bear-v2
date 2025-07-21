@@ -62,14 +62,8 @@ endpoints = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """إدارة دورة حياة التطبيق."""
-    global (
-        redis_client,
-        db_session,
-        emergency_service,
-        monitor_service,
-        notification_service,
-        endpoints
-    )
+    global redis_client, db_session, emergency_service, monitor_service, notification_service, endpoints
+
     logger.info("🚨 Starting Emergency Response System...")
     try:
         # إعداد Redis

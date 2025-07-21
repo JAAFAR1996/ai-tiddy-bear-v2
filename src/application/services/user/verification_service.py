@@ -9,7 +9,7 @@ from typing import Any
 from src.infrastructure.logging_config import get_logger
 
 from .relationship_manager import RelationshipManager
-from .verification_models import RelationshipType
+from src.domain.models.verification_models import RelationshipType
 
 logger = get_logger(__name__, component="parent_child_verification_service")
 

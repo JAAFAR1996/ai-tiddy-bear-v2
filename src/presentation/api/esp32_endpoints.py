@@ -14,6 +14,9 @@ from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.real_database_service import (
     DatabaseService,
 )
+from src.application.services.audio.transcription_service import TranscriptionService
+from src.application.services.audio.tts_service import TTSService
+from src.domain.models.user import User
 
 from .middleware.consent_verification import require_consent
 
@@ -25,7 +28,7 @@ security = HTTPBearer()
 
 async def get_current_user_esp32(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> dict[str, Any]:
+) -> User:
     """Verify user authentication for ESP32 endpoints"""
     try:
         from src.infrastructure.security.auth.real_auth_service import (
@@ -43,11 +46,13 @@ async def get_current_user_esp32(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        return {
-            "user_id": payload["sub"],
-            "email": payload["email"],
-            "role": payload.get("role", "parent"),
-        }
+        return User(
+            user_id=payload["sub"],
+            email=payload["email"],
+            role=payload.get("role", "parent"),
+            is_active=payload.get("is_active", True),
+            permissions=payload.get("permissions", []),
+        )
     except Exception as e:
         logger.error(f"Authentication failed: {e}")
         raise HTTPException(
@@ -88,21 +93,22 @@ class DeviceStatusRequest(BaseModel):
 @router.post("/process-audio", response_model=AudioResponse)
 async def process_audio(
     request: AudioRequest,
-    current_user: dict[str, Any] = Depends(get_current_user_esp32),
+    current_user: User = Depends(get_current_user_esp32),
     ai_orchestration_service: AIOrchestrationService = Depends(
         Provide[Container.ai_orchestration_service]
     ),
     database_service: DatabaseService = Depends(Provide[Container.database_service]),
+    transcription_service: TranscriptionService = Depends(Provide[Container.transcription_service]),
+    tts_service: TTSService = Depends(Provide[Container.tts_service]),
 ):
     """Process audio from ESP32 device"""
     try:
-        # Verify parental consent before processing child data
         from src.infrastructure.security.child_safety import get_consent_manager
 
         consent_manager = get_consent_manager()
 
         # Verify consent for voice recording and data collection
-        parent_id = current_user["user_id"]
+        parent_id = current_user.user_id
         for consent_type in ["data_collection", "voice_recording"]:
             has_consent = await consent_manager.verify_parental_consent(
                 parent_id=parent_id,
@@ -120,15 +126,24 @@ async def process_audio(
         if not child:
             raise HTTPException(status_code=404, detail="Child not found")
 
-        # Simulate audio transcription (in real implementation, this would use Whisper)
-        transcribed_text = "Hello, I want to hear a story about animals"
+        # جلب سجل المحادثات من قاعدة البيانات
+        conversation_history = await database_service.get_conversation_history(request.child_id)
+
+        # جلب voice_id من ملف الطفل أو إعداداته
+        voice_id = child.get("voice_id", "default")
+
+        # تحويل الصوت إلى نص باستخدام خدمة حقيقية
+        transcribed_text = await transcription_service.transcribe(
+            audio_base64=request.audio_data,
+            language=request.language
+        )
 
         # Generate AI response
         ai_response = await ai_orchestration_service.get_ai_response(
             child_id=request.child_id,
-            conversation_history=[],  # Placeholder, should be retrieved from DB
+            conversation_history=conversation_history,
             current_input=transcribed_text,
-            voice_id="default",  # Placeholder
+            voice_id=voice_id,
             child_preferences=child["preferences"],
         )
 
@@ -156,15 +171,23 @@ async def process_audio(
             },
         )
 
+        # تحويل الرد النصي إلى صوت باستخدام خدمة TTS حقيقية
+        audio_response = await tts_service.synthesize(
+            text=ai_response.response_text,
+            voice_id=voice_id,
+            language=request.language
+        )
+
         return AudioResponse(
             response_text=ai_response.response_text,
-            audio_response="base64_encoded_audio_response",  # Would be actual TTS output
+            audio_response=audio_response,  # Base64 encoded audio from TTS
             emotion=ai_response.emotion,
             safe=ai_response.safe,
             conversation_id=conversation_id,
             timestamp=datetime.now().isoformat(),
         )
     except Exception as e:
+        logger.error(f"Error processing audio: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing audio: {e!s}")
 
 
@@ -172,17 +195,28 @@ async def process_audio(
 @router.post("/device-status")
 async def update_device_status(
     request: DeviceStatusRequest,
-    current_user: dict[str, Any] = Depends(get_current_user_esp32),
+    current_user: User = Depends(get_current_user_esp32),
+    database_service: DatabaseService = Depends(Provide[Container.database_service]),
 ):
     """Update ESP32 device status"""
-    # In a real implementation, this would update device status in database
-    return {
-        "status": "ok",
-        "device_id": request.device_id,
-        "received_at": datetime.now().isoformat(),
-        "battery_level": request.battery_level,
-        "next_check_in": 300,  # 5 minutes
-    }
+    try:
+        await database_service.update_device_status(
+            device_id=request.device_id,
+            status=request.status,
+            battery_level=request.battery_level,
+            updated_at=request.timestamp,
+            user_id=current_user.user_id,
+        )
+        return {
+            "status": "ok",
+            "device_id": request.device_id,
+            "received_at": datetime.now().isoformat(),
+            "battery_level": request.battery_level,
+            "next_check_in": 300,  # 5 minutes
+        }
+    except Exception as e:
+        logger.error(f"Error updating device status: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating device status: {e!s}")
 
 
 # Health Check Endpoint
@@ -201,16 +235,15 @@ async def health_check():
 @router.get("/config/{device_id}")
 async def get_device_config(
     device_id: str,
-    current_user: dict[str, Any] = Depends(get_current_user_esp32),
+    current_user: User = Depends(get_current_user_esp32),
+    database_service: DatabaseService = Depends(Provide[Container.database_service]),
 ):
     """Get device configuration"""
-    return {
-        "device_id": device_id,
-        "audio_quality": "high",
-        "language": "en",
-        "wake_word": "teddy",
-        "volume": 70,
-        "brightness": 80,
-        "safety_mode": "strict",
-        "check_in_interval": 300,
-    }
+    try:
+        config = await database_service.get_device_config(device_id)
+        if not config:
+            raise HTTPException(status_code=404, detail="Device config not found")
+        return config
+    except Exception as e:
+        logger.error(f"Error getting device config: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting device config: {e!s}")

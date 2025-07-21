@@ -1,4 +1,5 @@
 """COPPA-Compliant Consent Manager
+from src.application.interfaces.infrastructure_services import IConsentManager
 Provides comprehensive consent management with FTC-approved verification methods.
 """
 from datetime import datetime, timedelta
@@ -9,18 +10,18 @@ from src.application.services.consent.consent_models import (
     VerificationMethod, 
     VerificationStatus
 )
-from src.domain.models.consent_models import (
+from src.domain.models.consent_models_domain import (
     ConsentType,
     ConsentStatus,
     ConsentRecord
 )
 from src.infrastructure.logging_config import get_logger
-from src.application.services.consent.consent_service import ConsentService
+from src.application.services.child_safety.consent_service import ConsentService
 
 logger = get_logger(__name__, component="security")
 
 
-class COPPAConsentManager:
+class COPPAConsentManager(IConsentManager):
     """COPPA-compliant consent management system.
     
     This manager handles all aspects of parental consent including:

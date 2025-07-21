@@ -435,3 +435,7 @@ class SafeDatabaseSession:
 def create_safe_database_session(database_session) -> SafeDatabaseSession:
     """إنشاء جلسة قاعدة بيانات آمنة."""
     return SafeDatabaseSession(database_session)
+
+class SecurityError(Exception):
+    """Security validation error."""
+    pass

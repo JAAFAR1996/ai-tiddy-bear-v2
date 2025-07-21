@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
 from src.infrastructure.di.container import Container
 from src.infrastructure.logging_config import get_logger
-from src.presentation.api.endpoints.children.models import (
+from src.domain.models.children_models_ext import (
     ChildCreateRequest,
     ChildDeleteResponse,
     ChildResponse,

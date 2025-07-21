@@ -129,30 +129,12 @@ async def get_device_status(
     )
 ) -> DeviceStatus:
     """Get device status"""
-    try:
-        # In a real implementation, this would fetch from database
-        # For now, we return a mock status based on device_id
-        current_time = datetime.now(UTC).isoformat()
-
-        # Basic device status logic
-        device_status = {
-            "device_id": device_id,
-            "status": "online" if device_id.startswith("tddy_") else "offline",
-            "last_seen": current_time,
-            "battery_level": 85 if device_id.startswith("tddy_") else None,
-            "wifi_strength": 75 if device_id.startswith("tddy_") else None,
-        }
-
-        logger.info(
-            f"Device status requested for {device_id}: {device_status['status']}"
-        )
-        return DeviceStatus(**device_status)
-    except Exception as e:
-        logger.error(f"Error getting device status for {device_id}: {e!s}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get device status: {e!s}",
-        )
+    # يجب الربط مع قاعدة بيانات أو خدمة إدارة الأجهزة هنا
+    logger.error(f"Device status requested for {device_id}, but device data source is not connected.")
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="Device data not available - database/service not connected",
+    )
 
 
 class AudioUploadRequest(BaseModel):

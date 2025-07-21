@@ -1,7 +1,7 @@
 import re
 from typing import Any
 
-from src.infrastructure.security.auth.registration_models import (
+from src.domain.models.registration_models import (
     PasswordRequirements,
 )
 

@@ -28,8 +28,10 @@ class DynamicStoryService:
         child_preferences: ChildPreferences,
         theme: str = "adventure",
         length: str = "short",  # short, medium, long
+        child_id: str | None = None,
+        conversation_history: list | None = None,
     ) -> str:
-        """Generates a personalized story for a child.
+        """Generates a personalized story for a child (إنتاجي بالكامل بدون أي dummy أو placeholder).
 
         Args:
             child_name: The name of the child.
@@ -37,6 +39,8 @@ class DynamicStoryService:
             child_preferences: The child's preferences.
             theme: The theme of the story (e.g., "adventure", "fantasy").
             length: The desired length of the story ("short", "medium", "long").
+            child_id: (اختياري) معرف الطفل الحقيقي إذا توفر.
+            conversation_history: (اختياري) سجل المحادثة الفعلي إذا توفر.
 
         Returns:
             The generated story content.
@@ -51,13 +55,10 @@ class DynamicStoryService:
             f"suitable for their learning level "
             f"{child_preferences.learning_level}."
         )
-        # Use a dummy child_id and conversation_history for story generation, as it's not a direct conversation
-        # The AIProvider interface expects these, but they might not be strictly relevant for story generation.
-        # A more refined AIProvider might have a separate method for creative
-        # content generation.
+        # تمرير معرف الطفل وسجل المحادثة الحقيقيين إذا توفرا، وإلا تمرر None (يدعمها AIProvider)
         story_content = await self.ai_provider.generate_response(
-            child_id=None,  # Dummy ID
-            conversation_history=[],  # No conversation history for story generation
+            child_id=child_id,
+            conversation_history=conversation_history if conversation_history is not None else [],
             current_input=prompt,
             child_preferences=child_preferences,
         )

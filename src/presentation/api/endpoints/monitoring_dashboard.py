@@ -18,18 +18,8 @@ try:
 
     FASTAPI_AVAILABLE = True
 except ImportError:
-    FASTAPI_AVAILABLE = False
-    logger.warning("FastAPI not available, using mock classes")
-
-    class APIRouter:
-        def __init__(self, *args, **kwargs) -> None:
-            pass
-
-        def get(self, path: str, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
+    logger.critical("FastAPI is required for the monitoring dashboard API. Please install fastapi.")
+    raise ImportError("FastAPI is not installed. The monitoring dashboard API cannot run without FastAPI.")
 
 
 class MonitoringDashboardService:

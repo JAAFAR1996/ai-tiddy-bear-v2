@@ -1,53 +1,27 @@
 @echo off
-chcp 65001 >nul
+REM ====== GitHub Auto Backup Script ======
+REM تأكد أنك نفذت git config --global user.name و user.email مسبقاً
+REM يجب أن يكون git منصّب ومتاح في PATH
 
-REM إعداد متغيرات المشروع
-set "PROJECT_DIR=C:\Users\jaafa\Desktop\5555\ai-teddy\ai-tiddy-bear--main"
-set "GIT_BRANCH=main"
-set "GIT_REMOTE=https://github.com/JAAFAR1996/ai-tiddy-bear-v2.git"
+setlocal enabledelayedexpansion
 
-cd /d "%PROJECT_DIR%"
-if errorlevel 1 (
-    echo [ERROR] Cannot access %PROJECT_DIR%
-    pause
-    exit /b 1
-)
+REM اسم البرانش الحالي
+for /f "delims=" %%b in ('git branch --show-current') do set "branch=%%b"
 
-REM Ensure this is a git repo
-if not exist ".git" (
-    echo [ERROR] Not a git repository!
-    pause
-    exit /b 1
-)
+REM تاريخ ووقت النسخة
+for /f "delims=" %%t in ('wmic os get localdatetime ^| find "."') do set datetime=%%t
+set datetime=%datetime:~0,4%-%datetime:~4,2%-%datetime:~6,2%_%datetime:~8,2%-%datetime:~10,2%
 
-git remote set-url origin %GIT_REMOTE%
-
-REM Get datetime for commit message
-for /f "tokens=2 delims==" %%I in ('"wmic os get localdatetime /value"') do set datetime=%%I
-set TIMESTAMP=%datetime:~0,4%-%datetime:~4,2%-%datetime:~6,2%_%datetime:~8,2%-%datetime:~10,2%
-
+REM إضافة جميع الملفات
 git add .
 
-REM Check if there are staged changes
-git diff --cached --quiet
-if errorlevel 1 (
-    git commit -m "Auto-backup %TIMESTAMP%"
-    if errorlevel 1 (
-        echo [ERROR] Commit failed.
-        pause
-        exit /b 1
-    )
-    git push origin %GIT_BRANCH%
-    if errorlevel 1 (
-        echo [ERROR] Push failed!
-        pause
-        exit /b 1
-    )
-    echo [SUCCESS] All changes pushed. [%TIMESTAMP%]
-    git log -1 --oneline
-) else (
-    echo No new changes to commit. [%TIMESTAMP%]
-)
+REM عمل commit باسم وتاريخ محدد
+git commit -m "[%datetime%] Auto backup"
 
+REM رفع الملفات
+git push origin %branch%
+
+REM الحالة النهائية
 git status
+
 pause

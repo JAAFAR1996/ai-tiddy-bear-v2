@@ -15,7 +15,7 @@ from src.infrastructure.security.audit.log_sanitization_config import (
 )
 
 try:
-    from ..config.coppa_config import requires_coppa_audit_logging
+    from src.infrastructure.config.security.coppa_config import requires_coppa_audit_logging
 except ImportError:
     # Fallback if COPPA config not available
     def requires_coppa_audit_logging() -> bool:

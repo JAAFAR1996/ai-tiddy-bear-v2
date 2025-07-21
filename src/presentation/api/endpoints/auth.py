@@ -1,4 +1,4 @@
-from src.presentation.api.models.validation_models import LoginRequest
+from src.domain.models.validation_models import LoginRequest
 """API endpoints for authentication and authorization"""
 
 from datetime import datetime

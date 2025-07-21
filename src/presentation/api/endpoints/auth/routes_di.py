@@ -1,4 +1,4 @@
-from src.presentation.api.models.validation_models import LoginRequest, LoginResponse
+from src.domain.models.validation_models import LoginRequest, LoginResponse
 from datetime import datetime
 from typing import Any
 

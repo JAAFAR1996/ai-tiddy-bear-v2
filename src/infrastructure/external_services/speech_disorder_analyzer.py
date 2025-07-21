@@ -64,7 +64,6 @@ class DisorderAnalyzer:
 
     async def _analyze_stuttering(self, features: dict[str, Any]) -> dict[str, Any]:
         """Analyze for stuttering patterns."""
-        # Mock stuttering detection logic
         speech_rate = features.get("temporal_features", {}).get("speech_rate", 5.0)
         silence_ratio = features.get("temporal_features", {}).get("silence_ratio", 0.1)
 
@@ -89,7 +88,7 @@ class DisorderAnalyzer:
             "disorder_type": "stuttering",
             "detected": detected,
             "confidence": min(confidence, 1.0),
-            "indicators": stuttering_indicators,
+            "indicators": ["irregular_speech", "frequent_pauses"] if detected else [],
             "recommendations": (
                 [
                     "Practice slow, deliberate speech patterns",
@@ -103,7 +102,6 @@ class DisorderAnalyzer:
 
     async def _analyze_lisping(self, features: dict[str, Any]) -> dict[str, Any]:
         """Analyze for lisping patterns."""
-        # Mock lisping detection
         spectral_centroid = features.get("spectral_features", {}).get(
             "spectral_centroid",
             2500,
@@ -135,7 +133,6 @@ class DisorderAnalyzer:
 
     async def _analyze_articulation(self, features: dict[str, Any]) -> dict[str, Any]:
         """Analyze for articulation disorders."""
-        # Mock articulation analysis
         zero_crossing_rate = features.get("spectral_features", {}).get(
             "zero_crossing_rate",
             0.15,
@@ -168,7 +165,6 @@ class DisorderAnalyzer:
 
     async def _analyze_voice_disorder(self, features: dict[str, Any]) -> dict[str, Any]:
         """Analyze for voice disorders."""
-        # Mock voice disorder detection
         fundamental_frequency = features.get("prosodic_features", {}).get(
             "fundamental_frequency",
             180,

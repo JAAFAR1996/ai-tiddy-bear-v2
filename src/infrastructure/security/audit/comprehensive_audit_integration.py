@@ -190,7 +190,7 @@ class ComprehensiveAuditIntegration:
         description: str,
         details: dict[str, Any] | None = None,
     ) -> str:
-        from ..config.coppa_config import requires_coppa_audit_logging
+        from src.infrastructure.config.security.coppa_config import requires_coppa_audit_logging
 
         if not requires_coppa_audit_logging():
             return f"coppa_disabled_{event_type}_{int(datetime.utcnow().timestamp())}"

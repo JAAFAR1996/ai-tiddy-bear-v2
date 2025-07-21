@@ -10,7 +10,7 @@ from src.application.interfaces.read_model_interfaces import (
     IEventBus,
     get_event_bus,
 )
-from src.domain.esp32.models import (
+from src.domain.models.esp32_models import (
     ESP32DeviceStatus,
     ESP32EdgeAIResult,
     ESP32FirmwareUpdateStatus,

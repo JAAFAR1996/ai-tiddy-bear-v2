@@ -23,7 +23,7 @@ class InfrastructureEncryptionAdapter(EncryptionServiceInterface):
         """Lazy load the infrastructure encryption service."""
         if not self._initialized:
             try:
-                from ..security.encryption_service import (
+                from src.infrastructure.security.encryption.robust_encryption_service import (
                     get_encryption_service,
                 )
 

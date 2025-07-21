@@ -9,7 +9,7 @@ from src.domain.interfaces.logging_interface import (
     DomainLoggerInterface,
     NullDomainLogger,
 )
-from src.domain.models.consent_models import (
+from src.domain.models.consent_models_domain import (
     ConsentRecord,
     ConsentStatus,
     ConsentType,

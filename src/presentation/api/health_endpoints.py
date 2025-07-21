@@ -1,4 +1,4 @@
-from src.presentation.api.emergency_response.models import HealthResponse
+from src.domain.models.emergency_models_ext import HealthResponse
 from datetime import datetime
 from typing import Any
 

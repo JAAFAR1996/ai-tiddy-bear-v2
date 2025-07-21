@@ -9,25 +9,24 @@ This service provides a complete, production-ready implementation that:
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from uuid import uuid4
-
-from src.domain.models.consent_models import ConsentType, ConsentStatus, ConsentRecord
+from src.domain.models.consent_models_domain import ConsentType, ConsentStatus, ConsentRecord
 from src.infrastructure.validators.security.coppa_validator import (
-    COPPAValidator, 
+    COPPAValidator,
     COPPAValidationResult,
-    COPPAValidatorLevel
 )
-from src.infrastructure.persistence.models.consent_models import ConsentModel
+from src.domain.models.consent_models_infra import ConsentModel
 from src.infrastructure.logging_config import get_logger
-from src.application.services.consent.consent_service import ConsentService
-from src.common.exceptions import 
+from src.application.services.child_safety.consent_service import ConsentService
 from src.common.exceptions import ConsentError
+from src.common.exceptions import InvalidInputError
+
 
 logger = get_logger(__name__)
 
 
 class COPPAComplianceService:
     """Enterprise-grade COPPA compliance service with full integration.
-    
+
     This service provides:
     - Complete age validation with proper error handling
     - Full consent management integration
@@ -35,14 +34,14 @@ class COPPAComplianceService:
     - Compliance status tracking
     - Data retention policy enforcement
     """
-    
+
     def __init__(
-        self, 
+        self,
         validator: Optional[COPPAValidator] = None,
         consent_service: Optional[ConsentService] = None
     ):
         """Initialize with optional dependency injection.
-        
+
         Args:
             validator: COPPA validator instance (defaults to singleton)
             consent_service: Consent management service
@@ -50,18 +49,18 @@ class COPPAComplianceService:
         self._validator = validator or COPPAValidator()
         self._consent_service = consent_service or ConsentService()
         self._audit_log: List[Dict[str, Any]] = []
-        
+
         logger.info("COPPAComplianceService initialized with full compliance stack")
-    
+
     async def validate_child_age(self, age: int) -> Dict[str, Any]:
         """Validate child age with complete COPPA compliance check.
-        
+
         This method provides the expected dict interface for routes while
         leveraging the full power of COPPAValidator.
-        
+
         Args:
             age: Child's age in years
-            
+
         Returns:
             Dict containing:
             - compliant: bool - Whether the age is COPPA compliant
@@ -79,18 +78,18 @@ class COPPAComplianceService:
                     severity="high",
                     age=age
                 )
-            
+
             # Get comprehensive validation from infrastructure
             result: COPPAValidationResult = self._validator.validate_age_compliance(age)
-            
+
             # Convert to expected format with full context
             response = self._convert_validation_result(result, age)
-            
+
             # Log for audit trail
             self._log_validation(age, response)
-            
+
             return response
-            
+
         except Exception as e:
             logger.error(f"Critical error validating age {age}: {str(e)}", exc_info=True)
             return self._create_error_response(
@@ -98,10 +97,10 @@ class COPPAComplianceService:
                 severity="high",
                 age=age
             )
-    
+
     def _convert_validation_result(self, result: COPPAValidationResult, age: int) -> Dict[str, Any]:
         """Convert COPPAValidationResult to comprehensive dict format.
-        
+
         This method handles all edge cases and provides detailed responses
         for every scenario.
         """
@@ -119,7 +118,7 @@ class COPPAComplianceService:
                     "timestamp": datetime.utcnow().isoformat()
                 }
             }
-        
+
         if age == 0:
             return {
                 "compliant": False,
@@ -133,7 +132,7 @@ class COPPAComplianceService:
                     "timestamp": datetime.utcnow().isoformat()
                 }
             }
-        
+
         # Too young (under minimum age)
         if age < self._validator.MIN_CHILD_AGE:
             return {
@@ -146,12 +145,11 @@ class COPPAComplianceService:
                     "age": age,
                     "minimum_age": self._validator.MIN_CHILD_AGE,
                     "is_coppa_subject": True,
-                    "compliance_level": COPPAValidatorLevel.UNDER_COPPA.value,
                     "data_retention_days": result.data_retention_days,
                     "special_protections": result.special_protections
                 }
             }
-        
+
         # COPPA compliant age range (3-12)
         if self._validator.MIN_CHILD_AGE <= age < self._validator.COPPA_AGE_LIMIT:
             return {
@@ -170,7 +168,7 @@ class COPPAComplianceService:
                     "age_verified": result.age_verified
                 }
             }
-        
+
         # Exactly at COPPA limit (13)
         if age == self._validator.COPPA_AGE_LIMIT:
             return {
@@ -182,11 +180,10 @@ class COPPAComplianceService:
                 "metadata": {
                     "age": age,
                     "coppa_limit": self._validator.COPPA_AGE_LIMIT,
-                    "compliance_level": COPPAValidatorLevel.COPPA_TRANSITION.value,
                     "transition_guidance": "User exceeds COPPA age limit"
                 }
             }
-        
+
         # Over COPPA limit
         if age > self._validator.COPPA_AGE_LIMIT:
             return {
@@ -198,11 +195,10 @@ class COPPAComplianceService:
                 "metadata": {
                     "age": age,
                     "coppa_limit": self._validator.COPPA_AGE_LIMIT,
-                    "compliance_level": COPPAValidatorLevel.GENERAL_PROTECTION.value,
                     "recommendation": "Service designed for children under 13"
                 }
             }
-        
+
         # Fallback for any edge cases
         return {
             "compliant": False,
@@ -216,17 +212,17 @@ class COPPAComplianceService:
                 "timestamp": datetime.utcnow().isoformat()
             }
         }
-    
+
     async def create_consent_record(
-        self, 
-        consent_data: Dict[str, Any], 
+        self,
+        consent_data: Dict[str, Any],
         ip_address: Optional[str] = None
     ) -> Dict[str, Any]:
         """Create a comprehensive parental consent record.
-        
+
         This method creates a full consent record with proper verification
         and audit trail.
-        
+
         Args:
             consent_data: Dict containing:
                 - parent_id: Parent identifier
@@ -237,7 +233,7 @@ class COPPAComplianceService:
                 - child_age: Child's age
                 - consent_types: List of consent types requested
             ip_address: IP address for audit trail
-            
+
         Returns:
             Dict with consent creation results
         """
@@ -247,26 +243,26 @@ class COPPAComplianceService:
                 'parent_id', 'parent_name', 'parent_email',
                 'child_id', 'child_name', 'child_age'
             ]
-            
+
             missing_fields = [f for f in required_fields if f not in consent_data]
             if missing_fields:
                 raise InvalidInputError(f"Missing required fields: {missing_fields}")
-            
+
             # Validate child age for COPPA
             age_validation = await self.validate_child_age(consent_data['child_age'])
             if not age_validation.get('compliant'):
                 raise ConsentError(
                     f"Cannot create consent for non-compliant age: {age_validation.get('reason')}"
                 )
-            
+
             # Determine consent types needed based on age
             consent_types = self._determine_required_consents(consent_data['child_age'])
-            
+
             # Create consent records for each type
             consent_records = []
             for consent_type in consent_types:
                 consent_id = f"consent_{uuid4().hex}"
-                
+
                 record = ConsentRecord(
                     consent_id=consent_id,
                     child_id=consent_data['child_id'],
@@ -285,7 +281,7 @@ class COPPAComplianceService:
                         "created_via": "coppa_compliance_service"
                     }
                 )
-                
+
                 # Use the consent service to create the record
                 result = await self._consent_service.request_consent(
                     parent_id=consent_data['parent_id'],
@@ -293,16 +289,16 @@ class COPPAComplianceService:
                     feature=consent_type.value,
                     expiry_days=365
                 )
-                
+
                 consent_records.append({
                     "consent_id": result['consent_id'],
                     "consent_type": consent_type.value,
                     "status": result['status']
                 })
-            
+
             # Log for audit
             self._log_consent_creation(consent_data, consent_records)
-            
+
             return {
                 "success": True,
                 "consent_records": consent_records,
@@ -311,7 +307,7 @@ class COPPAComplianceService:
                 "verification_method": "email",
                 "next_steps": "Parent will receive verification email"
             }
-            
+
         except (InvalidInputError, ConsentError) as e:
             logger.warning(f"Consent creation validation error: {str(e)}")
             return {
@@ -326,7 +322,7 @@ class COPPAComplianceService:
                 "error": "System error creating consent record",
                 "error_type": "system_error"
             }
-    
+
     def _determine_required_consents(self, age: int) -> List[ConsentType]:
         """Determine which consent types are required based on age."""
         if age < self._validator.COPPA_AGE_LIMIT:
@@ -338,7 +334,7 @@ class COPPAComplianceService:
                 ConsentType.PROFILE_CREATION
             ]
         return []
-    
+
     def _generate_consent_text(self, consent_type: ConsentType, data: Dict[str, Any]) -> str:
         """Generate appropriate consent text based on type."""
         templates = {
@@ -364,7 +360,7 @@ class COPPAComplianceService:
             )
         }
         return templates.get(consent_type, f"Consent for {consent_type.value}")
-    
+
     def _create_error_response(self, reason: str, severity: str, **kwargs) -> Dict[str, Any]:
         """Create standardized error response."""
         return {
@@ -379,7 +375,7 @@ class COPPAComplianceService:
                 **kwargs
             }
         }
-    
+
     def _log_validation(self, age: int, response: Dict[str, Any]) -> None:
         """Log validation for audit trail."""
         self._audit_log.append({
@@ -389,7 +385,7 @@ class COPPAComplianceService:
             "severity": response.get("severity"),
             "timestamp": datetime.utcnow().isoformat()
         })
-    
+
     def _log_consent_creation(self, consent_data: Dict[str, Any], records: List[Dict]) -> None:
         """Log consent creation for audit trail."""
         self._audit_log.append({
@@ -399,7 +395,7 @@ class COPPAComplianceService:
             "records_created": len(records),
             "timestamp": datetime.utcnow().isoformat()
         })
-    
+
     async def get_compliance_status(self, child_id: str) -> Dict[str, Any]:
         """Get comprehensive compliance status for a child."""
         # This would integrate with database to get full status
@@ -409,7 +405,7 @@ class COPPAComplianceService:
             "consents": [],
             "last_review": datetime.utcnow().isoformat()
         }
-    
+
     def get_audit_log(self) -> List[Dict[str, Any]]:
         """Get audit log for compliance tracking."""
         return self._audit_log.copy()

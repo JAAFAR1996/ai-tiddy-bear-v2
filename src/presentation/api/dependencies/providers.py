@@ -5,11 +5,9 @@ from .base import LazyServiceProvider
 def _create_coppa_integration():
     from src.presentation.api.endpoints.children.compliance import COPPAIntegration
     from src.infrastructure.config.settings import get_settings
-    from src.infrastructure.validators.security.coppa_validator import (
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator, coppa_validator
     COPPAValidator,
     coppa_validator,
-    is_coppa_subject,
-    requires_parental_consent
 )
     
     settings = get_settings()
@@ -18,11 +16,9 @@ def _create_coppa_integration():
 
 def _create_parental_consent_manager():
     from src.presentation.api.endpoints.children.compliance import ParentalConsentManager
-    from src.infrastructure.validators.security.coppa_validator import (
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator, coppa_validator
     COPPAValidator,
     coppa_validator,
-    is_coppa_subject,
-    requires_parental_consent
 )
     
     coppa_service = COPPAValidator()
@@ -37,11 +33,9 @@ def _create_compliance_validator():
 
 def _create_data_retention_manager():
     from src.presentation.api.endpoints.children.compliance import LocalRetentionManager
-    from src.infrastructure.validators.security.coppa_validator import (
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator, coppa_validator
     COPPAValidator,
     coppa_validator,
-    is_coppa_subject,
-    requires_parental_consent
 )
     
     coppa_service = COPPAValidator()

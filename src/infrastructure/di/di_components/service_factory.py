@@ -1,4 +1,4 @@
-"""Service factory for creating mock or real service implementations."""
+"""Service factory for creating production service implementations only."""
 
 from typing import Any
 
@@ -8,13 +8,13 @@ logger = get_logger(__name__, component="infrastructure")
 
 
 class ConcreteServiceFactory:
-    """Factory for creating service implementations with proper error handling for missing services."""
+    """Factory for creating production service implementations with strict error handling."""
 
-    def __init__(self, use_mocks: bool = False) -> None:
-        self.use_mocks = use_mocks
+    def __init__(self) -> None:
+        pass
 
     def create_speech_processor(self, settings: Any) -> Any:
-        """Create speech processor service with fallback handling."""
+        """Create speech processor service (production only)."""
         try:
             from infrastructure.external_apis.whisper_client import (
                 WhisperClient,
@@ -33,7 +33,7 @@ class ConcreteServiceFactory:
             raise RuntimeError("Speech processor service creation failed") from e
 
     def create_openai_client(self, settings: Any) -> Any:
-        """Create OpenAI client service with fallback handling."""
+        """Create OpenAI client service (production only)."""
         try:
             from infrastructure.external_apis.openai_client import OpenAIClient
 
@@ -52,7 +52,7 @@ class ConcreteServiceFactory:
             raise RuntimeError("OpenAI service creation failed") from e
 
     def create_tts_service(self, settings: Any) -> Any:
-        """Create text-to-speech service with fallback handling."""
+        """Create text-to-speech service (production only)."""
         try:
             from infrastructure.external_apis.elevenlabs_client import (
                 ElevenLabsClient,
@@ -80,7 +80,7 @@ class ConcreteServiceFactory:
             raise RuntimeError("TTS service creation failed") from e
 
     def create_database(self, settings: Any) -> Any:
-        """Create database implementation with fallback handling."""
+        """Create database implementation (production only)."""
         try:
             from infrastructure.persistence.database import Database
 

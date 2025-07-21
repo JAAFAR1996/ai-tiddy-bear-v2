@@ -255,9 +255,9 @@ class TranscriptionService:
                     return result
             except Exception as e:
                 logger.warning(f"Google transcription failed: {e}")
-        # Fallback to safe mock response
-        logger.warning("All transcription engines failed, using safe fallback")
-        return {"text": "", "confidence": 0.0, "engine": "fallback"}
+        # Production: لا fallback وهمي، بل سجل خطأ وارفع استثناء
+        logger.error("All transcription engines failed: transcription service unavailable")
+        raise RuntimeError("Transcription service unavailable: all engines failed")
 
     async def _apply_safety_filters(
         self,

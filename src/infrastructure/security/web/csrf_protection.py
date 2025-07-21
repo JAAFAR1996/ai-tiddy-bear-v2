@@ -317,14 +317,9 @@ def get_csrf_protection() -> CSRFProtection:
     """Get global CSRF protection instance"""
     global _csrf_protection
     if _csrf_protection is None:
-        # Default configuration - should be overridden in production
-        config = CSRFConfig(
-            secret_key=secrets.token_urlsafe(32),
-            require_https=False,  # Set to True in production
-        )
-        _csrf_protection = CSRFProtection(config)
-        logger.warning(
-            "Using default CSRF configuration - configure properly for production"
+        raise RuntimeError(
+            "CSRF protection is not initialized. "
+            "Call init_csrf_protection() with a production secret key before using."
         )
     return _csrf_protection
 

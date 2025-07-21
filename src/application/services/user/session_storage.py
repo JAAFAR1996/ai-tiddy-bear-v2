@@ -6,7 +6,7 @@ import asyncio
 
 from src.infrastructure.logging_config import get_logger
 
-from .session_models import AsyncSessionData, SessionStatus
+from src.domain.models.session_models import AsyncSessionData, SessionStatus
 
 logger = get_logger(__name__, component="services")
 

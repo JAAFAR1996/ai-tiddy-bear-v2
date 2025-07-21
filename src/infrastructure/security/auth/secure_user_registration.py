@@ -7,7 +7,7 @@ from src.infrastructure.validators.security.email_validator import validate_emai
 from src.infrastructure.validators.security.password_validator import (
     validate_password_strength,
 )
-from src.infrastructure.security.auth.registration_models import (
+from src.domain.models.registration_models import (
     PasswordRequirements,
     RegistrationRequest,
 )

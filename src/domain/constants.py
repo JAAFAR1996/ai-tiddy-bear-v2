@@ -58,3 +58,18 @@ EMOTION_NEUTRAL_BASELINE = 0.5  # Neutral emotion score
 SPEECH_ANALYSIS_DAYS = 30  # Days of speech data to analyze
 CLARITY_THRESHOLD_LOW = 0.7  # Speech clarity threshold
 REPETITION_THRESHOLD_LOW = 0.3  # Speech repetition threshold
+
+# Missing constants
+MAX_NEGATIVE_INDICATORS = 3
+MAX_RESPONSE_LENGTH = 500
+MINIMUM_CHILD_AGE = 3
+
+# Safety Constants
+MAX_NEGATIVE_INDICATORS = 3
+MAX_RESPONSE_LENGTH = 500
+MINIMUM_CHILD_AGE = 3
+
+# Safety Constants
+MAX_NEGATIVE_INDICATORS = 3
+MAX_RESPONSE_LENGTH = 500
+MINIMUM_CHILD_AGE = 3

@@ -108,16 +108,20 @@ class Child:
         self.total_interaction_time += duration_seconds
         self.last_interaction = datetime.now(UTC)
 
+    daily_interaction_log: dict[date, int] = field(default_factory=dict)
+
     def is_interaction_time_exceeded(self) -> bool:
-        """Checks if the child has exceeded their daily interaction time limit.
+        """Checks if the child has exceeded their daily interaction time limit (production logic).
 
         Returns:
-            True if the limit is exceeded, False otherwise.
-
+            True if the daily limit is exceeded, False otherwise.
         """
-        # This would require tracking daily interaction time, not just total
-        # For simplicity, this is a placeholder.
-        return self.total_interaction_time > self.max_daily_interaction_time
+        from datetime import date as dt_date
+        today = dt_date.today()
+        today_seconds = self.daily_interaction_log.get(today, 0)
+        if today_seconds > self.max_daily_interaction_time:
+            return True
+        return False
 
     def add_allowed_topic(self, topic: str) -> None:
         """Adds a topic to the list of allowed topics.

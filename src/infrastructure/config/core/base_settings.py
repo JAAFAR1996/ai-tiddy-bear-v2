@@ -1,14 +1,12 @@
-# src/infrastructure/config/base_settings.py
-from pydantic_settings import BaseSettings, SettingsConfigDict
+"""Base settings configuration."""
+from pydantic_settings import BaseSettings as PydanticBaseSettings
 
-
-class BaseApplicationSettings(BaseSettings):
-    '''Base settings for all environments.'''
+class BaseSettings(PydanticBaseSettings):
+    """Base settings with common configuration."""
     
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=True,
-        extra="ignore",
-        env_nested_delimiter="__",
-    )
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+# Alias for backward compatibility
+BaseApplicationSettings = BaseSettings

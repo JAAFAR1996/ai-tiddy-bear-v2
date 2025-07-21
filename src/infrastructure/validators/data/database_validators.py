@@ -21,7 +21,7 @@ class DatabaseConnectionValidator:
     async def validate_connection(self) -> bool:
         """Validate database connection."""
         try:
-            # Create temporary engine for validation
+            # Create engine for production validation
             engine = create_async_engine(
                 self.config.database_url,
                 **self.config.get_engine_kwargs(),

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import declarative_base
-from src.infrastructure.persistence.models.base import Base
+from src.domain.models.models_infra.base import Base
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
 from src.infrastructure.validators.database_validators import (
@@ -114,7 +114,7 @@ class Database:
                     raise ConnectionError("Database connection validation failed")
             async with self.engine.begin() as conn:
                 # Register all models using the model registry
-                from src.infrastructure.persistence.model_registry import (
+                from src.domain.models.model_registry import (
                     get_model_registry,
                 )
 

@@ -12,6 +12,8 @@ from src.infrastructure.pagination import (
     PaginationService,
     SortOrder,
 )
+from src.domain.services.conversation_service import ConversationService
+from src.infrastructure.persistence.repositories.conversation_repository import ConversationRepository
 
 logger = get_logger(__name__, component="api")
 
@@ -35,36 +37,15 @@ except ImportError:
             return decorator
 
 
-# Mock conversation data for demonstration
-def create_mock_conversations(child_id: str, count: int = 100) -> list[dict[str, Any]]:
-    """Create mock conversation data for pagination testing."""
-    conversations = []
-    for i in range(count):
-        conversation_time = datetime.utcnow() - timedelta(days=i, hours=i % 24)
-        conversations.append(
-            {
-                "conversation_id": f"conv_{child_id}_{i:03d}",
-                "child_id": child_id,
-                "timestamp": conversation_time.isoformat(),
-                "child_message": f"Hello teddy! This is message {i + 1}",
-                "ai_response": f"Hello! I'm happy to talk with you. This is response {i + 1}",
-                "safety_flags": ["appropriate_content"] if i % 10 == 0 else [],
-                "emotion_detected": ["happy", "curious", "excited", "calm"][i % 4],
-                "session_duration_minutes": (i % 30) + 5,
-                "created_at": conversation_time.isoformat(),
-                "updated_at": conversation_time.isoformat(),
-            },
-        )
-    return conversations
-
-
 class ConversationPaginationService:
     """Service for paginated conversation operations."""
 
     def __init__(self) -> None:
         """Initialize conversation pagination service."""
         self.pagination_service = PaginationService()
-        self.mock_data = {}  # Cache for mock data
+        self.conversation_service = ConversationService(
+            repository=ConversationRepository()
+        )
         logger.info("Conversation pagination service initialized")
 
     async def get_child_conversations(
@@ -90,21 +71,12 @@ class ConversationPaginationService:
                 pagination_request,
             )
 
-            # Get conversations (mock data for now)
-            if child_id not in self.mock_data:
-                self.mock_data[child_id] = create_mock_conversations(child_id)
-            conversations = self.mock_data[child_id]
-
-            # Apply pagination
-            result = self.pagination_service.paginate_list(
-                conversations,
-                safe_pagination,
+            # جلب المحادثات من repository الفعلي
+            logger.error(f"Conversations repository not implemented yet for child {child_id}")
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Conversations repository not implemented yet"
             )
-
-            logger.info(
-                f"Retrieved {len(result.items)} conversations for child {child_id}",
-            )
-            return result
         except HTTPException:
             raise
         except Exception as e:
@@ -125,34 +97,12 @@ class ConversationPaginationService:
             if pagination_request is None:
                 pagination_request = PaginationRequest()
 
-            # Filter conversations by date
-            cutoff_date = datetime.utcnow() - timedelta(days=days_back)
-
-            # Get all conversations
-            if child_id not in self.mock_data:
-                self.mock_data[child_id] = create_mock_conversations(child_id)
-            all_conversations = self.mock_data[child_id]
-
-            # Filter by date
-            recent_conversations = [
-                conv
-                for conv in all_conversations
-                if datetime.fromisoformat(conv["timestamp"]) >= cutoff_date
-            ]
-
-            # Apply pagination
-            safe_pagination = self.pagination_service.create_child_safe_pagination(
-                pagination_request,
+            # جلب المحادثات من repository الفعلي
+            logger.error(f"Conversations repository not implemented yet for child {child_id}")
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Conversations repository not implemented yet"
             )
-            result = self.pagination_service.paginate_list(
-                recent_conversations,
-                safe_pagination,
-            )
-
-            logger.info(
-                f"Retrieved {len(result.items)} recent conversations for child {child_id}",
-            )
-            return result
         except Exception as e:
             logger.error(
                 f"Error getting conversation history for child {child_id}: {e}",
@@ -173,27 +123,12 @@ class ConversationPaginationService:
             if pagination_request is None:
                 pagination_request = PaginationRequest()
 
-            # Set search term in pagination request
-            pagination_request.search = search_term
-
-            # Get conversations
-            if child_id not in self.mock_data:
-                self.mock_data[child_id] = create_mock_conversations(child_id)
-            conversations = self.mock_data[child_id]
-
-            # Apply pagination with search
-            safe_pagination = self.pagination_service.create_child_safe_pagination(
-                pagination_request,
+            # جلب المحادثات من repository الفعلي
+            logger.error(f"Conversations repository not implemented yet for child {child_id}")
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Conversations repository not implemented yet"
             )
-            result = self.pagination_service.paginate_list(
-                conversations,
-                safe_pagination,
-            )
-
-            logger.info(
-                f"Found {len(result.items)} conversations matching '{search_term}' for child {child_id}",
-            )
-            return result
         except Exception as e:
             logger.error(f"Error searching conversations for child {child_id}: {e}")
             raise HTTPException(
@@ -203,9 +138,11 @@ class ConversationPaginationService:
 
     async def _validate_parent_access(self, parent_id: str, child_id: str) -> bool:
         """Validate that parent has access to child's data."""
-        # Mock validation - in production this would check the database
-        logger.info(f"Validating parent {parent_id} access to child {child_id}")
-        return True  # Mock approval
+        logger.error(f"Parent access validation not implemented for parent {parent_id} and child {child_id}")
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Parent access validation not implemented"
+        )
 
 
 # Initialize service

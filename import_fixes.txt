@@ -1,0 +1,10 @@
+# Import fixes needed:
+# Replace these imports in the specified files:
+
+# In files importing IEventBus, IConsentManager, IExternalAPIClient:
+# OLD: from application.interfaces.read_model_interfaces import IEventBus
+# NEW: from application.interfaces.command_interfaces import IEventBus
+
+# In files importing Container:
+# OLD: from infrastructure.di.container import Container  
+# NEW: from infrastructure.di.container import ApplicationContainer as Container

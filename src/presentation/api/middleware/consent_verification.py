@@ -1,10 +1,23 @@
-"""COPPA Consent Verification Middleware
-Ensures parental consent is verified at all child data collection points
+"""COPPA Consent Verification Middleware.
+
+Ensures parental consent is verified at all child data collection points.
 """
+
 
 import json
 from collections.abc import Awaitable, Callable
 from typing import Any
+from fastapi import HTTPException, Request, Response
+from fastapi.routing import APIRoute
+from src.domain.models.child_safety_data_models import AuditLogEntry
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.child_safety import get_consent_manager
+
+import json
+from collections.abc import Awaitable, Callable
+from typing import Any
+
+from src.domain.models.child_safety_data_models import AuditLogEntry
 
 from fastapi import HTTPException, Request, Response
 from fastapi.routing import APIRoute
@@ -16,8 +29,9 @@ logger = get_logger(__name__, component="middleware")
 
 
 class ConsentVerificationRoute(APIRoute):
-    """Custom route class that verifies parental consent before processing requests
-    that involve child data collection or interaction.
+    """Custom route class that verifies parental consent before processing requests.
+
+    This class is used for requests that involve child data collection or interaction.
     """
 
     def __init__(
@@ -80,8 +94,9 @@ class ConsentVerificationRoute(APIRoute):
                         pass
 
             return None
-        except Exception as e:
-            logger.error(f"Failed to extract child_id from request: {e}")
+        except Exception:
+            logger.exception("Failed to extract child_id from request")
+        else:
             return None
 
     async def _verify_consent(self, request: Request, child_id: str) -> None:
@@ -92,17 +107,21 @@ class ConsentVerificationRoute(APIRoute):
             # Get parent_id from authenticated user
             user = getattr(request.state, "user", None)
             if not user:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Authentication required for child data access",
-                )
+                def _raise_auth():
+                    raise HTTPException(
+                        status_code=401,
+                        detail="Authentication required for child data access",
+                    )
+                _raise_auth()
 
             parent_id = user.get("user_id")
             if not parent_id:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Parent identification required",
-                )
+                def _raise_parent():
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Parent identification required",
+                    )
+                _raise_parent()
 
             # Check consent for each required type
             for consent_type in self.require_consent_types:
@@ -117,11 +136,16 @@ class ConsentVerificationRoute(APIRoute):
                         f"Consent verification failed: parent={parent_id}, "
                         f"child={child_id}, type={consent_type}",
                     )
-                    raise HTTPException(
-                        status_code=403,
-                        detail=f"Parental consent required for {consent_type}. "
-                        "Please provide consent in the parental dashboard.",
-                    )
+
+                    def _raise_consent(consent_type=consent_type):
+                        raise HTTPException(
+                            status_code=403,
+                            detail=(
+                                f"Parental consent required for {consent_type}. "
+                                "Please provide consent in the parental dashboard."
+                            ),
+                        )
+                    _raise_consent()
 
             logger.info(
                 f"Consent verified: parent={parent_id}, child={child_id}, "
@@ -129,24 +153,22 @@ class ConsentVerificationRoute(APIRoute):
             )
         except HTTPException:
             raise
-        except Exception as e:
-            logger.error(f"Consent verification error: {e}")
+        except Exception as exc:
+            logger.exception("Consent verification error")
             raise HTTPException(
                 status_code=500,
                 detail="Failed to verify parental consent",
-            )
+            ) from exc
 
     async def _log_data_collection(self, request: Request, child_id: str) -> None:
         """Log the data collection event for audit trail."""
         try:
-            from src.infrastructure.security.child_safety.data_models import (
-                AuditLogEntry,
-            )
-
             # Create audit log entry
             audit_entry = AuditLogEntry(
                 event_type="data_collection",
-                event_description=f"Child data access via {request.method} {request.url.path}",
+                event_description=(
+                    f"Child data access via {request.method} {request.url.path}"
+                ),
                 actor_type="api_endpoint",
                 actor_id=f"{request.method}:{request.url.path}",
                 target_type="child_data",
@@ -165,15 +187,17 @@ class ConsentVerificationRoute(APIRoute):
 
             # In production, this would save to audit database
             logger.info(
-                f"Data collection logged: {audit_entry.event_type} for child {child_id}",
+                f"Data collection logged: {audit_entry.event_type} "
+                f"for child {child_id}",
             )
-        except Exception as e:
-            logger.error(f"Failed to log data collection event: {e}")
+        except Exception:
+            logger.exception("Failed to log data collection event")
             # Don't fail the request for logging errors
 
 
 def require_consent(*consent_types: str):
-    """Decorator to mark endpoints that require specific consent types
+    """Decorator to mark endpoints that require specific consent types.
+
     Usage: @require_consent("data_collection", "voice_recording")
            @router.post("/process-audio")
            async def process_audio(...): ...
@@ -205,30 +229,38 @@ class ConsentVerificationMiddleware:
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
             request = Request(scope, receive)
-
-            # Check if path requires consent verification
             path = request.url.path
             required_consents = None
-
             for pattern, consents in self.consent_required_paths.items():
                 if path.startswith(pattern):
                     required_consents = consents
                     break
-
             if required_consents:
-                # Create custom route with consent verification
+                # تحقق من الموافقة مباشرة بدون أي endpoint وهمي
                 route = ConsentVerificationRoute(
                     path=path,
-                    endpoint=lambda: None,  # Placeholder
+                    endpoint=lambda: (_ for _ in ()).throw(HTTPException(
+                        status_code=403,
+                        detail=(
+                            "Consent verification failed: endpoint not "
+                            "implemented for direct middleware call."
+                        ),
+                    )),
                     require_consent_types=required_consents,
                 )
-
-                # Extract and verify child_id
                 child_id = await route._extract_child_id(request)
                 if child_id:
-                    await route._verify_consent(request, child_id)
-
-        # Continue with the application
+                    try:
+                        await route._verify_consent(request, child_id)
+                    except HTTPException as exc:
+                        logger.warning(f"Consent denied for path {path}: {exc.detail}")
+                        response = Response(
+                            content=exc.detail,
+                            status_code=exc.status_code,
+                            media_type="application/json",
+                        )
+                        await response(scope, receive, send)
+                        return
         await self.app(scope, receive, send)
 
 

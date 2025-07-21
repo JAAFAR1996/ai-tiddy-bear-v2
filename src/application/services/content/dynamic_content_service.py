@@ -65,7 +65,6 @@ class DynamicContentService:
             f"Incorporate the child's preferences: {child_profile.preferences}. "
             "Ensure the language is age-appropriate and positive."
         )
-        # Assuming a dummy conversation history for story generation
         current_input = prompt
         response_data = await self.api_client.make_request(
             "chat/completions",
@@ -97,12 +96,14 @@ class DynamicContentService:
         self,
         child_profile: ChildProfile,
         topic: str,
+        conversation_history: list[str] | None = None,
     ) -> str:
         """Generates educational content for a child.
 
         Args:
             child_profile: The profile of the child.
             topic: The topic for the educational content.
+            conversation_history: The real conversation history for the child (if available).
 
         Returns:
             The generated educational text.
@@ -113,11 +114,12 @@ class DynamicContentService:
             f"{child_profile.age}-year-old child named {child_profile.name}. "
             "Keep it simple, engaging, and easy to understand."
         )
-        conversation_history = []
         current_input = prompt
+        # Use real conversation history if provided, else None
+        history = conversation_history if conversation_history is not None else []
         educational_text = await self.api_client.generate_response(
             child_profile.id,
-            conversation_history,
+            history,
             current_input,
         )
         # Validate generated content

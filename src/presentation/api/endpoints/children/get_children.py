@@ -277,40 +277,62 @@ async def get_children_activity_summary(
             current_user.id,
         )
 
-        # Generate activity summary (mock data for now)
+        # جمع ملخص النشاط الفعلي من الخدمة أو قاعدة البيانات
+        children_activity = []
+        total_interactions = 0
+        total_minutes = 0
+        most_active_day = None
+        safety_incidents = 0
+        day_activity_counter = {}
+
+        for child in children:
+            # استرجاع بيانات النشاط الفعلية من use case أو repository
+            activity = await manage_child_profile_use_case.get_child_activity_summary(
+                child_id=child.id,
+                days=days,
+            )
+            # مثال: activity = {
+            #   "total_interactions": int,
+            #   "daily_average_minutes": float,
+            #   "favorite_activities": list,
+            #   "safety_score": float,
+            #   "last_active": str (ISO),
+            #   "activity_by_day": {"2025-07-20": 5, ...}
+            #   "safety_incidents": int
+            # }
+            children_activity.append({
+                "child_id": child.id,
+                "child_name": child.name,
+                "total_interactions": activity.get("total_interactions", 0),
+                "daily_average_minutes": activity.get("daily_average_minutes", 0),
+                "favorite_activities": activity.get("favorite_activities", []),
+                "safety_score": activity.get("safety_score", 1.0),
+                "last_active": activity.get("last_active", None),
+            })
+            total_interactions += activity.get("total_interactions", 0)
+            total_minutes += activity.get("daily_average_minutes", 0)
+            safety_incidents += activity.get("safety_incidents", 0)
+            # حساب اليوم الأكثر نشاطاً
+            for day, count in activity.get("activity_by_day", {}).items():
+                day_activity_counter[day] = day_activity_counter.get(day, 0) + count
+
+        if day_activity_counter:
+            most_active_day = max(day_activity_counter, key=day_activity_counter.get)
+
+        average_daily_usage_minutes = (total_minutes / len(children)) if children else 0
+
         activity_summary = {
             "parent_id": current_user.id,
             "period_days": days,
             "total_children": len(children),
-            "children_activity": [],
+            "children_activity": children_activity,
             "overall_stats": {
-                "total_interactions": 0,
-                "average_daily_usage_minutes": 0,
-                "most_active_day": None,
-                "safety_incidents": 0,
+                "total_interactions": total_interactions,
+                "average_daily_usage_minutes": average_daily_usage_minutes,
+                "most_active_day": most_active_day,
+                "safety_incidents": safety_incidents,
             },
         }
-
-        # Add activity for each child
-        for child in children:
-            child_activity = {
-                "child_id": child.id,
-                "child_name": child.name,
-                "total_interactions": 15,  # Mock data
-                "daily_average_minutes": 25,  # Mock data
-                "favorite_activities": ["storytelling", "learning games"],
-                "safety_score": 0.98,
-                "last_active": "2025-01-01T12:00:00Z",
-            }
-            activity_summary["children_activity"].append(child_activity)
-            activity_summary["overall_stats"]["total_interactions"] += 15
-
-        # Calculate averages
-        if children:
-            activity_summary["overall_stats"]["average_daily_usage_minutes"] = sum(
-                ca["daily_average_minutes"]
-                for ca in activity_summary["children_activity"]
-            ) / len(children)
 
         logger.info(
             f"Generated {days}-day activity summary for parent: {current_user.id}"

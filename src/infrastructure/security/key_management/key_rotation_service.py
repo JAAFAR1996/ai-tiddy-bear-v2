@@ -1,149 +1,43 @@
-"""Key Rotation Service.
+"""Key rotation service interfaces and implementations."""
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Dict, Optional
+from datetime import datetime
 
-Provides automated and manual key rotation for enhanced security.
-Implements secure key management with child safety compliance.
-"""
+class KeyStorageInterface(ABC):
+    """Interface for key storage."""
+    
+    @abstractmethod
+    async def store_key(self, key_id: str, key_data: bytes) -> None:
+        """Store encryption key."""
+        pass
+    
+    @abstractmethod
+    async def retrieve_key(self, key_id: str) -> Optional[bytes]:
+        """Retrieve encryption key."""
+        pass
 
-import base64
-import hashlib
-import secrets
-import threading
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Any, Protocol
-
-from src.infrastructure.logging_config import get_logger
-
-logger = get_logger(__name__, component="security")
-
-
-class KeyType(Enum):
-    """Types of keys that can be rotated."""
-
-    ENCRYPTION = "encryption"
-    SIGNING = "signing"
-    JWT = "jwt"
-    SESSION = "session"
-    DATABASE = "database"
-    CHILD_DATA = "child_data"  # Special keys for child data encryption
-
-
-class RotationTrigger(Enum):
-    """Triggers that can initiate key rotation."""
-
-    SCHEDULED = "scheduled"
-    MANUAL = "manual"
-    SECURITY_INCIDENT = "security_incident"
-    COMPLIANCE_REQUIREMENT = "compliance_requirement"
-    AGE_LIMIT = "age_limit"
-
+class FileKeyStorage(KeyStorageInterface):
+    """File-based key storage implementation."""
+    
+    def __init__(self, storage_path: str):
+        self.storage_path = storage_path
+    
+    async def store_key(self, key_id: str, key_data: bytes) -> None:
+        """Store key in file system."""
+        # Implementation here
+        pass
+    
+    async def retrieve_key(self, key_id: str) -> Optional[bytes]:
+        """Retrieve key from file system."""
+        # Implementation here
+        return None
 
 @dataclass
-class KeyMetadata:
-    """Metadata for encryption keys."""
-
-    key_id: str
-    key_type: KeyType
-    created_at: datetime
-    expires_at: datetime | None
-    algorithm: str
-    key_size: int
-    usage_count: int = 0
-    last_used: datetime | None = None
-    is_active: bool = True
-    rotation_trigger: RotationTrigger | None = None
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for storage."""
-        data = asdict(self)
-        # Convert datetime objects to ISO strings
-        if self.created_at:
-            data["created_at"] = self.created_at.isoformat()
-        if self.expires_at:
-            data["expires_at"] = self.expires_at.isoformat()
-        if self.last_used:
-            data["last_used"] = self.last_used.isoformat()
-        # Convert enums to values
-        data["key_type"] = self.key_type.value
-        if self.rotation_trigger:
-            data["rotation_trigger"] = self.rotation_trigger.value
-        return data
-
-
-@dataclass
-class KeyRotationPolicy:
-    """Policy for key rotation."""
-
-    rotation_interval: timedelta = timedelta(days=90)
-    max_key_age: timedelta = timedelta(days=180)
-    auto_rotate: bool = True
-
-
-class KeyStorage(Protocol):
-    """Protocol for key storage backends."""
-
-    def store_key(
-        self,
-        key_type: KeyType,
-        key_id: str,
-        key_data: dict[str, Any],
-    ) -> None: ...
-
-    def retrieve_key(self, key_type: KeyType, key_id: str) -> dict[str, Any] | None: ...
-
-    def get_active_key_id(self, key_type: KeyType) -> str | None: ...
-
-    def set_active_key_id(self, key_type: KeyType, key_id: str) -> None: ...
-
-
-class KeyRotationService:
-    """Service for managing key rotation."""
-
-    def __init__(self, policy: KeyRotationPolicy, storage: KeyStorage) -> None:
-        self.policy = policy
-        self.storage = storage
-        self.rotation_lock = threading.Lock()
-
-    def generate_key(self, key_type: KeyType, key_size: int = 256) -> tuple[str, str]:
-        """Generate a new key and key ID."""
-        key = secrets.token_bytes(key_size // 8)
-        key_id = hashlib.sha256(key).hexdigest()
-        return key_id, base64.b64encode(key).decode("utf-8")
-
-    def rotate_key(self, key_type: KeyType, trigger: RotationTrigger) -> None:
-        """Rotate a key for a specific type."""
-        with self.rotation_lock:
-            logger.info(
-                f"Rotating key for type {key_type.value} due to {trigger.value}",
-            )
-            key_id, key_data_b64 = self.generate_key(key_type)
-            metadata = KeyMetadata(
-                key_id=key_id,
-                key_type=key_type,
-                created_at=datetime.now(),
-                expires_at=datetime.now() + self.policy.rotation_interval,
-                algorithm="AES-256-GCM",
-                key_size=256,
-                rotation_trigger=trigger,
-            )
-            key_storage_data = {
-                "key": key_data_b64,
-                "metadata": metadata.to_dict(),
-            }
-            self.storage.store_key(key_type, key_id, key_storage_data)
-            self.storage.set_active_key_id(key_type, key_id)
-            logger.info(
-                f"Successfully rotated key for {key_type.value}. New key ID: {key_id}",
-            )
-
-    def get_active_key(self, key_type: KeyType) -> dict[str, Any] | None:
-        """Get the active key for a specific type."""
-        active_key_id = self.storage.get_active_key_id(key_type)
-        if not active_key_id:
-            logger.warning(
-                f"No active key found for {key_type.value}. Initiating rotation.",
-            )
-            self.rotate_key(key_type, RotationTrigger.MANUAL)
-            active_key_id = self.storage.get_active_key_id(key_type)
-        return self.storage.retrieve_key(key_type, active_key_id)
+class RotationResult:
+    """Result of key rotation operation."""
+    success: bool
+    old_key_id: str
+    new_key_id: str
+    timestamp: datetime
+    error: Optional[str] = None

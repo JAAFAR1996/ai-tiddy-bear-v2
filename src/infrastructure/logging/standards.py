@@ -1,15 +1,15 @@
-from src.domain.interfaces.logging_interface import LogLevel
+
 """🔍 Standardized Logging for AI Teddy Bear System
 Consistent logging levels and patterns across all services.
 """
-
+from src.domain.interfaces.logging_interface import LogLevel
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, Optional, Dict
 
 
+class LogCategory(Enum):
     """Standard log categories for the system."""
-
     SECURITY = "SECURITY"
     CHILD_SAFETY = "CHILD_SAFETY"
     PERFORMANCE = "PERFORMANCE"
@@ -34,28 +34,17 @@ class StandardizedLogger:
         level: LogLevel,
         category: LogCategory,
         message: str,
-        extra_context: dict[str, Any] | None = None,
+        extra_context: Optional[Dict[str, Any]] = None,
         exc_info: bool = False,
     ) -> None:
-        """Log message with standardized context and format.
-
-        Args:
-            level: Log level
-            category: Log category
-            message: The log message
-            extra_context: Additional context data
-            exc_info: Whether to include exception info
-
-        """
+        """Log message with standardized context and format."""
         context = {
             "service": self.service_name,
             "category": category.value,
             "timestamp": datetime.utcnow().isoformat(),
         }
-
         if extra_context:
             context.update(extra_context)
-
         formatted_message = f"[{category.value}] {message}"
         getattr(self.logger, level.value.lower())(
             formatted_message,
@@ -66,14 +55,13 @@ class StandardizedLogger:
     def security_event(
         self,
         event_type: str,
-        details: dict[str, Any] | None = None,
+        details: Optional[Dict[str, Any]] = None,
         severity: LogLevel = LogLevel.WARNING,
     ) -> None:
         """Log security events."""
         context = {"event_type": event_type}
         if details:
             context.update(details)
-
         self._log_with_context(
             severity,
             LogCategory.SECURITY,
@@ -84,8 +72,8 @@ class StandardizedLogger:
     def child_safety_event(
         self,
         event_type: str,
-        child_id: str | None = None,
-        details: dict[str, Any] | None = None,
+        child_id: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Log child safety events."""
         context = {"event_type": event_type}
@@ -93,7 +81,6 @@ class StandardizedLogger:
             context["child_id"] = child_id
         if details:
             context.update(details)
-
         self._log_with_context(
             LogLevel.INFO,
             LogCategory.CHILD_SAFETY,
@@ -115,7 +102,6 @@ class StandardizedLogger:
             "unit": unit,
         }
         context.update(kwargs)
-
         self._log_with_context(
             LogLevel.INFO,
             LogCategory.PERFORMANCE,
@@ -139,23 +125,20 @@ class StandardizedLogger:
             "duration_ms": duration_ms,
         }
         context.update(kwargs)
-
         if status_code >= 500:
             level = LogLevel.ERROR
         elif status_code >= 400:
             level = LogLevel.WARNING
         else:
             level = LogLevel.INFO
-
-        # Split long message for better readability
-        message = f"{method} {path} -> {status_code} " f"({duration_ms:.2f}ms)"
+        message = f"{method} {path} -> {status_code} ({duration_ms:.2f}ms)"
         self._log_with_context(level, LogCategory.API, message, context)
 
     def audio_processing(
         self,
         operation: str,
-        duration_ms: float | None = None,
-        quality_score: float | None = None,
+        duration_ms: Optional[float] = None,
+        quality_score: Optional[float] = None,
         **kwargs,
     ) -> None:
         """Log audio processing events."""
@@ -165,7 +148,6 @@ class StandardizedLogger:
         if quality_score is not None:
             context["quality_score"] = quality_score
         context.update(kwargs)
-
         self._log_with_context(
             LogLevel.INFO,
             LogCategory.AUDIO,
@@ -177,8 +159,8 @@ class StandardizedLogger:
         self,
         model_name: str,
         operation: str,
-        confidence: float | None = None,
-        processing_time_ms: float | None = None,
+        confidence: Optional[float] = None,
+        processing_time_ms: Optional[float] = None,
         **kwargs,
     ) -> None:
         """Log AI processing events."""
@@ -191,7 +173,6 @@ class StandardizedLogger:
         if processing_time_ms is not None:
             context["processing_time_ms"] = processing_time_ms
         context.update(kwargs)
-
         self._log_with_context(
             LogLevel.INFO,
             LogCategory.AI_PROCESSING,
@@ -202,9 +183,9 @@ class StandardizedLogger:
     def database_operation(
         self,
         operation: str,
-        table: str | None = None,
-        duration_ms: float | None = None,
-        affected_rows: int | None = None,
+        table: Optional[str] = None,
+        duration_ms: Optional[float] = None,
+        affected_rows: Optional[int] = None,
         **kwargs,
     ) -> None:
         """Log database operations."""
@@ -216,7 +197,6 @@ class StandardizedLogger:
         if affected_rows is not None:
             context["affected_rows"] = affected_rows
         context.update(kwargs)
-
         self._log_with_context(
             LogLevel.INFO,
             LogCategory.DATABASE,

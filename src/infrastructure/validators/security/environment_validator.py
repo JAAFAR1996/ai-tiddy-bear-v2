@@ -210,7 +210,8 @@ class EnvironmentSecurityValidator:
                         )
                     elif var_name == "OPENAI_API_KEY":
                         config[var_name] = (
-                            "sk-development-mock-key-" + secrets.token_hex(20)
+                            logger.error("No real development key available - environment key not configured.")
+                            raise NotImplementedError("No real development key available - environment key not configured.")
                         )
                     else:
                         config[var_name] = cls.generate_secure_secret()

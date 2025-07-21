@@ -60,24 +60,56 @@ class ChaosMetricsCollector:
         )
 
     async def _collect_metrics(self, experiment_id: str) -> list[ChaosMetric]:
-        """Collect individual service metrics."""
-        # Mock implementation
-        import random
+        """Collect individual service metrics (production)."""
+        import aiohttp
         from datetime import datetime
-
         metrics = []
-        services = ["auth_service", "user_service", "chat_service"]
-        for service in services:
-            metrics.append(
-                ChaosMetric(
-                    timestamp=datetime.now(),
-                    experiment_id=experiment_id,
-                    service_name=service,
-                    metric_name="cpu_usage",
-                    metric_value=random.uniform(0.5, 1.0),
-                    tags={"region": "us-east-1"},
-                ),
-            )
+        services = {
+            "auth_service": "http://localhost:8001/metrics",
+            "user_service": "http://localhost:8002/metrics",
+            "chat_service": "http://localhost:8003/metrics",
+        }
+        async with aiohttp.ClientSession() as session:
+            for service, url in services.items():
+                try:
+                    async with session.get(url, timeout=3) as resp:
+                        if resp.status == 200:
+                            data = await resp.json()
+                            cpu = data.get("cpu_usage", 0.0)
+                            metrics.append(
+                                ChaosMetric(
+                                    timestamp=datetime.now(),
+                                    experiment_id=experiment_id,
+                                    service_name=service,
+                                    metric_name="cpu_usage",
+                                    metric_value=cpu,
+                                    tags={"region": "us-east-1"},
+                                )
+                            )
+                        else:
+                            logger.error(f"Failed to fetch metrics from {service}: HTTP {resp.status}")
+                            metrics.append(
+                                ChaosMetric(
+                                    timestamp=datetime.now(),
+                                    experiment_id=experiment_id,
+                                    service_name=service,
+                                    metric_name="cpu_usage",
+                                    metric_value=None,
+                                    tags={"region": "us-east-1", "error": f"HTTP {resp.status}"},
+                                )
+                            )
+                except Exception as e:
+                    logger.error(f"Error collecting metrics from {service}: {e}")
+                    metrics.append(
+                        ChaosMetric(
+                            timestamp=datetime.now(),
+                            experiment_id=experiment_id,
+                            service_name=service,
+                            metric_name="cpu_usage",
+                            metric_value=None,
+                            tags={"region": "us-east-1", "error": str(e)},
+                        )
+                    )
         return metrics
 
     def get_all_metrics(self) -> list[ChaosMetric]:

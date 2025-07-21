@@ -10,9 +10,8 @@ from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.child_repository import (
     ChildRepository,
 )
-from src.infrastructure.persistence.conversation_repository import AsyncSQLAlchemyConversationRepo as ConversationRepository import (
-    ConversationRepository,
-)
+from src.infrastructure.persistence.conversation_repository import AsyncSQLAlchemyConversationRepo as ConversationRepository
+
 from src.infrastructure.persistence.repositories.safety_repository import (
     SafetyRepository,
 )

@@ -45,30 +45,37 @@ class SafetyAnalyzer:
         logger.info("SafetyAnalyzer initialized.")
 
     async def analyze_safety(self, text: str) -> dict[str, Any]:
-        """Performs a multi-layer safety analysis on the given text.
-
-        Args:
-            text: The text to analyze.
-
-        Returns:
-            A dictionary containing safety analysis results.
-
-        """
+        """Performs a multi-layer safety analysis on the given text using real AI moderation if available."""
         flagged_keywords = []
         text_lower = text.lower()
         # Keyword-based filtering
         for keyword in self.forbidden_keywords:
             if keyword in text_lower:
                 flagged_keywords.append(keyword)
-        # Placeholder for more advanced AI-based moderation
-        # In a real system, this would call OpenAI's moderation API or a custom model
-        ai_moderation_score = 0.0  # Assume safe by default for mock
-        if flagged_keywords:
-            ai_moderation_score = 0.9  # Simulate high risk if keywords found
-        is_safe = not bool(flagged_keywords) and ai_moderation_score < 0.9
+
+        ai_moderation_score = 0.0
+        ai_flagged_categories = []
+        ai_details = ""
+        # Real AI moderation layer if openai_client is available
+        if self.openai_client is not None:
+            try:
+                moderation_response = await self.openai_client.moderations.create(input=text)
+                moderation_result = moderation_response.results[0]
+                ai_moderation_score = float(moderation_result.category_scores.get("sexual", 0.0))
+                # Collect all flagged categories
+                ai_flagged_categories = [cat for cat, flagged in moderation_result.categories.items() if flagged]
+                ai_details = "OpenAI moderation API used"
+            except Exception as e:
+                logger.warning(f"AI moderation API failed: {e}")
+                ai_details = "AI moderation unavailable, fallback to keyword only"
+        else:
+            ai_details = "AI moderation unavailable, fallback to keyword only"
+
+        is_safe = not bool(flagged_keywords or ai_flagged_categories) and ai_moderation_score < 0.7
+        all_flagged = list(set(flagged_keywords + ai_flagged_categories))
         return {
             "safe": is_safe,
-            "safety_score": 1.0 - ai_moderation_score,  # 1.0 is perfectly safe
-            "flagged_categories": flagged_keywords,
-            "analysis_details": "Keyword and mock AI moderation",
+            "safety_score": 1.0 - max(ai_moderation_score, 0.9 if flagged_keywords else 0.0),
+            "flagged_categories": all_flagged,
+            "analysis_details": f"Keyword + AI moderation. {ai_details}",
         }

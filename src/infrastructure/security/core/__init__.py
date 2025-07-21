@@ -2,7 +2,7 @@
 
 from .main_security_service import MainSecurityService
 from .security_middleware import SecurityMiddleware
-from .models import EncryptionMetadata, COPPAValidatorRecord
+from src.domain.models.security_core_models import EncryptionMetadata, COPPAValidatorRecord
 from .security_levels import SecurityLevel
 
 __all__ = [

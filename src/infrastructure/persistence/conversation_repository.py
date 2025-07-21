@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.domain.entities.conversation import Conversation
-from src.infrastructure.persistence.models.conversation_models import ConversationModel
+from src.domain.models.conversation_models import ConversationModel
 
 
 class ConversationRepository(IConversationRepository):

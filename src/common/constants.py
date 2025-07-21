@@ -255,3 +255,26 @@ OPENAPI_BEARER_DESCRIPTION = (
     "JWT Authorization header using the Bearer scheme. "
     "Example: 'Authorization: Bearer <token>'"
 )
+
+# Missing constants
+SENSITIVE_LOG_INTERACTION_KEYS = ['password', 'token', 'secret', 'api_key', 'auth']
+
+# Missing Constants
+SENSITIVE_LOG_INTERACTION_KEYS = ['password', 'token', 'secret', 'api_key', 'auth', 'ssn']
+
+# API Tags 
+API_TAG_AUTH = "Authentication"
+API_TAG_CHATGPT = "ChatGPT"
+API_TAG_DASHBOARD = "Dashboard"
+API_TAG_ESP32 = "ESP32"
+API_TAG_HEALTH = "Health"
+
+# Missing Constants
+SENSITIVE_LOG_INTERACTION_KEYS = ['password', 'token', 'secret', 'api_key', 'auth']
+
+# API Tags
+API_TAG_AUTH = "Authentication"
+API_TAG_CHATGPT = "ChatGPT Integration"
+API_TAG_DASHBOARD = "Parent Dashboard"
+API_TAG_ESP32 = "ESP32 Device"
+API_TAG_HEALTH = "Health Check"

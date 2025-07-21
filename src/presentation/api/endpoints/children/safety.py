@@ -1,11 +1,16 @@
+from .models import ChildSafetySummary
+from src.infrastructure.logging_config import get_logger
+from typing import Any
+from datetime import datetime
+
+
+class DatabaseNotAvailableError(Exception):
+    """Raised when the database service is not available in production."""
+    pass
+
+
 """Security operations and safety summary for children."""
 
-from datetime import datetime
-from typing import Any
-
-from src.infrastructure.logging_config import get_logger
-
-from .models import ChildSafetySummary
 
 logger = get_logger(__name__, component="api")
 
@@ -58,16 +63,16 @@ class ChildSafetyManager:
         """Get child safety summary."""
         try:
             if not DATABASE_AVAILABLE:
-                return ChildSafetySummary.create_mock(child_id)
+                logger.critical("Database service is not available. Cannot get child safety summary. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for get_safety_summary.")
 
-            # Get safety events from database
             db_service = get_database_service()
             safety_events = await db_service.get_safety_events(child_id)
             return ChildSafetySummary.from_safety_events(child_id, safety_events)
         except Exception as e:
             logger.error(f"Error getting safety summary for child {child_id}: {e}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=f"Failed to get safety summary: {e!s}",
             )
 
@@ -88,8 +93,8 @@ class ChildSafetyManager:
             }
 
             if not DATABASE_AVAILABLE:
-                logger.info(f"Mock safety event recorded: {event_record}")
-                return event_record
+                logger.critical("Database service is not available. Cannot record safety event. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for record_safety_event.")
 
             # Log event in database
             db_service = get_database_service()
@@ -130,8 +135,8 @@ class ChildSafetyManager:
             deduction = score_deductions.get(event_type, 5)
 
             if not DATABASE_AVAILABLE:
-                logger.info(f"Mock safety score updated: -{deduction} for {event_type}")
-                return max(0, 100 - deduction)
+                logger.critical("Database service is not available. Cannot update safety score. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for update_safety_score.")
 
             # Get current safety score from database
             db_service = get_database_service()
@@ -184,8 +189,8 @@ class ChildSafetyManager:
             }
 
             if not DATABASE_AVAILABLE:
-                logger.info(f"Mock safety alert sent: {alert_data}")
-                return
+                logger.critical("Database service is not available. Cannot send safety alert. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for send_safety_alert.")
 
             # Send alert (can be implemented via email, push notification, etc)
             db_service = get_database_service()
@@ -197,17 +202,10 @@ class ChildSafetyManager:
     async def get_safety_events(child_id: str, limit: int = 10) -> list[dict[str, Any]]:
         """Get safety events for child."""
         try:
+
             if not DATABASE_AVAILABLE:
-                return [
-                    {
-                        "event_id": "mock_event_1",
-                        "child_id": child_id,
-                        "event_type": SafetyEventTypes.CONTENT_FILTER,
-                        "timestamp": datetime.now().isoformat(),
-                        "severity": "low",
-                        "description": "Content filtered due to inappropriate language",
-                    },
-                ]
+                logger.critical("Database service is not available. Cannot get safety events. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for get_safety_events.")
 
             db_service = get_database_service()
             return await db_service.get_safety_events(child_id, limit)
@@ -402,8 +400,8 @@ class UsageMonitor:
             }
 
             if not DATABASE_AVAILABLE:
-                logger.info(f"Mock usage tracked: {usage_record}")
-                return usage_record
+                logger.critical("Database service is not available. Cannot track usage. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for track_usage.")
 
             # Record usage in database
             db_service = get_database_service()
@@ -427,18 +425,10 @@ class UsageMonitor:
     async def get_usage_statistics(child_id: str, days: int = 7) -> dict[str, Any]:
         """Get usage statistics."""
         try:
+
             if not DATABASE_AVAILABLE:
-                return {
-                    "child_id": child_id,
-                    "total_usage": 480,  # 8 hours
-                    "daily_average": 68,
-                    "most_active_day": "Saturday",
-                    "activity_breakdown": {
-                        "conversations": 60,
-                        "games": 20,
-                        "stories": 20,
-                    },
-                }
+                logger.critical("Database service is not available. Cannot get usage statistics. This is a production-blocking error.")
+                raise DatabaseNotAvailableError("Database connection not established for get_usage_statistics.")
 
             db_service = get_database_service()
             usage_stats = await db_service.get_usage_statistics(child_id, days)

@@ -2,6 +2,7 @@
 Added comprehensive error boundaries and authentication.
 """
 
+from src.domain.entities.user import User
 import secrets
 from datetime import datetime
 from typing import Any
@@ -50,8 +51,8 @@ def _sanitize_child_id_for_log(child_id: str) -> str:
 
 async def get_authenticated_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> dict[str, Any]:
-    """Verify authentication for dashboard access - COPPA compliance required."""
+) -> User:
+    """Verify authentication for dashboard access - COPPA compliance required. Returns User model."""
     try:
         from src.infrastructure.security.auth.real_auth_service import (
             create_auth_service,
@@ -74,12 +75,15 @@ async def get_authenticated_user(
                 user_message="Access denied: Only parents/guardians can access child dashboards",
             )
 
-        return {
-            "user_id": payload.get("sub"),
-            "role": user_role,
-            "permissions": payload.get("permissions", []),
-            "child_ids": payload.get("child_ids", []),
-        }
+        return User(
+            id=payload.get("sub"),
+            email=payload.get("email", ""),
+            role=user_role,
+            name=payload.get("name", ""),
+            is_active=payload.get("is_active", True),
+            created_at=payload.get("created_at"),
+            last_login=payload.get("last_login"),
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -93,7 +97,7 @@ async def get_authenticated_user(
 async def get_child_stats(
     child_id: str,
     period: str = "week",  # week, month, year
-    current_user: dict[str, Any] = Depends(get_authenticated_user),
+    current_user: User = Depends(get_authenticated_user),
     database: Database = Depends(container.database),
 ) -> dict[str, Any]:
     """Get child interaction statistics with COPPA compliance.
@@ -101,7 +105,7 @@ async def get_child_stats(
     Returns comprehensive analytics for authorized parents/guardians only.
     """
     try:
-        validate_child_access(current_user, child_id)
+        validate_child_access({"user_id": current_user.id, "role": current_user.role, "child_ids": getattr(current_user, "child_ids", [])}, child_id)
 
         valid_periods = ["day", "week", "month", "year"]
         if period not in valid_periods:
@@ -116,7 +120,7 @@ async def get_child_stats(
             extra={
                 "child_id": _sanitize_child_id_for_log(child_id),
                 "period": period,
-                "user_id": current_user.get("user_id"),
+                "user_id": current_user.id,
             },
         )
 
@@ -179,7 +183,7 @@ async def get_child_stats(
 
 @router.get("/devices/status")
 async def get_devices_status(
-    current_user: dict[str, Any] = Depends(get_authenticated_user),
+    current_user: User = Depends(get_authenticated_user),
     database: Database = Depends(container.database),
 ) -> dict[str, Any]:
     """Get devices status for authorized children only.
@@ -190,14 +194,14 @@ async def get_devices_status(
         logger.info(
             "Retrieving devices status",
             extra={
-                "user_id": current_user.get("user_id"),
-                "user_role": current_user.get("role"),
+                "user_id": current_user.id,
+                "user_role": current_user.role,
             },
         )
 
-        user_child_ids = current_user.get("child_ids", [])
+        user_child_ids = getattr(current_user, "child_ids", [])
 
-        if current_user.get("role") == "admin":
+        if current_user.role == "admin":
             # Admins can see all devices
             devices_data = await database.get_all_devices_status()
         else:
@@ -248,8 +252,8 @@ async def get_devices_status(
                     "devices": devices,
                     "summary": summary,
                     "user_permissions": {
-                        "can_view_all": current_user.get("role") == "admin",
-                        "child_count": len(current_user.get("child_ids", [])),
+                        "can_view_all": current_user.role == "admin",
+                        "child_count": len(getattr(current_user, "child_ids", [])),
                     },
                 },
                 message="Device status retrieved successfully",
@@ -267,8 +271,8 @@ async def get_devices_status(
                     "devices": devices,
                     "summary": summary,
                     "user_permissions": {
-                        "can_view_all": current_user.get("role") == "admin",
-                        "child_count": len(current_user.get("child_ids", [])),
+                        "can_view_all": current_user.role == "admin",
+                        "child_count": len(getattr(current_user, "child_ids", [])),
                     },
                 },
                 "message": "Device status retrieved successfully",
@@ -290,7 +294,7 @@ async def get_devices_status(
 
 @router.get("/system/health")
 async def get_system_health(
-    current_user: dict[str, Any] = Depends(get_authenticated_user),
+    current_user: User = Depends(get_authenticated_user),
     ai_service: AIOrchestrationService = Depends(get_ai_orchestration_service),
     voice_service: AudioProcessingService = Depends(get_audio_processing_service),
     database: Database = Depends(container.database),
@@ -301,7 +305,7 @@ async def get_system_health(
     Provides comprehensive system status for monitoring child safety infrastructure.
     """
     try:
-        if current_user.get("role") != "admin":
+        if current_user.role != "admin":
             raise AITeddyErrorHandler.handle_authorization_error(
                 operation="system_health_access",
                 user_message="Access denied: Only administrators can view system health",
@@ -309,7 +313,7 @@ async def get_system_health(
 
         logger.info(
             "Retrieving system health metrics",
-            extra={"user_id": current_user.get("user_id")},
+            extra={"user_id": current_user.id},
         )
 
         health_status = "healthy"
@@ -380,15 +384,17 @@ async def get_system_health(
             memory_info = psutil.virtual_memory()
             memory_usage = memory_info.percent
         except ImportError:
-            # If psutil is not available, use mock data for demonstration
-            logger.warning("psutil not available for system metrics")
-            cpu_usage = secrets.randbelow(31) + 20  # 20-50%
-            memory_usage = secrets.randbelow(21) + 30  # 30-50%
+            logger.error("psutil not available for system metrics - cannot retrieve system metrics.")
+            raise HTTPException(
+                status_code=501,
+                detail="System metrics not available - psutil not installed."
+            )
         except Exception as e:
-            # If system metrics fail, log error and use mock data
             logger.error(f"Failed to retrieve system metrics: {e}")
-            cpu_usage = secrets.randbelow(31) + 20  # 20-50%
-            memory_usage = secrets.randbelow(21) + 30  # 30-50%
+            raise HTTPException(
+                status_code=501,
+                detail=f"System metrics not available: {e}"
+            )
 
         metrics = {
             "response_time_ms": secrets.randbelow(401) + 100,  # 100-500ms
@@ -427,18 +433,18 @@ async def get_system_health(
 async def get_child_analytics(
     child_id: str,
     metric_type: str = "learning",
-    current_user: dict[str, Any] = Depends(get_authenticated_user),
+    current_user: User = Depends(get_authenticated_user),
     database: Database = Depends(container.database),
 ) -> dict[str, Any]:
     """Get detailed analytics for a specific child."""
     try:
-        validate_child_access(current_user, child_id)
+        validate_child_access({"user_id": current_user.id, "role": current_user.role, "child_ids": getattr(current_user, "child_ids", [])}, child_id)
 
         logger.info(
             f"Retrieving {metric_type} analytics",
             extra={
                 "child_id": _sanitize_child_id_for_log(child_id),
-                "user_id": current_user.get("user_id"),
+                "user_id": current_user.id,
             },
         )
 

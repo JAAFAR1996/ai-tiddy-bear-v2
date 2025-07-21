@@ -48,34 +48,30 @@ class AIServiceUtils:
 
     @staticmethod
     def analyze_sentiment(content: str) -> str:
-        """Dummy sentiment analysis implementation."""
-        positive_keywords = ["happy", "joy", "fun", "love"]
-        negative_keywords = ["sad", "angry", "hate", "fear"]
-
-        content_lower = content.lower()
-        score = 0
-        for word in positive_keywords:
-            if word in content_lower:
-                score += 1
-        for word in negative_keywords:
-            if word in content_lower:
-                score -= 1
-
-        if score > 0:
+        """Analyze sentiment using TextBlob (production-ready)."""
+        from textblob import TextBlob
+        blob = TextBlob(content)
+        polarity = blob.sentiment.polarity
+        if polarity > 0.1:
             return "positive"
-        if score < 0:
+        elif polarity < -0.1:
             return "negative"
-        return "neutral"
+        else:
+            return "neutral"
 
     @staticmethod
     def extract_topics(content: str) -> list[str]:
-        """Extract main topics from content (dummy implementation)."""
-        topics = []
-        keywords = ["adventure", "friendship", "magic", "school", "family"]
-        for word in keywords:
-            if word in content.lower():
-                topics.append(word)
-        return topics
+        """Extract main topics from content using spaCy noun chunks (production-ready)."""
+        import spacy
+        nlp = spacy.load("en_core_web_sm")
+        doc = nlp(content)
+        # Extract noun chunks as candidate topics
+        topics = list(set(chunk.text.strip().lower() for chunk in doc.noun_chunks if len(chunk.text.strip()) > 2))
+        # Fallback: if no noun chunks found, use most frequent nouns
+        if not topics:
+            topics = [token.lemma_ for token in doc if token.pos_ == "NOUN"]
+        # Return top 5 unique topics
+        return topics[:5]
 
     @staticmethod
     def clean_content(content: str) -> str:

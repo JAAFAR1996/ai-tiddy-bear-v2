@@ -10,9 +10,9 @@ from sqlalchemy.future import select
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.persistence.models.child_model import ChildModel
-from src.infrastructure.persistence.models.conversation_models import ConversationModel
-from src.infrastructure.persistence.models.user_model import UserModel
+from src.domain.models.models_infra.child_model import ChildModel
+from src.domain.models.conversation_models import ConversationModel
+from src.domain.models.models_infra.user_model import UserModel
 
 logger = get_logger(__name__, component="persistence")
 

@@ -7,57 +7,7 @@ comprehensive safety monitoring, and parental control features.
 # Standard library imports
 
 # Third-party imports
-try:
-    from fastapi import APIRouter, HTTPException, status
-
-    FASTAPI_AVAILABLE = True
-except ImportError:
-    FASTAPI_AVAILABLE = False
-
-    # Define mock classes when FastAPI is not available
-    class APIRouter:
-        def __init__(self, *args, **kwargs) -> None:
-            self.prefix = kwargs.get("prefix", "")
-            self.tags = kwargs.get("tags", [])
-
-        def post(self, path: str, **kwargs):
-            def decorator(func):
-                func._route_info = {"method": "POST", "path": path, **kwargs}
-                return func
-
-            return decorator
-
-        def get(self, path: str, **kwargs):
-            def decorator(func):
-                func._route_info = {"method": "GET", "path": path, **kwargs}
-                return func
-
-            return decorator
-
-        def put(self, path: str, **kwargs):
-            def decorator(func):
-                func._route_info = {"method": "PUT", "path": path, **kwargs}
-                return func
-
-            return decorator
-
-        def delete(self, path: str, **kwargs):
-            def decorator(func):
-                func._route_info = {"method": "DELETE", "path": path, **kwargs}
-                return func
-
-            return decorator
-
-    class HTTPException(Exception):
-        def __init__(self, status_code: int, detail: str) -> None:
-            self.status_code = status_code
-            self.detail = detail
-
-    class status:
-        HTTP_200_OK = 200
-        HTTP_201_CREATED = 201
-        HTTP_404_NOT_FOUND = 404
-        HTTP_500_INTERNAL_SERVER_ERROR = 500
+from fastapi import APIRouter, HTTPException, status
 
 
 # Local imports

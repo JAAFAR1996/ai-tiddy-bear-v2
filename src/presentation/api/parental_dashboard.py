@@ -16,8 +16,9 @@ from src.infrastructure.dependencies import (
     get_generate_dynamic_story_use_case,
     get_manage_child_profile_use_case,
 )
+from src.infrastructure.security.auth.real_auth_service import UserInfo, get_current_parent
 from src.infrastructure.security.child_safety import get_consent_manager
-# TODO: error_handler needs to be implemented or removed
+from src.infrastructure.exception_handling.enterprise_exception_handler import get_enterprise_exception_handler
 
 router = APIRouter()
 
@@ -103,17 +104,16 @@ async def create_child_profile_endpoint(
     use_case: ManageChildProfileUseCase = Depends(get_manage_child_profile_use_case),
 ) -> ChildData:
     try:
-        child_data = await use_case.create_child_profile(
+        return await use_case.create_child_profile(
             request.name, request.age, request.preferences
         )
-        return child_data
     except Exception as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to create child profile",
-        )
+        ) from e
 
 
 @router.get("/children/{child_id}", response_model=ChildData)
@@ -162,27 +162,24 @@ async def generate_child_story_endpoint(
     child_id: UUID,
     theme: str = "adventure",
     length: str = "short",
-    use_case: GenerateDynamicStoryUseCase = Depends(
-        get_generate_dynamic_story_use_case
-    ),
+    use_case: GenerateDynamicStoryUseCase = Depends(get_generate_dynamic_story_use_case),
 ) -> StoryResponse:
     try:
-        story_response = await use_case.execute(child_id, theme, length)
-        return story_response
+        return await use_case.execute(child_id, theme, length)
     except ValueError as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e,
             status.HTTP_404_NOT_FOUND,
             "Story not found or invalid parameters",
-        )
+        ) from e
     except Exception as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to generate story",
-        )
+        ) from e
 
 
 @router.post("/children/{child_id}/consent/request")
@@ -208,12 +205,12 @@ async def request_consent_verification(
             "message": f"Verification {verification_method} sent to parent",
         }
     except Exception as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to request parental consent",
-        )
+        ) from e
 
 
 @router.post("/children/{child_id}/consent/grant")
@@ -253,10 +250,10 @@ async def grant_parental_consent(
             "message": "Parental consent successfully granted",
         }
     except Exception as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e, status.HTTP_400_BAD_REQUEST, "Failed to grant parental consent"
-        )
+        ) from e
 
 
 @router.get("/children/{child_id}/consent/status", response_model=ConsentStatusResponse)
@@ -274,12 +271,12 @@ async def get_consent_status(child_id: UUID) -> ConsentStatusResponse:
             consent_valid=consent_status.get("consent_valid", False),
         )
     except Exception as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to retrieve consent status",
-        )
+        ) from e
 
 
 @router.delete("/children/{child_id}/consent/{consent_type}")
@@ -310,9 +307,9 @@ async def revoke_consent(
     except HTTPException:
         raise
     except Exception as e:
-        error_handler = get_secure_error_handler()
+        error_handler = get_enterprise_exception_handler()
         raise error_handler.create_safe_error_response(
             e,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to revoke consent",
-        )
+        ) from e

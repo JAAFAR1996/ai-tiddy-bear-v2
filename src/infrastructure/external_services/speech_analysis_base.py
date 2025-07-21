@@ -1,3 +1,5 @@
+import numpy as np
+import io
 from datetime import datetime
 from typing import Any
 
@@ -52,7 +54,7 @@ class AudioValidator:
         self.config = config
 
     async def validate_audio_data(self, audio_data: bytes) -> dict[str, Any]:
-        """Validate audio data format and quality."""
+        """Validate audio data format and quality using librosa (production only)."""
         try:
             if not audio_data:
                 return {"valid": False, "error": "Empty audio data provided"}
@@ -61,21 +63,26 @@ class AudioValidator:
                     "valid": False,
                     "error": "Audio data too small to analyze",
                 }
-            # Basic audio format validation (simplified for mock)
-            estimated_duration = len(audio_data) / 44100 / 2  # Rough estimate
-            if estimated_duration < self.config.min_audio_duration:
+            if not LIBROSA_AVAILABLE:
+                logger.error("librosa not installed. Cannot validate audio data.")
+                raise RuntimeError("librosa not installed. Please install librosa.")
+            audio_buffer = io.BytesIO(audio_data)
+            import librosa
+            y, sr = librosa.load(audio_buffer, sr=None, mono=True)
+            duration = librosa.get_duration(y=y, sr=sr)
+            if duration < self.config.min_audio_duration:
                 return {
                     "valid": False,
                     "error": f"Audio too short (minimum {self.config.min_audio_duration}s)",
                 }
-            if estimated_duration > self.config.max_audio_duration:
+            if duration > self.config.max_audio_duration:
                 return {
                     "valid": False,
                     "error": f"Audio too long (maximum {self.config.max_audio_duration}s)",
                 }
             return {
                 "valid": True,
-                "duration": estimated_duration,
+                "duration": duration,
                 "size": len(audio_data),
             }
         except Exception as e:
@@ -83,44 +90,66 @@ class AudioValidator:
             return {"valid": False, "error": f"Audio validation failed: {e!s}"}
 
 
+try:
+    import librosa
+    LIBROSA_AVAILABLE = True
+except ImportError:
+    LIBROSA_AVAILABLE = False
+
+
 class FeatureExtractor:
-    """Audio feature extraction for speech analysis."""
+    """Audio feature extraction for speech analysis using librosa."""
 
     def __init__(self, config: SpeechAnalysisConfig) -> None:
         self.config = config
 
     async def extract_audio_features(self, audio_data: bytes) -> dict[str, Any]:
-        """Extract features from audio data for analysis."""
+        """Extract features from audio data for analysis using librosa."""
+        if not LIBROSA_AVAILABLE:
+            logger.error("librosa not installed. Cannot extract audio features.")
+            raise RuntimeError("librosa not installed. Please install librosa.")
         try:
-            # Mock feature extraction (in real implementation would use librosa/pyaudio)
+            # Load audio from bytes
+            audio_buffer = io.BytesIO(audio_data)
+            y, sr = librosa.load(audio_buffer, sr=None, mono=True)
+            duration = librosa.get_duration(y=y, sr=sr)
+            mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=5)
+            mfcc_mean = np.mean(mfcc, axis=1).tolist()
+            spectral_centroid = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr)))
+            zero_crossing_rate = float(np.mean(librosa.feature.zero_crossing_rate(y)))
+            # Estimate silence ratio
+            rms = librosa.feature.rms(y=y)[0]
+            silence_ratio = float(np.sum(rms < 0.01) / len(rms))
+            # Estimate speech rate (very basic: number of zero crossings per second)
+            speech_rate = zero_crossing_rate * sr
+            # Prosodic features (basic)
+            pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+            fundamental_frequency = float(np.mean(pitches[pitches > 0])) if np.any(pitches > 0) else 0.0
+            intensity = float(np.mean(librosa.feature.rms(y=y))) * 100
+            pitch_variation = float(np.std(pitches[pitches > 0])) if np.any(pitches > 0) else 0.0
+
             features = {
                 "spectral_features": {
-                    "mfcc": [
-                        1.2,
-                        -0.8,
-                        0.5,
-                        2.1,
-                        -1.3,
-                    ],  # Mock MFCC coefficients
-                    "spectral_centroid": 2500.0,
-                    "zero_crossing_rate": 0.15,
+                    "mfcc": mfcc_mean,
+                    "spectral_centroid": spectral_centroid,
+                    "zero_crossing_rate": zero_crossing_rate,
                 },
                 "temporal_features": {
-                    "duration": len(audio_data) / 44100 / 2,  # Estimated duration
-                    "silence_ratio": 0.12,
-                    "speech_rate": 4.5,  # syllables per second
+                    "duration": duration,
+                    "silence_ratio": silence_ratio,
+                    "speech_rate": speech_rate,
                 },
                 "prosodic_features": {
-                    "fundamental_frequency": 180.0,  # Hz
-                    "intensity": 65.0,  # dB
-                    "pitch_variation": 0.25,
+                    "fundamental_frequency": fundamental_frequency,
+                    "intensity": intensity,
+                    "pitch_variation": pitch_variation,
                 },
             }
-            logger.info("Audio features extracted successfully")
+            logger.info("Audio features extracted successfully using librosa.")
             return features
-        except Exception as e:
-            logger.error(f"Feature extraction error: {e}")
-            return {"error": f"Feature extraction failed: {e!s}"}
+        except Exception:
+            logger.exception("Feature extraction error")
+            return {"error": "Feature extraction failed."}
 
 
 def create_response_template() -> dict[str, Any]:

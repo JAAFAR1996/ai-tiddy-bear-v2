@@ -1,66 +1,16 @@
 """Main input validation service implementation."""
 
+from src.infrastructure.security.audit.comprehensive_audit_integration import (
+    get_audit_integration,
+)
+from .security_validator import ThreatDetectors
 import json
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-
-from .core import InputValidationResult, SecurityThreat
+from src.infrastructure.validators.security.security_types import InputValidationResult, SecurityThreat
 
 logger = get_logger(__name__, component="security")
-
-try:
-    from .detectors import ThreatDetectors
-except ImportError:
-    # Fallback implementation if detectors module is not available
-    from .patterns import SecurityPatterns
-
-    class ThreatDetectors(SecurityPatterns):
-        """Fallback threat detectors implementation."""
-
-        def __init__(self):
-            super().__init__()
-
-        async def detect_sql_injection(self, text, field):
-            return []
-
-        async def detect_xss(self, text, field):
-            return []
-
-        async def detect_path_traversal(self, text, field):
-            return []
-
-        async def detect_command_injection(self, text, field):
-            return []
-
-        async def detect_ldap_injection(self, text, field):
-            return []
-
-        async def detect_template_injection(self, text, field):
-            return []
-
-        async def detect_inappropriate_content(self, text, field):
-            return []
-
-        async def detect_pii(self, text, field):
-            return []
-
-        async def detect_encoding_attacks(self, text, field):
-            return []
-
-
-try:
-    from src.infrastructure.security.audit.comprehensive_audit_integration import (
-        get_audit_integration,
-    )
-except ImportError:
-    # Fallback implementation
-    class MockAuditIntegration:
-        async def log_security_event(self, **kwargs):
-            logger.info(f"Audit event: {kwargs}")
-
-    def get_audit_integration():
-        return MockAuditIntegration()
 
 
 class ComprehensiveInputValidator(ThreatDetectors):
@@ -427,3 +377,5 @@ async def get_threat_summary(text: str) -> dict:
         "child_safety_violations": len(result.child_safety_violations),
         "is_valid": result.is_valid,
     }
+InputValidator = ComprehensiveInputValidator
+InputValidator = ComprehensiveInputValidator

@@ -7,7 +7,7 @@ from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
-from src.domain.models.consent_models import (
+from src.domain.models.consent_models_domain import (
     ConsentRecord,
 )
 from .verification_service import VerificationService

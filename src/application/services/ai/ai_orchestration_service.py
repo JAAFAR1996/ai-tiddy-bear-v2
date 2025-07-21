@@ -9,7 +9,13 @@ and tailored to the child's preferences.
 from uuid import UUID
 
 from src.application.dto.ai_response import AIResponse
-from src.common.exceptions import ()
+from src.common.exceptions import (
+    ServiceUnavailableError,
+    TimeoutError,
+    ApplicationException,
+    InvalidInputError,
+)
+
 from src.application.interfaces.ai_provider import AIProvider
 from src.application.interfaces.safety_monitor import (
     SafetyLevel,

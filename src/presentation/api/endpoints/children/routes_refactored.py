@@ -140,37 +140,36 @@ def create_extended_children_router() -> APIRouter:
     return router
 
 
-# Placeholder endpoint functions (would be imported from actual modules)
-async def get_child_by_id_endpoint(child_id: str):
-    """Get a specific child profile by ID."""
-    pass
+# استيراد الدوال الحقيقية أو رفع استثناء إنتاجي إذا لم تكن متوفرة
+try:
+    from .get_child_by_id import get_child_by_id_endpoint
+except ImportError:
+    async def get_child_by_id_endpoint(child_id: str):
+        raise NotImplementedError("Production endpoint 'get_child_by_id_endpoint' not implemented.")
 
+try:
+    from .search_children import search_children_endpoint
+except ImportError:
+    async def search_children_endpoint(query: str = None, age_min: int = None, age_max: int = None):
+        raise NotImplementedError("Production endpoint 'search_children_endpoint' not implemented.")
 
-async def search_children_endpoint(
-    query: str = None,
-    age_min: int = None,
-    age_max: int = None,
-):
-    """Search children profiles with filters."""
-    pass
+try:
+    from .get_children_summary import get_children_summary_endpoint
+except ImportError:
+    async def get_children_summary_endpoint():
+        raise NotImplementedError("Production endpoint 'get_children_summary_endpoint' not implemented.")
 
+try:
+    from .get_child_safety_summary import get_child_safety_summary_endpoint
+except ImportError:
+    async def get_child_safety_summary_endpoint(child_id: str):
+        raise NotImplementedError("Production endpoint 'get_child_safety_summary_endpoint' not implemented.")
 
-async def get_children_summary_endpoint():
-    """Get summary statistics for all children."""
-    pass
-
-
-async def get_child_safety_summary_endpoint(child_id: str):
-    """Get safety summary for a specific child."""
-    pass
-
-
-async def get_child_interactions_endpoint(
-    child_id: str,
-    limit: int = 50,
-):
-    """Get recent interactions for a specific child."""
-    pass
+try:
+    from .get_child_interactions import get_child_interactions_endpoint
+except ImportError:
+    async def get_child_interactions_endpoint(child_id: str, limit: int = 50):
+        raise NotImplementedError("Production endpoint 'get_child_interactions_endpoint' not implemented.")
 
 
 def setup_admin_children_routes(router: APIRouter) -> None:
