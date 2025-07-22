@@ -1,12 +1,12 @@
 """Database Service for AI Teddy Bear."""
 
 
-from src.infrastructure.persistence.database_manager import get_async_session
+from src.infrastructure.persistence.database_manager import Database
 from sqlalchemy.future import select
 from datetime import datetime, date, timedelta
 from uuid import uuid4
 from src.infrastructure.logging_config import get_logger
-from src.domain.models.models_infra.child_model import ChildModel
+from src.domain.models.child_models import ChildModel
 
 logger = get_logger(__name__, component="persistence")
 
@@ -118,3 +118,10 @@ _real_db_service = RealDatabaseService()
 
 def get_database_service():
     return _real_db_service
+
+
+def reset_database_service():
+    """Reset database service for testing purposes."""
+    global _real_db_service
+    _real_db_service = RealDatabaseService()
+    logger.info("Database service reset for testing")

@@ -3,11 +3,11 @@ from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
-from domain.events.child_profile_updated import ChildProfileUpdated
-from domain.events.child_registered import ChildRegistered
-from domain.events.conversation_started import ConversationStarted
-from domain.events.conversation_updated import ConversationUpdated
-from domain.events.domain_events import DomainEvent
+from src.domain.events.child_profile_updated import ChildProfileUpdated
+from src.domain.events.child_registered import ChildRegistered
+from src.domain.events.conversation_started import ConversationStarted
+from src.domain.events.conversation_updated import ConversationUpdatedEvent
+from src.domain.events.domain_events import DomainEvent
 
 
 class MockConversationStarted:
@@ -322,7 +322,7 @@ class TestConversationUpdated:
         sentiment = 0.8
         safety_score = 0.95
 
-        event = ConversationUpdated(
+        event = ConversationUpdatedEvent(
             aggregate_id=conversation_id,
             conversation_id=conversation_id,
             emotion=emotion,
@@ -340,7 +340,7 @@ class TestConversationUpdated:
         """Test ConversationUpdated with negative emotion."""
         conversation_id = uuid4()
 
-        event = ConversationUpdated(
+        event = ConversationUpdatedEvent(
             aggregate_id=conversation_id,
             conversation_id=conversation_id,
             emotion="sad",
@@ -357,7 +357,7 @@ class TestConversationUpdated:
         conversation_id = uuid4()
 
         # Test maximum positive sentiment
-        event = ConversationUpdated(
+        event = ConversationUpdatedEvent(
             aggregate_id=conversation_id,
             conversation_id=conversation_id,
             emotion="excited",
@@ -372,7 +372,7 @@ class TestConversationUpdated:
         """Test ConversationUpdated with optional fields."""
         conversation_id = uuid4()
 
-        event = ConversationUpdated(
+        event = ConversationUpdatedEvent(
             aggregate_id=conversation_id,
             conversation_id=conversation_id,
             emotion=None,
@@ -387,7 +387,7 @@ class TestConversationUpdated:
     def test_conversation_updated_string_representation(self):
         """Test ConversationUpdated string representation."""
         conversation_id = uuid4()
-        event = ConversationUpdated(
+        event = ConversationUpdatedEvent(
             aggregate_id=conversation_id,
             conversation_id=conversation_id,
             emotion="curious",
@@ -396,7 +396,7 @@ class TestConversationUpdated:
         )
 
         str_repr = str(event)
-        assert "ConversationUpdated" in str_repr
+        assert "ConversationUpdatedEvent" in str_repr
         assert "curious" in str_repr
 
 

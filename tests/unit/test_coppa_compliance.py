@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.infrastructure.security.coppa_validator import (
+from src.infrastructure.validators.security.coppa_validator import (
     COPPAValidator,
     coppa_validator,
     is_coppa_subject,

@@ -8,10 +8,12 @@ import pytest
 from fastapi import HTTPException, status
 from jose import jwt
 
-from src.infrastructure.security.real_auth_service import (
+from src.infrastructure.security.auth.real_auth_service import (
+    ProductionAuthService,
+)
+from src.domain.models.validation_models import (
     LoginRequest,
     LoginResponse,
-    ProductionAuthService,
 )
 
 

@@ -16,11 +16,11 @@ from src.application.interfaces.infrastructure_services import (
     IContentFilterService,
     IDataRetentionService,
     IEmailService,
-    IEncryptionService,
     IEventBus,
     IParentVerificationService,
     ISettingsProvider,
 )
+from src.domain.interfaces.security_interfaces import IEncryptionService
 
 
 class MockEncryptionService(IEncryptionService):

@@ -11,7 +11,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.persistence.models.user_model import UserModel
+from src.infrastructure.security.auth.jwt_auth import User as UserModel
 from src.infrastructure.persistence.repositories.user_repository import (
     UserRepository,
 )

@@ -6,12 +6,16 @@ from typing import Any
 
 # Local imports
 from src.infrastructure.config import get_settings
-from ..rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
-# # from .real_auth_service import ProductionAuthService
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.rate_limiter.service import (
+    ComprehensiveRateLimiter as RateLimiter,
+)
+from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
+from src.infrastructure.security.encryption.robust_encryption_service import (
+    RobustEncryptionService as ChildDataEncryption,
+)
 
 """Main security service - unified implementation"""
-from src.infrastructure.logging_config import get_logger
-
 logger = get_logger(__name__, component="security")
 
 

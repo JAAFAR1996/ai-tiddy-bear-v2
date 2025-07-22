@@ -1,12 +1,16 @@
 from .error_handling import ErrorHandlingMiddleware
+from .rate_limit_middleware import RateLimitMiddleware as ChildSafetyMiddleware
 from .request_logging import RequestLoggingMiddleware
-# Temporarily disabled for STEP 7 - comprehensive_rate_limiter doesn't exist
-# from .rate_limit_middleware import RateLimitMiddleware as ChildSafetyMiddleware
+
+# Re-enabled for production - rate limiting now properly imports from service.py
 # RateLimitingMiddleware same as RateLimitMiddleware
 
 __all__ = [
-    # "ChildSafetyMiddleware",  # Temporarily disabled for STEP 7
+    "ChildSafetyMiddleware",  # Re-enabled for production
     "ErrorHandlingMiddleware",
-    # "RateLimitingMiddleware",  # Temporarily disabled for STEP 7
+    "RateLimitMiddleware",  # Re-enabled for production (alias)
     "RequestLoggingMiddleware"
 ]
+
+# Export alias for backward compatibility
+RateLimitMiddleware = ChildSafetyMiddleware

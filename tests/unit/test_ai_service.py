@@ -1,17 +1,23 @@
 """Comprehensive Unit Tests for Production AI Service"""
 
 import json
+from typing import Any
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+from pydantic import BaseModel
 
 from src.domain.value_objects import ChildAge
-from src.infrastructure.ai.real_ai_service import (
-    AIResponse,
-    ProductionAIService,
-    StoryRequest,
-)
+from src.application.dto.ai_response import AIResponse
+from src.infrastructure.ai.real_ai_service import ProductionAIService
+
+
+class StoryRequest(BaseModel):
+    """Local StoryRequest definition to avoid import cascade issues."""
+    child_id: str
+    theme: str
+    child_profile: dict[str, Any]
 
 
 @pytest.fixture

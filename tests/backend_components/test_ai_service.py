@@ -23,16 +23,15 @@ except ImportError:
     # Mock pytest when not available
     if pytest is None:
         class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
+                    return func
+                return decorator
 
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
 
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
                     def decorator(func):
                         return func
 

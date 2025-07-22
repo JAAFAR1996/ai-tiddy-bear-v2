@@ -27,16 +27,16 @@ class DataRetentionService:
         self.default_retention_days = 90  # COPPA default
 
     async def schedule_data_deletion(
-        self, 
-        child_id: str, 
+        self,
+        child_id: str,
         deletion_date: datetime
     ) -> bool:
         """Schedule data deletion for a child profile.
-        
+
         Args:
             child_id: Child identifier
             deletion_date: When to delete the data
-            
+
         Returns:
             True if scheduling successful, False otherwise
         """
@@ -58,7 +58,7 @@ class DataRetentionService:
                     updated_at=datetime.now(UTC)
                 )
             )
-            
+
             if result.rowcount == 0:
                 logger.error(f"Failed to update deletion schedule for child {child_id}")
                 return False
@@ -77,13 +77,13 @@ class DataRetentionService:
                 },
                 occurred_at=datetime.now(UTC)
             )
-            
+
             self.db.add(safety_event)
             await self.db.commit()
-            
+
             logger.info(f"Data deletion scheduled for child {child_id} on {deletion_date}")
             return True
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.exception(f"Failed to schedule data deletion for child {child_id}: {e}")
@@ -91,10 +91,10 @@ class DataRetentionService:
 
     async def check_retention_compliance(self, child_id: str) -> dict[str, Any]:
         """Check retention compliance for a child's data.
-        
+
         Args:
             child_id: Child identifier
-            
+
         Returns:
             Dictionary with compliance status and details
         """
@@ -103,7 +103,7 @@ class DataRetentionService:
             child = await self.db.scalar(
                 select(ChildModel).where(ChildModel.id == child_id)
             )
-            
+
             if not child:
                 return {
                     "compliant": False,
@@ -114,10 +114,10 @@ class DataRetentionService:
             now = datetime.now(UTC)
             created_at = child.created_at
             retention_expires = child.data_retention_expires
-            
+
             # Calculate days since creation
             days_since_creation = (now - created_at).days
-            
+
             # Check if retention period is set
             if not retention_expires:
                 # Set default retention period if not set
@@ -128,23 +128,23 @@ class DataRetentionService:
                     .values(data_retention_expires=retention_expires)
                 )
                 await self.db.commit()
-            
+
             # Calculate days until expiry
             days_until_expiry = (retention_expires - now).days
             is_expired = retention_expires < now
             is_due_soon = days_until_expiry <= 7 and not is_expired
-            
+
             # Get data counts for compliance report
             conversation_count = await self.db.scalar(
                 select(func.count(ConversationModel.id))
                 .where(ConversationModel.child_id == child_id)
             )
-            
+
             safety_event_count = await self.db.scalar(
                 select(func.count(SafetyEventModel.id))
                 .where(SafetyEventModel.child_id == child_id)
             )
-            
+
             compliance_status = {
                 "compliant": not is_expired,
                 "child_id": child_id,
@@ -160,14 +160,14 @@ class DataRetentionService:
                 },
                 "warnings": []
             }
-            
+
             if is_expired:
                 compliance_status["warnings"].append("Data retention period has expired")
             elif is_due_soon:
                 compliance_status["warnings"].append(f"Data retention expires in {days_until_expiry} days")
-                
+
             return compliance_status
-            
+
         except Exception as e:
             logger.exception(f"Error checking retention compliance for child {child_id}: {e}")
             return {
@@ -179,10 +179,10 @@ class DataRetentionService:
 
     async def execute_data_deletion(self, child_id: str) -> dict[str, Any]:
         """Execute immediate data deletion for a child.
-        
+
         Args:
             child_id: Child identifier
-            
+
         Returns:
             Dictionary with deletion results
         """
@@ -194,35 +194,35 @@ class DataRetentionService:
                 "items_deleted": {},
                 "success": False
             }
-            
+
             # Delete conversations and messages
             conversations_deleted = await self.db.execute(
                 delete(ConversationModel).where(ConversationModel.child_id == child_id)
             )
             deletion_results["items_deleted"]["conversations"] = conversations_deleted.rowcount
-            
+
             # Delete safety events
             safety_events_deleted = await self.db.execute(
                 delete(SafetyEventModel).where(SafetyEventModel.child_id == child_id)
             )
             deletion_results["items_deleted"]["safety_events"] = safety_events_deleted.rowcount
-            
+
             # Delete child profile (this will cascade to related data)
             child_deleted = await self.db.execute(
                 delete(ChildModel).where(ChildModel.id == child_id)
             )
             deletion_results["items_deleted"]["child_profile"] = child_deleted.rowcount
-            
+
             if child_deleted.rowcount == 0:
                 deletion_results["error"] = "Child profile not found"
                 return deletion_results
-            
+
             await self.db.commit()
             deletion_results["success"] = True
-            
+
             logger.info(f"Successfully deleted all data for child {child_id}: {deletion_results}")
             return deletion_results
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.exception(f"Failed to delete data for child {child_id}: {e}")
@@ -235,16 +235,16 @@ class DataRetentionService:
 
     async def get_children_due_for_deletion(self, days_ahead: int = 7) -> list[dict[str, Any]]:
         """Get list of children whose data is due for deletion.
-        
+
         Args:
             days_ahead: Number of days ahead to look for deletions
-            
+
         Returns:
             List of children due for deletion
         """
         try:
             cutoff_date = datetime.now(UTC) + timedelta(days=days_ahead)
-            
+
             children = await self.db.scalars(
                 select(ChildModel)
                 .where(
@@ -255,11 +255,11 @@ class DataRetentionService:
                 )
                 .order_by(ChildModel.data_retention_expires)
             )
-            
+
             due_for_deletion = []
             for child in children:
                 days_until_deletion = (child.data_retention_expires - datetime.now(UTC)).days
-                
+
                 due_for_deletion.append({
                     "child_id": child.id,
                     "name_encrypted": child.name_encrypted,
@@ -270,26 +270,26 @@ class DataRetentionService:
                     "total_interactions": child.total_interactions,
                     "is_overdue": days_until_deletion < 0
                 })
-                
+
             return due_for_deletion
-            
+
         except Exception as e:
             logger.exception(f"Error getting children due for deletion: {e}")
             return []
 
     async def extend_retention_period(
-        self, 
-        child_id: str, 
+        self,
+        child_id: str,
         additional_days: int,
         reason: str = "parental_request"
     ) -> bool:
         """Extend retention period for a child's data.
-        
+
         Args:
             child_id: Child identifier
             additional_days: Number of additional days to extend
             reason: Reason for extension
-            
+
         Returns:
             True if extension successful, False otherwise
         """
@@ -297,17 +297,17 @@ class DataRetentionService:
             child = await self.db.scalar(
                 select(ChildModel).where(ChildModel.id == child_id)
             )
-            
+
             if not child:
                 logger.warning(f"Child {child_id} not found for retention extension")
                 return False
-            
+
             # Calculate new expiry date
             current_expiry = child.data_retention_expires or (
                 child.created_at + timedelta(days=self.default_retention_days)
             )
             new_expiry = current_expiry + timedelta(days=additional_days)
-            
+
             # Update retention expiry
             await self.db.execute(
                 update(ChildModel)
@@ -317,7 +317,7 @@ class DataRetentionService:
                     updated_at=datetime.now(UTC)
                 )
             )
-            
+
             # Log the extension
             safety_event = SafetyEventModel(
                 id=str(uuid.uuid4()),
@@ -333,13 +333,13 @@ class DataRetentionService:
                 },
                 occurred_at=datetime.now(UTC)
             )
-            
+
             self.db.add(safety_event)
             await self.db.commit()
-            
+
             logger.info(f"Extended retention for child {child_id} by {additional_days} days")
             return True
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.exception(f"Failed to extend retention for child {child_id}: {e}")

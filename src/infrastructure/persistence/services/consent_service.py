@@ -28,23 +28,23 @@ class ConsentDatabaseService:
         self.db = db_session
 
     async def create_consent_record(
-        self, 
-        child_id: str, 
-        parent_id: str, 
+        self,
+        child_id: str,
+        parent_id: str,
         data_types: list[str],
         consent_type: ConsentType = ConsentType.EXPLICIT
     ) -> str:
         """Create a real consent record in the database.
-        
+
         Args:
             child_id: Child identifier
             parent_id: Parent identifier  
             data_types: Types of data requiring consent
             consent_type: Type of consent (explicit/implicit)
-            
+
         Returns:
             Database-generated consent ID
-            
+
         Raises:
             ValueError: If child or parent not found
             RuntimeError: If database operation fails
@@ -81,31 +81,31 @@ class ConsentDatabaseService:
                     "timestamp": datetime.now(UTC).isoformat()
                 }
             )
-            
+
             self.db.add(consent_record)
             await self.db.commit()
-            
+
             logger.info(f"Created consent record: {consent_id} for child {child_id}, parent {parent_id}")
             return consent_id
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.error(f"Failed to create consent record: {e}")
             raise RuntimeError(f"Database error creating consent: {e}")
 
     async def verify_parental_consent(
-        self, 
-        parent_id: str, 
-        child_id: str, 
+        self,
+        parent_id: str,
+        child_id: str,
         consent_type: str = "data_access"
     ) -> bool:
         """Verify valid parental consent exists for data access.
-        
+
         Args:
             parent_id: Parent identifier
             child_id: Child identifier
             consent_type: Type of consent to verify
-            
+
         Returns:
             True if valid consent exists, False otherwise
         """
@@ -123,31 +123,31 @@ class ConsentDatabaseService:
                 )
                 .options(selectinload(ConsentModel.verification_metadata))
             )
-            
+
             if not consent:
                 logger.warning(f"No valid consent found for parent {parent_id}, child {child_id}")
                 return False
-                
+
             # Check if consent covers the requested child
             metadata = consent.verification_metadata or {}
             if metadata.get("child_id") != child_id:
                 logger.warning(f"Consent does not cover child {child_id}")
                 return False
-                
+
             logger.info(f"Valid consent verified for parent {parent_id}, child {child_id}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Error verifying consent: {e}")
             return False
 
     async def revoke_consent(self, consent_id: str, reason: str = "parent_revocation") -> bool:
         """Revoke parental consent record.
-        
+
         Args:
             consent_id: Consent record ID to revoke
             reason: Reason for revocation
-            
+
         Returns:
             True if revoked successfully, False otherwise
         """
@@ -163,15 +163,15 @@ class ConsentDatabaseService:
                     )
                 )
             )
-            
+
             if result.rowcount == 0:
                 logger.warning(f"No consent record found with ID {consent_id}")
                 return False
-                
+
             await self.db.commit()
             logger.info(f"Revoked consent {consent_id}, reason: {reason}")
             return True
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.error(f"Failed to revoke consent {consent_id}: {e}")
@@ -179,10 +179,10 @@ class ConsentDatabaseService:
 
     async def get_consent_status(self, consent_id: str) -> dict[str, Any]:
         """Get consent record status and details.
-        
+
         Args:
             consent_id: Consent record ID
-            
+
         Returns:
             Dictionary with consent status and metadata
         """
@@ -190,14 +190,14 @@ class ConsentDatabaseService:
             consent = await self.db.scalar(
                 select(ConsentModel).where(ConsentModel.id == consent_id)
             )
-            
+
             if not consent:
                 return {"status": "not_found", "consent_id": consent_id}
-                
+
             now = datetime.now(UTC)
             is_expired = consent.expires_at and consent.expires_at < now
             is_revoked = consent.revoked_at is not None
-            
+
             status = "active"
             if is_revoked:
                 status = "revoked"
@@ -205,7 +205,7 @@ class ConsentDatabaseService:
                 status = "expired"
             elif not consent.granted:
                 status = "denied"
-                
+
             return {
                 "consent_id": consent_id,
                 "status": status,
@@ -217,17 +217,17 @@ class ConsentDatabaseService:
                 "verification_method": consent.verification_method,
                 "metadata": consent.verification_metadata
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting consent status for {consent_id}: {e}")
             return {"status": "error", "consent_id": consent_id, "error": str(e)}
 
     async def list_consents_for_child(self, child_id: str) -> list[dict[str, Any]]:
         """List all consent records for a specific child.
-        
+
         Args:
             child_id: Child identifier
-            
+
         Returns:
             List of consent records with status information
         """
@@ -239,14 +239,14 @@ class ConsentDatabaseService:
                 )
                 .order_by(ConsentModel.granted_at.desc())
             )
-            
+
             consent_list = []
             for consent in consents:
                 status_info = await self.get_consent_status(consent.id)
                 consent_list.append(status_info)
-                
+
             return consent_list
-            
+
         except Exception as e:
             logger.error(f"Error listing consents for child {child_id}: {e}")
             return []

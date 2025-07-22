@@ -15,6 +15,7 @@ from .application_container import (
 )
 # Re-export the main container
 container = get_container()
+Container = ApplicationContainer  # Legacy compatibility
 
 # Legacy compatibility exports
 ProfessionalContainer = ApplicationContainer
@@ -26,6 +27,7 @@ ServiceLifetime = type('ServiceLifetime', (), {
 
 # Re-export all necessary items
 __all__ = [
+    'Container',
     'container',
     'ProfessionalContainer',
     'ServiceLifetime',

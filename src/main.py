@@ -12,9 +12,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+
 # Third-party imports for rate limiting
-# from fastapi_limiter import FastAPILimiter  # Temporarily disabled for STEP 7
-# from redis.asyncio import Redis  # Temporarily disabled for STEP 7
+from redis.asyncio import Redis
+from src.infrastructure.security.rate_limiter.service import get_rate_limiter
 
 from src.common.exceptions import (  # Moved to central exceptions module
     StartupValidationException,
@@ -39,8 +40,19 @@ logger = get_logger(__name__, component="application")
 
 
 async def lifespan(app: FastAPI):
-    # Temporarily disable rate limiting for STEP 7 fixes
-    logger.info("Rate limiting disabled for STEP 7 - focusing on DI fixes")
+
+    # Initialize Redis for rate limiting
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    try:
+        redis_client = Redis.from_url(redis_url, decode_responses=True)
+        # Test connection
+        await redis_client.ping()
+        logger.info(f"✅ Connected to Redis at {redis_url} for rate limiting.")
+        # Pass redis_client to ComprehensiveRateLimiter singleton
+        get_rate_limiter(redis_client)
+    except Exception as e:
+        logger.critical(f"❌ Failed to connect to Redis for rate limiting: {e}")
+        raise
 
     # Initialize database with validation - re-enabled for Phase 1
     try:
@@ -53,6 +65,24 @@ async def lifespan(app: FastAPI):
         logger.critical(f"❌ Database initialization failed: {e}")
         # Don't crash the application, but log the error
         # In production, you might want to fail fast here
+
+    # Re-enabled startup validation system for production
+    try:
+        from src.infrastructure.validators.config.startup_validator import (
+            StartupValidator,
+            validate_startup,
+        )
+
+        logger.info("Running comprehensive startup validation...")
+        validator = StartupValidator()
+        is_valid = await validate_startup(validator)
+        if is_valid:
+            logger.info("✅ Startup validation completed successfully")
+        else:
+            logger.warning("⚠️ Startup validation completed with warnings")
+    except Exception as e:
+        logger.error(f"❌ Startup validation failed: {e}")
+        # Log but don't crash - allow application to start in degraded mode
 
     # Yield control to the application startup
     yield

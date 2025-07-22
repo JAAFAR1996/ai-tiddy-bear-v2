@@ -1,4 +1,4 @@
-"""Comprehensive test suite for utils/file_validators.py
+"""Comprehensive test suite for file validation functionality
 
 This test file validates all aspects of the file validation functionality
 including MIME type validation, file size limits, error handling, and security.
@@ -10,15 +10,22 @@ from unittest.mock import Mock, patch
 import pytest
 from fastapi import HTTPException, UploadFile, status
 
-from src.utils.file_validators import (
-    ALLOWED_MIME_TYPES,
-    MAX_FILE_SIZE,
-    validate_audio_file,
+from src.common.constants import MAX_FILE_SIZE_MB
+from src.infrastructure.security.child_safety.file_security_manager import (
+    AudioFileSecurityManager,
 )
+
+# Convert MB to bytes for tests
+MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024
 
 
 class TestFileValidators:
     """Test suite for file validation utilities."""
+
+    @pytest.fixture
+    def security_manager(self):
+        """Create AudioFileSecurityManager instance for testing."""
+        return AudioFileSecurityManager()
 
     @pytest.fixture
     def mock_upload_file(self):

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
-from src.infrastructure.security.coppa.consent_manager import ConsentManager
+from src.infrastructure.security.child_safety.consent_manager import COPPAConsentManager
 from src.presentation.api.middleware.consent_verification import (
     ConsentVerificationMiddleware,
     ConsentVerificationRoute,
@@ -21,7 +21,7 @@ class TestConsentVerificationRoute:
     @pytest.fixture
     def mock_consent_manager(self):
         """Mock consent manager for testing"""
-        manager = AsyncMock(spec=ConsentManager)
+        manager = AsyncMock(spec=COPPAConsentManager)
         return manager
 
     @pytest.fixture
@@ -257,7 +257,7 @@ class TestConsentIntegration:
         # Test the full workflow from request to verification
 
         # 1. Mock consent manager
-        consent_manager = AsyncMock(spec=ConsentManager)
+        consent_manager = AsyncMock(spec=COPPAConsentManager)
         consent_manager.verify_parental_consent = AsyncMock(return_value=True)
 
         # 2. Create route with consent requirements

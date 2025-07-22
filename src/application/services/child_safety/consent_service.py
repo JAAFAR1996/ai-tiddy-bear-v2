@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.repositories.consent_repository import ConsentRepository
+from src.infrastructure.persistence.database_manager import Database
 
 from src.domain.models.consent_models_domain import (
     ConsentRecord,
@@ -24,13 +26,20 @@ class ConsentService:
     - Comprehensive audit trails
     - COPPA compliance validation
     - Integration with verification service
+    - Real database storage with PostgreSQL
     - Clean separation of concerns
     """
 
-    def __init__(self) -> None:
-        """Initialize the consent service with verification integration."""
-        self.consents: dict[str, ConsentRecord] = {}
+    def __init__(self, database: Database | None = None) -> None:
+        """Initialize the consent service with database-backed storage.
+
+        Args:
+            database: Database instance (defaults to Database from environment)
+        """
+        self.database = database or Database()
+        self.consent_repository = ConsentRepository(self.database)
         self.verification_service = VerificationService()
+        logger.info("ConsentService initialized with database-backed storage")
 
     async def request_consent(
         self,
@@ -48,19 +57,22 @@ class ConsentService:
             expiry_days: Number of days the consent remains valid
         Returns: Dictionary containing consent_id and current status
         """
-        consent_id = f"consent_{parent_id}_{child_id}_{feature}"
-        consent_record = ConsentRecord(
-            consent_id=consent_id,
-            parent_id=parent_id,
-            child_id=child_id,
-            feature=feature,
-            status="pending",
-            requested_at=datetime.utcnow().isoformat(),
-            expiry_date=(datetime.utcnow() + timedelta(days=expiry_days)).isoformat(),
-        )
-        self.consents[consent_id] = consent_record
-        logger.info(f"Consent requested for feature: {feature}")
-        return {"consent_id": consent_id, "status": "pending"}
+        try:
+            # Create consent record in database
+            consent_id = await self.consent_repository.create_consent_record(
+                parent_id=parent_id,
+                child_id=child_id,
+                consent_type=feature,
+                data_types=[feature],  # Convert feature to data types list
+                expires_days=expiry_days,
+            )
+
+            logger.info(f"Consent requested for feature: {feature} (ID: {consent_id})")
+            return {"consent_id": consent_id, "status": "pending"}
+
+        except Exception as e:
+            logger.exception(f"Failed to request consent for feature {feature}: {e}")
+            return {"consent_id": None, "status": "error", "error": str(e)}
 
     async def grant_consent(
         self, consent_id: str, verification_method: str
@@ -72,14 +84,27 @@ class ConsentService:
             verification_method: Method used to verify parent identity
         Returns: Dictionary with consent_id and updated status
         """
-        if consent_id not in self.consents:
-            return {"consent_id": consent_id, "status": "not_found"}
-        consent = self.consents[consent_id]
-        consent.status = "granted"
-        consent.granted_at = datetime.utcnow().isoformat()
-        consent.verification_method = verification_method
-        logger.info(f"Consent granted via {verification_method}")
-        return {"consent_id": consent_id, "status": "granted"}
+        try:
+            # Grant consent in database
+            success = await self.consent_repository.grant_consent(
+                consent_id=consent_id,
+                verification_method=verification_method,
+                verification_metadata={
+                    "granted_at": datetime.utcnow().isoformat(),
+                    "verification_method": verification_method,
+                }
+            )
+
+            if success:
+                logger.info(f"Consent granted via {verification_method} (ID: {consent_id})")
+                return {"consent_id": consent_id, "status": "granted"}
+            else:
+                logger.warning(f"Failed to grant consent: {consent_id}")
+                return {"consent_id": consent_id, "status": "not_found"}
+
+        except Exception as e:
+            logger.exception(f"Failed to grant consent {consent_id}: {e}")
+            return {"consent_id": consent_id, "status": "error", "error": str(e)}
 
     async def revoke_consent(self, consent_id: str) -> dict[str, Any]:
         """Revoke a previously granted consent.
@@ -88,13 +113,23 @@ class ConsentService:
             consent_id: Unique identifier for the consent request
         Returns: Dictionary with consent_id and updated status
         """
-        if consent_id not in self.consents:
-            return {"consent_id": consent_id, "status": "not_found"}
-        consent = self.consents[consent_id]
-        consent.status = "revoked"
-        consent.revoked_at = datetime.utcnow().isoformat()
-        logger.info(f"Consent revoked for feature: {consent.feature}")
-        return {"consent_id": consent_id, "status": "revoked"}
+        try:
+            # Revoke consent in database
+            success = await self.consent_repository.revoke_consent(
+                consent_id=consent_id,
+                revocation_reason="Parent requested revocation"
+            )
+
+            if success:
+                logger.info(f"Consent revoked (ID: {consent_id})")
+                return {"consent_id": consent_id, "status": "revoked"}
+            else:
+                logger.warning(f"Failed to revoke consent: {consent_id}")
+                return {"consent_id": consent_id, "status": "not_found"}
+
+        except Exception as e:
+            logger.exception(f"Failed to revoke consent {consent_id}: {e}")
+            return {"consent_id": consent_id, "status": "error", "error": str(e)}
 
     async def check_consent_status(self, consent_id: str) -> dict[str, Any]:
         """Check the current status of a consent request.
@@ -103,22 +138,30 @@ class ConsentService:
             consent_id: Unique identifier for the consent request
         Returns: Dictionary with consent details and current status
         """
-        if consent_id not in self.consents:
+        try:
+            # Get consent status from database
+            consent_statuses = await self.consent_repository.get_consent_status()
+
+            # Find the specific consent record
+            for status in consent_statuses:
+                if status["consent_id"] == consent_id:
+                    return {
+                        "consent_id": consent_id,
+                        "status": "granted" if status["granted"] and status["valid"] else "pending",
+                        "granted": status["granted"],
+                        "valid": status["valid"],
+                        "granted_at": status["granted_at"],
+                        "expires_at": status["expires_at"],
+                        "revoked_at": status["revoked_at"],
+                        "verification_method": status["verification_method"],
+                        "data_types": status["data_types"],
+                    }
+
             return {"consent_id": consent_id, "status": "not_found"}
-        consent = self.consents[consent_id]
-        # Check if consent has expired
-        expiry_date = datetime.fromisoformat(consent.expiry_date)
-        if datetime.utcnow() > expiry_date:
-            consent.status = "expired"
-        return {
-            "consent_id": consent_id,
-            "status": consent.status,
-            "feature": consent.feature,
-            "requested_at": consent.requested_at,
-            "expiry_date": consent.expiry_date,
-            "granted_at": consent.granted_at,
-            "verification_method": consent.verification_method,
-        }
+
+        except Exception as e:
+            logger.exception(f"Failed to check consent status for {consent_id}")
+            return {"consent_id": consent_id, "status": "error", "error": str(e)}
 
     async def verify_parental_consent(
         self, parent_id: str, child_id: str, consent_type: str
@@ -131,18 +174,62 @@ class ConsentService:
             consent_type: Type of consent to verify
         Returns: True if valid consent exists, False otherwise
         """
-        consent_id = f"consent_{parent_id}_{child_id}_{consent_type}"
-        if consent_id not in self.consents:
+        try:
+            # Use repository to verify consent
+            return await self.consent_repository.verify_consent(
+                parent_id=parent_id,
+                child_id=child_id,
+                consent_type=consent_type,
+            )
+
+        except Exception as e:
+            logger.exception(f"Failed to verify consent for parent {parent_id}, child {child_id}")
             return False
-        consent = self.consents[consent_id]
-        # Check if consent is granted and not expired
-        if consent.status != "granted":
-            return False
-        expiry_date = datetime.fromisoformat(consent.expiry_date)
-        if datetime.utcnow() > expiry_date:
-            consent.status = "expired"
-            return False
-        return True
+
+    async def get_consent_status_for_child(
+        self, parent_id: str, child_id: str
+    ) -> dict[str, Any]:
+        """Get all consent statuses for a specific child.
+
+        Args:
+            parent_id: Parent identifier
+            child_id: Child identifier
+        Returns: Dictionary with all consent statuses for the child
+        """
+        try:
+            # Get all consents for this parent and child
+            consent_statuses = await self.consent_repository.get_consent_status(
+                parent_id=parent_id,
+                child_id=child_id,
+            )
+
+            # Group by consent type
+            consent_by_type = {}
+            for status in consent_statuses:
+                consent_type = status["consent_type"]
+                consent_by_type[consent_type] = {
+                    "granted": status["granted"],
+                    "valid": status["valid"],
+                    "granted_at": status["granted_at"],
+                    "expires_at": status["expires_at"],
+                    "revoked_at": status["revoked_at"],
+                    "verification_method": status["verification_method"],
+                }
+
+            return {
+                "child_id": child_id,
+                "parent_id": parent_id,
+                "consent_status": consent_by_type,
+                "last_updated": datetime.utcnow().isoformat(),
+            }
+
+        except Exception as e:
+            logger.exception(f"Failed to get consent status for child {child_id}")
+            return {
+                "child_id": child_id,
+                "parent_id": parent_id,
+                "error": str(e),
+            }
 
     async def initiate_email_verification(
         self, consent_id: str, email: str

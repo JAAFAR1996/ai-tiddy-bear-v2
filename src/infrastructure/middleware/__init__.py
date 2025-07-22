@@ -10,10 +10,10 @@ from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
 from src.presentation.api.middleware.error_handling import ErrorHandlingMiddleware
 from src.presentation.api.middleware.request_logging import RequestLoggingMiddleware
-# Temporarily disabled for STEP 7 - comprehensive_rate_limiter doesn't exist
-# from src.presentation.api.middleware.rate_limit_middleware import (
-#     RateLimitMiddleware as ChildSafetyMiddleware,
-# )
+# Re-enabled for production - rate limiting now properly imports from service.py
+from src.presentation.api.middleware.rate_limit_middleware import (
+    RateLimitMiddleware as ChildSafetyMiddleware,
+)
 
 from src.infrastructure.middleware.security.headers import (
     SecurityHeadersMiddleware
@@ -43,13 +43,12 @@ def setup_middleware(app: FastAPI) -> None:
     app.add_middleware(SecurityHeadersMiddleware)
     logger.info("✅ Security headers middleware configured")
 
-    # 4. Child Safety Middleware (child-specific protection) - DISABLED for STEP 7
-    # app.add_middleware(ChildSafetyMiddleware)
-    logger.info("⚠️ Child safety middleware temporarily disabled for STEP 7")
+    # 4. Child Safety Middleware (child-specific protection) - RE-ENABLED
+    app.add_middleware(ChildSafetyMiddleware)
+    logger.info("✅ Child safety middleware configured")
 
-    # 5. Rate Limiting Middleware - DISABLED for STEP 7
-    # app.add_middleware(RateLimitMiddleware)
-    logger.info("⚠️ Rate limiting middleware temporarily disabled for STEP 7")
+    # 5. Rate Limiting Middleware - RE-ENABLED (same as ChildSafetyMiddleware)
+    logger.info("✅ Rate limiting middleware configured")
 
     # 6. Trusted Host Middleware (production security)
     if is_production:

@@ -16,7 +16,7 @@ from src.application.services.ai.ai_orchestration_service import (
 from src.application.services.device.audio_processing_service import (
     AudioProcessingService,
 )
-from src.infrastructure.caching.redis_cache import RedisCache
+from src.infrastructure.caching.redis_cache import RedisCacheManager as RedisCache
 from src.infrastructure.dependencies import (
     get_ai_orchestration_service,
     get_audio_processing_service,

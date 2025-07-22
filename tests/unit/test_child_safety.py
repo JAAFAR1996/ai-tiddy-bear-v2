@@ -7,9 +7,9 @@ from uuid import uuid4
 import pytest
 
 from src.domain.value_objects import ChildAge
-from src.infrastructure.ai.production_ai_service import ProductionAIService
-from src.infrastructure.security.coppa.consent_manager import ConsentManager
-from src.infrastructure.security.coppa.data_models import (
+from src.infrastructure.ai.real_ai_service import ProductionAIService
+from src.infrastructure.security.child_safety.consent_manager import COPPAConsentManager
+from src.domain.models.child_safety_data_models import (
     ParentConsent,
 )
 
@@ -19,7 +19,7 @@ class TestCOPPACompliance:
 
     @pytest.fixture
     def consent_manager(self):
-        return ConsentManager()
+        return COPPAConsentManager()
 
     @pytest.fixture
     def sample_consent(self):

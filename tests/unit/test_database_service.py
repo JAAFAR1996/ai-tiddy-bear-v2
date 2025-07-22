@@ -8,9 +8,9 @@ import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.persistence.models.child_model import ChildModel
+from src.domain.models.child_models import ChildModel
 from src.infrastructure.persistence.real_database_service import (
-    DatabaseService,
+    RealDatabaseService,
 )
 
 
@@ -25,7 +25,7 @@ def mock_database():
 @pytest.fixture
 def database_service(mock_database):
     """Create database service with mock database."""
-    return DatabaseService(mock_database)
+    return RealDatabaseService(mock_database)
 
 
 @pytest.fixture
@@ -427,7 +427,7 @@ class TestDatabaseInitialization:
         service = init_database_service("postgresql://test:test@localhost/test")
 
         assert service is not None
-        assert isinstance(service, DatabaseService)
+        assert isinstance(service, RealDatabaseService)
 
     def test_get_database_service_lazy_init(self):
         """Test lazy initialization of database service."""
@@ -442,7 +442,7 @@ class TestDatabaseInitialization:
         service = get_database_service()
 
         assert service is not None
-        assert isinstance(service, DatabaseService)
+        assert isinstance(service, RealDatabaseService)
 
     def test_reset_database_service(self):
         """Test resetting database service."""

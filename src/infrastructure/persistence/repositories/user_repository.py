@@ -13,7 +13,7 @@ from sqlalchemy.future import select
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.models_infra.user_model import UserModel
+from src.infrastructure.security.auth.jwt_auth import User as UserModel
 from src.infrastructure.validators.security.database_input_validator import (
     SecurityError,
     create_safe_database_session,

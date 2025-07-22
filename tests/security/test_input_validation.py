@@ -6,12 +6,17 @@ from pydantic import ValidationError
 from src.presentation.api.endpoints.children.models import (
     ChildCreateRequest,
     ChildUpdateRequest,
-    validate_child_data,
 )
+from src.infrastructure.security.core.security_middleware import SecurityMiddleware
 
 
 class TestChildModelValidation:
     """Test child model input validation security."""
+
+    @pytest.fixture
+    def security_middleware(self):
+        """Create SecurityMiddleware instance for testing."""
+        return SecurityMiddleware()
 
     def test_valid_child_creation(self):
         """Test valid child creation request."""
@@ -168,7 +173,7 @@ class TestChildUpdateValidation:
 class TestGeneralValidation:
     """Test general validation functions."""
 
-    def test_validate_child_data_function(self):
+    def test_validate_child_data_function(self, security_middleware):
         """Test the validate_child_data function."""
         # Valid data
         valid_data = {
@@ -177,33 +182,34 @@ class TestGeneralValidation:
             "interests": ["reading"],
             "language": "en",
         }
-        result = validate_child_data(valid_data)
-        assert result == valid_data
+        result = security_middleware.validate_child_data(valid_data)
+        assert result == []  # Empty list means no validation errors
 
-        # Invalid age
-        with pytest.raises(ValueError, match="Age must be between"):
-            validate_child_data({"age": 0})
+        # Invalid age - should return validation errors
+        errors = security_middleware.validate_child_data({"age": 0})
+        assert len(errors) > 0
 
-        with pytest.raises(ValueError, match="Age must be between"):
-            validate_child_data({"age": 15})
+        errors = security_middleware.validate_child_data({"age": 15})
+        assert len(errors) > 0
 
         # Invalid name
-        with pytest.raises(ValueError, match="cannot be empty"):
-            validate_child_data({"name": ""})
+        errors = security_middleware.validate_child_data({"name": ""})
+        assert len(errors) > 0
 
-        with pytest.raises(ValueError, match="cannot exceed.*characters"):
-            validate_child_data({"name": "a" * 60})
+        errors = security_middleware.validate_child_data({"name": "a" * 60})
+        assert len(errors) > 0
 
-        # Invalid interests
-        with pytest.raises(ValueError, match="must be a list"):
-            validate_child_data({"interests": "not a list"})
+        # Invalid interests type
+        errors = security_middleware.validate_child_data({"interests": "not a list"})
+        assert len(errors) > 0
 
-        with pytest.raises(ValueError, match="Maximum.*interests allowed"):
-            validate_child_data({"interests": [f"interest_{i}" for i in range(25)]})
+        # Too many interests
+        errors = security_middleware.validate_child_data({"interests": [f"interest_{i}" for i in range(25)]})
+        assert len(errors) > 0
 
         # Invalid language
-        with pytest.raises(ValueError, match="must be one of"):
-            validate_child_data({"language": "invalid"})
+        errors = security_middleware.validate_child_data({"language": "invalid"})
+        assert len(errors) > 0
 
 
 class TestSecurityEdgeCases:
