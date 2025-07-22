@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.infrastructure.caching.redis_cache import RedisCacheManager as RedisCache
+from src.infrastructure.caching.redis_cache import RedisCacheManager
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.security.core.main_security_service import (

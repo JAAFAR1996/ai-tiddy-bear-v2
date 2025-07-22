@@ -7,6 +7,7 @@ from src.infrastructure.caching.strategies.invalidation_strategy import CacheInv
 __all__ = [
     "CacheConfig",
     "CacheInvalidationStrategy",
+    "RedisCache",
     "RedisCacheManager",
     "get_cache_manager",
 ]

@@ -7,8 +7,8 @@ import threading
 import time
 from unittest.mock import Mock, patch
 
-from src.infrastructure.security.security_manager import (
-    SecurityManager,
+from src.infrastructure.security.child_safety.security_manager import (
+    CoreSecurityManager as SecurityManager,
     security_manager,
 )
 

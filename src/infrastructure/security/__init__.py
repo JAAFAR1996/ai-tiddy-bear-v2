@@ -16,11 +16,15 @@ Structure:
 from .auth.real_auth_service import get_current_user, get_current_parent
 from .core.main_security_service import MainSecurityService, get_security_service
 from .rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
+from .password_hasher import PasswordHasher
+from .token_service import TokenService
 
 __all__ = [
     "get_current_user",
-    "get_current_parent", 
+    "get_current_parent",
     "MainSecurityService",
     "get_security_service",
     "RateLimiter",
+    "PasswordHasher",
+    "TokenService",
 ]
