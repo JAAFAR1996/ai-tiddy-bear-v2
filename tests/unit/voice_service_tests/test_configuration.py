@@ -19,7 +19,7 @@ try:
     )
 except ImportError:
     # Fallback for mock environment
-    from .conftest import (
+    from tests.unit.voice_service_tests.conftest import (
         AudioFormat,
         STTProvider,
         VoiceServiceConfig,

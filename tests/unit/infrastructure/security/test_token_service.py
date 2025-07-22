@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.infrastructure.security.token_service import TokenService
+from src.infrastructure.security.auth.token_service import TokenService
 
 
 class TestTokenService:
@@ -419,7 +419,7 @@ class TestTokenService:
 
     def test_token_service_logging_setup(self, token_service):
         """Test TokenService logging setup."""
-        from src.infrastructure.security.token_service import logger
+        from src.infrastructure.security.auth.token_service import logger
 
         assert logger is not None
         assert hasattr(logger, "info")

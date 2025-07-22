@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from infrastructure.security.real_auth_service import AuthService
+from src.infrastructure.security.core.real_auth_service import AuthService
 
 # Add src to path
 src_path = Path(__file__).parent

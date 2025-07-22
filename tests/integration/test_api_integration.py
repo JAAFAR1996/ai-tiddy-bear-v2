@@ -9,7 +9,7 @@ import pytest
 from httpx import AsyncClient
 
 from src.infrastructure.config.settings import Settings
-from src.infrastructure.security.real_auth_service import ProductionAuthService
+from src.infrastructure.security.core.real_auth_service import ProductionAuthService
 from src.main import app
 
 

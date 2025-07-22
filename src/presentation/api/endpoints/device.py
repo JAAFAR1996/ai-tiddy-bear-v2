@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path, File
 from pydantic import BaseModel, Field
 
 from src.application.services.ai.ai_orchestration_service import (
@@ -120,7 +120,7 @@ async def register_device(
 
 @router.get("/status/{device_id}", response_model=DeviceStatus)
 async def get_device_status(
-    device_id: str = Field(
+    device_id: str = Path(
         ...,
         min_length=8,
         max_length=64,
@@ -169,7 +169,7 @@ class AudioUploadRequest(BaseModel):
 @router.post("/audio/upload")
 async def upload_audio(
     request: AudioUploadRequest,
-    audio_data: bytes = Field(..., description="Audio file data"),
+    audio_data: bytes = File(..., description="Audio file data"),
     ai_service: AIOrchestrationService = Depends(get_ai_orchestration_service),
     voice_service: AudioProcessingService = Depends(get_audio_processing_service),
 ) -> dict[str, Any]:
@@ -221,7 +221,7 @@ class DeviceConfig(BaseModel):
 
 @router.get("/config/{device_id}", response_model=DeviceConfig)
 async def get_device_config(
-    device_id: str = Field(
+    device_id: str = Path(
         ...,
         min_length=8,
         max_length=64,

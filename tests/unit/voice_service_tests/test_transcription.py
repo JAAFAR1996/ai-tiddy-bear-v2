@@ -70,7 +70,7 @@ try:
     )
 except ImportError:
     # Fallback for mock environment
-    from 1st import AudioFormat, TranscriptionResult
+    from tests.unit.voice_service_tests.conftest import AudioFormat, TranscriptionResult
 
 
 class TestTranscriptionFunctionality:

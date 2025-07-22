@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 import bcrypt
 import pytest
 
-from src.infrastructure.security.password_hasher import PasswordHasher
+from src.infrastructure.security.encryption.password_hasher import PasswordHasher
 
 
 class TestPasswordHasher:

@@ -1,4 +1,4 @@
-from 1st import AudioFormat
+from tests.unit.voice_service_tests.conftest import AudioFormat
 import sys
 from pathlib import Path
 
@@ -18,31 +18,30 @@ except ImportError:
         from common.mock_pytest import pytest
     except ImportError:
         # Mock pytest when not available
-
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-                    return decorator
-
-                def asyncio(self, func):
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
+                return decorator
 
-                def slow(self, func):
-                    return func
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+                        return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+                    def asyncio(self, func):
                         return func
-                    return decorator
-            return MockMark()
+
+                    def slow(self, func):
+                        return func
+
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+                        return decorator
+                return MockMark()
 
         def raises(self, exception):
             class MockRaises:

@@ -7,8 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.main_security_service import MainSecurityService
-
+from src.infrastructure.security.core.main_security_service import MainSecurityService
 
 
 class TestComprehensiveSecurityService:

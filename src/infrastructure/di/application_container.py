@@ -9,6 +9,8 @@ from functools import lru_cache
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure import dependencies
 from src.infrastructure.validators.config.startup_validator import StartupValidator
+from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.caching.redis_cache import RedisCacheManager
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -151,6 +153,20 @@ class ApplicationContainer(IContainer):
     def startup_validator(self) -> StartupValidator:
         """Get startup validator instance."""
         return self._registry.resolve(StartupValidator)
+
+    def database(self) -> Database:
+        """Get database instance."""
+        # Create database instance with settings from environment
+        settings = self.settings()
+        database_url = getattr(settings, 'database_url', None) or "sqlite+aiosqlite:///./test.db"
+        return Database(database_url=database_url)
+
+    def redis_cache(self) -> RedisCacheManager:
+        """Get Redis cache manager instance."""
+        # Create Redis cache manager with settings from environment
+        settings = self.settings()
+        redis_url = getattr(settings, 'redis_url', None) or "redis://localhost:6379/0"
+        return RedisCacheManager(redis_url=redis_url)
 
     def child_search_service(self):
         """Get child search service instance."""

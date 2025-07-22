@@ -2,20 +2,55 @@ import os
 import tempfile
 from datetime import datetime, timedelta
 from unittest.mock import Mock
+from enum import Enum
+from dataclasses import dataclass
+from typing import Optional, Dict, Any
 
 import pytest
 
 from src.domain.entities.conversation import (
-    ContentType,
     Conversation,
-    EmotionalState,
     InteractionType,
-    Message,
-    MessageRole,
 )
 from src.infrastructure.persistence.conversation_sqlite_repository import (
     ConversationSQLiteRepository,
 )
+
+
+# Mock classes for testing (since they don't exist in actual conversation entity)
+class MessageRole(Enum):
+    """Mock MessageRole enum for testing"""
+    USER = "user"
+    ASSISTANT = "assistant"
+
+
+class ContentType(Enum):
+    """Mock ContentType enum for testing"""
+    TEXT = "text"
+    VOICE = "voice"
+
+
+@dataclass
+class Message:
+    """Mock Message class for testing"""
+    id: str
+    role: MessageRole
+    content: str
+    content_type: ContentType
+    sequence_number: int
+    timestamp: datetime
+    metadata: Optional[Dict[str, Any]] = None
+    sentiment_score: Optional[float] = None
+    confidence_score: Optional[float] = None
+
+
+@dataclass
+class EmotionalState:
+    """Mock EmotionalState class for testing"""
+    emotion: str
+    confidence: float
+    timestamp: datetime
+    triggers: Optional[list] = None
 
 
 @pytest.fixture

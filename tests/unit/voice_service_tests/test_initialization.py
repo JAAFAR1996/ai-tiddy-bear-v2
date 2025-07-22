@@ -23,12 +23,13 @@ try:
     )
 except ImportError:
     # Fallback for mock environment
-    from src.application.services.transcription_service import TranscriptionResult
+    from tests.unit.voice_service_tests.conftest import (
         AudioFormat,
         STTProvider,
         VoiceService,
         WhisperModel,
         create_voice_service,
+        TranscriptionResult
     )
 
 

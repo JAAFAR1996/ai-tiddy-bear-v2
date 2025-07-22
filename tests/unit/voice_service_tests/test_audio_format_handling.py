@@ -66,7 +66,7 @@ try:
     from application.services.voice_service import AudioFormat
 except ImportError:
     # Fallback for mock environment
-    from 1st import AudioFormat
+    from tests.unit.voice_service_tests.conftest import AudioFormat
 
 
 class TestAudioFormatHandling:

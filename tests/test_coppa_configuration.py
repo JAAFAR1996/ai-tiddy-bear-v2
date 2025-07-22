@@ -1,5 +1,9 @@
 # E712 Boolean Comparison Fixes
 
+# Example configuration object for demonstration
+some_condition = True
+config = type('Config', (), {'enabled': True, 'disabled': False})()
+
 # ❌ WRONG - These trigger E712 errors:
 if some_condition:
     pass
@@ -40,6 +44,10 @@ if config.disabled is False:
     pass
 
 # Common patterns in test files:
+
+# Example result object for demonstration
+result = type('Result', (), {'success': True, 'enabled': False})()
+coppa_config = type('COPPAConfig', (), {'parental_consent_required': True})()
 
 # ❌ WRONG:
 assert result.success

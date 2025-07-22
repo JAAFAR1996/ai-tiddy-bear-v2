@@ -181,7 +181,7 @@ class TestProductionReadiness:
 
         import jwt
 
-        from src.infrastructure.security.real_auth_service import (
+        from src.infrastructure.security.core.real_auth_service import (
             ProductionAuthService,
         )
 
@@ -232,7 +232,7 @@ class TestProductionReadiness:
                     lines = f.readlines()
                     for i, line in enumerate(lines):
                         if "print(" in line and not line.strip().startswith("#"):
-                            files_with_prints.append(f"{file_path}:{i+1}")
+                            files_with_prints.append(f"{file_path}:{i + 1}")
             except (UnicodeDecodeError, FileNotFoundError):
                 pass
 

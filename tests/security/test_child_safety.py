@@ -10,8 +10,7 @@ from src.domain.safety.models import (
     ContentModerator,
     SafetyLevel,
 )
-from src.infrastructure.security.main_security_service import MainSecurityService
-
+from src.infrastructure.security.core.main_security_service import MainSecurityService
 
 
 class TestContentModerator:

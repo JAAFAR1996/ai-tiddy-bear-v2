@@ -1,14 +1,14 @@
 try:
-from domain.value_objects.safety_level import SafetyLevel
-from infrastructure.security.safety_monitor_service import SafetyMonitorService
-from infrastructure.security.vault_client import VaultClient
-from infrastructure.security.security_manager import SecurityManager
-from infrastructure.security.rate_limiter import RateLimiter
-from infrastructure.security.jwt_auth import JWTAuth, JWTTokenData
-import jwt
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, AsyncMock
-from fastapi_users import BaseUserManager, FastAPIUsers
+    from domain.value_objects.safety_level import SafetyLevel
+    from infrastructure.security.safety_monitor_service import SafetyMonitorService
+    from infrastructure.security.vault_client import VaultClient
+    from infrastructure.security.security_manager import SecurityManager
+    from infrastructure.security.rate_limiter import RateLimiter
+    from infrastructure.security.jwt_auth import JWTAuth, JWTTokenData
+    import jwt
+    from datetime import datetime, timedelta
+    from unittest.mock import Mock, patch, AsyncMock
+    from fastapi_users import BaseUserManager, FastAPIUsers
 except ImportError:
     # Mock fastapi_users
     class BaseUserManager:
