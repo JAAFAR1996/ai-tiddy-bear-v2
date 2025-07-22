@@ -66,12 +66,12 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
                 f"Accessibility profile for child {child_id} not found in Redis.",
             )
             return None
-        except Exception as e:
-            self.logger.error(
-                f"Error getting accessibility profile for child {child_id} from Redis: {e}",
-                exc_info=True,
-            )
-            return None
+        except (ValueError, TypeError) as err:
+            self.logger.exception("Error getting accessibility profile from Redis")
+            raise
+        except Exception as err:
+            self.logger.exception("Critical error getting accessibility profile from Redis")
+            raise RuntimeError(f"Failed to get accessibility profile for child {child_id} from Redis") from err
 
     async def save_profile(self, profile: AccessibilityProfile) -> None:
         key = self.PROFILE_KEY_PREFIX + str(profile.child_id)
@@ -90,12 +90,12 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
             self.logger.debug(
                 f"Saved accessibility profile for child {profile.child_id} to Redis.",
             )
-        except Exception as e:
-            self.logger.error(
-                f"Error saving accessibility profile for child {profile.child_id} to Redis: {e}",
-                exc_info=True,
-            )
-            raise  # Re-raise to ensure calling service handles persistence failure
+        except (ValueError, TypeError) as err:
+            self.logger.exception("Error saving accessibility profile to Redis")
+            raise
+        except Exception as err:
+            self.logger.exception("Critical error saving accessibility profile to Redis")
+            raise RuntimeError(f"Failed to save accessibility profile for child {profile.child_id} to Redis") from err
 
     async def delete_profile(self, child_id: UUID) -> bool:
         key = self.PROFILE_KEY_PREFIX + str(child_id)

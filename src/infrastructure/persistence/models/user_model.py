@@ -9,7 +9,7 @@ from uuid import uuid4
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.types import JSON
 
-from src.domain.models.models_infra.base import Base
+from .base import Base
 
 
 class UserModel(Base):

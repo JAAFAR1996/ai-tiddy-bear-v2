@@ -27,7 +27,7 @@ class ManageChildProfileUseCase:
         age: int,
         preferences: dict[str, Any],
     ) -> ChildData:
-        child = ChildProfile.create_new(name, age, preferences)
+        child = ChildProfile.create(name, age, preferences)
         await self.child_repository.save(child)
         for event in child.get_uncommitted_events():
             await self.event_bus.publish(event)

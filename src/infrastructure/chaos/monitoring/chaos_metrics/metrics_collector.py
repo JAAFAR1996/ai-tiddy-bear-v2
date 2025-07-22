@@ -21,7 +21,7 @@ class ChaosMetricsCollector:
     async def start_collection(self, experiment_id: str):
         """Start metrics collection for experiment."""
         self.is_collecting = True
-        logger.info(f"Starting metrics collection for experiment {experiment_id}")
+        logger.info("Starting metrics collection for experiment %s", experiment_id)
         while self.is_collecting:
             try:
                 # Collect system health snapshot
@@ -31,8 +31,8 @@ class ChaosMetricsCollector:
                 metrics = await self._collect_metrics(experiment_id)
                 self.metrics_buffer.extend(metrics)
                 await asyncio.sleep(self.collection_interval)
-            except Exception as e:
-                logger.error(f"Error collecting metrics: {e}")
+            except Exception:
+                logger.exception("Error collecting metrics")
                 await asyncio.sleep(self.collection_interval)
 
     async def stop_collection(self):
@@ -44,19 +44,48 @@ class ChaosMetricsCollector:
         self,
         experiment_id: str,
     ) -> SystemHealthSnapshot:
-        """Collect system health snapshot."""
-        # Mock implementation
+        """Collect system health snapshot (حقيقي: من الخدمات)."""
+        import aiohttp
         from datetime import datetime
-
+        services = {
+            "auth_service": "http://localhost:8001/metrics",
+            "user_service": "http://localhost:8002/metrics",
+            "chat_service": "http://localhost:8003/metrics",
+        }
+        healthy = 0
+        total = len(services)
+        response_times = []
+        error_count = 0
+        throughput = 0.0
+        safety_violations = 0
+        async with aiohttp.ClientSession() as session:
+            for name, url in services.items():
+                try:
+                    start = datetime.now()
+                    async with session.get(url, timeout=3) as resp:
+                        elapsed = (datetime.now() - start).total_seconds() * 1000
+                        response_times.append(elapsed)
+                        if resp.status == 200:
+                            data = await resp.json()
+                            healthy += 1
+                            throughput += data.get("throughput", 0.0)
+                            error_count += data.get("error_count", 0)
+                            safety_violations += data.get("safety_violations", 0)
+                        else:
+                            logger.error("Health check failed for %s: HTTP %s", name, resp.status)
+                except Exception:
+                    logger.exception("Exception during health check for %s", name)
+        avg_response_time = sum(response_times) / len(response_times) if response_times else 0.0
+        error_rate = error_count / total if total > 0 else 0.0
         return SystemHealthSnapshot(
             timestamp=datetime.now(),
             experiment_id=experiment_id,
-            services_healthy=5,
-            services_total=5,
-            avg_response_time=100.0,
-            error_rate=0.0,
-            throughput=1000.0,
-            safety_violations=0,
+            services_healthy=healthy,
+            services_total=total,
+            avg_response_time=avg_response_time,
+            error_rate=error_rate,
+            throughput=throughput,
+            safety_violations=safety_violations,
         )
 
     async def _collect_metrics(self, experiment_id: str) -> list[ChaosMetric]:

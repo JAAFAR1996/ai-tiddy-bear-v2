@@ -1,6 +1,7 @@
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+# Re-enabled for Phase 2 - get_path_validator function now implemented
 from src.infrastructure.validators.security.path_validator import get_path_validator
 
 logger = get_logger(__name__, component="security")
@@ -10,7 +11,8 @@ class RequestSecurityDetector:
     """Detects potential security threats within incoming requests."""
 
     def __init__(self):
-        self.path_validator = get_path_validator()
+        # Re-enabled for Phase 2 - get_path_validator function implemented
+        self.path_validator = get_path_validator(child_safe=True)
 
     def detect_security_events(
         self,

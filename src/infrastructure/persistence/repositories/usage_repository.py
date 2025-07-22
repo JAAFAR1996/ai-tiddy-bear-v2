@@ -3,7 +3,7 @@
 Handles all usage statistics and analytics database operations.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -82,7 +82,7 @@ class UsageRepository:
 
     @database_input_validation("usage_statistics")
     async def get_usage_summary(self, child_id: str, days: int = 30) -> dict[str, Any]:
-        """Get usage summary for a child over a period.
+        """Get usage summary for a child over a period (production implementation).
 
         Args:
             child_id: Child ID
@@ -90,13 +90,36 @@ class UsageRepository:
 
         Returns:
             Dictionary with usage summary
-
         """
-        # Mock implementation
-        logger.info(f"Fetching usage summary for child {child_id} for last {days} days")
-        return {
-            "child_id": child_id,
-            "total_duration_minutes": 120,
-            "most_common_activity": "story_time",
-            "period_days": days,
-        }
+        try:
+            # استعلام فعلي من قاعدة البيانات لجلب سجلات الاستخدام
+            query = (
+                "SELECT activity_type, SUM(duration) as total_duration "
+                "FROM usage_statistics "
+                "WHERE child_id = :child_id AND timestamp >= :since "
+                "GROUP BY activity_type"
+            )
+            since = datetime.utcnow() - timedelta(days=days)
+            params = {"child_id": child_id, "since": since}
+            result = await self.database.fetch_all(query, params)
+            if not result:
+                return {
+                    "child_id": child_id,
+                    "total_duration_minutes": 0,
+                    "most_common_activity": None,
+                    "period_days": days,
+                }
+            total_duration = sum(row["total_duration"] for row in result)
+            most_common_activity = max(
+                result, key=lambda r: r["total_duration"]
+            )["activity_type"]
+        except (ValueError, TypeError):
+            logger.exception("Error fetching usage summary")
+            raise
+        else:
+            return {
+                "child_id": child_id,
+                "total_duration_minutes": total_duration,
+                "most_common_activity": most_common_activity,
+                "period_days": days,
+            }

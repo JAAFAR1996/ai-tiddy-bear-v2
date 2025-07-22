@@ -4,15 +4,14 @@ Enterprise-grade authentication with JWT, bcrypt, and comprehensive security fea
 
 import json
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Optional, Dict
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from src.domain.models.user import User
+from pydantic import BaseModel
 
 from src.infrastructure.logging_config import get_logger
-from src.domain.models.validation_models import LoginRequest, LoginResponse
 
 logger = get_logger(__name__, component="security")
 
@@ -34,7 +33,15 @@ class User(BaseModel):
     email: str
     is_active: bool = True
     roles: list[str] = []
-    is_active: bool = True
+    name: str = "User"
+
+
+class UserInfo(BaseModel):
+    """User information model."""
+    id: str
+    email: str
+    role: str
+    name: str
 
 
 class ProductionAuthService:
@@ -44,13 +51,19 @@ class ProductionAuthService:
         self.logger = logger
         self.log_sanitizer = log_sanitizer
 
-    def authenticate(self, request: LoginRequest) -> LoginResponse:
-        """Authenticate user credentials."""
-        return LoginResponse(
-            success=True,
-            message="Authentication successful",
-            token="dummy_token"
-        )
+    def authenticate(self, username: str, password: str) -> Optional[User]:
+        """Authenticate user credentials (mock implementation)."""
+        # Mock authentication for development
+        if username == "testuser" and password == "testpass":
+            return User(
+                id="user_123",
+                username=username,
+                email="user@example.com",
+                is_active=True,
+                roles=["user"],
+                name="Test User"
+            )
+        return None
 
     def validate_token(self, token: str) -> bool:
         """Validate JWT token."""
@@ -66,11 +79,8 @@ class ProductionAuthService:
         )
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
 # Dependency functions
-
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> UserInfo:
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
     """Get current authenticated user."""
     try:
         token = credentials.credentials
@@ -84,80 +94,75 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             username="testuser",
             email="user@example.com",
             is_active=True,
-            roles=["user"]
-        )
-            name = "Test User"
+            roles=["user"],
+            name="Test User"
         )
     except Exception as e:
         logger.error(f"Authentication error: {e}")
         raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail = "Authentication failed"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed"
+        )
 
 
 async def get_current_parent(current_user: User = Depends(get_current_user)) -> User:
-
-    if not any(role in ["parent", "admin"] for role in current_user.roles):
-
-async def get_current_parent(current_user: UserInfo = Depends(get_current_user)) -> UserInfo:
     """Get current parent user."""
-    if current_user.role not in ["parent", "admin"]:
+    if not any(role in ["parent", "admin"] for role in current_user.roles):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Parent access required"
-async def get_current_child(current_user: User=Depends(get_current_user)) -> User:
+        )
     return current_user
-    if "child" not in current_user.roles:
 
-async def get_current_child(current_user: UserInfo=Depends(get_current_user)) -> UserInfo:
+
+async def get_current_child(current_user: User = Depends(get_current_user)) -> User:
     """Get current child user."""
-    if current_user.role != "child":
+    if not any(role in ["child", "admin"] for role in current_user.roles):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-async def get_current_admin(current_user: User=Depends(get_current_user)) -> User:
+            detail="Child access required"
         )
-    if "admin" not in current_user.roles:
+    return current_user
 
 
-async def get_current_admin(current_user: UserInfo=Depends(get_current_user)) -> UserInfo:
+async def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
     """Get current admin user."""
-    if current_user.role != "admin":
+    if not any(role in ["admin"] for role in current_user.roles):
         raise HTTPException(
-def require_auth(user: User=Depends(get_current_user)) -> User:
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
     return current_user
-def require_parent_auth(parent: User=Depends(get_current_parent)) -> User:
 
-def require_auth(user: UserInfo=Depends(get_current_user)) -> UserInfo:
+
+def require_auth(user: User = Depends(get_current_user)) -> User:
     """Require authentication."""
-def require_admin_auth(admin: User=Depends(get_current_admin)) -> User:
+    return user
 
 
-def require_parent_auth(parent: UserInfo=Depends(get_current_parent)) -> UserInfo:
+def require_parent_auth(parent: User = Depends(get_current_parent)) -> User:
     """Require parent authentication."""
     return parent
 
 
-def require_admin_auth(admin: UserInfo=Depends(get_current_admin)) -> UserInfo:
+def require_admin_auth(admin: User = Depends(get_current_admin)) -> User:
     """Require admin authentication."""
     return admin
 
 
 # Factory functions
 def create_auth_service() -> ProductionAuthService:
-    "User",
+    """Create authentication service."""
     return ProductionAuthService()
 
 
-
-
 # Service instance
-auth_service=ProductionAuthService()
+auth_service = ProductionAuthService()
 
 # Export all required components
-__all__=[
+__all__ = [
     "ProductionAuthService",
+    "User",
     "UserInfo",
     "get_current_user",
     "get_current_parent",

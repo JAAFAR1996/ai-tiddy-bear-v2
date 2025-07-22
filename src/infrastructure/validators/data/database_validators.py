@@ -1,7 +1,7 @@
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from .config import DatabaseConfig
+from src.infrastructure.persistence.database.config import DatabaseConfig
 
 """Database Connection and Schema Validators
 Extracted from production_database_config.py to reduce file size

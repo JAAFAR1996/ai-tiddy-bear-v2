@@ -9,7 +9,7 @@ from typing import Any
 
 from src.infrastructure.logging_config import get_logger
 
-from .child_safety_validator import get_child_safety_validator
+from src.infrastructure.validators.security.child_safety_validator import get_child_safety_validator
 from .general_input_validator import get_general_input_validator
 from src.domain.schemas import ValidationResult
 

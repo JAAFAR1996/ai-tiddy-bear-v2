@@ -1,14 +1,21 @@
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.config.settings import Settings
 from src.domain.value_objects.safety_level import SafetyLevel
-from src.domain.models.voice_models import (
+from src.presentation.schemas.voice_schemas import (
     AudioValidationResult,
     SpeechToTextResult,
     TextToSpeechResult,
 )
 from src.application.interfaces.safety_monitor import SafetyMonitor
 from fastapi import HTTPException, UploadFile
+
 import asyncio
+import io
+try:
+    from pydub import AudioSegment
+except ImportError:
+    AudioSegment = None
+from typing import Optional
 
 
 class STTServiceNotConfiguredError(RuntimeError):
@@ -55,16 +62,12 @@ class VoiceService:
         self.max_audio_duration = self.settings.audio.MAX_AUDIO_DURATION_SECONDS
         self.max_file_size_mb = self.settings.audio.MAX_FILE_SIZE_MB
         self.logger = get_logger(__name__, component="voice_service")
+        self.stt_service: Optional[object] = None
+        self.tts_service: Optional[object] = None
 
     async def validate_audio_file(self, file: UploadFile) -> AudioValidationResult:
-        """Validate uploaded audio file for child safety.
-
-        Args:
-            file: Uploaded audio file.
-
-        Returns:
-            AudioValidationResult containing validation results.
-
+        """
+        Validate uploaded audio file for child safety (حقيقي: تحقق من المدة والصيغة والحجم).
         """
         if not file.content_type or file.content_type not in self.supported_formats:
             return AudioValidationResult(
@@ -72,24 +75,48 @@ class VoiceService:
                 error=f"Unsupported audio format: {file.content_type}",
             )
 
-        file_size = 0
-        while chunk := await file.read(8192):
-            file_size += len(chunk)
-            if file_size > self.max_file_size_mb * 1024 * 1024:
+        # اقرأ الملف بالكامل في الذاكرة (مطلوب للتحليل)
+        file_bytes = await file.read()
+        file_size = len(file_bytes)
+        if file_size > self.max_file_size_mb * 1024 * 1024:
+            return AudioValidationResult(
+                valid=False,
+                error="File size exceeds limit."
+            )
+
+        # تحقق من مدة الصوت باستخدام pydub إذا كانت متوفرة
+        duration_seconds = None
+        if AudioSegment is not None:
+            try:
+                audio = AudioSegment.from_file(io.BytesIO(file_bytes))
+                duration_seconds = audio.duration_seconds
+            except Exception as e:
+                self.logger.exception(
+                    "Error reading audio file for duration: %s", e
+                )
                 return AudioValidationResult(
                     valid=False,
-                    error="File size exceeds limit.",
+                    error="Invalid or corrupted audio file."
                 )
+        else:
+            self.logger.warning(
+                "pydub not installed: cannot validate audio duration. Skipping duration check."
+            )
 
-        # TODO: Implement actual audio duration validation if needed. This requires
-        #  reading audio headers, which might be complex without a dedicated library.
-        # For now, we assume duration is within limits if file size is.
+        if duration_seconds is not None and duration_seconds > self.max_audio_duration:
+            return AudioValidationResult(
+                valid=False,
+                error=(
+                    f"Audio duration exceeds limit: {duration_seconds:.2f}s > "
+                    f"{self.max_audio_duration}s"
+                )
+            )
 
         return AudioValidationResult(
             valid=True,
             error=None,
             size=file_size,
-            format=file.content_type,
+            format=file.content_type
         )
 
     async def speech_to_text(
@@ -116,10 +143,9 @@ class VoiceService:
 
             await audio_file.read()
             # تحقق من وجود خدمة STT فعلية
-            if not hasattr(self, 'stt_service') or self.stt_service is None:
+            if self.stt_service is None:
                 self.logger.critical(
-                    "No production STT service configured. "
-                    "Cannot transcribe audio."
+                    "No production STT service configured. Cannot transcribe audio."
                 )
                 raise STTServiceNotConfiguredError()
             transcript = await self.stt_service.transcribe(
@@ -133,42 +159,40 @@ class VoiceService:
                 child_age=child_age,
             )
 
-            if safety_result.risk_level in [
-                SafetyLevel.UNSAFE,
-                SafetyLevel.POTENTIALLY_UNSAFE,
+            if getattr(safety_result, 'risk_level', None) not in [
+                SafetyLevel.HIGH,
+                SafetyLevel.CRITICAL,
             ]:
+                end_time = asyncio.get_event_loop().time()
+                processing_time_ms = int((end_time - start_time) * 1000)
+                return SpeechToTextResult(
+                    success=True,
+                    transcript=transcript,
+                    safety_score=getattr(safety_result, 'overall_risk_level', 0),
+                    child_appropriate=True,
+                    processing_time_ms=processing_time_ms,
+                    moderation_flags=getattr(safety_result, 'analysis_details', None),
+                )
+            else:
                 self.logger.warning(
                     "STT content blocked: Unsafe content detected for child age %s. "
                     "Transcript: '%s...' Reason: %s",
                     child_age,
                     transcript[:50],
-                    safety_result.analysis_details,
+                    getattr(safety_result, 'analysis_details', None),
                 )
                 return SpeechToTextResult(
                     success=False,
                     transcript="Content blocked due to safety concerns.",
-                    safety_score=safety_result.overall_risk_level.value,
+                    safety_score=getattr(safety_result, 'overall_risk_level', 0),
                     child_appropriate=False,
                     processing_time_ms=0,
-                    moderation_flags=safety_result.analysis_details,
-                    error="Content not appropriate for child.",
+                    moderation_flags=getattr(safety_result, 'analysis_details', None),
+                    error="Content not appropriate for child."
                 )
-
-            end_time = asyncio.get_event_loop().time()
-            processing_time_ms = int((end_time - start_time) * 1000)
-
-            return SpeechToTextResult(
-                success=True,
-                transcript=transcript,
-                safety_score=safety_result.overall_risk_level.value,
-                child_appropriate=True,
-                processing_time_ms=processing_time_ms,
-                moderation_flags=safety_result.analysis_details,
-            )
         except Exception as e:
-            self.logger.error(
-                f"Error during speech-to-text processing: {e}",
-                exc_info=True,
+            self.logger.exception(
+                "Error during speech-to-text processing: %s", e
             )
             return SpeechToTextResult(success=False, error=str(e))
 
@@ -197,33 +221,32 @@ class VoiceService:
                 child_age=child_age,
             )
 
-            if safety_result.risk_level in [
-                SafetyLevel.UNSAFE,
-                SafetyLevel.POTENTIALLY_UNSAFE,
+            if getattr(safety_result, 'risk_level', None) in [
+                SafetyLevel.HIGH,
+                SafetyLevel.CRITICAL,
             ]:
                 self.logger.warning(
                     "TTS content blocked: Unsafe content detected for child age %s. "
                     "Text: '%s...' Reason: %s",
                     child_age,
                     text[:50],
-                    safety_result.analysis_details,
+                    getattr(safety_result, 'analysis_details', None),
                 )
                 return TextToSpeechResult(
                     success=False,
                     child_appropriate=False,
-                    safety_score=safety_result.overall_risk_level.value,
+                    safety_score=getattr(safety_result, 'overall_risk_level', 0),
                     error="Content not appropriate for child.",
-                    moderation_flags=safety_result.analysis_details,
+                    moderation_flags=getattr(safety_result, 'analysis_details', None),
                     audio_data=b"",
                     voice_used="N/A",
                     processing_time_ms=0,
                 )
 
             # تحقق من وجود خدمة TTS فعلية
-            if not hasattr(self, 'tts_service') or self.tts_service is None:
+            if self.tts_service is None:
                 self.logger.critical(
-                    "No production TTS service configured. "
-                    "Cannot synthesize audio."
+                    "No production TTS service configured. Cannot synthesize audio."
                 )
                 raise TTSServiceNotConfiguredError()
             audio_data, voice_used = await self.tts_service.synthesize(
@@ -238,14 +261,13 @@ class VoiceService:
             return TextToSpeechResult(
                 success=True,
                 audio_data=audio_data,
-                safety_score=safety_result.overall_risk_level.value,
+                safety_score=getattr(safety_result, 'overall_risk_level', 0),
                 child_appropriate=True,
                 processing_time_ms=processing_time_ms,
                 voice_used=voice_used,
             )
         except Exception as e:
-            self.logger.error(
-                f"Error during text-to-speech processing: {e}",
-                exc_info=True,
+            self.logger.exception(
+                "Error during text-to-speech processing: %s", e
             )
             return TextToSpeechResult(success=False, error=str(e))

@@ -1,6 +1,8 @@
 """DI Container - Facade for the new ApplicationContainer.
 Maintains backward compatibility while using the new implementation.
 """
+# Delayed import to avoid circular dependency - imports only when service is needed
+# from src.presentation.api.endpoints.children.operations import ChildOperations
 from src.application.services.child_safety.coppa_compliance_service import COPPAComplianceService
 from src.infrastructure.pagination.pagination_service import PaginationService
 from src.infrastructure import dependencies
@@ -38,9 +40,9 @@ def register_legacy_services():
     """Register legacy services for backward compatibility."""
 
     # Register as factory
-    register_service(COPPAValidator, 
-        lambda: COPPAValidator()
-    )
+    register_service(COPPAValidator,
+                     lambda: COPPAValidator()
+                     )
 
 
 # Auto-register legacy services on import
@@ -54,6 +56,19 @@ register_legacy_services()
 container.manage_child_profile_use_case = dependencies.get_manage_child_profile_use_case
 container.pagination_service = lambda: PaginationService()
 container.coppa_compliance_service = lambda: COPPAComplianceService()
-container.child_operations_service = lambda: None
-container.child_search_service = lambda: None
+
+
+# Re-enabled for Phase 2 - lazy import to avoid circular dependency
+def _build_child_operations():
+    # Import only when needed to avoid circular dependency
+    from src.presentation.api.endpoints.children.operations import ChildOperations
+    return ChildOperations(
+        manage_child_profile_use_case=container.manage_child_profile_use_case(),
+        coppa_compliance_service=container.coppa_compliance_service(),
+        pagination_service=container.pagination_service(),
+    )
+
+
+# Re-enabled for Phase 2 - child operations service
+container.child_operations_service = _build_child_operations
 # Singleton instance

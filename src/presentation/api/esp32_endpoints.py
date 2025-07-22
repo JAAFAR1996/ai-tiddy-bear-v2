@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any
 
-from dependency_injector.wiring import Provide
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
@@ -9,7 +8,6 @@ from pydantic import BaseModel, Field
 from src.application.services.ai.ai_orchestration_service import (
     AIOrchestrationService,
 )
-from src.infrastructure.di.container import Container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.real_database_service import (
     DatabaseService,

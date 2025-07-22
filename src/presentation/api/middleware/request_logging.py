@@ -33,7 +33,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     def __init__(self, app) -> None:
         super().__init__(app)
         self.settings = get_settings()
-        self.is_production = self.settings.application.ENVIRONMENT == "production"
+        self.is_production = self.settings.ENVIRONMENT == "production"
         self.request_security_detector = RequestSecurityDetector()
         self.audit_service = AuditService()
 

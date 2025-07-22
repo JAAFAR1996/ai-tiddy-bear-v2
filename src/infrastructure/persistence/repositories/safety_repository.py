@@ -3,7 +3,7 @@
 Handles all safety-related database operations including events, alerts, and scores.
 """
 
-from datetime import datetime
+from uuid import uuid4
 from typing import Any
 from uuid import uuid4
 
@@ -67,43 +67,45 @@ class SafetyRepository:
             event_id = str(uuid4())
             # In production, this would insert into safety_events table
             logger.warning(
-                f"Safety Event {event_id}: Child={child_id}, "
-                f"Type={event_type}, Severity={severity}, Details={details}",
+                "Safety Event %s: Child=%s, Type=%s, Severity=%s, Details=%s",
+                event_id, child_id, event_type, severity, details,
             )
-            return event_id
-        except SecurityError as e:
-            logger.error(f"Security error recording safety event: {e}")
-            raise ValueError("Invalid data for safety event")
-        except Exception as e:
-            logger.error(f"Error recording safety event: {e}")
+        except SecurityError as err:
+            logger.exception("Security error recording safety event")
+            raise ValueError("Invalid data for safety event") from err
+        except Exception as err:
+            logger.exception("Error recording safety event")
             raise
+        else:
+            return event_id
 
     @database_input_validation("safety_alerts")
     async def get_safety_alerts(self, child_id: str) -> list[dict[str, Any]]:
-        """Get safety alerts for a child.
+        """Get safety alerts for a child (production implementation).
 
         Args:
             child_id: Child ID
 
         Returns:
             List of safety alerts
-
         """
-        # This is a mock implementation
-        logger.info(f"Fetching safety alerts for child {child_id}")
-        return [
-            {
-                "alert_id": str(uuid4()),
-                "child_id": child_id,
-                "alert_type": "inappropriate_language",
-                "timestamp": datetime.utcnow().isoformat(),
-                "status": "unresolved",
-            },
-        ]
+        try:
+            query = (
+                "SELECT alert_id, child_id, alert_type, timestamp, status "
+                "FROM safety_alerts "
+                "WHERE child_id = :child_id "
+                "ORDER BY timestamp DESC"
+            )
+            params = {"child_id": child_id}
+            result = await self.database.fetch_all(query, params)
+            return [dict(row) for row in result] if result else []
+        except (ValueError, TypeError):
+            logger.exception("Error fetching safety alerts")
+            raise
 
     @database_input_validation("safety_scores")
     async def get_child_safety_score(self, child_id: str) -> float:
-        """Calculate and retrieve a safety score for a child.
+        """Calculate and retrieve a safety score for a child (production implementation).
 
         Args:
             child_id: Child ID
@@ -111,7 +113,22 @@ class SafetyRepository:
         Returns:
             Safety score between 0.0 and 1.0
 
+        Raises:
+            ValueError: If no score is found for the child.
         """
-        # Mock implementation
-        logger.info(f"Calculating safety score for child {child_id}")
-        return 0.95
+        try:
+            query = (
+                "SELECT score FROM safety_scores WHERE child_id = :child_id ORDER BY timestamp DESC LIMIT 1"
+            )
+            params = {"child_id": child_id}
+            result = await self.database.fetch_one(query, params)
+            if result and "score" in result:
+                score = float(result["score"])
+                logger.info(f"Fetched safety score for child {child_id}: {score}")
+                return score
+            else:
+                logger.warning(f"No safety score found for child {child_id}")
+                raise ValueError(f"No safety score found for child {child_id}")
+        except Exception as e:
+            logger.exception(f"Error fetching safety score for child {child_id}: {e}")
+            raise

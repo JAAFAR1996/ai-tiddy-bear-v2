@@ -11,18 +11,26 @@ from fastapi import APIRouter, HTTPException, status
 
 
 # Local imports
+# Re-enabled for Phase 2 - compliance module fixed
 from .compliance import (
+    COPPAComplianceRouter,
+    ParentalConsentRouter,
+    PrivacyProtectionRouter,
     COPPAIntegration,
     handle_compliant_child_deletion,
     request_parental_consent,
     validate_child_creation_compliance,
     validate_data_access_permission,
 )
+# Re-enabled for Phase 2 - models module created
 from .models import (
     ChildCreateRequest,
     ChildDeleteResponse,
     ChildResponse,
     ChildSafetySummary,
+    ChildProfileModel,
+    InteractionModel,
+    SafetyConfigModel,
     ChildUpdateRequest,
 )
 from .operations import (
@@ -67,26 +75,30 @@ else:
     logger.warning("Routes module not available")
 
 # Log package initialization status
-if not FASTAPI_AVAILABLE:
-    logger.info("Children endpoints package loaded in mock mode")
-else:
-    logger.info("Children endpoints package loaded successfully")
+logger.info("Children endpoints package loaded successfully")
 
 # Export router for use in main application
 __all__ = [
     # FastAPI Router
     "router",
-    # Compliance
+    # Compliance routers - re-enabled for Phase 2
+    "COPPAComplianceRouter",
+    "ParentalConsentRouter",
+    "PrivacyProtectionRouter",
+    # Compliance functions - re-enabled for Phase 2
     "COPPAIntegration",
     "handle_compliant_child_deletion",
     "request_parental_consent",
     "validate_child_creation_compliance",
     "validate_data_access_permission",
-    # Models
+    # Models - re-enabled for Phase 2
     "ChildCreateRequest",
     "ChildDeleteResponse",
     "ChildResponse",
     "ChildSafetySummary",
+    "ChildProfileModel",
+    "InteractionModel",
+    "SafetyConfigModel",
     "ChildUpdateRequest",
     # Operations
     "ChildOperations",

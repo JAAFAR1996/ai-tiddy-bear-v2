@@ -16,18 +16,55 @@ from src.infrastructure.repositories.event_sourced_child_repository import (
 
 
 def get_event_store() -> EventStore:
-    # Production: must use a real event store (e.g., database-backed)
+    """Get real database-backed event store for production use."""
     from src.infrastructure.persistence.event_store_db import EventStoreDB
-    return EventStoreDB()
+    from src.infrastructure.persistence.database_manager import Database
+
+    # Create real database connection
+    database = Database()
+
+    # Return real database-backed event store
+    return EventStoreDB(database)
 
 
-def get_child_repository(
-    event_store: EventStore = Depends(get_event_store),
-) -> "ChildRepository":
+def get_child_repository() -> "ChildRepository":
+    """Get child repository with resolved dependencies."""
+    event_store = get_event_store()
     return EventSourcedChildRepository(event_store)
 
 
 # Service getters
+def get_manage_child_profile_use_case():
+    """Get manage child profile use case."""
+    from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
+    from src.infrastructure.read_models.child_profile_read_model import ChildProfileReadModelStore
+    from src.infrastructure.messaging.kafka_event_bus import KafkaEventBus
+
+    # Get repository dependency
+    child_repository = get_child_repository()
+
+    # Initialize read model store
+    read_model_store = ChildProfileReadModelStore()
+
+    # Initialize event bus with default configuration for development
+    event_bus = KafkaEventBus(
+        bootstrap_servers="localhost:9092",
+        schema_registry_url="http://localhost:8081"
+    )
+
+    return ManageChildProfileUseCase(
+        child_repository=child_repository,
+        child_profile_read_model_store=read_model_store,
+        event_bus=event_bus
+    )
+
+
+def get_generate_dynamic_story_use_case():
+    """Get generate dynamic story use case."""
+    from src.application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
+    return GenerateDynamicStoryUseCase()
+
+
 def get_ai_orchestration_service():
     """Get AI orchestration service."""
     from .di.container import container

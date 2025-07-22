@@ -7,14 +7,15 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import declarative_base
-from src.domain.models.models_infra.base import Base
+from src.domain.models.models_infra import Base
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
-from src.infrastructure.validators.database_validators import (
+from src.infrastructure.validators.data.database_validators import (
     DatabaseConnectionValidator,
 )
 
 logger = get_logger(__name__, component="persistence")
+
 
 class Database:
     """Enterprise-grade database service with production PostgreSQL support."""
@@ -107,11 +108,18 @@ class Database:
     async def init_db(self) -> None:
         """Initialize database tables with production-grade setup."""
         try:
-            # Validate connection first if required
-            if self.config.validate_connection:
-                validator = DatabaseConnectionValidator(self.config)
-                if not await validator.validate_connection():
-                    raise ConnectionError("Database connection validation failed")
+            # Database connection validation - re-enabled for Phase 1
+            validator = DatabaseConnectionValidator(self.config)
+            is_valid = await validator.validate_connection()
+            if not is_valid:
+                raise ConnectionError("Database connection validation failed")
+
+            schema_valid = await validator.validate_schema_compatibility()
+            if not schema_valid:
+                logger.warning("Schema validation failed - proceeding with table creation")
+
+            logger.info("Database validation completed successfully")
+
             async with self.engine.begin() as conn:
                 # Register all models using the model registry
                 from src.domain.models.model_registry import (

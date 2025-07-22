@@ -22,11 +22,11 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     """
     Comprehensive error handling middleware for child safety applications.
     """
-    
+
     def __init__(self, app) -> None:
         super().__init__(app)
         self.settings = get_settings()
-        self.is_production = self.settings.application.ENVIRONMENT == "production"
+        self.is_production = self.settings.ENVIRONMENT == "production"
 
         # Child-friendly error messages
         self.child_friendly_messages = {
@@ -37,7 +37,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             429: "Whoa! You're going too fast! Please wait a moment and try again.",
             500: "Oh no! Something went wrong on our end. Don't worry, we're fixing it!"
         }
-        
+
         # Security-related error codes that need special handling
         self.security_error_codes = {401, 403, 422, 429}
 
@@ -62,7 +62,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             message=str(exc.detail),
             is_security_error=exc.status_code in self.security_error_codes
         )
-        
+
         return JSONResponse(
             status_code=exc.status_code,
             content=error_response
@@ -74,14 +74,14 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             message = "Some information wasn't filled in correctly. Please check and try again!"
         else:
             message = "Please check your input and try again."
-            
+
         error_response = self._create_error_response(
             request=request,
             status_code=422,
             error_type="validation_error",
             message=message
         )
-        
+
         return JSONResponse(
             status_code=422,
             content=error_response
@@ -90,7 +90,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     async def _handle_unexpected_error(self, request: Request, exc: Exception) -> JSONResponse:
         """Handle unexpected errors with comprehensive logging and safe responses."""
         logger.error(f"Unexpected error: {exc}", exc_info=True)
-        
+
         error_response = self._create_error_response(
             request=request,
             status_code=500,
@@ -98,7 +98,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             message=None,
             is_unexpected=True
         )
-        
+
         return JSONResponse(
             status_code=500,
             content=error_response
@@ -122,7 +122,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             )
         else:
             safe_message = message
-            
+
         # Base error response
         error_response = {
             "error": True,
@@ -131,12 +131,12 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             "timestamp": datetime.utcnow().isoformat(),
             "path": request.url.path
         }
-        
+
         # Add child safety indicators
         if self._is_child_related_request(request):
             error_response["child_safe"] = True
             error_response["coppa_compliant"] = True
-            
+
         return error_response
 
     def _is_child_related_request(self, request: Request) -> bool:
@@ -147,5 +147,5 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             "/api/v1/voice",
             "/api/v1/playground"
         ]
-        
+
         return any(request.url.path.startswith(path) for path in child_paths)

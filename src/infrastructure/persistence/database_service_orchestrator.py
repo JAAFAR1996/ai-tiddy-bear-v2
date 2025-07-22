@@ -183,7 +183,12 @@ class DatabaseServiceOrchestrator:
         logger.info(f"Data cleanup completed: {stats}")
         return stats
 
-    # Emotion tracking (placeholder for future repository)
+    # Emotion tracking (NOT IMPLEMENTED: raise NotImplementedError if called)
+    # إذا تم استدعاء أي منطق متعلق بتتبع المشاعر (emotion tracking) ولم يكن هناك تنفيذ إنتاجي، يجب رفع استثناء صريح
+    async def track_emotion(self, *args, **kwargs):
+        """Raise explicit error: Emotion tracking is not implemented in production."""
+        raise NotImplementedError("Emotion tracking is not implemented. Please provide a production implementation or remove this placeholder.")
+
     async def save_emotion_analysis(
         self,
         child_id: str,

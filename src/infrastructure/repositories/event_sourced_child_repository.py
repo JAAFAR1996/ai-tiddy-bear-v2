@@ -1,16 +1,22 @@
 from uuid import UUID
 
 from src.domain.entities.child_profile import ChildProfile
-from src.domain.repositories.event_store import InMemoryEventStore
+from src.domain.repositories.event_store import EventStore
 from src.infrastructure.logging_config import get_logger
 
 
 class EventSourcedChildRepository:
-    """Repository for Child aggregate using event sourcing."""
+    """Repository for Child aggregate using event sourcing with real database backend."""
 
-    def __init__(self) -> None:
+    def __init__(self, event_store: EventStore) -> None:
+        """Initialize repository with real event store implementation.
+
+        Args:
+            event_store: Real EventStore implementation (e.g., EventStoreDB with database)
+        """
         self.logger = get_logger(__name__, component="persistence")
-        self.event_store = InMemoryEventStore()
+        self.event_store = event_store
+        self.logger.info("EventSourcedChildRepository initialized with real event store")
 
     async def save(self, child_profile: ChildProfile) -> None:
         await self.event_store.save_events(

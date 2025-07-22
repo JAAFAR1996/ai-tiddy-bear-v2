@@ -31,7 +31,7 @@ class DynamicStoryService:
         child_id: str | None = None,
         conversation_history: list | None = None,
     ) -> str:
-        """Generates a personalized story for a child (إنتاجي بالكامل بدون أي dummy أو placeholder).
+        """Generates a personalized story for a child (production implementation).
 
         Args:
             child_name: The name of the child.
@@ -44,8 +44,9 @@ class DynamicStoryService:
 
         Returns:
             The generated story content.
-
         """
+        if not hasattr(self.ai_provider, "generate_response") or not callable(self.ai_provider.generate_response):
+            raise NotImplementedError("AIProvider must implement a real generate_response method for story generation.")
         prompt = (
             f"Generate a {length} story for a {child_age}-year-old named {child_name}. "
             f"The story should be about {theme}. "
@@ -55,7 +56,6 @@ class DynamicStoryService:
             f"suitable for their learning level "
             f"{child_preferences.learning_level}."
         )
-        # تمرير معرف الطفل وسجل المحادثة الحقيقيين إذا توفرا، وإلا تمرر None (يدعمها AIProvider)
         story_content = await self.ai_provider.generate_response(
             child_id=child_id,
             conversation_history=conversation_history if conversation_history is not None else [],

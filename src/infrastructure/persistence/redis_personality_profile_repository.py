@@ -34,12 +34,10 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
             if profile_data_json:
                 profile_data_dict = json.loads(profile_data_json)
                 # Deserialize PersonalityType enum member and datetime
-                # correctly
                 personality_type = PersonalityType[
                     profile_data_dict.get("personality_type", "OTHER").upper()
                 ]
                 last_updated = datetime.fromisoformat(profile_data_dict["last_updated"])
-
                 profile = ChildPersonality(
                     child_id=UUID(profile_data_dict["child_id"]),
                     personality_type=personality_type,
@@ -57,18 +55,17 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
                 f"Personality profile for child {child_id} not found in Redis.",
             )
             return None
-        except Exception as e:
-            self.logger.error(
-                f"Error getting personality profile for child {child_id} from Redis: {e}",
-                exc_info=True,
-            )
-            return None
+        except (ValueError, TypeError) as err:
+            self.logger.exception("Error getting personality profile from Redis")
+            raise
+        except Exception as err:
+            self.logger.exception("Critical error getting personality profile from Redis")
+            raise RuntimeError(f"Failed to get personality profile for child {child_id} from Redis") from err
 
     async def save_profile(self, profile: ChildPersonality) -> None:
         key = self.PROFILE_KEY_PREFIX + str(profile.child_id)
         try:
-            # Serialize PersonalityType enum member to string and datetime to
-            # ISO format
+            # Serialize PersonalityType enum member to string and datetime to ISO format
             profile_data_dict = {
                 "child_id": str(profile.child_id),
                 "personality_type": profile.personality_type.value,
@@ -82,12 +79,12 @@ class RedisPersonalityProfileRepository(IPersonalityProfileRepository):
             self.logger.debug(
                 f"Saved personality profile for child {profile.child_id} to Redis.",
             )
-        except Exception as e:
-            self.logger.error(
-                f"Error saving personality profile for child {profile.child_id} to Redis: {e}",
-                exc_info=True,
-            )
-            raise  # Re-raise to ensure calling service handles persistence failure
+        except (ValueError, TypeError) as err:
+            self.logger.exception("Error saving personality profile to Redis")
+            raise
+        except Exception as err:
+            self.logger.exception("Critical error saving personality profile to Redis")
+            raise RuntimeError(f"Failed to save personality profile for child {profile.child_id} to Redis") from err
 
     async def delete_profile(self, child_id: UUID) -> bool:
         key = self.PROFILE_KEY_PREFIX + str(child_id)

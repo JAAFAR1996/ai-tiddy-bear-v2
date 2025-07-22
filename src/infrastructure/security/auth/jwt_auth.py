@@ -38,7 +38,7 @@ except ImportError:
         pass
 
 try:
-    from src.domain.models.models_infra.base import Base
+    from src.infrastructure.persistence.models.base import Base
 except ImportError:
     from sqlalchemy.orm import declarative_base
     Base = declarative_base()
@@ -47,12 +47,13 @@ try:
     from src.infrastructure.security.encryption.vault_client import get_vault_client
 except ImportError:
     async def get_vault_client():
-        """Mock vault client function"""
-        return
+        """Production: Vault client dependency missing. Raise explicit error."""
+        raise RuntimeError("Vault client dependency is required for production JWT auth. Please install or configure the vault client.")
 
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
+
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     """User model extending FastAPI Users base table"""
@@ -68,12 +69,14 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, active={self.is_active})>"
 
+
 async def get_user_db(
     session: AsyncSession,
 ) -> AsyncGenerator["SQLAlchemyUserDatabase", None]:
     if not FASTAPI_USERS_AVAILABLE:
         raise ImportError("fastapi-users is required but not installed")
     yield SQLAlchemyUserDatabase(session, User)
+
 
 async def get_jwt_strategy() -> "JWTStrategy":
     if not FASTAPI_USERS_AVAILABLE:
@@ -111,6 +114,7 @@ async def get_jwt_strategy() -> "JWTStrategy":
         )
     return JWTStrategy(secret=jwt_secret, lifetime_seconds=3600)
 
+
 def create_auth_components():
     if not FASTAPI_USERS_AVAILABLE:
         raise ImportError("fastapi-users is required but not installed")
@@ -134,6 +138,7 @@ def create_auth_components():
         "fastapi_users": fastapi_users,
         "current_active_user": fastapi_users.current_active_user,
     }
+
 
 if FASTAPI_USERS_AVAILABLE:
     auth_components = create_auth_components()

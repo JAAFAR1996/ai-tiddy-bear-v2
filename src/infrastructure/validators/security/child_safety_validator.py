@@ -74,3 +74,9 @@ class ChildSafetyValidator:
         if not result.is_valid:
             errors.extend(result.errors)
         return ValidationResult(is_valid=not errors, errors=errors)
+
+
+# Factory function
+def get_child_safety_validator() -> ChildSafetyValidator:
+    """Get a child safety validator instance."""
+    return ChildSafetyValidator()

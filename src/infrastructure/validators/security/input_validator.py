@@ -378,4 +378,3 @@ async def get_threat_summary(text: str) -> dict:
         "is_valid": result.is_valid,
     }
 InputValidator = ComprehensiveInputValidator
-InputValidator = ComprehensiveInputValidator

@@ -41,7 +41,7 @@ try:
     DATABASE_AVAILABLE = True
 except ImportError:
     DATABASE_AVAILABLE = False
-    logger.warning("Database service not available, using mock responses")
+    logger.critical("Database service is not available. This is a production-blocking error. All safety features require a real database connection.")
 
 
 class SafetyEventTypes:
@@ -141,8 +141,11 @@ class ChildSafetyManager:
             # Get current safety score from database
             db_service = get_database_service()
             try:
-                # This would be implemented with a real get_safety_score method
-                current_score = 100  # Temporary fallback - needs real implementation
+                # جلب score حقيقي من قاعدة البيانات
+                current_score = await db_service.get_safety_score(child_id=child_id)
+                if current_score is None:
+                    logger.critical(f"No safety score found for child {child_id}. Cannot update score.")
+                    raise RuntimeError("No safety score found in database.")
                 new_score = max(0, current_score - deduction)
 
                 success = await db_service.update_safety_score(

@@ -12,7 +12,7 @@ from typing import Any
 from src.infrastructure.logging_config import get_logger
 
 from src.infrastructure.config.security.coppa_config import is_coppa_enabled
-from .data_models import COPPAChildData, DataDeletionRequest, DataRetentionPolicy
+from src.domain.models.child_safety_data_models import COPPAChildData, DataDeletionRequest, DataRetentionPolicy
 
 logger = get_logger(__name__, component="security")
 

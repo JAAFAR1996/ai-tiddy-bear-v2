@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         sentry_sdk.init(
             dsn=settings.sentry.SENTRY_DSN,
             traces_sample_rate=1.0,
-            environment=settings.application.ENVIRONMENT,
+            environment=settings.ENVIRONMENT,
         )
         logger.info("Sentry initialized successfully")
 

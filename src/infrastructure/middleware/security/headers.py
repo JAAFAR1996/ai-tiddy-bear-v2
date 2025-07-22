@@ -85,14 +85,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, config: SecurityHeadersConfig = None):
         super().__init__(app)
         self.config = config or SecurityHeadersConfig()
-        
+
         # Load environment settings
         try:
             settings = get_settings()
-            self.environment = getattr(settings.application, "ENVIRONMENT", "production")
+            self.environment = getattr(settings, "ENVIRONMENT", "production")
             self.is_production = self.environment == "production"
         except Exception as e:
-            logger.warning(f"Could not load settings, defaulting to production: {e}")
+            logger.warning("Could not load settings, defaulting to production: %s", e)
             self.environment = "production"
             self.is_production = True
 
@@ -101,8 +101,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         self.total_processing_time = 0.0
 
         logger.info(
-            f"Enhanced security headers middleware initialized "
-            f"(environment: {self.environment}, child_safety: {self.config.child_safety_mode})"
+            "Enhanced security headers middleware initialized (environment: %s, child_safety: %s)",
+            self.environment, self.config.child_safety_mode
         )
 
     async def dispatch(
@@ -114,7 +114,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Request tracking
         start_time = time.time()
         request_id = str(uuid.uuid4())
-        
+
         # Store request context
         request.state.request_id = request_id
         request.state.start_time = start_time
@@ -132,13 +132,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             return response
 
         except Exception as e:
-            logger.error(f"Security middleware error: {e}")
-            
+            logger.error("Security middleware error: %s", e)
+
             # Create safe error response with security headers
             error_response = self._create_safe_error_response(str(e))
             self._apply_basic_security_headers(error_response)
             self._add_request_tracking_headers(request, error_response)
-            
+
             return error_response
 
     def _apply_all_security_headers(self, request: Request, response: Response) -> None:
@@ -146,19 +146,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         try:
             # Core security headers
             self._apply_core_security_headers(response)
-            
+
             # Child-specific protection if enabled
             if self.config.child_safety_mode and self._is_child_request(request):
                 self._apply_enhanced_child_protection(response)
-            
+
             # Request tracking headers
             self._add_request_tracking_headers(request, response)
-            
+
             # Environment-specific headers
             self._add_environment_headers(response)
 
         except Exception as e:
-            logger.error(f"Error applying security headers: {e}")
+            logger.error("Error applying security headers: %s", e)
             # Fallback to basic headers
             self._apply_basic_security_headers(response)
 
@@ -252,7 +252,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     def _add_environment_headers(self, response: Response) -> None:
         """Add environment-specific headers."""
         response.headers["X-Environment"] = self.environment
-        
+
         if not self.is_production:
             response.headers["X-Development-Mode"] = "true"
 
@@ -298,7 +298,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 return True
 
         except Exception as e:
-            logger.warning(f"Error in child request detection: {e}")
+            logger.warning("Error in child request detection: %s", e)
 
         return False
 
@@ -312,9 +312,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         if self.request_count % 1000 == 0:
             avg_time = self.total_processing_time / self.request_count
             logger.info(
-                f"Security middleware performance: "
-                f"{self.request_count} requests, "
-                f"avg {avg_time * 1000:.2f}ms per request"
+                "Security middleware performance: %d requests, avg %.2fms per request",
+                self.request_count, avg_time * 1000
             )
 
     def _create_safe_error_response(self, error_msg: str) -> Response:
@@ -411,12 +410,7 @@ def create_security_headers_middleware(config: SecurityHeadersConfig = None) -> 
     """Factory function to create security headers middleware."""
     if config is None:
         config = SecurityHeadersConfig()
-    
-    # Create a dummy app for the middleware - this will be replaced when added to actual app
-    class DummyApp:
-        pass
-    
-    return SecurityHeadersMiddleware(DummyApp(), config)
+    raise RuntimeError("create_security_headers_middleware is for testing only. Use SecurityHeadersMiddleware with a real FastAPI app in production.")
 
 
 def get_security_headers_config(child_safety_mode: bool = True) -> SecurityHeadersConfig:

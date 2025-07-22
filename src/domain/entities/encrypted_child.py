@@ -48,86 +48,64 @@ class EncryptedChild:
     def set_emergency_contacts(
         self,
         contacts: list[dict[str, Any]],
-        encryption_key: bytes,
+        encryption_service=None,
     ) -> None:
-        """Encrypts and sets emergency contacts.
-
-        Args:
-            contacts: A list of emergency contact dictionaries.
-            encryption_key: The key to use for encryption.
-
-        """
-        self._encrypted_emergency_contacts = EncryptedField.from_data(
-            contacts,
-            encryption_key,
+        """Encrypts and sets emergency contacts."""
+        import json
+        from src.domain.value_objects.encrypted_field import NullEncryptionService
+        service = encryption_service or NullEncryptionService()
+        serialized = json.dumps(contacts)
+        encrypted_data = service.encrypt(serialized)
+        self._encrypted_emergency_contacts = EncryptedField.from_encrypted_data(
+            encrypted_data, encryption_service=service
         )
         self.updated_at = datetime.utcnow()
 
     def get_emergency_contacts(
         self,
-        encryption_key: bytes,
+        encryption_service=None,
     ) -> list[dict[str, Any]] | None:
-        """Decrypts and retrieves emergency contacts.
-
-        Args:
-            encryption_key: The key to use for decryption.
-
-        Returns:
-            A list of emergency contact dictionaries, or None if not set.
-
-        """
+        """Decrypts and retrieves emergency contacts."""
         if self._encrypted_emergency_contacts:
-            return self._encrypted_emergency_contacts.get_data(encryption_key)
+            return self._encrypted_emergency_contacts.get_value()
         return None
 
-    def set_medical_notes(self, notes: str, encryption_key: bytes) -> None:
-        """Encrypts and sets medical notes.
-
-        Args:
-            notes: The medical notes string.
-            encryption_key: The key to use for encryption.
-
-        """
-        self._encrypted_medical_notes = EncryptedField.from_data(notes, encryption_key)
+    def set_medical_notes(self, notes: str, encryption_service=None) -> None:
+        """Encrypts and sets medical notes."""
+        from src.domain.value_objects.encrypted_field import NullEncryptionService
+        service = encryption_service or NullEncryptionService()
+        encrypted_data = service.encrypt(notes)
+        self._encrypted_medical_notes = EncryptedField.from_encrypted_data(
+            encrypted_data, encryption_service=service
+        )
         self.updated_at = datetime.utcnow()
 
-    def get_medical_notes(self, encryption_key: bytes) -> str | None:
-        """Decrypts and retrieves medical notes.
-
-        Args:
-            encryption_key: The key to use for decryption.
-
-        Returns:
-            The medical notes string, or None if not set.
-
-        """
+    def get_medical_notes(self, encryption_service=None) -> str | None:
+        """Decrypts and retrieves medical notes."""
         if self._encrypted_medical_notes:
-            return self._encrypted_medical_notes.get_data(encryption_key)
+            return self._encrypted_medical_notes.get_value()
         return None
 
     def update_interaction_time(self, duration_seconds: int) -> None:
-        """Updates the total interaction time and last interaction timestamp.
-
-        Args:
-            duration_seconds: The duration of the latest interaction in seconds.
-
-        """
+        """Updates the total interaction time and last interaction timestamp."""
         self.total_interaction_time += duration_seconds
-        self.last_interaction = datetime.now(UTC)
+        self.last_interaction = datetime.utcnow()
         self.updated_at = datetime.utcnow()
 
-    def is_interaction_time_exceeded(self) -> bool:
-        """Checks if the child has exceeded their daily interaction time limit.
-
-        Returns:
-            True if the limit is exceeded, False otherwise.
-
-        """
-        # This would require tracking daily interaction time, not just total
-        # For simplicity, this is a placeholder.
+    def is_interaction_time_exceeded(self, usage_log: list[dict[str, Any]] = None) -> bool:
+        """Checks if the child has exceeded their daily interaction time limit (فعلي: حسب اليوم الحالي)."""
         if self.max_daily_interaction_time is None:
             return False
-        return self.total_interaction_time > self.max_daily_interaction_time
+        if usage_log is None:
+            # fallback: استخدم الكلي (للتوافق)
+            return self.total_interaction_time > self.max_daily_interaction_time
+        today = datetime.utcnow().date().isoformat()
+        today_total = sum(
+            rec.get("duration", 0)
+            for rec in usage_log
+            if rec.get("timestamp", "").startswith(today)
+        )
+        return today_total > self.max_daily_interaction_time
 
     def add_allowed_topic(self, topic: str) -> None:
         """Adds a topic to the list of allowed topics.

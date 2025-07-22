@@ -2,6 +2,7 @@
 Provides paginated access to child conversations with COPPA compliance.
 """
 
+from fastapi import APIRouter, HTTPException, Query, status
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -16,25 +17,6 @@ from src.domain.services.conversation_service import ConversationService
 from src.infrastructure.persistence.repositories.conversation_repository import ConversationRepository
 
 logger = get_logger(__name__, component="api")
-
-# Import FastAPI dependencies
-try:
-    from fastapi import APIRouter, HTTPException, Query, status
-
-    FASTAPI_AVAILABLE = True
-except ImportError:
-    FASTAPI_AVAILABLE = False
-    logger.warning("FastAPI not available, using mock classes")
-
-    class APIRouter:
-        def __init__(self, *args, **kwargs) -> None:
-            pass
-
-        def get(self, path: str, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
 
 
 class ConversationPaginationService:

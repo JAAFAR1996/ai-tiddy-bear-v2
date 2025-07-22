@@ -36,24 +36,23 @@ class CleanupService:
         self.logger = logger
 
     def _is_safe_path(self, file_path: Path) -> bool:
-        """Validates if a file path is safe for deletion (e.g., prevents directory traversal).
+        """Validates if a file path is safe for deletion (production implementation).
 
-        In a real implementation, this would:
-        - Resolve the absolute path of file_path.
-        - Check if the resolved path is within an allowed, designated cleanup directory.
-        - Prevent deletion of critical system files or unauthorized locations.
+        Checks if the resolved path is within an allowed cleanup directory and prevents deletion of critical system files.
+        Raises ValueError if the path is unsafe.
         """
-        # Placeholder for robust path validation
         self.logger.debug(f"Validating path for cleanup: {file_path}")
-        # Example of a very basic check (not production-ready)
+        resolved_path = file_path.resolve()
+        # مثال: السماح فقط بالحذف من مجلد /tmp أو مجلد بيانات محدد
+        allowed_base_dirs = [Path("/tmp"), Path("/var/ai-teddy/data/cleanup")]
+        if not any(str(resolved_path).startswith(str(base)) for base in allowed_base_dirs):
+            self.logger.warning(f"Attempted cleanup outside allowed directories: {resolved_path}")
+            raise ValueError(f"Cleanup not allowed outside designated directories: {resolved_path}")
         if ".." in str(file_path):
-            self.logger.warning(
-                f"Attempted directory traversal detected in path: {file_path}",
-            )
-            return False
-        # More robust checks (e.g., against a list of allowed base directories)
-        # would go here.
-        return True  # Assume safe for simulation
+            self.logger.warning(f"Attempted directory traversal detected in path: {file_path}")
+            raise ValueError(f"Directory traversal detected in path: {file_path}")
+        # يمكن إضافة المزيد من الشروط حسب سياسة النظام
+        return True
 
     async def cleanup_old_data(self, data_type: str | None = None) -> dict[str, Any]:
         """Cleans up old data based on retention policies.
