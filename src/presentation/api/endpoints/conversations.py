@@ -72,4 +72,3 @@ async def get_authenticated_user(
             detail="Authentication verification failed",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
