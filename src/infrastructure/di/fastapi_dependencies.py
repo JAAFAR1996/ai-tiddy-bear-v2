@@ -12,7 +12,7 @@ from src.infrastructure.security.core.main_security_service import (
     MainSecurityService,
     get_security_service,
 )
-from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
+from src.infrastructure.security.core.real_auth_service import ProductionAuthService
 from src.domain.entities.user import User
 
 """FastAPI Dependency Injection Utilities"""
