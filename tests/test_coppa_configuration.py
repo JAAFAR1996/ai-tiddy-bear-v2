@@ -68,5 +68,8 @@ assert coppa_config.parental_consent_required is True
 assert result.success
 assert not result.enabled
 # or
-assertTrue(result.success)
-assertFalse(result.enabled)
+assert result.success
+assert not result.enabled
+# or
+assert result.success
+assert not result.enabled

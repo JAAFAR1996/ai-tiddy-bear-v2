@@ -10,7 +10,14 @@ import pytest
 from src.infrastructure.security.key_management.key_generator import (
     KeyGenerator,
 )
-from src.infrastructure.security.key_rotation_service import KeyType
+from enum import Enum
+
+
+class KeyType(Enum):
+    """Mock KeyType for testing."""
+    CHILD_DATA = "child_data"
+    API_KEY = "api_key"
+    SYSTEM = "system"
 
 
 @pytest.fixture

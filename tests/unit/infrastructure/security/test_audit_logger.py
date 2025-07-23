@@ -11,7 +11,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from src.infrastructure.security.audit_logger import (
+from src.infrastructure.security.audit.audit_logger import (
     AuditCategory,
     AuditConfig,
     AuditContext,

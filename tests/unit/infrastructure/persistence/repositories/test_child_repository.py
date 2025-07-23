@@ -11,7 +11,7 @@ import pytest
 
 from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.models.child_model import ChildModel
-from src.infrastructure.persistence.child_repository import (
+from src.infrastructure.persistence.repositories.child_repository import (
     ChildRepository,
 )
 from src.infrastructure.security.database_input_validator import SecurityError

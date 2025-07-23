@@ -70,7 +70,7 @@ except ImportError:
     pytest = MockPytest()
 
 try:
-    from fastapi
+    from fastapi import HTTPException
 except ImportError:
     from common.mock_fastapi import HTTPException
 

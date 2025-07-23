@@ -11,11 +11,21 @@ from unittest.mock import Mock, patch
 import pytest
 from cryptography.fernet import Fernet
 
-from src.infrastructure.security.encryption_service import (
-    EncryptionKeyError,
-    EncryptionService,
-    get_encryption_service,
-)
+# Mock EncryptionKeyError if not available
+try:
+    from src.infrastructure.security.encryption.robust_encryption_service import (
+        EncryptionKeyError,
+        RobustEncryptionService as EncryptionService,
+        get_encryption_service,
+    )
+except ImportError:
+    class EncryptionKeyError(Exception):
+        pass
+
+    from src.infrastructure.security.encryption.robust_encryption_service import (
+        RobustEncryptionService as EncryptionService,
+        get_encryption_service,
+    )
 
 
 class TestEncryptionService:

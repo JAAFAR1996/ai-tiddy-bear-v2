@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.cors_service import (
+from src.infrastructure.security.web.cors_service import (
     CORSConfiguration,
     CORSPolicy,
     CORSSecurityService,
@@ -527,7 +527,7 @@ class TestCORSSecurityService:
 
     def test_log_cors_violation(self, cors_service):
         """Test CORS violation logging."""
-        with patch("src.infrastructure.security.cors_service.logger") as mock_logger:
+        with patch("src.infrastructure.security.web.cors_service.logger") as mock_logger:
             cors_service._log_cors_violation(
                 "https://malicious.com", "Origin not allowed"
             )
@@ -537,7 +537,9 @@ class TestCORSSecurityService:
 
     def test_log_cors_violation_repeated(self, cors_service):
         """Test repeated CORS violation logging."""
-        with patch("src.infrastructure.security.cors_service.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.web.cors_service.logger"
+        ) as mock_logger:
             origin = "https://malicious.com"
 
             # Log 5 violations
@@ -674,8 +676,8 @@ class TestCORSSecurityService:
     def test_remove_allowed_origin_exception_handling(self, cors_service):
         """Test removing origin with exception handling."""
         with patch.object(
-            cors_service.configurations[CORSPolicy.STRICT],
-            "allowed_origins",
+            cors_service.configurations[CORSPolicy.STRICT].allowed_origins,
+            "discard",
             side_effect=Exception("Test error"),
         ):
             result = cors_service.remove_allowed_origin(

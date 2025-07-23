@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.coppa_validator import (
+from src.infrastructure.validators.security.coppa_validator import (
     COPPAComplianceLevel,
     COPPAValidationResult,
     COPPAValidator,

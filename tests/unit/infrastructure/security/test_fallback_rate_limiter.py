@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.infrastructure.security.fallback_rate_limiter import (
+from src.infrastructure.security.rate_limiter.legacy.fallback_rate_limiter import (
     FallbackRateLimitService,
     SlidingWindowRateLimiter,
 )

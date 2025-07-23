@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.infrastructure.security.child_data_security_manager import (
+from src.infrastructure.security.child_safety.child_data_security_manager import (
     ChildDataSecurityManager,
 )
 

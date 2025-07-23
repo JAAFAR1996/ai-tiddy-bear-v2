@@ -113,11 +113,32 @@ class PathValidator:
         if '..' in normalized or normalized.startswith('/'):
             return True
 
-        # Check for encoded traversal attempts
-        if '%' in original:
+        # Check for encoded traversal attempts (including double/triple encoding and hex)
+        if '%' in original or '\\x' in original:
             try:
                 from urllib.parse import unquote
-                decoded = unquote(original)
+                decoded = original
+                
+                # Handle hex encoding first (e.g., \x2e\x2e)
+                if '\\x' in decoded:
+                    try:
+                        # Replace \x with proper hex escape and decode
+                        hex_fixed = decoded.replace('\\x', '\\x')
+                        decoded = bytes(hex_fixed, 'utf-8').decode('unicode_escape')
+                    except Exception:
+                        pass  # If hex decode fails, continue with URL decoding
+                
+                # Decode multiple times to catch double/triple URL encoding attacks
+                for _ in range(3):  # Decode up to 3 times
+                    new_decoded = unquote(decoded)
+                    if new_decoded == decoded:
+                        break  # No more decoding possible
+                    decoded = new_decoded
+                    # Check after each decode level
+                    if any(pattern in decoded.lower() for pattern in traversal_patterns):
+                        return True
+                        
+                # Final check after all decoding
                 if any(pattern in decoded.lower() for pattern in traversal_patterns):
                     return True
             except Exception:

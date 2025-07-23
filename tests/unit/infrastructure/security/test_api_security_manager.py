@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.api_security_manager import APISecurityManager
+from src.infrastructure.security.child_safety.api_security_manager import APISecurityManager
 
 
 class TestAPISecurityManager:

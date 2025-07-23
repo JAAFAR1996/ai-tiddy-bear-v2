@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.infrastructure.security.audit_decorators import (
+from src.infrastructure.security.audit.audit_decorators import (
     audit_authentication,
     audit_child_create,
     audit_child_delete,

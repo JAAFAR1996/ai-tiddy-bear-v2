@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.access_control_service import (
+from src.infrastructure.security.auth.access_control_service import (
     AccessAction,
     AccessControlService,
     AccessLevel,
