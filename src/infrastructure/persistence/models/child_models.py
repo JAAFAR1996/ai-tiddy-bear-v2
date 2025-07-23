@@ -21,7 +21,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 # استيراد الـ Types الصحيحة
 from src.domain.value_objects.child_age import ChildAge, AgeCategory
 from src.domain.value_objects.safety_level import SafetyLevel
-from src.domain.models.models_infra import Base
+from .base import Base
 
 
 class ChildModel(Base):
@@ -48,10 +48,10 @@ class ChildModel(Base):
     name_encrypted: Mapped[str] = mapped_column(String(500), nullable=False)
     age_years: Mapped[int] = mapped_column(Integer, nullable=False)
     age_months: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    
+
     # ✅ استخدام AgeCategory (وهو Enum) بدلاً من ChildAge (وهو dataclass)
     age_category: Mapped[str] = mapped_column(
-        String(20), 
+        String(20),
         nullable=False,
         comment="Age category: toddler, preschool, early_child, middle_child, preteen"
     )
@@ -113,35 +113,35 @@ class ChildModel(Base):
             name="check_valid_safety_level"
         ),
     )
-    
+
     # ✅ Properties للتحويل بين database values والـ domain objects
     @property
     def child_age(self) -> ChildAge:
         """Get ChildAge domain object."""
         return ChildAge(years=self.age_years, months=self.age_months)
-    
+
     @child_age.setter
     def child_age(self, value: ChildAge) -> None:
         """Set age from ChildAge domain object."""
         self.age_years = value.years
         self.age_months = value.months
         self.age_category = value.category.value  # تحديث الـ category تلقائياً
-    
+
     @property
     def age_category_enum(self) -> AgeCategory:
         """Get age_category as enum."""
         return AgeCategory(self.age_category)
-    
+
     @age_category_enum.setter
     def age_category_enum(self, value: AgeCategory) -> None:
         """Set age_category from enum."""
         self.age_category = value.value
-    
+
     @property
     def safety_level_enum(self) -> SafetyLevel:
         """Get safety_level as enum."""
         return SafetyLevel(self.safety_level)
-    
+
     @safety_level_enum.setter
     def safety_level_enum(self, value: SafetyLevel) -> None:
         """Set safety_level from enum."""
@@ -151,19 +151,18 @@ class ChildModel(Base):
     def get_interaction_guidelines(self) -> dict[str, str]:
         """Get age-appropriate interaction guidelines."""
         return self.child_age.get_interaction_guidelines()
-    
+
     def get_recommended_topics(self) -> list[str]:
         """Get age-appropriate topic recommendations."""
         return self.child_age.recommended_topics
-    
+
     def get_safety_restrictions(self) -> dict[str, bool]:
         """Get safety restrictions."""
         return self.child_age.safety_restrictions
-    
+
     def is_appropriate_for_content(self, content_age_rating: int) -> bool:
         """Check if content is appropriate for this age."""
         return self.child_age.is_appropriate_for_content(content_age_rating)
 
     def __repr__(self) -> str:
         return f"<ChildModel(id={self.id}, age={self.age_years}, category='{self.age_category}', safety='{self.safety_level}')>"
-

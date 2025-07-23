@@ -11,8 +11,8 @@ from typing import Any
 from sqlalchemy import select, update, delete, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.models.child_models import ChildModel
-from src.domain.models.conversation_models import ConversationModel
+from src.infrastructure.persistence.models.child_models import ChildModel
+from src.infrastructure.persistence.models.conversation_models import ConversationModel
 from src.domain.models.consent_models_infra import SafetyEventModel
 from src.infrastructure.logging_config import get_logger
 

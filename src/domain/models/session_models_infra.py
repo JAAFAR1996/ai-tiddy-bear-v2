@@ -2,10 +2,8 @@ from src.domain.value_objects.session_status import SessionStatus
 from enum import Enum
 
 from sqlalchemy import Column, DateTime, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
-
-Base = declarative_base()
+from src.infrastructure.persistence.models.base import Base
 
 
 class Session(Base):

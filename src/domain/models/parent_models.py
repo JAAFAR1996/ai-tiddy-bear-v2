@@ -10,7 +10,7 @@ from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.domain.models.models_infra import Base
+from src.infrastructure.persistence.models.base import Base
 
 
 class ParentModel(Base):

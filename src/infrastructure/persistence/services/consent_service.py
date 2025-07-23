@@ -14,8 +14,8 @@ from sqlalchemy.orm import selectinload
 
 from src.domain.models.consent_models_infra import ConsentModel
 from src.domain.models.consent_models_domain import ConsentType, ConsentStatus
-from src.domain.models.child_models import ChildModel
-from src.domain.models.parent_models import ParentModel
+from src.infrastructure.persistence.models.child_models import ChildModel
+from src.infrastructure.persistence.models.parent_models import ParentModel
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)

@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from src.infrastructure.persistence.models.base import Base
 
 from src.domain.repositories.event_store import EventStore
-from src.infrastructure.logging_config import get_logger  
+from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
 
 logger = get_logger(__name__, component="persistence")

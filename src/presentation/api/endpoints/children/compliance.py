@@ -113,7 +113,7 @@ class LocalRetentionManager:
     async def schedule_data_deletion(self, child_id: str, deletion_date: datetime) -> bool:
         """Schedule data deletion according to retention policy with real database integration."""
         try:
-            from src.domain.models.child_models import ChildModel
+            from src.infrastructure.persistence.models.child_models import ChildModel
             from sqlalchemy import text
 
             session = self.SessionLocal()
@@ -177,7 +177,7 @@ class LocalRetentionManager:
     async def check_retention_compliance(self, child_id: str) -> dict:
         """Check if data retention is compliant with real database validation."""
         try:
-            from src.domain.models.child_models import ChildModel
+            from src.infrastructure.persistence.models.child_models import ChildModel
             from sqlalchemy import text
 
             session = self.SessionLocal()
