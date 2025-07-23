@@ -118,7 +118,7 @@ class PathValidator:
             try:
                 from urllib.parse import unquote
                 decoded = original
-                
+
                 # Handle hex encoding first (e.g., \x2e\x2e)
                 if '\\x' in decoded:
                     try:
@@ -127,7 +127,7 @@ class PathValidator:
                         decoded = bytes(hex_fixed, 'utf-8').decode('unicode_escape')
                     except Exception:
                         pass  # If hex decode fails, continue with URL decoding
-                
+
                 # Decode multiple times to catch double/triple URL encoding attacks
                 for _ in range(3):  # Decode up to 3 times
                     new_decoded = unquote(decoded)
@@ -137,7 +137,7 @@ class PathValidator:
                     # Check after each decode level
                     if any(pattern in decoded.lower() for pattern in traversal_patterns):
                         return True
-                        
+
                 # Final check after all decoding
                 if any(pattern in decoded.lower() for pattern in traversal_patterns):
                     return True

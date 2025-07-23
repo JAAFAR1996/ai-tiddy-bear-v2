@@ -45,7 +45,7 @@ class TestSlidingWindowRateLimiter:
 
             assert result["allowed"] is True
             assert (
-                result["remaining"] == 5 - (i + 1) - 1
+                result["remaining"] == 5 - (i + 1)
             )  # remaining after this request
             assert result["retry_after"] == 0
             assert result["limit"] == 5

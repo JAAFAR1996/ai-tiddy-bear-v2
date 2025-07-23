@@ -130,7 +130,7 @@ class TestSecureFileOperations:
         self.validator = PathValidator(PathPolicy.STRICT)
         # Configure for test environment - allow temp directory access
         self.validator.restricted_paths = {
-            path for path in self.validator.restricted_paths 
+            path for path in self.validator.restricted_paths
             if not self.temp_dir.lower().startswith(path.lower())
         }
         self.secure_ops = SecureFileOperations(self.validator)
