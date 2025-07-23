@@ -11,7 +11,7 @@ from .create_child import create_child_endpoint
 from .get_children import get_children_endpoint
 from .models import ChildResponse
 from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.child_models import ChildModel
+from src.infrastructure.persistence.models.child_models import ChildModel
 from src.infrastructure.di.fastapi_dependencies import get_database
 
 

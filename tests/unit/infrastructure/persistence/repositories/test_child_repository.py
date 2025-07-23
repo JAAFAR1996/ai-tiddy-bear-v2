@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 
 from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.child_models import ChildModel
+from src.infrastructure.persistence.models.child_models import ChildModel
 from src.infrastructure.persistence.repositories.child_repository import (
     ChildRepository,
 )

@@ -1,6 +1,2 @@
 
-from sqlalchemy.orm import DeclarativeBase
-
-class Base(DeclarativeBase):
-    pass
-
+from src.infrastructure.persistence.models.base import Base

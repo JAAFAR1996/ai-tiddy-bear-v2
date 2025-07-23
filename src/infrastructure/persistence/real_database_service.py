@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from datetime import datetime, date, timedelta
 from uuid import uuid4
 from src.infrastructure.logging_config import get_logger
-from src.domain.models.child_models import ChildModel
+from src.infrastructure.persistence.models.child_models import ChildModel
 
 logger = get_logger(__name__, component="persistence")
 

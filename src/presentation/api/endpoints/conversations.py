@@ -16,7 +16,7 @@ from src.application.use_cases.manage_child_profile import (
 )
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
+from src.infrastructure.security.core.real_auth_service import ProductionAuthService
 from src.infrastructure.security.child_safety.safety_monitor_service import (
     SafetyMonitorService,
 )
@@ -72,4 +72,3 @@ async def get_authenticated_user(
             detail="Authentication verification failed",
             headers={"WWW-Authenticate": "Bearer"},
         )
-

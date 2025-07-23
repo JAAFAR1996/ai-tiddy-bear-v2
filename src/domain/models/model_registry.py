@@ -1,4 +1,4 @@
-from sqlalchemy.orm import DeclarativeBase
+from src.infrastructure.persistence.models.base import Base
 
 from src.infrastructure.logging_config import get_logger
 
@@ -14,16 +14,16 @@ class ModelRegistry:
     """Registry for SQLAlchemy models to prevent circular imports."""
 
     def __init__(self) -> None:
-        self._models: list[type[DeclarativeBase]] = []
+        self._models: list[type[Base]] = []
         self._registered = False
 
-    def register_model(self, model_class: type[DeclarativeBase]) -> None:
+    def register_model(self, model_class: type[Base]) -> None:
         """Register a model class."""
         if model_class not in self._models:
             self._models.append(model_class)
             logger.debug(f"Registered model: {model_class.__name__}")
 
-    def get_all_models(self) -> list[type[DeclarativeBase]]:
+    def get_all_models(self) -> list[type[Base]]:
         """Get all registered models."""
         if not self._registered:
             self._discover_models()
@@ -56,8 +56,8 @@ def get_model_registry() -> ModelRegistry:
 
 
 def register_model(
-    model_class: type[DeclarativeBase],
-) -> type[DeclarativeBase]:
+    model_class: type[Base],
+) -> type[Base]:
     """Decorator to register a model class.
     Usage: @register_model class MyModel(Base): pass.
     """

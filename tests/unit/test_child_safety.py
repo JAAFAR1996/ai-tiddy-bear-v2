@@ -152,7 +152,7 @@ class TestChildDataEncryption:
 
     def test_child_model_encryption(self):
         """Test that child PII is encrypted"""
-        from src.domain.models.child_models import (
+        from src.infrastructure.persistence.models.child_models import (
             ChildModel,
         )
 
@@ -175,7 +175,7 @@ class TestChildDataEncryption:
 
     def test_encryption_key_required(self):
         """Test that encryption key is required"""
-        from src.domain.models.child_models import (
+        from src.infrastructure.persistence.models.child_models import (
             ChildModel,
         )
 

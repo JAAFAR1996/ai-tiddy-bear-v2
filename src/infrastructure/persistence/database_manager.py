@@ -6,8 +6,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import declarative_base
-from src.domain.models.models_infra import Base
+from src.infrastructure.persistence.models.base import Base
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
 from src.infrastructure.validators.data.database_validators import (
@@ -122,7 +121,7 @@ class Database:
 
             async with self.engine.begin() as conn:
                 # Register all models using the model registry
-                from src.domain.models.model_registry import (
+                from src.infrastructure.persistence.models.model_registry import (
                     get_model_registry,
                 )
 

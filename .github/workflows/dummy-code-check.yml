@@ -22,12 +22,15 @@ jobs:
       - name: Install ripgrep
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
+      - name: Prepare reports directory
+        run: mkdir -p reports
+
       - name: Run dummy/mock/fake code scan
         run: |
           chmod +x scripts/ci/check_no_dummy_code.sh
           bash scripts/ci/check_no_dummy_code.sh
 
-      - name: Upload dummy code report
+      - name: Upload dummy code report (if exists)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -36,7 +39,11 @@ jobs:
 
       - name: Notify Slack on Dummy Code Detection
         if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's#.*/##')
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"🚨 Dummy/mock code detected in PR/Push. Build failed. Check reports/dummy_references.log for details."}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+            --data "{\"text\":\"🚨 *Dummy/mock code detected!*\nBranch: $BRANCH_NAME\nCommit: $COMMIT_MSG\nPR/Push failed. See dummy_references.log.\"}" \
+            $SLACK_WEBHOOK_URL
