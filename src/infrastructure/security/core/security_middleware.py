@@ -1,5 +1,6 @@
 """Production-Ready Security Middleware with Configuration-Driven Service Layer"""
 
+from src.infrastructure.logging_config import get_logger
 import json
 import os
 import re
@@ -10,7 +11,18 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from enum import Enum
 
-from src.infrastructure.logging_config import get_logger
+# PRODUCTION REDIS IMPORTS - NO MOCKS
+import redis.asyncio as redis
+from redis.asyncio import Redis
+from redis import StrictRedis
+
+# REAL Redis - NO MOCKS
+redis_client = StrictRedis(
+    host=os.getenv('REDIS_HOST', 'localhost'),
+    port=int(os.getenv('REDIS_PORT', '6379')),
+    decode_responses=True
+)
+
 
 logger = get_logger(__name__, component="security")
 
@@ -139,25 +151,16 @@ class RateLimiter(ABC):
 
 
 class RedisRateLimiter(RateLimiter):
-    """Production Redis-based rate limiter"""
+    """Production Redis-based rate limiter - Uses global Redis client"""
 
-    def __init__(self, redis_url: str, config: SecurityConfig):
-        self.redis_url = redis_url
-        self.config = config
-        self._redis = None
+    def __init__(self, redis_client=None, config: SecurityConfig = None):
+        # PRODUCTION: Always use real Redis - NO MOCKS
+        self.redis_client = redis_client or get_redis_client()
+        self.config = config or SecurityConfig()
 
     async def _get_redis(self):
-        """Lazy Redis connection"""
-        if not self._redis:
-            try:
-                import redis.asyncio as redis_async
-                self._redis = redis_async.from_url(self.redis_url, decode_responses=True)
-                await self._redis.ping()  # Test connection
-                logger.info("Redis rate limiter connected successfully")
-            except Exception as e:
-                logger.error(f"Redis connection failed: {e}")
-                raise RuntimeError(f"Redis rate limiter requires valid Redis connection: {e}")
-        return self._redis
+        """Get Redis connection"""
+        return self.redis_client
 
     async def is_allowed(self, identifier: str) -> bool:
         """Redis-based rate limiting"""
@@ -317,15 +320,18 @@ class SecurityServiceFactory:
 
     @staticmethod
     def create_rate_limiter(config: SecurityConfig) -> RateLimiter:
-        """Create appropriate rate limiter based on configuration"""
+        """Create appropriate rate limiter based on configuration - PRODUCTION ALWAYS USES REDIS"""
         if config.redis_available and config.redis_url:
             try:
-                return RedisRateLimiter(config.redis_url, config)
+                # PRODUCTION: Use global Redis client
+                return RedisRateLimiter(get_redis_client(), config)
             except Exception as e:
-                logger.warning(f"Failed to create Redis rate limiter, falling back to in-memory: {e}")
-                return InMemoryRateLimiter(config)
+                logger.critical(f"CRITICAL: Redis rate limiter failed - NO FALLBACK IN PRODUCTION: {e}")
+                raise RuntimeError("PRODUCTION REQUIREMENT: Redis must be available for rate limiting") from e
         else:
-            return InMemoryRateLimiter(config)
+            # PRODUCTION: Redis is mandatory
+            logger.critical("CRITICAL: Redis configuration missing - PRODUCTION REQUIRES REDIS")
+            raise RuntimeError("PRODUCTION REQUIREMENT: Redis configuration is mandatory")
 
     @staticmethod
     def create_security_config() -> SecurityConfig:
@@ -351,53 +357,66 @@ class SecurityServiceFactory:
         logger.info(f"Security configuration created for {env} environment")
         return config
 
-# === LEGACY REDIS COMPATIBILITY (for existing imports) ===
+# === PRODUCTION REDIS CONNECTION - NO MOCKS IN PRODUCTION ===
 
 
-try:
-    import redis.asyncio as redis
-    REDIS_AVAILABLE = True
-except ImportError:
-    logger.warning("Redis not available, using in-memory storage for rate limiting")
-    REDIS_AVAILABLE = False
+# Global Redis client - initialized on startup
+redis_client: Optional[Redis] = None
 
-    # Maintain compatibility with existing code
-    class MockRedis:
-        def __init__(self):
-            self.data = {}
 
-        async def zremrangebyscore(self, key, min_score, max_score):
-            if key in self.data:
-                self.data[key] = {
-                    k: v for k, v in self.data[key].items()
-                    if not (min_score <= v <= max_score)
-                }
+def initialize_redis() -> Redis:
+    """Initialize Redis connection with environment configuration"""
+    global redis_client
 
-        async def zcard(self, key):
-            return len(self.data.get(key, {}))
+    redis_host = os.getenv('REDIS_HOST', 'localhost')
+    redis_port = int(os.getenv('REDIS_PORT', 6379))
+    redis_db = int(os.getenv('REDIS_DB', 0))
+    redis_password = os.getenv('REDIS_PASSWORD')
 
-        async def zadd(self, key, mapping):
-            if key not in self.data:
-                self.data[key] = {}
-            self.data[key].update(mapping)
+    # Create Redis connection
+    redis_client = Redis(
+        host=redis_host,
+        port=redis_port,
+        db=redis_db,
+        password=redis_password,
+        decode_responses=True,
+        retry_on_timeout=True,
+        socket_keepalive=True,
+        socket_keepalive_options={},
+    )
 
-        async def expire(self, key, seconds):
-            pass  # Mock implementation
+    logger.info(f"✅ Redis client initialized: {redis_host}:{redis_port}")
+    return redis_client
 
-        async def exists(self, key):
-            return key in self.data
 
-        async def delete(self, key):
-            self.data.pop(key, None)
+def get_redis_client() -> Redis:
+    """Get Redis client - raises error if not initialized"""
+    global redis_client
+    if redis_client is None:
+        redis_client = initialize_redis()
+    return redis_client
 
-        async def setex(self, key, seconds, value):
-            self.data[key] = value
 
-    redis = type("MockRedisModule", (), {"Redis": MockRedis})
+async def test_redis_connection() -> bool:
+    """Test Redis connection and operations"""
+    try:
+        client = get_redis_client()
+        # Test basic operations
+        await client.ping()
+        await client.set("health_check", "ok", ex=1)
+        result = await client.get("health_check")
+        await client.delete("health_check")
+        logger.info("✅ Redis connection test successful")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Redis connection test failed: {e}")
+        raise RuntimeError(f"CRITICAL: Redis connection failed: {e}")
+
+REDIS_AVAILABLE = True
 
 
 class LegacyRateLimiter:
-    """محدد معدل الطلبات لحماية من DDoS (Legacy implementation for compatibility)"""
+    """محدد معدل الطلبات لحماية من DDoS (PRODUCTION-READY with Redis)"""
 
     def __init__(
         self,
@@ -405,7 +424,7 @@ class LegacyRateLimiter:
         requests_per_minute: int = 60,
         burst_limit: int = 10,
     ) -> None:
-        self.redis = redis_client or MockRedis()
+        # PRODUCTION: Always use real Redis - NO MOCKS
         self.requests_per_minute = requests_per_minute
         self.burst_limit = burst_limit
         self.window_seconds = 60
@@ -416,17 +435,17 @@ class LegacyRateLimiter:
         now = int(time.time())
 
         # Remove old timestamps
-        await self.redis.zremrangebyscore(key, 0, now - self.window_seconds)
+        await redis_client.zremrangebyscore(key, 0, now - self.window_seconds)
 
         # Get current request count
-        current_requests = await self.redis.zcard(key)
+        current_requests = await redis_client.zcard(key)
 
         if current_requests >= self.requests_per_minute:
             return False
 
         # Add current request timestamp
-        await self.redis.zadd(key, {now: now})
-        await self.redis.expire(key, self.window_seconds)
+        await redis_client.zadd(key, {now: now})
+        await redis_client.expire(key, self.window_seconds)
 
         return True
 
@@ -435,14 +454,14 @@ class LegacyRateLimiter:
         key = f"suspicious_activity:{ip}"
         now = datetime.now()
 
-        await self.redis.zadd(key, {now.timestamp(): now.timestamp()})
-        await self.redis.expire(key, int(timedelta(hours=24).total_seconds()))
+        await redis_client.zadd(key, {now.timestamp(): now.timestamp()})
+        await redis_client.expire(key, int(timedelta(hours=24).total_seconds()))
 
         # Check if IP should be blocked
-        activity_count = await self.redis.zcard(key)
+        activity_count = await redis_client.zcard(key)
         if activity_count >= 5:
             block_key = f"blocked_ip:{ip}"
-            await self.redis.setex(
+            await redis_client.setex(
                 block_key, int(timedelta(hours=1).total_seconds()), "blocked"
             )
             logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
@@ -450,13 +469,13 @@ class LegacyRateLimiter:
     async def is_ip_blocked(self, ip: str) -> bool:
         """التحقق من حظر IP"""
         block_key = f"blocked_ip:{ip}"
-        return await self.redis.exists(block_key)
+        return await redis_client.exists(block_key)
 
     async def clear_failed_attempts(self, identifier: str) -> None:
         """Clear failed attempts for successful authentication"""
-        await self.redis.delete(f"rate_limit:{identifier}")
-        await self.redis.delete(f"suspicious_activity:{identifier}")
-        await self.redis.delete(f"blocked_ip:{identifier}")
+        await redis_client.delete(f"rate_limit:{identifier}")
+        await redis_client.delete(f"suspicious_activity:{identifier}")
+        await redis_client.delete(f"blocked_ip:{identifier}")
 
 
 class SecurityValidator:
@@ -544,8 +563,9 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         validator: SecurityValidator = None,
     ) -> None:
         super().__init__(app)
-        self.redis_client = redis_client or MockRedis()
-        self.rate_limiter = rate_limiter or RateLimiter(self.redis_client)
+        # PRODUCTION: Always use real Redis - NO MOCKS
+        self.redis_client = redis_client or get_redis_client()
+        self.rate_limiter = rate_limiter or RedisRateLimiter(self.redis_client)
         self.validator = validator or SecurityValidator()
 
     async def dispatch(self, request: Request, call_next) -> Response:
@@ -713,7 +733,7 @@ class ChildSafetySecurityMiddleware(SecurityMiddleware):
     ) -> None:
         super().__init__(app, redis_client, rate_limiter, validator)
         # إعدادات أكثر صرامة للأطفال
-        self.child_rate_limiter = RateLimiter(
+        self.child_rate_limiter = LegacyRateLimiter(
             self.redis_client,
             requests_per_minute=30,  # معدل أقل للأطفال
             burst_limit=5,
@@ -784,16 +804,18 @@ def create_security_middleware(
     """إنشاء middleware الأمان"""
     if not redis_client and REDIS_AVAILABLE:
         try:
-            redis_client = redis.Redis(
-                host="localhost", port=6379, decode_responses=True
-            )
+            # PRODUCTION: Use proper Redis initialization
+            redis_client = get_redis_client()
+            # Test connection will be done at startup
+            logger.info("✅ Redis client initialized for security middleware")
         except Exception as e:
-            logger.warning(f"Could not connect to Redis: {e}")
-            redis_client = MockRedis()
+            logger.critical(f"CRITICAL: Redis connection failed: {e}")
+            raise RuntimeError(f"PRODUCTION REQUIREMENT: Redis must be available") from e
     elif not redis_client:
-        redis_client = MockRedis()
+        # PRODUCTION: Always require Redis
+        redis_client = get_redis_client()
 
-    rate_limiter = RateLimiter(redis_client, requests_per_minute=60, burst_limit=10)
+    rate_limiter = LegacyRateLimiter(redis_client, requests_per_minute=60, burst_limit=10)
     validator = SecurityValidator()
 
     if child_safety:

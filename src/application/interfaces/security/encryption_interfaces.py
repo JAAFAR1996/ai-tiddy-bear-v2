@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Generic
 
 T = TypeVar("T")
 
 
-class HomomorphicEncryptionService[T](ABC):
+class HomomorphicEncryptionService(ABC, Generic[T]):
     @abstractmethod
     async def encrypt(self, plaintext: T) -> Any:
         """Encrypts data using homomorphic encryption."""

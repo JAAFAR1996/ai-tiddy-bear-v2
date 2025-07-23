@@ -3,16 +3,7 @@ Testing centralized age validation for COPPA compliance.
 """
 
 from datetime import date
-
-# Mock freezegun if not installed
-try:
-    from freezegun import freeze_time
-except ImportError:
-    # Create a simple mock that does nothing
-    def freeze_time(time_to_freeze):
-        def decorator(func):
-            return func
-        return decorator
+from freezegun import freeze_time
 
 from src.domain.services.coppa_age_validation import (
     AgeValidationResult,

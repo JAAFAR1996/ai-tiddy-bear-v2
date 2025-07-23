@@ -67,49 +67,6 @@ except ImportError:
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
-def test_import_verification():
-    """Test that all critical imports work after fixes."""
-    # Test core use cases
-    try:
-        pass
-
-        logger.info("✅ All use case imports successful")  # ✅
-    except ImportError as e:
-        pytest.fail(f"❌ Use case import failed: {e}")
-
-    # Test domain entities and events
-    try:
-        pass
-
-        logger.info("✅ All domain imports successful")  # ✅
-    except ImportError as e:
-        pytest.fail(f"❌ Domain import failed: {e}")
-
-    # Test value objects
-    try:
-        pass
-
-        logger.info("✅ All value object imports successful")  # ✅
-    except ImportError as e:
-        pytest.fail(f"❌ Value object import failed: {e}")
-
-    # Test infrastructure
-    try:
-        pass
-
-        logger.info("✅ All infrastructure imports successful")  # ✅
-    except ImportError as e:
-        pytest.fail(f"❌ Infrastructure import failed: {e}")
-
-    # Test container and settings
-    try:
-        pass
-
-        logger.info("✅ Container and settings imports successful")  # ✅
-    except ImportError as e:
-        pytest.fail(f"❌ Container/settings import failed: {e}")
-
-
 def test_container_initialization():
     """Test that dependency injection container can be initialized."""
     try:
