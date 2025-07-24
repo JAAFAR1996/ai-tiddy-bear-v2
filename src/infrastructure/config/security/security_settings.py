@@ -1,8 +1,9 @@
 """
 src/infrastructure/config/security_settings.py
-تحديث SecuritySettings لإضافة قيم افتراضية
+Secure SecuritySettings with environment variable validation
 """
-from pydantic import Field, SecretStr, model_validator
+import os
+from pydantic import Field, SecretStr, model_validator, ValidationError
 from src.infrastructure.config.core.base_settings import BaseApplicationSettings
 
 class SecuritySettings(BaseApplicationSettings):
@@ -13,18 +14,18 @@ class SecuritySettings(BaseApplicationSettings):
     MIN_JWT_SECRET_KEY_LENGTH: int = 32
     COPPA_ENCRYPTION_KEY_LENGTH: int = 44
 
-    # المفاتيح الأساسية - مع قيم افتراضية للتطوير
+    # Security keys - MUST be provided via environment variables
     SECRET_KEY: str = Field(
-        default="DEVELOPMENT_SECRET_KEY_CHANGE_IN_PRODUCTION_123456789",
-        env="SECRET_KEY"
+        env="SECRET_KEY",
+        description="Main application secret key for security operations"
     )
     JWT_SECRET_KEY: str = Field(
-        default="DEVELOPMENT_JWT_SECRET_KEY_CHANGE_IN_PRODUCTION_123456789", 
-        env="JWT_SECRET_KEY"
+        env="JWT_SECRET_KEY",
+        description="Secret key for JWT token signing and verification"
     )
     COPPA_ENCRYPTION_KEY: str = Field(
-        default="DEVELOPMENT_COPPA_KEY_CHANGE_IN_PRODUCTION_44CHARS_HERE!!",
-        env="COPPA_ENCRYPTION_KEY"
+        env="COPPA_ENCRYPTION_KEY", 
+        description="Encryption key for COPPA-compliant data protection"
     )
 
     # المتغيرات الإضافية مع قيم افتراضية
@@ -82,12 +83,50 @@ class SecuritySettings(BaseApplicationSettings):
     )
 
     @model_validator(mode="after")
-    def validate_token_expiration(self) -> "SecuritySettings":
-        """Validate that access token expiration does not exceed refresh token expiration."""
+    def validate_security_configuration(self) -> "SecuritySettings":
+        """Validate security configuration requirements."""
+        # Validate token expiration
         if self.ACCESS_TOKEN_EXPIRE_MINUTES >= (
             self.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60
         ):
             raise ValueError(
-                "ACCESS_TOKEN_EXPIRE_MINUTES cannot exceed REFRESH_TOKEN_EXPIRE_DAYS.",
+                "ACCESS_TOKEN_EXPIRE_MINUTES cannot exceed REFRESH_TOKEN_EXPIRE_DAYS"
             )
+        
+        # Validate secret key lengths
+        if len(self.SECRET_KEY) < self.MIN_SECRET_KEY_LENGTH:
+            raise ValueError(
+                f"SECRET_KEY must be at least {self.MIN_SECRET_KEY_LENGTH} characters"
+            )
+        
+        if len(self.JWT_SECRET_KEY) < self.MIN_JWT_SECRET_KEY_LENGTH:
+            raise ValueError(
+                f"JWT_SECRET_KEY must be at least {self.MIN_JWT_SECRET_KEY_LENGTH} characters"
+            )
+        
+        if len(self.COPPA_ENCRYPTION_KEY) < self.COPPA_ENCRYPTION_KEY_LENGTH:
+            raise ValueError(
+                f"COPPA_ENCRYPTION_KEY must be at least {self.COPPA_ENCRYPTION_KEY_LENGTH} characters"
+            )
+        
+        # Validate no development keys in production
+        dev_indicators = [
+            "DEVELOPMENT",
+            "DEV",
+            "TEST", 
+            "CHANGE_IN_PRODUCTION",
+            "123456"
+        ]
+        
+        for key_name, key_value in [
+            ("SECRET_KEY", self.SECRET_KEY),
+            ("JWT_SECRET_KEY", self.JWT_SECRET_KEY), 
+            ("COPPA_ENCRYPTION_KEY", self.COPPA_ENCRYPTION_KEY)
+        ]:
+            if any(indicator in key_value.upper() for indicator in dev_indicators):
+                raise ValueError(
+                    f"{key_name} appears to contain development placeholder values. "
+                    f"Please set secure environment variables."
+                )
+        
         return self
