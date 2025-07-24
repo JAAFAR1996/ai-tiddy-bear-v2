@@ -4,12 +4,11 @@ import asyncio
 import os
 import sys
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
-import tempfile
 
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from src.infrastructure.config.settings import Settings
 from src.infrastructure.di.container import Container
@@ -226,7 +225,6 @@ def auth_headers(sample_parent):
     # from src.infrastructure.security.real_auth_service import (
     #     ProductionAuthService,
     # )
-
     # Mock auth service since real_auth_service has import issues
     token = f"test-token-{secrets.token_urlsafe(16)}"
     return {"Authorization": f"Bearer {token}"}

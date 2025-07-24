@@ -8,13 +8,12 @@ import secrets
 from datetime import datetime
 from typing import Any
 
-from src.infrastructure.logging_config import get_logger
-
 from src.domain.models.consent_models_domain import (
     VerificationAttempt,
     VerificationMethod,
     VerificationStatus,
 )
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="services")
 

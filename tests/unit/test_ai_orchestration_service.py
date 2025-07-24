@@ -7,9 +7,7 @@ from src.application.dto.ai_response import AIResponse
 from src.application.interfaces.ai_provider import AIProvider
 from src.application.interfaces.safety_monitor import SafetyMonitor
 from src.application.interfaces.text_to_speech_service import TextToSpeechService
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestrationService,
-)
+from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
 from src.application.services.conversation_service import ConversationService
 from src.domain.value_objects.child_preferences import ChildPreferences
 

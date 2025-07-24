@@ -23,48 +23,48 @@ services:
       - ENVIRONMENT=production
       - DEBUG=false
       - LOG_LEVEL=INFO
-      
+
       # Database Configuration
       - DATABASE_URL=postgresql+asyncpg://ai_teddy_user:${DB_PASSWORD}@postgres-db:5432/ai_teddy_prod
       - DB_POOL_SIZE=20
       - DB_MAX_OVERFLOW=0
       - DB_POOL_RECYCLE=300
-      
+
       # Redis Configuration
       - REDIS_URL=redis://redis-cache:6379/0
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      
+
       # Security Keys (Must be set via environment variables)
       - SECRET_KEY=${SECRET_KEY}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      
+
       # API Keys (Must be set via environment variables)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      
+
       # Child Safety Configuration
       - COPPA_ENCRYPTION_KEY=${COPPA_ENCRYPTION_KEY}
       - MAX_CHILD_AGE=13 # Consider externalizing this business rule to a configuration service for dynamic updates.
       - REQUIRE_PARENTAL_CONSENT=true
       - DATA_RETENTION_DAYS=90 # Consider externalizing this business rule to a configuration service for dynamic updates.
-      
+
       # Security Configuration
       - ENABLE_HTTPS=true
       - REQUIRE_SSL=true
       - SECURITY_HEADERS=true
       - RATE_LIMITING=true
       - SQL_INJECTION_PROTECTION=true
-      
+
       # Monitoring
       - SENTRY_DSN=${SENTRY_DSN}
       - PROMETHEUS_ENABLED=true
-      
+
       # Email Configuration
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
       - FROM_EMAIL=noreply@aiteddy.com
-      
+
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -105,7 +105,7 @@ services:
       - POSTGRES_USER=ai_teddy_user
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
-      
+
       # Performance tuning for production
       - POSTGRES_SHARED_PRELOAD_LIBRARIES=pg_stat_statements
       - POSTGRES_MAX_CONNECTIONS=200
@@ -116,7 +116,7 @@ services:
       - POSTGRES_DEFAULT_STATISTICS_TARGET=100
       - POSTGRES_RANDOM_PAGE_COST=1.1
       - POSTGRES_EFFECTIVE_IO_CONCURRENCY=200
-      
+
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - postgres-backups:/backups

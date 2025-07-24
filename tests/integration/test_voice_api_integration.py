@@ -4,11 +4,7 @@ import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from application.services.voice_service import (
-    TranscriptionResult,
-    VoiceService,
-)
-
+from application.services.voice_service import TranscriptionResult, VoiceService
 from src.api.endpoints.voice import router as voice_router
 
 # Add src to path

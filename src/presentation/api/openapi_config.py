@@ -9,8 +9,8 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
+from src.common.constants import OPENAPI_BEARER_DESCRIPTION  # Import the new constant
 from src.common.constants import (  # Import OpenAPI constants
-    OPENAPI_BEARER_DESCRIPTION,  # Import the new constant
     OPENAPI_COMMON_RESPONSES,
     OPENAPI_CONTACT_INFO,
     OPENAPI_DESCRIPTION,

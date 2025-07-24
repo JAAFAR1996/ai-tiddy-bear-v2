@@ -3,10 +3,10 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from src.application.services.consent.consent_service import ConsentService
 from hypothesis import given
 from hypothesis import strategies as st
 
+from src.application.services.consent.consent_service import ConsentService
 from tests.framework import ChildSafetyTestCase
 
 # Add src to path
@@ -85,9 +85,7 @@ except ImportError:
 Codacy compliance: Provide local mocks for missing services/exceptions if import fails
 """
 try:
-    from application.services.content_filter_service import (
-        ContentFilterService,
-    )
+    from application.services.content_filter_service import ContentFilterService
 except ImportError:
 
     class ContentFilterService:

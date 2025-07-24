@@ -1,24 +1,24 @@
 """Emergency Response Main Module - Simplified main application"""
 
-from datetime import datetime
-import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 
+import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-import redis.asyncio as redis
+
+from src.infrastructure.logging_config import get_logger
 
 from .endpoints import EmergencyEndpoints
 from .services import (
     EmergencyResponseService,
     NotificationService,
-    SystemMonitorService
+    SystemMonitorService,
 )
-from src.infrastructure.logging_config import get_logger
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,9 +42,7 @@ if not DATABASE_URL:
 
 # منع استخدام SQLite في نظام الطوارئ الحرج
 if DATABASE_URL.startswith("sqlite"):
-    logger.critical(
-        "SQLite detected in emergency response system - SECURITY VIOLATION"
-    )
+    logger.critical("SQLite detected in emergency response system - SECURITY VIOLATION")
     raise RuntimeError(
         "CRITICAL: SQLite is not allowed for emergency response systems. "
         "Use PostgreSQL for data integrity and COPPA compliance.",
@@ -131,9 +129,7 @@ def create_app() -> FastAPI:
     @app.post("/webhook/alerts")
     async def webhook_alerts(request, payload, background_tasks):
         """استلام التنبيهات من أنظمة المراقبة الخارجية."""
-        return await endpoints.webhook_alerts(
-            request, payload, background_tasks
-        )
+        return await endpoints.webhook_alerts(request, payload, background_tasks)
 
     @app.get("/health")
     async def health_check():
@@ -156,16 +152,18 @@ def create_app() -> FastAPI:
         return await endpoints.system_status(credentials)
 
     @app.post("/emergency-contact/{child_id}")
-    async def emergency_contact_alert(child_id: str, alert_type: str,
-                                      message: str, credentials):
+    async def emergency_contact_alert(
+        child_id: str, alert_type: str, message: str, credentials
+    ):
         """إرسال تنبيه لجهات الاتصال الطارئة لطفل محدد."""
         return await endpoints.emergency_contact_alert(
             child_id, alert_type, message, credentials
         )
 
     @app.get("/logs/emergency")
-    async def get_emergency_logs(child_id: str = None, limit: int = 50,
-                                 credentials=None):
+    async def get_emergency_logs(
+        child_id: str = None, limit: int = 50, credentials=None
+    ):
         """الحصول على سجلات الطوارئ."""
         return await endpoints.get_emergency_logs(child_id, limit, credentials)
 
@@ -209,10 +207,4 @@ if __name__ == "__main__":
     logger.info(f"🚨 Starting Emergency Response Server on {API_HOST}:{API_PORT}")
 
     app = create_app()
-    uvicorn.run(
-        app,
-        host=API_HOST,
-        port=API_PORT,
-        reload=False,
-        log_level="info"
-    )
+    uvicorn.run(app, host=API_HOST, port=API_PORT, reload=False, log_level="info")

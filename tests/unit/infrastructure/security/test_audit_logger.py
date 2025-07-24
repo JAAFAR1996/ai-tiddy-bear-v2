@@ -223,7 +223,7 @@ class TestAuditLogger:
         assert not os.path.exists(temp_dir)
 
         with patch.object(AuditLogger, "_start_background_tasks"):
-            logger = AuditLogger(audit_config)
+            AuditLogger(audit_config)
 
         assert os.path.exists(temp_dir)
 

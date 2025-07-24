@@ -305,9 +305,7 @@ class KafkaEventStore(EventStore):
 
                 return ChildRegistered(**event_data)
             if event_type == "ChildProfileUpdated":
-                from src.domain.events.child_profile_updated import (
-                    ChildProfileUpdated,
-                )
+                from src.domain.events.child_profile_updated import ChildProfileUpdated
 
                 return ChildProfileUpdated(**event_data)
             logger.warning(f"Unknown event type: {event_type}")

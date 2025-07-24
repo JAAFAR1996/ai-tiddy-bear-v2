@@ -7,13 +7,12 @@ from typing import Any
 try:
     from fastapi import APIRouter, Depends, HTTPException, status
     from pydantic import BaseModel
+
     from src.domain.models.validation_models import ConversationRequest
 except ImportError as e:
     raise ImportError(f"Missing core dependencies: {e}") from e
 
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestrationService,
-)
+from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 
@@ -24,6 +23,7 @@ router = APIRouter(prefix="/chat", tags=["AI Chat"])
 
 
 # Request/Response Models - ChatRequest replaced with ConversationRequest
+
 
 class StoryRequest(BaseModel):
     child_id: str
@@ -61,7 +61,7 @@ async def chat_with_ai(
         if not isinstance(child_age, int) or child_age < 3 or child_age > 12:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid child age. Must be between 3-12 years"
+                detail="Invalid child age. Must be between 3-12 years",
             )
         child_name = context.get("child_name", "Child")
         child_age = context.get("child_age", 7)

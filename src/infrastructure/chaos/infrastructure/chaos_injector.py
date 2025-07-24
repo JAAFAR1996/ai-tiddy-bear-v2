@@ -8,11 +8,7 @@ import requests
 from src.infrastructure.logging_config import get_logger
 
 if TYPE_CHECKING:
-    from .chaos_orchestrator import (
-        ChaosOrchestrator,
-        ExperimentMetrics,
-        FailureType,
-    )
+    from .chaos_orchestrator import ChaosOrchestrator, ExperimentMetrics, FailureType
 
 logger = get_logger(__name__, component="chaos")
 

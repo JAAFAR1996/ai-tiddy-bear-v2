@@ -1,8 +1,11 @@
 import os
 
+from src.infrastructure.validators.data.database_validators import (
+    DatabaseConnectionValidator,
+)
+
 from .config import DatabaseConfig
 from .migrations import DatabaseMigrationManager
-from src.infrastructure.validators.data.database_validators import DatabaseConnectionValidator
 
 """Database Initialization Logic
 Extracted from production_database_config.py to reduce file size

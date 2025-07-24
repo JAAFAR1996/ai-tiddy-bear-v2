@@ -22,4 +22,4 @@
         "encryption_key": "your_32_character_encryption_key_here",
         "jwt_secret": "your_jwt_secret_key_here"
     }
-} 
+}

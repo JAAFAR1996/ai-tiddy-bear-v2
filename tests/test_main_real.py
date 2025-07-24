@@ -5,26 +5,27 @@ Only external dependencies (Redis, Database) are mocked when absolutely necessar
 All application logic, configuration, and security features are tested for real.
 """
 
-from common.exceptions import StartupValidationException
-from main import (
-    create_app,
-    lifespan,
-    _setup_app_configurations,
-    _validate_system_startup,
-    _setup_app_middlewares_and_routes,
-    _mount_static_files,
-)
-import asyncio
-import os
-import tempfile
-import pytest
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 
 # Add src to path for imports
 import sys
+import tempfile
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from common.exceptions import StartupValidationException
+from main import (
+    _mount_static_files,
+    _setup_app_configurations,
+    _setup_app_middlewares_and_routes,
+    _validate_system_startup,
+    create_app,
+    lifespan,
+)
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
@@ -34,10 +35,13 @@ class TestRealApplicationFactory:
     def test_create_app_returns_configured_fastapi_instance(self):
         """Test that create_app creates a real FastAPI app with actual configuration."""
         # Only mock external dependencies that would fail in test environment
-        with (patch('main.Redis') as mock_redis,
-              patch('main.Database') as mock_db,
-              patch('src.infrastructure.validators.config.startup_validator.validate_startup') as mock_validate):
-
+        with (
+            patch("main.Redis") as mock_redis,
+            patch("main.Database") as mock_db,
+            patch(
+                "src.infrastructure.validators.config.startup_validator.validate_startup"
+            ) as mock_validate,
+        ):
             # Setup minimal external dependency mocks
             mock_redis.from_url.return_value = AsyncMock()
             mock_db.return_value = AsyncMock()
@@ -52,16 +56,21 @@ class TestRealApplicationFactory:
             assert app.version  # Should have actual version from settings
             assert app.docs_url == "/docs"
             assert app.redoc_url == "/redoc"
-            assert hasattr(app, 'router')  # Should have routes configured
+            assert hasattr(app, "router")  # Should have routes configured
             assert len(app.routes) > 0  # Should have actual routes mounted
 
     def test_app_with_test_client_basic_functionality(self):
         """Test that the created app works with TestClient for basic requests."""
-        with (patch('main.Redis') as mock_redis,
-              patch('main.Database') as mock_db,
-              patch('src.infrastructure.validators.config.startup_validator.validate_startup') as mock_validate,
-              patch('src.infrastructure.security.rate_limiter.config.DefaultConfigurations.get_default_configs') as mock_configs):
-
+        with (
+            patch("main.Redis") as mock_redis,
+            patch("main.Database") as mock_db,
+            patch(
+                "src.infrastructure.validators.config.startup_validator.validate_startup"
+            ) as mock_validate,
+            patch(
+                "src.infrastructure.security.rate_limiter.config.DefaultConfigurations.get_default_configs"
+            ) as mock_configs,
+        ):
             mock_redis.from_url.return_value = AsyncMock()
             mock_db.return_value = AsyncMock()
             mock_validate.return_value = True
@@ -83,7 +92,7 @@ class TestRealConfigurationSetup:
     def test_setup_app_configurations_real_execution(self):
         """Test that _setup_app_configurations executes real configuration logic."""
         # Only mock external dependencies, not configuration logic
-        with patch('main.container.settings') as mock_settings:
+        with patch("main.container.settings") as mock_settings:
             # Provide real-like settings
             mock_settings.return_value.ENVIRONMENT = "development"
 
@@ -98,7 +107,7 @@ class TestRealConfigurationSetup:
 
     def test_production_safety_enforcement(self):
         """Test that production safety checks actually execute."""
-        with patch('main.container.settings') as mock_settings:
+        with patch("main.container.settings") as mock_settings:
             mock_settings.return_value.ENVIRONMENT = "production"
 
             # Test that production safety is actually enforced
@@ -132,7 +141,9 @@ class TestRealSystemValidation:
     def test_startup_validation_exception_chaining(self):
         """Test that startup validation properly chains exceptions."""
         # Mock only the container.wire to force a specific failure
-        with patch('main.container.wire', side_effect=RuntimeError("Test wiring failure")):
+        with patch(
+            "main.container.wire", side_effect=RuntimeError("Test wiring failure")
+        ):
             # Use a try-catch instead of pytest.raises because we want to examine the exception
             exception_caught = None
             try:
@@ -141,11 +152,21 @@ class TestRealSystemValidation:
                 exception_caught = e
 
             # Verify the exception was caught and chained correctly
-            assert exception_caught is not None, "StartupValidationException should have been raised"
-            assert exception_caught.__cause__ is not None, "Exception should have a cause"
-            assert isinstance(exception_caught.__cause__, RuntimeError), "Cause should be RuntimeError"
-            assert "Test wiring failure" in str(exception_caught.__cause__), "Cause should contain test message"
-            assert "Application startup validation failed" in str(exception_caught), "Exception should contain validation failed message"
+            assert (
+                exception_caught is not None
+            ), "StartupValidationException should have been raised"
+            assert (
+                exception_caught.__cause__ is not None
+            ), "Exception should have a cause"
+            assert isinstance(
+                exception_caught.__cause__, RuntimeError
+            ), "Cause should be RuntimeError"
+            assert "Test wiring failure" in str(
+                exception_caught.__cause__
+            ), "Cause should contain test message"
+            assert "Application startup validation failed" in str(
+                exception_caught
+            ), "Exception should contain validation failed message"
 
 
 class TestRealMiddlewareAndRouting:
@@ -164,7 +185,7 @@ class TestRealMiddlewareAndRouting:
         assert len(app.routes) >= initial_routes_count  # Should have routes added
 
         # Verify middleware stack exists (FastAPI builds it lazily)
-        assert hasattr(app, 'middleware_stack')
+        assert hasattr(app, "middleware_stack")
 
 
 class TestRealStaticFilesSecurity:
@@ -175,14 +196,18 @@ class TestRealStaticFilesSecurity:
         app = FastAPI()
         project_root = Path(tempfile.gettempdir())
 
-        with patch('main.container.settings') as mock_settings:
+        with patch("main.container.settings") as mock_settings:
             mock_settings.return_value.ENVIRONMENT = "production"
 
             # Should skip mounting in production - test real behavior
             _mount_static_files(app, project_root)
 
             # Verify no static files were mounted (real production behavior)
-            static_routes = [route for route in app.routes if hasattr(route, 'path') and '/static' in route.path]
+            static_routes = [
+                route
+                for route in app.routes
+                if hasattr(route, "path") and "/static" in route.path
+            ]
             assert len(static_routes) == 0
 
     def test_static_files_path_traversal_real_security(self):
@@ -196,7 +221,7 @@ class TestRealStaticFilesSecurity:
             outside_dir = Path(temp_dir).parent / "malicious_dir"
             outside_dir.mkdir(exist_ok=True)
 
-            with patch('main.container.settings') as mock_settings:
+            with patch("main.container.settings") as mock_settings:
                 mock_settings.return_value.ENVIRONMENT = "development"
                 mock_settings.return_value.STATIC_FILES_DIR = str(outside_dir)
 
@@ -216,7 +241,7 @@ class TestRealStaticFilesSecurity:
             static_dir = project_root / "static"
             static_dir.mkdir()
 
-            with patch('main.container.settings') as mock_settings:
+            with patch("main.container.settings") as mock_settings:
                 mock_settings.return_value.ENVIRONMENT = "development"
                 mock_settings.return_value.STATIC_FILES_DIR = "static"
 
@@ -224,7 +249,11 @@ class TestRealStaticFilesSecurity:
                 _mount_static_files(app, project_root)
 
                 # Verify static files were actually mounted
-                static_routes = [route for route in app.routes if hasattr(route, 'path') and '/static' in route.path]
+                static_routes = [
+                    route
+                    for route in app.routes
+                    if hasattr(route, "path") and "/static" in route.path
+                ]
                 assert len(static_routes) > 0
 
 
@@ -237,11 +266,14 @@ class TestRealLifespanEvents:
         app = FastAPI()
 
         # Mock only external Redis dependency, test real connection logic
-        with (patch('main.Redis') as mock_redis_class,
-              patch('main.get_rate_limiter'),
-              patch('main.Database') as mock_db_class,
-              patch('src.infrastructure.validators.config.startup_validator.validate_startup') as mock_validate):
-
+        with (
+            patch("main.Redis") as mock_redis_class,
+            patch("main.get_rate_limiter"),
+            patch("main.Database") as mock_db_class,
+            patch(
+                "src.infrastructure.validators.config.startup_validator.validate_startup"
+            ) as mock_validate,
+        ):
             # Setup Redis mock to test real connection flow
             mock_redis = AsyncMock()
             mock_redis.ping.return_value = "PONG"
@@ -261,8 +293,8 @@ class TestRealLifespanEvents:
             # Verify real Redis connection was attempted with real URL
             mock_redis_class.from_url.assert_called_once()
             call_args = mock_redis_class.from_url.call_args
-            assert 'redis://' in call_args[0][0]  # Real Redis URL
-            assert call_args[1]['decode_responses'] is True  # Real Redis config
+            assert "redis://" in call_args[0][0]  # Real Redis URL
+            assert call_args[1]["decode_responses"] is True  # Real Redis config
 
             # Verify real ping was called
             mock_redis.ping.assert_called_once()
@@ -278,11 +310,14 @@ class TestRealLifespanEvents:
         """Test lifespan database initialization with real async behavior."""
         app = FastAPI()
 
-        with (patch('main.Redis') as mock_redis_class,
-              patch('main.get_rate_limiter'),
-              patch('main.Database') as mock_db_class,
-              patch('src.infrastructure.validators.config.startup_validator.validate_startup') as mock_validate):
-
+        with (
+            patch("main.Redis") as mock_redis_class,
+            patch("main.get_rate_limiter"),
+            patch("main.Database") as mock_db_class,
+            patch(
+                "src.infrastructure.validators.config.startup_validator.validate_startup"
+            ) as mock_validate,
+        ):
             # Setup mocks for dependencies
             mock_redis = AsyncMock()
             mock_redis_class.from_url.return_value = mock_redis
@@ -310,11 +345,14 @@ class TestRealLifespanEvents:
         """Test that lifespan executes real startup validation."""
         app = FastAPI()
 
-        with (patch('main.Redis') as mock_redis_class,
-              patch('main.get_rate_limiter'),
-              patch('main.Database') as mock_db_class,
-              patch('src.infrastructure.validators.config.startup_validator.validate_startup') as mock_validate):
-
+        with (
+            patch("main.Redis") as mock_redis_class,
+            patch("main.get_rate_limiter"),
+            patch("main.Database") as mock_db_class,
+            patch(
+                "src.infrastructure.validators.config.startup_validator.validate_startup"
+            ) as mock_validate,
+        ):
             # Setup external dependency mocks
             mock_redis = AsyncMock()
             mock_redis_class.from_url.return_value = mock_redis
@@ -341,7 +379,7 @@ class TestRealLifespanEvents:
         """Test real Redis connection failure handling in lifespan."""
         app = FastAPI()
 
-        with patch('main.Redis') as mock_redis_class:
+        with patch("main.Redis") as mock_redis_class:
             # Simulate real Redis connection failure
             mock_redis = AsyncMock()
             mock_redis.ping.side_effect = ConnectionError("Redis connection failed")
@@ -358,11 +396,16 @@ class TestRealIntegrationScenarios:
 
     def test_complete_app_creation_and_basic_operation(self):
         """Test complete app creation and basic operation without excessive mocking."""
-        with (patch('main.Redis') as mock_redis,
-              patch('main.Database') as mock_db,
-              patch('src.infrastructure.validators.config.startup_validator.validate_startup') as mock_validate,
-              patch('src.infrastructure.security.rate_limiter.config.DefaultConfigurations.get_default_configs') as mock_configs):
-
+        with (
+            patch("main.Redis") as mock_redis,
+            patch("main.Database") as mock_db,
+            patch(
+                "src.infrastructure.validators.config.startup_validator.validate_startup"
+            ) as mock_validate,
+            patch(
+                "src.infrastructure.security.rate_limiter.config.DefaultConfigurations.get_default_configs"
+            ) as mock_configs,
+        ):
             # Setup minimal external dependency mocks
             mock_redis.from_url.return_value = AsyncMock()
             mock_db.return_value = AsyncMock()

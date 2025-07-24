@@ -12,9 +12,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from domain.entities.child import Child
-from infrastructure.persistence.child_sqlite_repository import (
-    ChildSQLiteRepository,
-)
+from infrastructure.persistence.child_sqlite_repository import ChildSQLiteRepository
 
 # Add src to path
 src_path = Path(__file__).parent

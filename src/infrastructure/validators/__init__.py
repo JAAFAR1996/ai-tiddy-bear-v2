@@ -9,6 +9,6 @@ from .security.email_validator import validate_email_address
 __all__ = [
     "SettingsValidators",
     "validate_startup",
-    "COPPAValidator", 
+    "COPPAValidator",
     "validate_email_address",
 ]

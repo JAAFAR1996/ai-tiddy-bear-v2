@@ -46,9 +46,7 @@ def mock_datetime():
 
 
 try:
-    from src.infrastructure.security.child_data_encryption import (
-        ChildDataEncryption,
-    )
+    from src.infrastructure.security.child_data_encryption import ChildDataEncryption
     from src.infrastructure.security.models import COPPAComplianceRecord
 except ImportError:
     # Create mock classes for testing when cryptography is not available
@@ -294,7 +292,7 @@ class TestChildDataEncryption:
             with patch(
                 "src.infrastructure.security.child_data_encryption.logger"
             ) as mock_logger:
-                result = encryption_service.decrypt_child_data(encrypted_data)
+                encryption_service.decrypt_child_data(encrypted_data)
 
                 # Should still decrypt but log warning
                 mock_logger.warning.assert_called()
@@ -590,7 +588,7 @@ class TestChildDataEncryption:
         fernet_key = "a" * 43 + "="
 
         with patch.dict(os.environ, {"ENCRYPTION_KEY": fernet_key}):
-            service = ChildDataEncryption()
+            ChildDataEncryption()
 
         # Should use the key directly
         mock_fernet_class.assert_called_once()
@@ -603,7 +601,7 @@ class TestChildDataEncryption:
 
         with patch("base64.urlsafe_b64encode", return_value=b"derived_key"):
             with patch("os.urandom", return_value=b"salt" * 4):
-                service = ChildDataEncryption(custom_key)
+                ChildDataEncryption(custom_key)
 
         # Should derive key using PBKDF2
         mock_pbkdf2.assert_called_once()

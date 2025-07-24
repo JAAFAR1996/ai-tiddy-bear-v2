@@ -1,7 +1,7 @@
 import asyncio
 from functools import lru_cache
-
 from typing import Any, Optional
+
 from pydantic import SecretStr
 
 from src.infrastructure.config.settings import get_settings

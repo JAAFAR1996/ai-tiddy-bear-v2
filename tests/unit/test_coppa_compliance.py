@@ -6,13 +6,6 @@ from uuid import uuid4
 
 import pytest
 
-from src.infrastructure.validators.security.coppa_validator import (
-    COPPAValidator,
-    coppa_validator,
-    is_coppa_subject,
-    requires_parental_consent
-)
-
 
 @pytest.fixture
 def coppa_service():

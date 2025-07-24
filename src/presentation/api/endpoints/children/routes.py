@@ -9,9 +9,7 @@ from src.domain.entities.child_profile import ChildProfile
 from src.domain.entities.user import User
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
-from src.presentation.api.endpoints.children.route_handlers import (
-    ChildRouteHandlers,
-)
+from src.presentation.api.endpoints.children.route_handlers import ChildRouteHandlers
 
 logger = get_logger(__name__, component="api")
 # Security dependency

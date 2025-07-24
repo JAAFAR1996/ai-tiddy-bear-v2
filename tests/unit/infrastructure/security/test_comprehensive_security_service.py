@@ -7,8 +7,6 @@ from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.core.main_security_service import MainSecurityService
-
 
 class TestComprehensiveSecurityService:
     """Test the Comprehensive Security Service."""
@@ -158,9 +156,7 @@ class TestComprehensiveSecurityService:
     def test_logging_configuration(self):
         """Test that logger is properly configured."""
         # Check that logger exists and is configured
-        from src.infrastructure.security.comprehensive_security_service import (
-            logger,
-        )
+        from src.infrastructure.security.comprehensive_security_service import logger
 
         assert isinstance(logger, logging.Logger)
         assert (

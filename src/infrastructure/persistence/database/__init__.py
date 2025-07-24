@@ -1,3 +1,5 @@
+# from .validators import DatabaseConnectionValidator  # Temporarily disabled
+from ..models.base import Base
 from .config import DatabaseConfig
 from .initializer import (
     get_database_config,
@@ -5,9 +7,6 @@ from .initializer import (
     validate_database_environment,
 )
 from .migrations import DatabaseMigrationManager
-# from .validators import DatabaseConnectionValidator  # Temporarily disabled
-from ..models.base import Base
-
 
 """Database Configuration Module"""
 

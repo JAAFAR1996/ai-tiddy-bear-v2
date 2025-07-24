@@ -76,7 +76,7 @@ class TestChild:
         child = Child(**sample_child_data)
         assert child.name == sample_child_data["name"]
         assert child.age == sample_child_data["age"]
-    
+
     def test_child_age_validation(self):
         with pytest.raises(ValueError):
             Child(name="Test", age=14)  # Over COPPA limit
@@ -230,11 +230,11 @@ Example:
 async def test_child_data_encryption(child_safety_service):
     sensitive_data = {"name": "Child", "age": 8}
     encrypted = await child_safety_service.encrypt_child_data(sensitive_data)
-    
+
     # Verify encryption
     assert encrypted != sensitive_data
     assert "name" not in str(encrypted)
-    
+
     # Verify decryption
     decrypted = await child_safety_service.decrypt_child_data(encrypted)
     assert decrypted == sensitive_data

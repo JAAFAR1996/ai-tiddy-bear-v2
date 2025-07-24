@@ -1,25 +1,11 @@
-from datetime import datetime
 from typing import Any
-from uuid import uuid4
-from src.domain.models.validation_models import ConversationRequest
-from dependency_injector.wiring import Provide, inject
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field, field_validator
 
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestrationService,
-)
-from src.application.services.core.conversation_service import ConversationService
-from src.application.use_cases.manage_child_profile import (
-    ManageChildProfileUseCase,
-)
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.core.real_auth_service import ProductionAuthService
-from src.infrastructure.security.child_safety.safety_monitor_service import (
-    SafetyMonitorService,
-)
 
 logger = get_logger(__name__, component="api")
 

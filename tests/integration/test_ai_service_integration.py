@@ -2,10 +2,7 @@ import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
-from application.services.modern_ai_service import (
-    AIServiceError,
-    ModernAIService,
-)
+from application.services.modern_ai_service import AIServiceError, ModernAIService
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -92,9 +89,9 @@ class TestAIServiceIntegration:
         # Mock OpenAI response
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = (
-            "The sun is a big star that gives us light and warmth!"
-        )
+        mock_response.choices[
+            0
+        ].message.content = "The sun is a big star that gives us light and warmth!"
 
         self.mock_client.chat.completions.create.return_value = mock_response
 
@@ -112,7 +109,9 @@ class TestAIServiceIntegration:
         """Test generating playful response"""
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = (
+        mock_response.choices[
+            0
+        ].message.content = (
             "Hey there! The sun is like a giant glowing ball in the sky! ☀️"
         )
 

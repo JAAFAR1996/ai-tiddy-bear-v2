@@ -9,7 +9,6 @@ import logging
 
 from src.application.interfaces.safety_monitor import SafetyMonitor
 from src.domain.value_objects.safety_level import SafetyLevel
-
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="content_filter_service")

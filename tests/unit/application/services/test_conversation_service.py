@@ -9,9 +9,7 @@ import pytest
 
 from src.application.services.conversation_service import ConversationService
 from src.domain.entities.conversation import Conversation
-from src.domain.repositories.conversation_repository import (
-    ConversationRepository,
-)
+from src.domain.repositories.conversation_repository import ConversationRepository
 
 
 class TestConversationService:
@@ -280,7 +278,7 @@ class TestConversationService:
         mock_conversation_repo.get_by_id.return_value = mock_conversation
 
         # Act
-        result = await service.update_conversation_summary(conversation_id, summary)
+        await service.update_conversation_summary(conversation_id, summary)
 
         # Assert
         mock_conversation.update_summary.assert_called_once_with(summary)
@@ -382,7 +380,7 @@ class TestConversationService:
         mock_conversation_repo.find_by_child_id.return_value = [mock_conversation]
 
         # Act
-        result = await service.add_interaction(child_id, user_input, ai_response)
+        await service.add_interaction(child_id, user_input, ai_response)
 
         # Assert
         mock_conversation.add_interaction.assert_called_once_with(
@@ -403,7 +401,7 @@ class TestConversationService:
         mock_conversation_repo.find_by_child_id.return_value = [mock_conversation]
 
         # Act
-        result = await service.add_interaction(child_id, user_input, ai_response)
+        await service.add_interaction(child_id, user_input, ai_response)
 
         # Assert
         mock_conversation.add_interaction.assert_called_once_with(

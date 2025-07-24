@@ -21,5 +21,3 @@ class AppSettings(BaseModel):
     )
     DEBUG: bool = Field(False, description="Enable debug mode")
     TIMEZONE: str = Field("UTC", description="Application timezone")
-
-

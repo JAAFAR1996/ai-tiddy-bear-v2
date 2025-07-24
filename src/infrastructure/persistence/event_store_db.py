@@ -7,7 +7,6 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from src.domain.events.domain_events import DomainEvent
 from src.domain.repositories.event_store import EventStore
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
@@ -17,12 +16,10 @@ logger = get_logger(__name__, component="persistence")
 
 class ConcurrencyError(Exception):
     """Raised when optimistic concurrency control fails."""
-    pass
 
 
 class DatabaseError(Exception):
     """Raised when database operations fail."""
-    pass
 
 
 class EventStoreDB(EventStore):
@@ -46,23 +43,29 @@ class EventStoreDB(EventStore):
         # PRODUCTION REQUIREMENT: Real database persistence only
         # NO in-memory storage allowed
 
-        self.logger.info("EventStoreDB initialized with real PostgreSQL database connection")
+        self.logger.info(
+            "EventStoreDB initialized with real PostgreSQL database connection"
+        )
 
     async def _get_current_version(self, session, aggregate_id: UUID) -> int:
         """Get the current version of an aggregate from database."""
         try:
             result = await session.execute(
-                text("""
-                SELECT COALESCE(MAX(sequence_number), 0) as max_version 
-                FROM domain_events 
+                text(
+                    """
+                SELECT COALESCE(MAX(sequence_number), 0) as max_version
+                FROM domain_events
                 WHERE aggregate_id = :aggregate_id
-                """),
-                {"aggregate_id": str(aggregate_id)}
+                """
+                ),
+                {"aggregate_id": str(aggregate_id)},
             )
             row = result.fetchone()
             return row[0] if row else 0
         except SQLAlchemyError as e:
-            self.logger.error(f"Failed to get current version for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Failed to get current version for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Failed to get version: {str(e)}") from e
 
     async def save_events(
@@ -102,12 +105,20 @@ class EventStoreDB(EventStore):
                     # Handle both dict and domain event objects
                     if isinstance(event, dict):
                         event_data = event
-                        event_type = event.get('event_type', 'DomainEvent')
-                        aggregate_type = event.get('aggregate_type', 'ChildProfile')
+                        event_type = event.get("event_type", "DomainEvent")
+                        aggregate_type = event.get("aggregate_type", "ChildProfile")
                     else:
-                        event_data = event.to_dict() if hasattr(event, 'to_dict') else event.__dict__
+                        event_data = (
+                            event.to_dict()
+                            if hasattr(event, "to_dict")
+                            else event.__dict__
+                        )
                         event_type = event.__class__.__name__
-                        aggregate_type = event.__class__.__module__.split('.')[-2] if '.' in event.__class__.__module__ else 'ChildProfile'
+                        aggregate_type = (
+                            event.__class__.__module__.split(".")[-2]
+                            if "." in event.__class__.__module__
+                            else "ChildProfile"
+                        )
 
                     event_record = {
                         "event_id": str(uuid.uuid4()),
@@ -118,15 +129,16 @@ class EventStoreDB(EventStore):
                         "sequence_number": current_version + i + 1,
                         "event_data": event_data,
                         "event_metadata": {
-                            "timestamp": getattr(event, 'timestamp', None),
-                            "correlation_id": getattr(event, 'correlation_id', None),
-                            "causation_id": getattr(event, 'causation_id', None)
-                        }
+                            "timestamp": getattr(event, "timestamp", None),
+                            "correlation_id": getattr(event, "correlation_id", None),
+                            "causation_id": getattr(event, "causation_id", None),
+                        },
                     }
 
                     # Insert into database using parameterized query
                     await session.execute(
-                        text("""
+                        text(
+                            """
                         INSERT INTO domain_events (
                             event_id, aggregate_id, aggregate_type, event_type,
                             event_version, sequence_number, event_data, event_metadata, created_at
@@ -134,21 +146,30 @@ class EventStoreDB(EventStore):
                             :event_id::uuid, :aggregate_id::uuid, :aggregate_type, :event_type,
                             :event_version, :sequence_number, :event_data::jsonb, :event_metadata::jsonb, NOW()
                         )
-                        """),
-                        event_record
+                        """
+                        ),
+                        event_record,
                     )
 
                 await session.commit()
-                self.logger.info(f"Saved {len(events)} events for aggregate {aggregate_id}")
+                self.logger.info(
+                    f"Saved {len(events)} events for aggregate {aggregate_id}"
+                )
 
         except IntegrityError as e:
-            self.logger.error(f"Database integrity error saving events for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Database integrity error saving events for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Event store integrity violation: {str(e)}") from e
         except SQLAlchemyError as e:
-            self.logger.error(f"Database error saving events for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Database error saving events for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Event store database error: {str(e)}") from e
         except Exception as e:
-            self.logger.error(f"Unexpected error saving events for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Unexpected error saving events for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Event store save failed: {str(e)}") from e
 
     async def load_events(self, aggregate_id: UUID) -> List[Dict[str, Any]]:
@@ -166,32 +187,42 @@ class EventStoreDB(EventStore):
         try:
             async with self.db.get_session() as session:
                 result = await session.execute(
-                    text("""
+                    text(
+                        """
                     SELECT event_data, event_type, sequence_number, created_at
-                    FROM domain_events 
+                    FROM domain_events
                     WHERE aggregate_id = :aggregate_id
                     ORDER BY sequence_number ASC
-                    """),
-                    {"aggregate_id": str(aggregate_id)}
+                    """
+                    ),
+                    {"aggregate_id": str(aggregate_id)},
                 )
 
                 events = []
                 for row in result.fetchall():
-                    events.append({
-                        "data": row[0],  # event_data JSONB
-                        "event_type": row[1],
-                        "version": row[2],  # sequence_number
-                        "timestamp": row[3].isoformat() if row[3] else None
-                    })
+                    events.append(
+                        {
+                            "data": row[0],  # event_data JSONB
+                            "event_type": row[1],
+                            "version": row[2],  # sequence_number
+                            "timestamp": row[3].isoformat() if row[3] else None,
+                        }
+                    )
 
-                self.logger.info(f"Loaded {len(events)} events for aggregate {aggregate_id}")
+                self.logger.info(
+                    f"Loaded {len(events)} events for aggregate {aggregate_id}"
+                )
                 return events
 
         except SQLAlchemyError as e:
-            self.logger.error(f"Database error loading events for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Database error loading events for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Event store load failed: {str(e)}") from e
         except Exception as e:
-            self.logger.error(f"Unexpected error loading events for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Unexpected error loading events for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Event store load failed: {str(e)}") from e
 
     async def get_events(
@@ -212,7 +243,7 @@ class EventStoreDB(EventStore):
             async with self.db.get_session() as session:
                 query = """
                 SELECT event_data, event_type, sequence_number, created_at
-                FROM domain_events 
+                FROM domain_events
                 WHERE aggregate_id = :aggregate_id
                 """
                 params = {"aggregate_id": str(aggregate_id)}
@@ -227,19 +258,25 @@ class EventStoreDB(EventStore):
 
                 events = []
                 for row in result.fetchall():
-                    events.append({
-                        "aggregate_id": str(aggregate_id),
-                        "event_type": row[1],
-                        "version": row[2],
-                        "data": row[0],
-                        "timestamp": row[3].isoformat() if row[3] else None
-                    })
+                    events.append(
+                        {
+                            "aggregate_id": str(aggregate_id),
+                            "event_type": row[1],
+                            "version": row[2],
+                            "data": row[0],
+                            "timestamp": row[3].isoformat() if row[3] else None,
+                        }
+                    )
 
-                self.logger.info(f"Retrieved {len(events)} events for aggregate {aggregate_id}")
+                self.logger.info(
+                    f"Retrieved {len(events)} events for aggregate {aggregate_id}"
+                )
                 return events
 
         except SQLAlchemyError as e:
-            self.logger.error(f"Database error getting events for aggregate {aggregate_id}: {str(e)}")
+            self.logger.error(
+                f"Database error getting events for aggregate {aggregate_id}: {str(e)}"
+            )
             raise DatabaseError(f"Event store get failed: {str(e)}") from e
 
     async def append_events(
@@ -279,24 +316,30 @@ class EventStoreDB(EventStore):
         try:
             async with self.db.get_session() as session:
                 result = await session.execute(
-                    text("""
+                    text(
+                        """
                     SELECT aggregate_id, event_data, event_type, sequence_number, created_at
-                    FROM domain_events 
+                    FROM domain_events
                     ORDER BY aggregate_id, sequence_number ASC
-                    """)
+                    """
+                    )
                 )
 
                 events = []
                 for row in result.fetchall():
-                    events.append({
-                        "aggregate_id": UUID(row[0]),
-                        "data": row[1],  # event_data JSONB
-                        "event_type": row[2],
-                        "version": row[3],  # sequence_number
-                        "timestamp": row[4].isoformat() if row[4] else None
-                    })
+                    events.append(
+                        {
+                            "aggregate_id": UUID(row[0]),
+                            "data": row[1],  # event_data JSONB
+                            "event_type": row[2],
+                            "version": row[3],  # sequence_number
+                            "timestamp": row[4].isoformat() if row[4] else None,
+                        }
+                    )
 
-                self.logger.info(f"Loaded {len(events)} total events from all aggregates")
+                self.logger.info(
+                    f"Loaded {len(events)} total events from all aggregates"
+                )
                 return events
 
         except SQLAlchemyError as e:

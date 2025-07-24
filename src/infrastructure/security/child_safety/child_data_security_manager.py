@@ -2,12 +2,9 @@ from datetime import datetime
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.encryption.robust_encryption_service import RobustEncryptionService as ChildDataEncryption
-from src.infrastructure.validators.security.coppa_validator import (
-    COPPAValidator,
-    coppa_validator,
+from src.infrastructure.security.encryption.robust_encryption_service import (
+    RobustEncryptionService as ChildDataEncryption,
 )
-
 
 logger = get_logger(__name__, component="security")
 

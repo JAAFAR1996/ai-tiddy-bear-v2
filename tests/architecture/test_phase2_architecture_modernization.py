@@ -28,6 +28,7 @@ from src.infrastructure.messaging.event_driven_architecture import (
     create_event,
     create_query,
 )
+
 # TEMPORARILY DISABLED - missing microservices module
 # from src.infrastructure.microservices.service_orchestrator import (
 #     LoadBalancer,

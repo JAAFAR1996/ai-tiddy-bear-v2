@@ -6,7 +6,6 @@ from pathlib import Path
 
 from application.services.safety import AdvancedContentFilter
 from domain.safety.models import ContentCategory, RiskLevel, SafetyConfig
-
 from src.infrastructure.logging_config import get_logger
 
 # Add src to path

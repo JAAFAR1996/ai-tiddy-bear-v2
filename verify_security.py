@@ -8,6 +8,7 @@ from pathlib import Path
 # Load environment variables from .env file if it exists
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     print("⚠️  python-dotenv not installed, using system environment only")
@@ -23,7 +24,9 @@ if missing:
     print(f"❌ Missing environment variables: {missing}")
     print("💡 Please create .env file with required variables")
     print("📄 Use .env.example as a template")
-    print("🔑 Generate secure keys with: python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
+    print(
+        '🔑 Generate secure keys with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
+    )
     sys.exit(1)
 else:
     print("✅ All security environment variables present")
@@ -37,13 +40,19 @@ coppa_key = os.getenv("COPPA_ENCRYPTION_KEY", "")
 validation_errors = []
 
 if len(secret_key) < 32:
-    validation_errors.append(f"SECRET_KEY too short ({len(secret_key)} chars, minimum 32)")
+    validation_errors.append(
+        f"SECRET_KEY too short ({len(secret_key)} chars, minimum 32)"
+    )
 
 if len(jwt_secret_key) < 32:
-    validation_errors.append(f"JWT_SECRET_KEY too short ({len(jwt_secret_key)} chars, minimum 32)")
+    validation_errors.append(
+        f"JWT_SECRET_KEY too short ({len(jwt_secret_key)} chars, minimum 32)"
+    )
 
 if len(coppa_key) < 44:
-    validation_errors.append(f"COPPA_ENCRYPTION_KEY too short ({len(coppa_key)} chars, minimum 44)")
+    validation_errors.append(
+        f"COPPA_ENCRYPTION_KEY too short ({len(coppa_key)} chars, minimum 44)"
+    )
 
 if validation_errors:
     print("❌ Key length validation failed:")
@@ -61,38 +70,38 @@ if not settings_file.exists():
     print(f"❌ Settings file not found: {settings_file}")
     sys.exit(1)
 
-with open(settings_file, 'r', encoding='utf-8') as f:
+with open(settings_file, "r", encoding="utf-8") as f:
     content = f.read()
 
 # Check for dangerous patterns (excluding validation code)
 dangerous_patterns = [
     "DEVELOPMENT_SECRET_KEY",
-    "DEVELOPMENT_JWT_SECRET", 
+    "DEVELOPMENT_JWT_SECRET",
     "DEVELOPMENT_COPPA_KEY",
     "dev-secret-key",
     "jwt-dev-secret",
     "dev-db-encryption",
-    "123456789"
+    "123456789",
 ]
 
 # Don't flag patterns in validation/check code
 validation_context_lines = [
     "dev_indicators",
-    "dangerous_patterns", 
+    "dangerous_patterns",
     "Found hardcoded",
-    "appears to contain development"
+    "appears to contain development",
 ]
 
 found_patterns = []
-lines = content.split('\n')
+lines = content.split("\n")
 for i, line in enumerate(lines):
     for pattern in dangerous_patterns:
         if pattern in line:
             # Check if this is in validation context
             is_validation_context = any(
-                ctx in line or 
-                (i > 0 and ctx in lines[i-1]) or 
-                (i < len(lines)-1 and ctx in lines[i+1])
+                ctx in line
+                or (i > 0 and ctx in lines[i - 1])
+                or (i < len(lines) - 1 and ctx in lines[i + 1])
                 for ctx in validation_context_lines
             )
             if not is_validation_context:
@@ -109,17 +118,17 @@ print("\n🔒 Validating production-ready keys...")
 dev_indicators = [
     "DEVELOPMENT",
     "DEV",
-    "TEST", 
+    "TEST",
     "CHANGE_IN_PRODUCTION",
     "123456",
     "example",
-    "placeholder"
+    "placeholder",
 ]
 
 for key_name, key_value in [
     ("SECRET_KEY", secret_key),
-    ("JWT_SECRET_KEY", jwt_secret_key), 
-    ("COPPA_ENCRYPTION_KEY", coppa_key)
+    ("JWT_SECRET_KEY", jwt_secret_key),
+    ("COPPA_ENCRYPTION_KEY", coppa_key),
 ]:
     if any(indicator.upper() in key_value.upper() for indicator in dev_indicators):
         print(f"⚠️  Warning: {key_name} appears to contain placeholder values")

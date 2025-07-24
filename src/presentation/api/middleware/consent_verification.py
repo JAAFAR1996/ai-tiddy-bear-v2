@@ -3,25 +3,14 @@
 Ensures parental consent is verified at all child data collection points.
 """
 
-
-import json
-from collections.abc import Awaitable, Callable
-from typing import Any
-from fastapi import HTTPException, Request, Response
-from fastapi.routing import APIRoute
-from src.domain.models.child_safety_data_models import AuditLogEntry
-from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.child_safety import get_consent_manager
-
 import json
 from collections.abc import Awaitable, Callable
 from typing import Any
 
-from src.domain.models.child_safety_data_models import AuditLogEntry
-
 from fastapi import HTTPException, Request, Response
 from fastapi.routing import APIRoute
 
+from src.domain.models.child_safety_data_models import AuditLogEntry
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.child_safety import get_consent_manager
 
@@ -107,20 +96,24 @@ class ConsentVerificationRoute(APIRoute):
             # Get parent_id from authenticated user
             user = getattr(request.state, "user", None)
             if not user:
+
                 def _raise_auth():
                     raise HTTPException(
                         status_code=401,
                         detail="Authentication required for child data access",
                     )
+
                 _raise_auth()
 
             parent_id = user.get("user_id")
             if not parent_id:
+
                 def _raise_parent():
                     raise HTTPException(
                         status_code=403,
                         detail="Parent identification required",
                     )
+
                 _raise_parent()
 
             # Check consent for each required type
@@ -145,6 +138,7 @@ class ConsentVerificationRoute(APIRoute):
                                 "Please provide consent in the parental dashboard."
                             ),
                         )
+
                     _raise_consent()
 
             logger.info(
@@ -239,13 +233,15 @@ class ConsentVerificationMiddleware:
                 # تحقق من الموافقة مباشرة بدون أي endpoint وهمي
                 route = ConsentVerificationRoute(
                     path=path,
-                    endpoint=lambda: (_ for _ in ()).throw(HTTPException(
-                        status_code=403,
-                        detail=(
-                            "Consent verification failed: endpoint not "
-                            "implemented for direct middleware call."
-                        ),
-                    )),
+                    endpoint=lambda: (_ for _ in ()).throw(
+                        HTTPException(
+                            status_code=403,
+                            detail=(
+                                "Consent verification failed: endpoint not "
+                                "implemented for direct middleware call."
+                            ),
+                        )
+                    ),
                     require_consent_types=required_consents,
                 )
                 child_id = await route._extract_child_id(request)

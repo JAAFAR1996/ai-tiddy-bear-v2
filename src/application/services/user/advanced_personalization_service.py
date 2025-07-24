@@ -15,10 +15,7 @@ from src.application.interfaces.ai_provider import AIProvider
 from src.domain.interfaces.personality_profile_repository import (
     IPersonalityProfileRepository,
 )
-from src.domain.value_objects.personality import (
-    ChildPersonality,
-    PersonalityType,
-)
+from src.domain.value_objects.personality import ChildPersonality, PersonalityType
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="advanced_personalization_service")

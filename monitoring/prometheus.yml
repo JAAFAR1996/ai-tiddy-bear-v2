@@ -4,7 +4,7 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
-  
+
 # Alertmanager configuration
 alerting:
   alertmanagers:
@@ -49,7 +49,7 @@ scrape_configs:
       - targets: ['postgres-exporter:9187']
     scrape_interval: 30s
     metrics_path: /metrics
-    
+
   # Redis Cache Monitoring
   - job_name: 'redis-exporter'
     static_configs:
@@ -88,5 +88,3 @@ scrape_configs:
     metrics_path: /health
     params:
       format: [prometheus]
-
- 

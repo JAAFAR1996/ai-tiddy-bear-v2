@@ -4,9 +4,7 @@ import pytest
 
 try:
     from src.infrastructure.graphql.authentication import create_auth_service
-    from src.infrastructure.graphql.authentication.authentication import (
-        UserRole,
-    )
+    from src.infrastructure.graphql.authentication.authentication import UserRole
     from src.infrastructure.graphql.federation_gateway.federation_gateway import (
         FederationConfig,
         GraphQLFederationGateway,

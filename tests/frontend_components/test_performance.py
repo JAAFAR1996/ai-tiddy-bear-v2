@@ -1,6 +1,6 @@
-from datetime import datetime
 import asyncio
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Add src to path
@@ -28,44 +28,64 @@ except ImportError:
         class MockPytest:
 
         def fixture(self, *args, **kwargs):
+            pass
+
             def decorator(func):
                 return func
 
             return decorator
 
         def mark(self):
+            pass
+
             class MockMark:
                 def parametrize(self, *args, **kwargs):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
                 def asyncio(self, func):
+                    pass
+
                     return func
 
                 def slow(self, func):
+                    pass
+
                     return func
 
                 def skip(self, reason=""):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
             return MockMark()
 
         def raises(self, exception):
+            pass
+
             class MockRaises:
                 def __enter__(self):
+                    pass
+
                     return self
 
                 def __exit__(self, *args):
+                    pass
+
                     return False
 
             return MockRaises()
 
         def skip(self, reason=""):
+            pass
+
             def decorator(func):
                 return func
 
@@ -83,6 +103,8 @@ class TestPerformance:
         load_times = []
 
         async def mock_load_component(name):
+            pass
+
             start = datetime.utcnow()
             await asyncio.sleep(0.1)  # Simulate loading
             end = datetime.utcnow()
@@ -105,6 +127,8 @@ class TestPerformance:
         call_count = 0
 
         def expensive_computation(data):
+            pass
+
             nonlocal call_count
             call_count += 1
             return sum(data)
@@ -113,6 +137,8 @@ class TestPerformance:
         memo_cache = {}
 
         def memoized_computation(data):
+            pass
+
             key = str(data)
             if key not in memo_cache:
                 memo_cache[key] = expensive_computation(data)
@@ -134,6 +160,8 @@ class TestPerformance:
         search_calls = []
 
         async def search(query):
+            pass
+
             search_calls.append(query)
             await asyncio.sleep(0.05)
             return f"results for {query}"

@@ -1,8 +1,9 @@
 """COPPA compliance validator."""
-from datetime import date, datetime
-from typing import Optional
+
 from dataclasses import dataclass
+from datetime import date
 from enum import Enum
+from typing import Optional
 
 
 class COPPAValidator:

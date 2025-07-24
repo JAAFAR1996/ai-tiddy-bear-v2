@@ -358,5 +358,6 @@ def validate_child_query(
     """Quick child data query validation"""
     validator = get_query_validator()
     return validator.validate_child_data_query(table_name, conditions)
-QueryValidator = SQLQueryValidator
 
+
+QueryValidator = SQLQueryValidator

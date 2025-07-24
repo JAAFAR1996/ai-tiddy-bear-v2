@@ -2,10 +2,11 @@
 Provides paginated access to child conversations with COPPA compliance.
 """
 
-from fastapi import APIRouter, HTTPException, Query, status
-from datetime import datetime, timedelta
 from typing import Any
 
+from fastapi import APIRouter, HTTPException, Query, status
+
+from src.domain.services.conversation_service import ConversationService
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.pagination import (
     PaginatedResponse,
@@ -13,8 +14,9 @@ from src.infrastructure.pagination import (
     PaginationService,
     SortOrder,
 )
-from src.domain.services.conversation_service import ConversationService
-from src.infrastructure.persistence.repositories.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.repositories.conversation_repository import (
+    ConversationRepository,
+)
 
 logger = get_logger(__name__, component="api")
 
@@ -54,10 +56,12 @@ class ConversationPaginationService:
             )
 
             # جلب المحادثات من repository الفعلي
-            logger.error(f"Conversations repository not implemented yet for child {child_id}")
+            logger.error(
+                f"Conversations repository not implemented yet for child {child_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="Conversations repository not implemented yet"
+                detail="Conversations repository not implemented yet",
             )
         except HTTPException:
             raise
@@ -80,10 +84,12 @@ class ConversationPaginationService:
                 pagination_request = PaginationRequest()
 
             # جلب المحادثات من repository الفعلي
-            logger.error(f"Conversations repository not implemented yet for child {child_id}")
+            logger.error(
+                f"Conversations repository not implemented yet for child {child_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="Conversations repository not implemented yet"
+                detail="Conversations repository not implemented yet",
             )
         except Exception as e:
             logger.error(
@@ -106,10 +112,12 @@ class ConversationPaginationService:
                 pagination_request = PaginationRequest()
 
             # جلب المحادثات من repository الفعلي
-            logger.error(f"Conversations repository not implemented yet for child {child_id}")
+            logger.error(
+                f"Conversations repository not implemented yet for child {child_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="Conversations repository not implemented yet"
+                detail="Conversations repository not implemented yet",
             )
         except Exception as e:
             logger.error(f"Error searching conversations for child {child_id}: {e}")
@@ -120,10 +128,12 @@ class ConversationPaginationService:
 
     async def _validate_parent_access(self, parent_id: str, child_id: str) -> bool:
         """Validate that parent has access to child's data."""
-        logger.error(f"Parent access validation not implemented for parent {parent_id} and child {child_id}")
+        logger.error(
+            f"Parent access validation not implemented for parent {parent_id} and child {child_id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Parent access validation not implemented"
+            detail="Parent access validation not implemented",
         )
 
 
@@ -141,9 +151,12 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query(None, description="Sort field"),
-        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query(
+            "desc", pattern="^(asc|desc)$", description="Sort order"
+        ),
         search: str | None = Query(None, description="Search term"),
-        parent_id: str | None = Query(
+        parent_id: str
+        | None = Query(
             None,
             description="Parent ID for COPPA validation",
         ),
@@ -179,7 +192,9 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query("timestamp", description="Sort field"),
-        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query(
+            "desc", pattern="^(asc|desc)$", description="Sort order"
+        ),
     ):
         """Get conversation history for specified number of days."""
         # Create pagination request
@@ -211,7 +226,9 @@ if FASTAPI_AVAILABLE:
         page: int = Query(1, ge=1, description="Page number"),
         size: int = Query(20, ge=1, le=50, description="Page size"),
         sort_by: str | None = Query("timestamp", description="Sort field"),
-        sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+        sort_order: str = Query(
+            "desc", pattern="^(asc|desc)$", description="Sort order"
+        ),
     ):
         """Search conversations with pagination."""
         # Create pagination request

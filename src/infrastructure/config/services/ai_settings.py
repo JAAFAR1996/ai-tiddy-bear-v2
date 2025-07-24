@@ -1,6 +1,7 @@
-
 from pydantic import Field
+
 from src.infrastructure.config.core.base_settings import BaseApplicationSettings
+
 
 class AISettings(BaseApplicationSettings):
     """Configuration settings for AI services."""

@@ -1,19 +1,9 @@
-from src.domain.models.validation_models import LoginRequest
 """API endpoints for authentication and authorization"""
 
-from datetime import datetime
+from fastapi import APIRouter, Request
+from fastapi.security import HTTPBearer
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, EmailStr
-
-from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.rate_limiter_service import RateLimiterService
-from src.infrastructure.security.auth.real_auth_service import (
-    ProductionAuthService,
-)
-from src.presentation.api.decorators.rate_limit import moderate_limit, strict_limit
 
 logger = get_logger(__name__, component="api")
 

@@ -2,8 +2,8 @@
 All exceptions should be imported from this module.
 """
 
-from typing import Any, Dict, Optional
 from enum import Enum
+from typing import Any, Dict, Optional
 
 # ===================
 # 1. التصنيفات (Enum)
@@ -12,11 +12,13 @@ from enum import Enum
 
 class ErrorCategory(Enum):
     """Categories for error classification."""
+
     DOMAIN = "domain"
     APPLICATION = "application"
     INFRASTRUCTURE = "infrastructure"
     SECURITY = "security"
     VALIDATION = "validation"
+
 
 # =============================
 # 2. الأساس الأعلى Base Error
@@ -31,13 +33,14 @@ class AITeddyBaseError(Exception):
         message: str,
         category: ErrorCategory,
         details: Optional[Dict[str, Any]] = None,
-        error_code: Optional[str] = None
+        error_code: Optional[str] = None,
     ):
         self.message = message
         self.category = category
         self.details = details or {}
         self.error_code = error_code
         super().__init__(self.message)
+
 
 # ========================
 # 3. استثناءات الدومين Domain
@@ -60,6 +63,7 @@ class ChildSafetyException(DomainException):
 
 class ConsentError(DomainException):
     """Raised when consent-related operations fail."""
+
     """Consent handling errors."""
 
     def __init__(self, message: str = "Consent error", **kwargs):
@@ -71,6 +75,7 @@ class AgeRestrictionException(DomainException):
 
     def __init__(self, message: str = "Age restriction error", **kwargs):
         super().__init__(message, **kwargs)
+
 
 # ===========================
 # 4. استثناءات التطبيق Application
@@ -88,33 +93,21 @@ class ServiceUnavailableError(ApplicationException):
     """Service unavailability errors."""
 
     def __init__(self, message: str = "Service temporarily unavailable", **kwargs):
-        super().__init__(
-            message=message,
-            error_code="SERVICE_UNAVAILABLE",
-            **kwargs
-        )
+        super().__init__(message=message, error_code="SERVICE_UNAVAILABLE", **kwargs)
 
 
 class InvalidInputError(ApplicationException):
     """Invalid input errors."""
 
     def __init__(self, message: str = "Invalid input provided", **kwargs):
-        super().__init__(
-            message=message,
-            error_code="INVALID_INPUT",
-            **kwargs
-        )
+        super().__init__(message=message, error_code="INVALID_INPUT", **kwargs)
 
 
 class TimeoutError(ApplicationException):
     """Operation timeout errors."""
 
     def __init__(self, message: str = "Operation timed out", **kwargs):
-        super().__init__(
-            message=message,
-            error_code="TIMEOUT",
-            **kwargs
-        )
+        super().__init__(message=message, error_code="TIMEOUT", **kwargs)
 
 
 class ResourceNotFoundError(ApplicationException):
@@ -125,7 +118,7 @@ class ResourceNotFoundError(ApplicationException):
             message=f"{resource} with ID '{identifier}' not found",
             error_code="RESOURCE_NOT_FOUND",
             details={"resource": resource, "identifier": str(identifier)},
-            **kwargs
+            **kwargs,
         )
 
 
@@ -134,10 +127,9 @@ class StartupValidationException(ApplicationException):
 
     def __init__(self, message: str = "Startup validation failed", **kwargs):
         super().__init__(
-            message=message,
-            error_code="STARTUP_VALIDATION_FAILED",
-            **kwargs
+            message=message, error_code="STARTUP_VALIDATION_FAILED", **kwargs
         )
+
 
 # ================================
 # 5. استثناءات البنية التحتية Infrastructure

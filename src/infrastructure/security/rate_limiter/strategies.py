@@ -2,12 +2,7 @@
 
 import time
 
-from .core import (
-    RateLimitConfig,
-    RateLimitResult,
-    RateLimitState,
-    RateLimitStrategy,
-)
+from .core import RateLimitConfig, RateLimitResult, RateLimitState, RateLimitStrategy
 
 
 class RateLimitingStrategies:

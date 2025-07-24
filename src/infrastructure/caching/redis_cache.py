@@ -2,10 +2,12 @@
 
 import redis.asyncio as redis
 
+from src.infrastructure.caching.strategies.invalidation_strategy import (
+    CacheInvalidationStrategy,
+)
 from src.infrastructure.logging_config import get_logger
 
 from .cache_config import CacheConfig
-from src.infrastructure.caching.strategies.invalidation_strategy import CacheInvalidationStrategy
 
 logger = get_logger(__name__, component="infrastructure")
 

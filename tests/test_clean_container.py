@@ -15,8 +15,6 @@ from infrastructure.container.app_container import (
     configure_container,
     container,
 )
-from src.application.services.session.session_manager import AsyncSessionManager
-
 from src.infrastructure.logging_config import get_logger
 
 # Add src to path

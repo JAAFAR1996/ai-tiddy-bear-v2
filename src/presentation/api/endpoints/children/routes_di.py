@@ -7,14 +7,14 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
-from src.infrastructure.di.container import Container
-from src.infrastructure.logging_config import get_logger
 from src.domain.models.children_models_ext import (
     ChildCreateRequest,
     ChildDeleteResponse,
     ChildResponse,
     ChildUpdateRequest,
 )
+from src.infrastructure.di.container import Container
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="api")
 

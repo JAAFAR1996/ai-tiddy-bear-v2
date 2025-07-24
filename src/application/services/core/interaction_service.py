@@ -16,9 +16,7 @@ from src.application.interfaces.safety_monitor import (
     SafetyMonitor,
 )
 from src.common.exceptions import InvalidInputError, ResourceNotFoundError
-from src.domain.interfaces.child_profile_repository import (
-    IChildProfileRepository,
-)
+from src.domain.interfaces.child_profile_repository import IChildProfileRepository
 from src.domain.interfaces.sanitization_service import ISanitizationService
 from src.infrastructure.config.services.interaction_config import InteractionConfig
 from src.infrastructure.logging_config import get_logger

@@ -6,19 +6,17 @@ specialized validators for different security contexts and file operation polici
 """
 
 import os
-import re
 from enum import Enum
-from pathlib import Path
-from typing import Optional, Set
+from typing import Set
 
 
 class SecurityError(Exception):
     """Security validation error."""
-    pass
 
 
 class PathPolicy(Enum):
     """Path validation policies for different security contexts."""
+
     STRICT = "strict"  # Very restrictive, for child environments
     STANDARD = "standard"  # Normal web application security
     PERMISSIVE = "permissive"  # More relaxed for admin operations
@@ -30,12 +28,28 @@ class PathValidator:
     def __init__(self, policy: PathPolicy = PathPolicy.STANDARD):
         self.policy = policy
         self.allowed_extensions: Set[str] = {
-            '.txt', '.json', '.csv', '.log', '.md', '.yml', '.yaml'
+            ".txt",
+            ".json",
+            ".csv",
+            ".log",
+            ".md",
+            ".yml",
+            ".yaml",
         }
         self.restricted_paths: Set[str] = {
-            '/etc/', '/proc/', '/sys/', '/dev/', '/root/', '/home/',
-            'C:\\Windows\\', 'C:\\Program Files\\', 'C:\\Users\\',
-            '.env', '.git', '__pycache__', 'node_modules'
+            "/etc/",
+            "/proc/",
+            "/sys/",
+            "/dev/",
+            "/root/",
+            "/home/",
+            "C:\\Windows\\",
+            "C:\\Program Files\\",
+            "C:\\Users\\",
+            ".env",
+            ".git",
+            "__pycache__",
+            "node_modules",
         }
 
     def validate(self, path: str) -> bool:
@@ -95,14 +109,20 @@ class PathValidator:
     def _detect_path_traversal(self, original: str, normalized: str) -> bool:
         """Detect various path traversal patterns."""
         traversal_patterns = [
-            '../', '..\\', '..%2f', '..%5c',
-            '%2e%2e%2f', '%2e%2e%5c',
-            '..../', '....\\',
-            '.%2e/', '.%2e\\',
+            "../",
+            "..\\",
+            "..%2f",
+            "..%5c",
+            "%2e%2e%2f",
+            "%2e%2e%5c",
+            "..../",
+            "....\\",
+            ".%2e/",
+            ".%2e\\",
         ]
 
         original_lower = original.lower()
-        normalized_lower = normalized.lower()
+        normalized.lower()
 
         # Check for direct traversal patterns
         for pattern in traversal_patterns:
@@ -110,21 +130,22 @@ class PathValidator:
                 return True
 
         # Check if normalized path goes outside intended directory
-        if '..' in normalized or normalized.startswith('/'):
+        if ".." in normalized or normalized.startswith("/"):
             return True
 
         # Check for encoded traversal attempts (including double/triple encoding and hex)
-        if '%' in original or '\\x' in original:
+        if "%" in original or "\\x" in original:
             try:
                 from urllib.parse import unquote
+
                 decoded = original
 
                 # Handle hex encoding first (e.g., \x2e\x2e)
-                if '\\x' in decoded:
+                if "\\x" in decoded:
                     try:
                         # Replace \x with proper hex escape and decode
-                        hex_fixed = decoded.replace('\\x', '\\x')
-                        decoded = bytes(hex_fixed, 'utf-8').decode('unicode_escape')
+                        hex_fixed = decoded.replace("\\x", "\\x")
+                        decoded = bytes(hex_fixed, "utf-8").decode("unicode_escape")
                     except Exception:
                         pass  # If hex decode fails, continue with URL decoding
 
@@ -135,7 +156,9 @@ class PathValidator:
                         break  # No more decoding possible
                     decoded = new_decoded
                     # Check after each decode level
-                    if any(pattern in decoded.lower() for pattern in traversal_patterns):
+                    if any(
+                        pattern in decoded.lower() for pattern in traversal_patterns
+                    ):
                         return True
 
                 # Final check after all decoding
@@ -156,15 +179,21 @@ class PathValidator:
                 return True
 
         # Additional system-specific checks
-        if os.name == 'nt':  # Windows
-            if any(sys_path in path_lower for sys_path in [
-                'c:\\windows\\system32', 'c:\\boot\\', 'c:\\$recycle.bin'
-            ]):
+        if os.name == "nt":  # Windows
+            if any(
+                sys_path in path_lower
+                for sys_path in [
+                    "c:\\windows\\system32",
+                    "c:\\boot\\",
+                    "c:\\$recycle.bin",
+                ]
+            ):
                 return True
         else:  # Unix-like
-            if any(sys_path in path_lower for sys_path in [
-                '/boot/', '/lib/', '/sbin/', '/bin/sudo'
-            ]):
+            if any(
+                sys_path in path_lower
+                for sys_path in ["/boot/", "/lib/", "/sbin/", "/bin/sudo"]
+            ):
                 return True
 
         return False
@@ -178,9 +207,23 @@ class PathValidator:
 
         # Dangerous extensions that should never be allowed
         dangerous_extensions = {
-            '.exe', '.bat', '.cmd', '.com', '.scr', '.pif',
-            '.sh', '.bash', '.zsh', '.ps1', '.vbs', '.js',
-            '.jar', '.msi', '.deb', '.rpm', '.dmg'
+            ".exe",
+            ".bat",
+            ".cmd",
+            ".com",
+            ".scr",
+            ".pif",
+            ".sh",
+            ".bash",
+            ".zsh",
+            ".ps1",
+            ".vbs",
+            ".js",
+            ".jar",
+            ".msi",
+            ".deb",
+            ".rpm",
+            ".dmg",
         }
 
         if ext.lower() in dangerous_extensions:
@@ -213,9 +256,9 @@ class SecureFileOperations:
     def __init__(self, validator: PathValidator):
         self.validator = validator
 
-    def safe_open(self, path: str, mode: str = 'r', **kwargs):
+    def safe_open(self, path: str, mode: str = "r", **kwargs):
         """Safely open a file with path validation."""
-        operation = "write" if any(m in mode for m in ['w', 'a', '+']) else "read"
+        operation = "write" if any(m in mode for m in ["w", "a", "+"]) else "read"
 
         if not self.validator.validate_path(path, operation):
             raise SecurityError(f"Unsafe path operation: {path}")
@@ -228,11 +271,21 @@ def create_child_safe_validator() -> PathValidator:
     validator = PathValidator(PathPolicy.STRICT)
 
     # Even more restrictive settings for child safety
-    validator.allowed_extensions = {'.txt', '.json', '.md'}
-    validator.restricted_paths.update({
-        'config/', 'secrets/', 'admin/', '.ssh/', 'credentials',
-        'password', 'token', 'key', 'cert', 'private'
-    })
+    validator.allowed_extensions = {".txt", ".json", ".md"}
+    validator.restricted_paths.update(
+        {
+            "config/",
+            "secrets/",
+            "admin/",
+            ".ssh/",
+            "credentials",
+            "password",
+            "token",
+            "key",
+            "cert",
+            "private",
+        }
+    )
 
     return validator
 
@@ -257,7 +310,7 @@ def validate_path(path: str, operation: str = "read") -> bool:
     return validator.validate_path(path, operation)
 
 
-def safe_open(path: str, mode: str = 'r', **kwargs):
+def safe_open(path: str, mode: str = "r", **kwargs):
     """Convenience function for safe file opening."""
     validator = get_path_validator()
     operations = SecureFileOperations(validator)

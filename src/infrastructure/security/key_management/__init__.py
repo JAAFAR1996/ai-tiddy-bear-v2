@@ -2,9 +2,7 @@
 Provides modular key management services following Single Responsibility Principle.
 """
 
-from src.infrastructure.security.key_management.key_generator import (
-    KeyGenerator,
-)
+from src.infrastructure.security.key_management.key_generator import KeyGenerator
 from src.infrastructure.security.key_management.key_lifecycle_manager import (
     KeyLifecycleManager,
 )

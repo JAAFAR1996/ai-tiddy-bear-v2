@@ -10,8 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
@@ -53,17 +52,19 @@ class SecurityHeadersConfig:
     referrer_policy: str = "strict-origin-when-cross-origin"
 
     # Permissions Policy (child-safe defaults)
-    permissions_policy: dict[str, str] = field(default_factory=lambda: {
-        "camera": "()",
-        "microphone": "(self)",  # Allow for voice input
-        "geolocation": "()",
-        "payment": "()",
-        "usb": "()",
-        "bluetooth": "()",
-        "magnetometer": "()",
-        "gyroscope": "()",
-        "accelerometer": "()"
-    })
+    permissions_policy: dict[str, str] = field(
+        default_factory=lambda: {
+            "camera": "()",
+            "microphone": "(self)",  # Allow for voice input
+            "geolocation": "()",
+            "payment": "()",
+            "usb": "()",
+            "bluetooth": "()",
+            "magnetometer": "()",
+            "gyroscope": "()",
+            "accelerometer": "()",
+        }
+    )
 
     # Cross-Origin settings
     cross_origin_embedder_policy: str = "require-corp"
@@ -102,7 +103,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         logger.info(
             "Enhanced security headers middleware initialized (environment: %s, child_safety: %s)",
-            self.environment, self.config.child_safety_mode
+            self.environment,
+            self.config.child_safety_mode,
         )
 
     async def dispatch(
@@ -235,7 +237,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         for header, value in child_headers.items():
             response.headers[header] = value
 
-    def _add_request_tracking_headers(self, request: Request, response: Response) -> None:
+    def _add_request_tracking_headers(
+        self, request: Request, response: Response
+    ) -> None:
         """Add request tracking and performance headers."""
         # Request ID for tracking
         request_id = getattr(request.state, "request_id", str(uuid.uuid4()))
@@ -285,7 +289,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "/api/v1/conversations",
             ]
 
-            if any(request.url.path.startswith(endpoint) for endpoint in child_endpoints):
+            if any(
+                request.url.path.startswith(endpoint) for endpoint in child_endpoints
+            ):
                 return True
 
             # Check headers for child device
@@ -313,7 +319,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             avg_time = self.total_processing_time / self.request_count
             logger.info(
                 "Security middleware performance: %d requests, avg %.2fms per request",
-                self.request_count, avg_time * 1000
+                self.request_count,
+                avg_time * 1000,
             )
 
     def _create_safe_error_response(self, error_msg: str) -> Response:
@@ -406,14 +413,20 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 # Factory functions for backward compatibility and easy setup
-def create_security_headers_middleware(config: SecurityHeadersConfig = None) -> SecurityHeadersMiddleware:
+def create_security_headers_middleware(
+    config: SecurityHeadersConfig = None,
+) -> SecurityHeadersMiddleware:
     """Factory function to create security headers middleware."""
     if config is None:
         config = SecurityHeadersConfig()
-    raise RuntimeError("create_security_headers_middleware is for testing only. Use SecurityHeadersMiddleware with a real FastAPI app in production.")
+    raise RuntimeError(
+        "create_security_headers_middleware is for testing only. Use SecurityHeadersMiddleware with a real FastAPI app in production."
+    )
 
 
-def get_security_headers_config(child_safety_mode: bool = True) -> SecurityHeadersConfig:
+def get_security_headers_config(
+    child_safety_mode: bool = True,
+) -> SecurityHeadersConfig:
     """Get default security headers configuration."""
     config = SecurityHeadersConfig()
     config.child_safety_mode = child_safety_mode
@@ -431,7 +444,9 @@ def init_security_headers(app, config: SecurityHeadersConfig = None):
 
 
 # Backward compatibility aliases
-def create_security_middleware(app, environment: str = "production") -> SecurityHeadersMiddleware:
+def create_security_middleware(
+    app, environment: str = "production"
+) -> SecurityHeadersMiddleware:
     """Backward compatibility factory for presentation layer."""
     config = SecurityHeadersConfig()
     return SecurityHeadersMiddleware(app, config)

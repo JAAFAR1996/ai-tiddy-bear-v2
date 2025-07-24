@@ -3,14 +3,14 @@ info:
   title: AI Teddy Bear API
   description: |
     API documentation for AI Teddy Bear - A smart interactive toy for children
-    
+
     ## Features
     - Real-time voice interaction
     - Emotion detection and analysis
     - Educational content delivery
     - Parent dashboard and monitoring
     - Safety and content moderation
-    
+
   version: 2.0.0
   contact:
     name: API Support
@@ -47,7 +47,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    
+
     apiKey:
       type: apiKey
       in: header
@@ -1107,22 +1107,22 @@ paths:
       operationId: establishWebSocket
       description: |
         WebSocket endpoint for real-time communication between ESP32 devices and the server.
-        
+
         ### Connection
         ```
         ws://localhost:8000/api/v1/ws?token={jwt_token}
         ```
-        
+
         ### Message Types
         - `audio_stream`: Real-time audio streaming
         - `emotion_update`: Real-time emotion updates
         - `conversation_update`: Conversation state updates
         - `device_status`: Device status updates
-        
+
       security:
         - bearerAuth: []
       responses:
         101:
           description: Switching Protocols
         401:
-          description: Unauthorized 
+          description: Unauthorized

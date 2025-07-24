@@ -80,10 +80,7 @@ class TestIntegration:
     @pytest.mark.asyncio
     async def test_voice_interaction_flow(self):
         """Test full audio interaction flow"""
-        from application.services.ai_teddy_bear_service import (
-            AITeddyBearService,
-        )
-
+        from application.services.ai_teddy_bear_service import AITeddyBearService
         from config.settings import Config
 
         config = Config()
@@ -96,7 +93,6 @@ class TestIntegration:
 
     def test_database_integration(self):
         """اختبار تكامل قاعدة البيانات"""
-        pass
 
     def test_security_integration(self):
         """اختبار تكامل الأمان"""
@@ -149,7 +145,6 @@ class TestEndToEnd:
         # assert "dominant_emotion" in summary
         # assert "recommendations" in summary
         # assert len(summary["recommendations"]) > 0
-        pass
 
     def test_error_handling(self):
         """اختبار معالجة الأخطاء"""
@@ -161,7 +156,6 @@ class TestEndToEnd:
         # assert child is None
         # interactions = db.get_interactions("non_existent")
         # assert interactions == []
-        pass
 
     def test_data_consistency(self):
         """اختبار اتساق البيانات"""
@@ -180,7 +174,6 @@ class TestEndToEnd:
         # assert len(emotions) == 10
         # assert interactions[0]["input_text"] == "سؤال 9"
         # assert interactions[-1]["input_text"] == "سؤال 0"
-        pass
 
 
 def run_qa_checklist():

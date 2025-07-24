@@ -1,11 +1,8 @@
 from dataclasses import dataclass, field
 
 
-
-
 @dataclass
 class AIResponse:
-
     response_text: str = field(metadata={"description": "AI generated text response"})
     audio_response: bytes = field(metadata={"description": "Binary audio data"})
     emotion: str = field(
@@ -35,7 +32,6 @@ class AIResponse:
     )
 
     def __post_init__(self) -> None:
-
         if (
             not isinstance(self.sentiment, (int, float))
             or not -1.0 <= self.sentiment <= 1.0

@@ -205,12 +205,16 @@ class EnvironmentSecurityValidator:
                     for d in cls.REQUIRED_SECRETS[var_name].get("no_defaults", [])
                 ):
                     if var_name == "DATABASE_URL":
-                        config[var_name] = (
-                            "postgresql://dev:dev@localhost:5432/ai_teddy_dev"
-                        )
+                        config[
+                            var_name
+                        ] = "postgresql://dev:dev@localhost:5432/ai_teddy_dev"
                     elif var_name == "OPENAI_API_KEY":
-                        logger.error("No real development key available - environment key not configured.")
-                        raise NotImplementedError("No real development key available - environment key not configured.")
+                        logger.error(
+                            "No real development key available - environment key not configured."
+                        )
+                        raise NotImplementedError(
+                            "No real development key available - environment key not configured."
+                        )
                     else:
                         config[var_name] = cls.generate_secure_secret()
                     logger.warning(f"Generated development secret for {var_name}")

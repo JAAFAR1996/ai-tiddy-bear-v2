@@ -33,7 +33,7 @@ class SlidingWindowRateLimiter:
         user_id: str,
         endpoint: Optional[str] = None,
         limit: Optional[int] = None,
-        window_seconds: Optional[int] = None
+        window_seconds: Optional[int] = None,
     ) -> dict[str, Any]:
         """Check if request is allowed within rate limits.
 
@@ -87,7 +87,7 @@ class SlidingWindowRateLimiter:
                 "retry_after": retry_after,
                 "limit": rate_limit,
                 "window_seconds": window_size,
-                "reset_time": reset_time
+                "reset_time": reset_time,
             }
 
             logger.debug(f"Rate limit check for {key}: {result}")
@@ -98,7 +98,7 @@ class SlidingWindowRateLimiter:
         user_id: str,
         limit: Optional[int],
         window_seconds: Optional[int],
-        endpoint: Optional[str] = None
+        endpoint: Optional[str] = None,
     ) -> tuple[int, int]:
         """Get rate limit configuration for user/endpoint.
 
@@ -123,7 +123,7 @@ class SlidingWindowRateLimiter:
         user_id: str,
         limit: int,
         window_seconds: int,
-        endpoint: Optional[str] = None
+        endpoint: Optional[str] = None,
     ) -> None:
         """Set custom rate limit for user/endpoint."""
         key = f"{user_id}:{endpoint}" if endpoint else user_id
@@ -131,11 +131,7 @@ class SlidingWindowRateLimiter:
             self._custom_limits[key] = (limit, window_seconds)
         logger.info(f"Set custom rate limit for {key}: {limit}/{window_seconds}s")
 
-    def remove_custom_limit(
-        self,
-        user_id: str,
-        endpoint: Optional[str] = None
-    ) -> None:
+    def remove_custom_limit(self, user_id: str, endpoint: Optional[str] = None) -> None:
         """Remove custom rate limit for user/endpoint."""
         key = f"{user_id}:{endpoint}" if endpoint else user_id
         with self._lock:
@@ -203,7 +199,7 @@ class FallbackRateLimitService:
         user_id: str,
         endpoint: Optional[str] = None,
         limit: Optional[int] = None,
-        window_seconds: Optional[int] = None
+        window_seconds: Optional[int] = None,
     ) -> dict[str, Any]:
         """Check if request is allowed within rate limits.
 
@@ -211,7 +207,7 @@ class FallbackRateLimitService:
 
         Args:
             user_id: User identifier
-            endpoint: Optional endpoint identifier  
+            endpoint: Optional endpoint identifier
             limit: Optional custom limit for this check
             window_seconds: Optional custom window for this check
 
@@ -240,7 +236,7 @@ class FallbackRateLimitService:
         user_id: str,
         endpoint: Optional[str] = None,
         limit: Optional[int] = None,
-        window_seconds: Optional[int] = None
+        window_seconds: Optional[int] = None,
     ) -> dict[str, Any]:
         """Perform rate limiting using Redis."""
         # This would implement Redis-based sliding window rate limiting
@@ -255,17 +251,11 @@ class FallbackRateLimitService:
         user_id: str,
         limit: int,
         window_seconds: int,
-        endpoint: Optional[str] = None
+        endpoint: Optional[str] = None,
     ) -> None:
         """Set custom rate limit for user/endpoint."""
-        self.fallback_limiter.set_custom_limit(
-            user_id, limit, window_seconds, endpoint
-        )
+        self.fallback_limiter.set_custom_limit(user_id, limit, window_seconds, endpoint)
 
-    def remove_custom_limit(
-        self,
-        user_id: str,
-        endpoint: Optional[str] = None
-    ) -> None:
+    def remove_custom_limit(self, user_id: str, endpoint: Optional[str] = None) -> None:
         """Remove custom rate limit for user/endpoint."""
         self.fallback_limiter.remove_custom_limit(user_id, endpoint)

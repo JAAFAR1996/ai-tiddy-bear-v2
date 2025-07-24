@@ -14,9 +14,7 @@ from src.domain.models.consent_models_domain import (
     ConsentType,
 )
 from src.domain.services.coppa_age_validation import AgeValidationResult
-from src.domain.services.parental_consent_enforcer import (
-    ParentalConsentEnforcer,
-)
+from src.domain.services.parental_consent_enforcer import ParentalConsentEnforcer
 
 
 class TestParentalConsentEnforcer:

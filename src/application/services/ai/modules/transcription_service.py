@@ -183,9 +183,9 @@ class TranscriptionService:
             # Check duration limit
             if result["duration"] > self.max_audio_duration:
                 result["valid"] = False
-                result["error"] = (
-                    f"Audio too long: {result['duration']:.1f}s (max: {self.max_audio_duration}s)"
-                )
+                result[
+                    "error"
+                ] = f"Audio too long: {result['duration']:.1f}s (max: {self.max_audio_duration}s)"
             return result
         except Exception as e:
             return {
@@ -256,7 +256,9 @@ class TranscriptionService:
             except Exception as e:
                 logger.warning(f"Google transcription failed: {e}")
         # Production: لا fallback وهمي، بل سجل خطأ وارفع استثناء
-        logger.error("All transcription engines failed: transcription service unavailable")
+        logger.error(
+            "All transcription engines failed: transcription service unavailable"
+        )
         raise RuntimeError("Transcription service unavailable: all engines failed")
 
     async def _apply_safety_filters(

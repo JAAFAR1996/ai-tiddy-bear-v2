@@ -5,9 +5,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from src.application.dto.ai_response import AIResponse
 from src.application.dto.esp32_request import ESP32Request
-from src.application.use_cases.process_esp32_audio import (
-    ProcessESP32AudioUseCase,
-)
+from src.application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
 from src.infrastructure.logging_config import get_logger
 
 router = APIRouter()

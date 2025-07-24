@@ -12,10 +12,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from src.application.services.accessibility_service import AccessibilityService
-from src.domain.value_objects.accessibility import (
-    AccessibilityProfile,
-    SpecialNeedType,
-)
+from src.domain.value_objects.accessibility import AccessibilityProfile, SpecialNeedType
 
 
 class MockAccessibilityProfileRepository:

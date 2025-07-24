@@ -6,20 +6,22 @@ for different environments, Uvicorn-specific settings (backlog, keep-alive
 timeout, worker recycling), and worker counts. It ensures consistent and
 optimized server configurations for both development and production.
 """
+
 from pydantic import Field
+
 from src.infrastructure.config.core.base_settings import BaseApplicationSettings
+
 
 class ServerSettings(BaseApplicationSettings):
     """Configuration settings for server and CORS."""
 
     # إعدادات CORS
     ALLOWED_ORIGINS: list[str] = Field(
-        ["https://app.aiteddybear.com", "https://api.aiteddybear.com"], 
-        env="ALLOWED_ORIGINS"
+        ["https://app.aiteddybear.com", "https://api.aiteddybear.com"],
+        env="ALLOWED_ORIGINS",
     )
     ALLOWED_METHODS: list[str] = Field(
-        ["GET", "POST", "PUT", "DELETE"], 
-        env="ALLOWED_METHODS"
+        ["GET", "POST", "PUT", "DELETE"], env="ALLOWED_METHODS"
     )
     ALLOWED_HEADERS: list[str] = Field(["*"], env="ALLOWED_HEADERS")
 

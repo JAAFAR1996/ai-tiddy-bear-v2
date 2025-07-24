@@ -9,9 +9,7 @@ from typing import Any
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
 
-from src.application.use_cases.manage_child_profile import (
-    ManageChildProfileUseCase,
-)
+from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.pagination import (
@@ -21,11 +19,7 @@ from src.infrastructure.pagination import (
 )
 from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 
-from .models import (
-    ChildCreateRequest,
-    ChildResponse,
-    ChildUpdateRequest,
-)
+from .models import ChildCreateRequest, ChildResponse, ChildUpdateRequest
 
 logger = get_logger(__name__, component="api")
 

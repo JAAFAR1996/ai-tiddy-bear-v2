@@ -1,19 +1,19 @@
-from abc import abstractmethod
-from src.domain.interfaces import IConversationRepository
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import select, update as sql_update, delete as sql_delete
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete as sql_delete
+from sqlalchemy import select
+from sqlalchemy import update as sql_update
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.conversation import Conversation
+from src.domain.interfaces import IConversationRepository
 from src.infrastructure.persistence.models.conversation_models import ConversationModel
 
 
 class ConversationRepository(IConversationRepository):
     """Async repository interface for conversation operations."""
-    pass
 
 
 class AsyncSQLAlchemyConversationRepo(ConversationRepository):
@@ -124,7 +124,9 @@ class AsyncSQLAlchemyConversationRepo(ConversationRepository):
         """
         try:
             await self.session.execute(
-                sql_delete(ConversationModel).where(ConversationModel.id == conversation_id)
+                sql_delete(ConversationModel).where(
+                    ConversationModel.id == conversation_id
+                )
             )
             await self.session.commit()
         except SQLAlchemyError as e:
@@ -157,4 +159,6 @@ class AsyncSQLAlchemyConversationRepo(ConversationRepository):
 
             return [model.to_entity() for model in conversation_models]
         except SQLAlchemyError as e:
-            raise ValueError(f"Database error while retrieving conversations by child_id: {str(e)}")
+            raise ValueError(
+                f"Database error while retrieving conversations by child_id: {str(e)}"
+            )

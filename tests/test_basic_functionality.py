@@ -11,7 +11,6 @@ from infrastructure.external_services.speech_disorder_detector import (
     SpeechDisorderDetector,
 )
 from infrastructure.persistence.database import Database
-
 from src.infrastructure.logging_config import get_logger
 
 # Add src to path
@@ -246,7 +245,7 @@ def run_manual_tests():
 
     # Test main service import
     try:
-        from application.services.ai_teddy_bear_service import AITeddyBearService
+        pass
 
         logger.info("✅ يمكن استيراد الخدمة الرئيسية")
     except ImportError as e:

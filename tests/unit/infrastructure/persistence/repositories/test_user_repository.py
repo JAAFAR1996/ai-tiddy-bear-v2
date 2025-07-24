@@ -11,11 +11,11 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.persistence.repositories.user_repository import UserRepository
 from src.infrastructure.security.auth.jwt_auth import User as UserModel
-from src.infrastructure.persistence.repositories.user_repository import (
-    UserRepository,
+from src.infrastructure.validators.security.database_input_validator import (
+    SecurityError,
 )
-from src.infrastructure.validators.security.database_input_validator import SecurityError
 
 
 @pytest.fixture

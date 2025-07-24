@@ -4,13 +4,8 @@ from uuid import UUID
 
 from redis.asyncio import Redis
 
-from src.domain.interfaces.notification_repository import (
-    INotificationRepository,
-)
-from src.domain.value_objects.notification import (
-    NotificationRecord,
-    NotificationStatus,
-)
+from src.domain.interfaces.notification_repository import INotificationRepository
+from src.domain.value_objects.notification import NotificationRecord, NotificationStatus
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="redis_notification_repository")

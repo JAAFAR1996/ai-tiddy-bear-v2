@@ -4,10 +4,8 @@ from fastapi import Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.rate_limiter.service import (
-    get_rate_limiter,
-)
 from src.infrastructure.security.rate_limiter.core import RateLimitResult
+from src.infrastructure.security.rate_limiter.service import get_rate_limiter
 
 logger = get_logger(__name__, component="middleware")
 

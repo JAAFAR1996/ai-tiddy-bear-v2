@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, validator, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class ChildAgeGroup(str, Enum):
@@ -145,8 +145,8 @@ class ChildRegistrationRequest(BaseModel):
             raise ValueError("Name is too long")
 
         return name
-    @classmethod
 
+    @classmethod
     @field_validator("age")
     @classmethod
     def validate_coppa_age(cls, v) -> int:
@@ -158,6 +158,7 @@ class ChildRegistrationRequest(BaseModel):
                 "COPPA compliance: Children over 13 require different consent procedures"
             )
         return v
+
     @field_validator("date_of_birth")
     @classmethod
     def validate_birth_date(cls, v, values) -> date | None:
@@ -495,15 +496,16 @@ class APIResponse(BaseModel):
     request_id: str | None = Field(None, description="Request tracking ID")
 
 
-
 class LoginRequest(BaseModel):
     """Login request model."""
+
     email: EmailStr
     password: str
 
 
 class LoginResponse(BaseModel):
     """Login response model."""
+
     access_token: str
     refresh_token: str
     token_type: str = "bearer"

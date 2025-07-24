@@ -1,16 +1,19 @@
 """Unit tests for real consent database service.
 
-Tests verify that dummy implementations have been replaced with 
+Tests verify that dummy implementations have been replaced with
 production-ready database operations.
 """
 
-import pytest
 import uuid
-from datetime import datetime, UTC, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock
 
-from src.infrastructure.persistence.services.consent_service import ConsentDatabaseService
+import pytest
+
 from src.domain.models.consent_models_domain import ConsentType
+from src.infrastructure.persistence.services.consent_service import (
+    ConsentDatabaseService,
+)
 
 
 class TestConsentDatabaseService:
@@ -28,7 +31,9 @@ class TestConsentDatabaseService:
         return ConsentDatabaseService(mock_db_session)
 
     @pytest.mark.asyncio
-    async def test_create_consent_record_success(self, consent_service, mock_db_session):
+    async def test_create_consent_record_success(
+        self, consent_service, mock_db_session
+    ):
         """Test creating consent record with real database operations."""
         # Arrange
         child_id = str(uuid.uuid4())
@@ -41,22 +46,24 @@ class TestConsentDatabaseService:
 
         # Act
         result = await consent_service.create_consent_record(
-            child_id=child_id,
-            parent_id=parent_id,
-            data_types=data_types
+            child_id=child_id, parent_id=parent_id, data_types=data_types
         )
 
         # Assert
         assert result is not None
         assert isinstance(result, str)
-        assert result != f"consent_{child_id}_{datetime.now().timestamp()}"  # Not dummy format
+        assert (
+            result != f"consent_{child_id}_{datetime.now().timestamp()}"
+        )  # Not dummy format
 
         # Verify database operations were called
         mock_db_session.add.assert_called_once()
         mock_db_session.commit.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_consent_record_child_not_found(self, consent_service, mock_db_session):
+    async def test_create_consent_record_child_not_found(
+        self, consent_service, mock_db_session
+    ):
         """Test consent creation fails when child doesn't exist."""
         # Arrange
         child_id = str(uuid.uuid4())
@@ -69,13 +76,13 @@ class TestConsentDatabaseService:
         # Act & Assert
         with pytest.raises(ValueError, match="Child with ID .* not found"):
             await consent_service.create_consent_record(
-                child_id=child_id,
-                parent_id=parent_id,
-                data_types=data_types
+                child_id=child_id, parent_id=parent_id, data_types=data_types
             )
 
     @pytest.mark.asyncio
-    async def test_verify_parental_consent_valid(self, consent_service, mock_db_session):
+    async def test_verify_parental_consent_valid(
+        self, consent_service, mock_db_session
+    ):
         """Test verification of valid parental consent."""
         # Arrange
         parent_id = str(uuid.uuid4())
@@ -92,8 +99,7 @@ class TestConsentDatabaseService:
 
         # Act
         result = await consent_service.verify_parental_consent(
-            parent_id=parent_id,
-            child_id=child_id
+            parent_id=parent_id, child_id=child_id
         )
 
         # Assert
@@ -102,7 +108,9 @@ class TestConsentDatabaseService:
         mock_db_session.scalar.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_verify_parental_consent_expired(self, consent_service, mock_db_session):
+    async def test_verify_parental_consent_expired(
+        self, consent_service, mock_db_session
+    ):
         """Test verification fails for expired consent."""
         # Arrange
         parent_id = str(uuid.uuid4())
@@ -118,8 +126,7 @@ class TestConsentDatabaseService:
 
         # Act
         result = await consent_service.verify_parental_consent(
-            parent_id=parent_id,
-            child_id=child_id
+            parent_id=parent_id, child_id=child_id
         )
 
         # Assert
@@ -186,8 +193,12 @@ class TestIntegrationConsent:
     @pytest.mark.asyncio
     async def test_consent_not_dummy_implementation(self):
         """Verify consent service uses real database, not dummy returns."""
-        from src.presentation.api.endpoints.children.compliance import ParentalConsentManager
-        from src.infrastructure.validators.security.coppa_validator import COPPAValidator
+        from src.infrastructure.validators.security.coppa_validator import (
+            COPPAValidator,
+        )
+        from src.presentation.api.endpoints.children.compliance import (
+            ParentalConsentManager,
+        )
 
         # Create manager (this would normally connect to real DB)
         coppa_validator = COPPAValidator()
@@ -202,9 +213,7 @@ class TestIntegrationConsent:
 
         try:
             result = await consent_manager.create_consent_record(
-                child_id=child_id,
-                parent_id=parent_id,
-                data_types=data_types
+                child_id=child_id, parent_id=parent_id, data_types=data_types
             )
 
             # Should not match old dummy pattern
@@ -220,8 +229,12 @@ class TestIntegrationConsent:
     @pytest.mark.asyncio
     async def test_retention_not_dummy_implementation(self):
         """Verify retention service uses real database, not dummy returns."""
-        from src.presentation.api.endpoints.children.compliance import LocalRetentionManager
-        from src.infrastructure.validators.security.coppa_validator import COPPAValidator
+        from src.infrastructure.validators.security.coppa_validator import (
+            COPPAValidator,
+        )
+        from src.presentation.api.endpoints.children.compliance import (
+            LocalRetentionManager,
+        )
 
         # Create manager
         coppa_validator = COPPAValidator()

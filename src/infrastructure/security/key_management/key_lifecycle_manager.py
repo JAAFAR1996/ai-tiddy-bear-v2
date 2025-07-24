@@ -5,9 +5,7 @@ Manages the creation, expiration, and deletion of cryptographic keys.
 from datetime import datetime, timedelta
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.key_management.key_generator import (
-    KeyGenerator,
-)
+from src.infrastructure.security.key_management.key_generator import KeyGenerator
 from src.infrastructure.security.key_management.key_rotation_service import (
     KeyMetadata,
     KeyStorageInterface,

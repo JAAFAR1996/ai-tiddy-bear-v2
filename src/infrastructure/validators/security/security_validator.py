@@ -1,11 +1,14 @@
 # src/infrastructure/validators/security/security_validator.py
 
-from typing import Any, List, Optional
 from datetime import datetime
+from typing import Any, List, Optional
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.validators.security.security_types import SecurityThreat, InputValidationResult
 from src.infrastructure.validators.security.detectors import ThreatDetectors
+from src.infrastructure.validators.security.security_types import (
+    InputValidationResult,
+    SecurityThreat,
+)
 
 logger = get_logger(__name__, component="security-validator")
 
@@ -24,10 +27,7 @@ class SecurityValidator(ThreatDetectors):
         super().__init__()
 
     async def validate(
-        self, 
-        data: Any, 
-        field: str = "input", 
-        context: Optional[dict] = None
+        self, data: Any, field: str = "input", context: Optional[dict] = None
     ) -> InputValidationResult:
         """
         Validate generic input for security, privacy and child safety.
@@ -60,18 +60,20 @@ class SecurityValidator(ThreatDetectors):
 
         # Validate input length
         if len(value) > 100_000:
-            threats.append(SecurityThreat(
-                threat_type="oversized_input",
-                severity="high",
-                field_name=field,
-                value=value[:128],
-                description="Input size exceeds allowed maximum"
-            ))
+            threats.append(
+                SecurityThreat(
+                    threat_type="oversized_input",
+                    severity="high",
+                    field_name=field,
+                    value=value[:128],
+                    description="Input size exceeds allowed maximum",
+                )
+            )
 
         # Is valid if no critical/high threat and no child violations
         is_valid = (
-            not any(t.severity in ("critical", "high") for t in threats) and
-            len(child_safety_violations) == 0
+            not any(t.severity in ("critical", "high") for t in threats)
+            and len(child_safety_violations) == 0
         )
 
         # Compose result
@@ -80,7 +82,7 @@ class SecurityValidator(ThreatDetectors):
             threats=threats,
             errors=errors,
             child_safety_violations=child_safety_violations,
-            metadata={"field": field, "validated_at": datetime.utcnow()}
+            metadata={"field": field, "validated_at": datetime.utcnow()},
         )
 
         # Audit (optional, extend as needed)
@@ -118,27 +120,49 @@ class SecurityValidator(ThreatDetectors):
 
         # Dangerous extensions
         forbidden_ext = [
-            ".exe", ".bat", ".cmd", ".com", ".scr", ".vbs", ".js", ".php", ".asp", ".jsp"
+            ".exe",
+            ".bat",
+            ".cmd",
+            ".com",
+            ".scr",
+            ".vbs",
+            ".js",
+            ".php",
+            ".asp",
+            ".jsp",
         ]
         ext = "." + filename.lower().split(".")[-1] if "." in filename else ""
         if ext in forbidden_ext:
             threats.append(
                 SecurityThreat(
-                    "dangerous_file_type", "high", "filename", filename,
-                    f"Dangerous file extension: {ext}"
+                    "dangerous_file_type",
+                    "high",
+                    "filename",
+                    filename,
+                    f"Dangerous file extension: {ext}",
                 )
             )
 
         # Content-type checks
         allowed_types = [
-            "image/jpeg", "image/png", "image/gif", "image/webp", "audio/mpeg",
-            "audio/wav", "audio/ogg", "text/plain", "application/pdf"
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "audio/mpeg",
+            "audio/wav",
+            "audio/ogg",
+            "text/plain",
+            "application/pdf",
         ]
         if content_type not in allowed_types:
             threats.append(
                 SecurityThreat(
-                    "invalid_content_type", "medium", "content_type", content_type,
-                    f"Content type not allowed: {content_type}"
+                    "invalid_content_type",
+                    "medium",
+                    "content_type",
+                    content_type,
+                    f"Content type not allowed: {content_type}",
                 )
             )
 
@@ -148,5 +172,5 @@ class SecurityValidator(ThreatDetectors):
             threats=threats,
             errors=errors,
             child_safety_violations=[],
-            metadata={"filename": filename, "checked_at": datetime.utcnow()}
+            metadata={"filename": filename, "checked_at": datetime.utcnow()},
         )

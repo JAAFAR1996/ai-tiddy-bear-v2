@@ -16,9 +16,7 @@ class ConcreteServiceFactory:
     def create_speech_processor(self, settings: Any) -> Any:
         """Create speech processor service (production only)."""
         try:
-            from infrastructure.external_apis.whisper_client import (
-                WhisperClient,
-            )
+            from infrastructure.external_apis.whisper_client import WhisperClient
 
             return WhisperClient(model_name=settings.WHISPER_MODEL)
         except ImportError as e:
@@ -54,9 +52,7 @@ class ConcreteServiceFactory:
     def create_tts_service(self, settings: Any) -> Any:
         """Create text-to-speech service (production only)."""
         try:
-            from infrastructure.external_apis.elevenlabs_client import (
-                ElevenLabsClient,
-            )
+            from infrastructure.external_apis.elevenlabs_client import ElevenLabsClient
 
             if (
                 not hasattr(settings, "ELEVENLABS_API_KEY")

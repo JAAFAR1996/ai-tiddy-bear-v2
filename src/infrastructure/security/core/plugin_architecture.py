@@ -58,41 +58,32 @@ class PluginInterface(ABC):
     @abstractmethod
     def initialize(self, config: dict[str, Any]) -> bool:
         """Initialize the plugin with configuration"""
-        pass
 
     @abstractmethod
     def execute(self, *args, **kwargs) -> Any:
         """Execute the plugin's main functionality"""
-        pass
 
     @abstractmethod
     def cleanup(self) -> None:
         """Clean up resources when plugin is disabled"""
-        pass
 
     @property
     @abstractmethod
     def name(self) -> str:
         """Get plugin name"""
-        pass
 
     @property
     @abstractmethod
     def version(self) -> str:
         """Get plugin version"""
-        pass
 
 
 class PluginValidationError(Exception):
     """Exception raised when plugin validation fails"""
 
-    pass
-
 
 class PluginSecurityError(Exception):
     """Exception raised when plugin security check fails"""
-
-    pass
 
 
 class PluginValidator:

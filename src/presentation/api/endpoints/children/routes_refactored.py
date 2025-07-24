@@ -3,16 +3,18 @@ Clean, modular route setup with separated endpoint handlers.
 """
 
 from collections.abc import AsyncGenerator
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+
+from src.infrastructure.di.fastapi_dependencies import get_database
+from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.persistence.models.child_models import ChildModel
 
 from .create_child import create_child_endpoint
 from .get_children import get_children_endpoint
 from .models import ChildResponse
-from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.persistence.models.child_models import ChildModel
-from src.infrastructure.di.fastapi_dependencies import get_database
 
 
 def setup_children_routes(router: APIRouter) -> None:
@@ -146,7 +148,7 @@ def create_extended_children_router() -> APIRouter:
 
 # Database session dependency and endpoint implementation
 async def get_db_session(
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
 ) -> AsyncGenerator[AsyncSession, None]:
     """Database session dependency for FastAPI endpoints."""
     async for session in database.get_session():
@@ -154,22 +156,20 @@ async def get_db_session(
 
 
 async def get_child_by_id_endpoint(
-    child_id: str,
-    db: AsyncSession = Depends(get_db_session)
+    child_id: str, db: AsyncSession = Depends(get_db_session)
 ) -> ChildModel:
     """Get a child by ID from the database."""
     child = await db.get(ChildModel, child_id)
     if child is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Child with ID {child_id} not found"
+            detail=f"Child with ID {child_id} not found",
         )
     return child
 
 
 async def search_children_endpoint(
-    search_term: str,
-    db: AsyncSession = Depends(get_db_session)
+    search_term: str, db: AsyncSession = Depends(get_db_session)
 ) -> list[ChildModel]:
     """Search children by name."""
     result = await db.execute(
@@ -180,7 +180,7 @@ async def search_children_endpoint(
 
 
 async def get_children_summary_endpoint(
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
 ) -> dict:
     """Get children summary with total count."""
     result = await db.execute(select(ChildModel))
@@ -190,31 +190,27 @@ async def get_children_summary_endpoint(
 
 
 async def get_child_safety_summary_endpoint(
-    child_id: str,
-    db: AsyncSession = Depends(get_db_session)
+    child_id: str, db: AsyncSession = Depends(get_db_session)
 ) -> dict:
     """Get child safety summary."""
     child = await db.get(ChildModel, child_id)
     if child is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Child with ID {child_id} not found"
+            detail=f"Child with ID {child_id} not found",
         )
     return {"child_id": child_id, "safety_score": 95, "alerts": 0}
-    pass
 
 
 async def get_child_interactions_endpoint(
-    child_id: str,
-    limit: int = 50,
-    db: AsyncSession = Depends(get_db_session)
+    child_id: str, limit: int = 50, db: AsyncSession = Depends(get_db_session)
 ) -> dict:
     """Get child interactions summary."""
     child = await db.get(ChildModel, child_id)
     if child is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Child with ID {child_id} not found"
+            detail=f"Child with ID {child_id} not found",
         )
     return {"child_id": child_id, "total_interactions": 0}
 

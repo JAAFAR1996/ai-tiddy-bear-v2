@@ -1,8 +1,10 @@
-from src.infrastructure.logging_config import get_logger
-import requests
 import asyncio
 import sys
 from pathlib import Path
+
+import requests
+
+from src.infrastructure.logging_config import get_logger
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -29,44 +31,64 @@ except ImportError:
         class MockPytest:
 
         def fixture(self, *args, **kwargs):
+            pass
+
             def decorator(func):
                 return func
 
             return decorator
 
         def mark(self):
+            pass
+
             class MockMark:
                 def parametrize(self, *args, **kwargs):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
                 def asyncio(self, func):
+                    pass
+
                     return func
 
                 def slow(self, func):
+                    pass
+
                     return func
 
                 def skip(self, reason=""):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
             return MockMark()
 
         def raises(self, exception):
+            pass
+
             class MockRaises:
                 def __enter__(self):
+                    pass
+
                     return self
 
                 def __exit__(self, *args):
+                    pass
+
                     return False
 
             return MockRaises()
 
         def skip(self, reason=""):
+            pass
+
             def decorator(func):
                 return func
 
@@ -87,6 +109,8 @@ class TestErrorHandling:
         attempt_count = 0
 
         async def flaky_api_call():
+            pass
+
             nonlocal attempt_count
             attempt_count += 1
 
@@ -117,10 +141,14 @@ class TestErrorHandling:
         # Mock error boundary
         class ErrorBoundary:
             def __init__(self):
+                pass
+
                 self.has_error = False
                 self.error = None
 
             def catch_error(self, error):
+                pass
+
                 self.has_error = True
                 self.error = error
                 return "Fallback UI"

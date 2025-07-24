@@ -11,7 +11,9 @@ from src.application.use_cases.manage_child_profile import ManageChildProfileUse
 from src.domain.entities.user import User
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.child_safety.safety_monitor_service import SafetyMonitorService
+from src.infrastructure.security.child_safety.safety_monitor_service import (
+    SafetyMonitorService,
+)
 
 from .compliance import COPPAIntegration
 from .models import ChildCreateRequest, ChildResponse

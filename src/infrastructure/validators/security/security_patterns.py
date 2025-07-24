@@ -1,5 +1,3 @@
-import re
-
 class SecurityPatterns:
     SQLI_PATTERNS = [
         r"(?i)(union\s+select)",

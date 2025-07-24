@@ -7,31 +7,31 @@ comprehensive safety monitoring, and parental control features.
 # Standard library imports
 
 # Third-party imports
-from fastapi import APIRouter, HTTPException, status
-
+from fastapi import APIRouter
 
 # Local imports
 # Re-enabled for Phase 2 - compliance module fixed
 from .compliance import (
     COPPAComplianceRouter,
+    COPPAIntegration,
     ParentalConsentRouter,
     PrivacyProtectionRouter,
-    COPPAIntegration,
     handle_compliant_child_deletion,
     request_parental_consent,
     validate_child_creation_compliance,
     validate_data_access_permission,
 )
+
 # Re-enabled for Phase 2 - models module created
 from .models import (
     ChildCreateRequest,
     ChildDeleteResponse,
+    ChildProfileModel,
     ChildResponse,
     ChildSafetySummary,
-    ChildProfileModel,
+    ChildUpdateRequest,
     InteractionModel,
     SafetyConfigModel,
-    ChildUpdateRequest,
 )
 from .operations import (
     ChildOperations,

@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
 import json
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # Add src to path
@@ -28,44 +28,64 @@ except ImportError:
         class MockPytest:
 
         def fixture(self, *args, **kwargs):
+            pass
+
             def decorator(func):
                 return func
 
             return decorator
 
         def mark(self):
+            pass
+
             class MockMark:
                 def parametrize(self, *args, **kwargs):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
                 def asyncio(self, func):
+                    pass
+
                     return func
 
                 def slow(self, func):
+                    pass
+
                     return func
 
                 def skip(self, reason=""):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
             return MockMark()
 
         def raises(self, exception):
+            pass
+
             class MockRaises:
                 def __enter__(self):
+                    pass
+
                     return self
 
                 def __exit__(self, *args):
+                    pass
+
                     return False
 
             return MockRaises()
 
         def skip(self, reason=""):
+            pass
+
             def decorator(func):
                 return func
 
@@ -74,9 +94,7 @@ except ImportError:
     pytest = MockPytest()
 
 try:
-    from infrastructure.security.unified_encryption_service import (
-        EncryptionLevel,
-    )
+    from infrastructure.security.unified_encryption_service import EncryptionLevel
 except ImportError:
     # If import fails, use mock versions
     class EncryptionLevel:

@@ -7,10 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import psutil
+
 from application.services.audio_service import AudioService
 from application.services.cleanup_service import CleanupService
 from application.services.interaction_service import InteractionService
-
 from src.infrastructure.logging_config import get_logger
 from tests.framework import PerformanceTestCase
 

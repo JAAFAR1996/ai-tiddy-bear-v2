@@ -3,13 +3,15 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Any
 
-from src.infrastructure.validators.security.email_validator import validate_email_address
-from src.infrastructure.validators.security.password_validator import (
-    validate_password_strength,
-)
 from src.domain.models.registration_models import (
     PasswordRequirements,
     RegistrationRequest,
+)
+from src.infrastructure.validators.security.email_validator import (
+    validate_email_address,
+)
+from src.infrastructure.validators.security.password_validator import (
+    validate_password_strength,
 )
 
 """🔒 AI Teddy Bear - Secure User Registration System

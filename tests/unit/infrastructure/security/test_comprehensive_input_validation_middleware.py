@@ -9,6 +9,20 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from fastapi import Request, Response
 
+from src.infrastructure.security.input_validation.core import (
+    InputValidationResult,
+    SecurityThreat,
+)
+from src.infrastructure.security.input_validation.middleware import (
+    InputValidationMiddleware,
+    create_input_validation_middleware,
+)
+from src.infrastructure.security.input_validation.validator import (
+    ComprehensiveInputValidator,
+    get_input_validator,
+    validate_child_message,
+    validate_user_input,
+)
 from src.infrastructure.validation.comprehensive_validator import (
     ComprehensiveInputValidator as ImportedComprehensiveInputValidator,
 )
@@ -32,20 +46,6 @@ from src.infrastructure.validation.comprehensive_validator import (
 )
 from src.infrastructure.validation.comprehensive_validator import (
     validate_user_input as imported_validate_user_input,
-)
-from src.infrastructure.security.input_validation.core import (
-    InputValidationResult,
-    SecurityThreat,
-)
-from src.infrastructure.security.input_validation.middleware import (
-    InputValidationMiddleware,
-    create_input_validation_middleware,
-)
-from src.infrastructure.security.input_validation.validator import (
-    ComprehensiveInputValidator,
-    get_input_validator,
-    validate_child_message,
-    validate_user_input,
 )
 
 
@@ -1251,9 +1251,7 @@ class TestBackwardsCompatibilityImports:
 
     def test_all_exports_available(self):
         """Test that all exports are available."""
-        from src.infrastructure.validation.comprehensive_validator import (
-            __all__,
-        )
+        from src.infrastructure.validation.comprehensive_validator import __all__
 
         expected_exports = [
             "SecurityThreat",

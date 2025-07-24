@@ -166,9 +166,7 @@ def test_use_case_instantiation():
     try:
         from unittest.mock import Mock
 
-        from application.use_cases.process_esp32_audio import (
-            ProcessESP32AudioUseCase,
-        )
+        from application.use_cases.process_esp32_audio import ProcessESP32AudioUseCase
 
         # Test ProcessESP32AudioUseCase
         audio_service = Mock()

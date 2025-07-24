@@ -5,10 +5,13 @@ from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")
 
+
 class ComprehensiveMonitoring:
     """A comprehensive monitoring system for the AI Teddy Bear application."""
 
-    def __init__(self, enable_logging: bool = True, enable_metrics: bool = True) -> None:
+    def __init__(
+        self, enable_logging: bool = True, enable_metrics: bool = True
+    ) -> None:
         self.enable_logging = enable_logging
         self.enable_metrics = enable_metrics
         self.metrics: dict[str, Any] = {
@@ -46,9 +49,12 @@ class ComprehensiveMonitoring:
                 self.log_event(f"{func.__name__}_failed", {"error": str(e)})
                 self.update_metric("errors_total", 1)
                 raise
+
         return wrapper
 
-    def monitor_coroutine(self, coro: Callable[..., Coroutine[Any, Any, Any]]) -> Callable[..., Coroutine[Any, Any, Any]]:
+    def monitor_coroutine(
+        self, coro: Callable[..., Coroutine[Any, Any, Any]]
+    ) -> Callable[..., Coroutine[Any, Any, Any]]:
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             self.log_event(f"{coro.__name__}_started", {})
             self.update_metric("requests_total", 1)
@@ -60,14 +66,19 @@ class ComprehensiveMonitoring:
                 self.log_event(f"{coro.__name__}_failed", {"error": str(e)})
                 self.update_metric("errors_total", 1)
                 raise
+
         return wrapper
+
 
 class ChildSafetyMonitor(ComprehensiveMonitoring):
     """
     Specialized monitoring for child safety and compliance metrics.
     Extend/override methods here to add child safety specific checks and audits.
     """
-    def __init__(self, enable_logging: bool = True, enable_metrics: bool = True) -> None:
+
+    def __init__(
+        self, enable_logging: bool = True, enable_metrics: bool = True
+    ) -> None:
         super().__init__(enable_logging, enable_metrics)
         self.child_safety_events: list[dict[str, Any]] = []
 

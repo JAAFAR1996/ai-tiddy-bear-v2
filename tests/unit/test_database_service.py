@@ -9,9 +9,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.models.child_models import ChildModel
-from src.infrastructure.persistence.real_database_service import (
-    RealDatabaseService,
-)
+from src.infrastructure.persistence.real_database_service import RealDatabaseService
 
 
 @pytest.fixture

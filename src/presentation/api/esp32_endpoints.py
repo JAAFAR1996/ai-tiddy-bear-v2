@@ -1,20 +1,15 @@
 from datetime import datetime
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestrationService,
-)
-from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.real_database_service import (
-    DatabaseService,
-)
+from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
 from src.application.services.audio.transcription_service import TranscriptionService
 from src.application.services.audio.tts_service import TTSService
 from src.domain.models.user import User
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.real_database_service import DatabaseService
 
 from .middleware.consent_verification import require_consent
 
@@ -96,7 +91,9 @@ async def process_audio(
         Provide[Container.ai_orchestration_service]
     ),
     database_service: DatabaseService = Depends(Provide[Container.database_service]),
-    transcription_service: TranscriptionService = Depends(Provide[Container.transcription_service]),
+    transcription_service: TranscriptionService = Depends(
+        Provide[Container.transcription_service]
+    ),
     tts_service: TTSService = Depends(Provide[Container.tts_service]),
 ):
     """Process audio from ESP32 device"""
@@ -125,15 +122,16 @@ async def process_audio(
             raise HTTPException(status_code=404, detail="Child not found")
 
         # جلب سجل المحادثات من قاعدة البيانات
-        conversation_history = await database_service.get_conversation_history(request.child_id)
+        conversation_history = await database_service.get_conversation_history(
+            request.child_id
+        )
 
         # جلب voice_id من ملف الطفل أو إعداداته
         voice_id = child.get("voice_id", "default")
 
         # تحويل الصوت إلى نص باستخدام خدمة حقيقية
         transcribed_text = await transcription_service.transcribe(
-            audio_base64=request.audio_data,
-            language=request.language
+            audio_base64=request.audio_data, language=request.language
         )
 
         # Generate AI response
@@ -171,9 +169,7 @@ async def process_audio(
 
         # تحويل الرد النصي إلى صوت باستخدام خدمة TTS حقيقية
         audio_response = await tts_service.synthesize(
-            text=ai_response.response_text,
-            voice_id=voice_id,
-            language=request.language
+            text=ai_response.response_text, voice_id=voice_id, language=request.language
         )
 
         return AudioResponse(
@@ -214,7 +210,9 @@ async def update_device_status(
         }
     except Exception as e:
         logger.error(f"Error updating device status: {e}")
-        raise HTTPException(status_code=500, detail=f"Error updating device status: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=f"Error updating device status: {e!s}"
+        )
 
 
 # Health Check Endpoint
@@ -244,4 +242,6 @@ async def get_device_config(
         return config
     except Exception as e:
         logger.error(f"Error getting device config: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting device config: {e!s}")
+        raise HTTPException(
+            status_code=500, detail=f"Error getting device config: {e!s}"
+        )

@@ -8,9 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.application.services.consent.consent_models import (
-    ConsentRecord,
-)
+from src.application.services.consent.consent_models import ConsentRecord
 from src.application.services.consent.consent_service import ConsentService
 
 

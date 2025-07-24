@@ -9,20 +9,16 @@ and tailored to the child's preferences.
 from uuid import UUID
 
 from src.application.dto.ai_response import AIResponse
-from src.common.exceptions import (
-    ServiceUnavailableError,
-    TimeoutError,
-    ApplicationException,
-    InvalidInputError,
-)
-
 from src.application.interfaces.ai_provider import AIProvider
-from src.application.interfaces.safety_monitor import (
-    SafetyLevel,
-    SafetyMonitor,
-)
+from src.application.interfaces.safety_monitor import SafetyLevel, SafetyMonitor
 from src.application.interfaces.text_to_speech_service import TextToSpeechService
 from src.application.services.core.conversation_service import ConversationService
+from src.common.exceptions import (
+    ApplicationException,
+    InvalidInputError,
+    ServiceUnavailableError,
+    TimeoutError,
+)
 from src.domain.value_objects.child_preferences import ChildPreferences
 from src.infrastructure.logging_config import get_logger
 
@@ -117,7 +113,11 @@ class AIOrchestrationService:
                     raw_response,
                     voice_id,
                 )
-            except (ServiceUnavailableError, InvalidInputError, ApplicationException) as e:
+            except (
+                ServiceUnavailableError,
+                InvalidInputError,
+                ApplicationException,
+            ) as e:
                 logger.warning(f"TTS service error: {e}", exc_info=True)
                 # Continue without audio if TTS fails, as it's not critical
             except Exception as e:

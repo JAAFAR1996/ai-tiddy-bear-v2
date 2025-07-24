@@ -6,19 +6,20 @@ from pydantic import BaseModel, Field
 
 from src.application.dto.child_data import ChildData
 from src.application.dto.story_response import StoryResponse
-from src.application.use_cases.generate_dynamic_story import (
-    GenerateDynamicStoryUseCase,
-)
-from src.application.use_cases.manage_child_profile import (
-    ManageChildProfileUseCase,
-)
+from src.application.use_cases.generate_dynamic_story import GenerateDynamicStoryUseCase
+from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
 from src.infrastructure.dependencies import (
     get_generate_dynamic_story_use_case,
     get_manage_child_profile_use_case,
 )
-from src.infrastructure.security.auth.real_auth_service import UserInfo, get_current_parent
+from src.infrastructure.exception_handling.enterprise_exception_handler import (
+    get_enterprise_exception_handler,
+)
+from src.infrastructure.security.auth.real_auth_service import (
+    UserInfo,
+    get_current_parent,
+)
 from src.infrastructure.security.child_safety import get_consent_manager
-from src.infrastructure.exception_handling.enterprise_exception_handler import get_enterprise_exception_handler
 
 router = APIRouter()
 
@@ -162,7 +163,9 @@ async def generate_child_story_endpoint(
     child_id: UUID,
     theme: str = "adventure",
     length: str = "short",
-    use_case: GenerateDynamicStoryUseCase = Depends(get_generate_dynamic_story_use_case),
+    use_case: GenerateDynamicStoryUseCase = Depends(
+        get_generate_dynamic_story_use_case
+    ),
 ) -> StoryResponse:
     try:
         return await use_case.execute(child_id, theme, length)

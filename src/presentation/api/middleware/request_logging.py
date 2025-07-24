@@ -4,8 +4,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from src.application.services.data.audit_service import AuditService
 from src.infrastructure.config.settings import get_settings

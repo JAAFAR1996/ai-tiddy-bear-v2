@@ -123,11 +123,7 @@ def retry_external_api(max_attempts: int = 3, base_delay: float = 1.0) -> Callab
     Retries on common network and API errors.
     """
     try:
-        from requests.exceptions import (
-            ConnectionError,
-            RequestException,
-            Timeout,
-        )
+        from requests.exceptions import ConnectionError, RequestException, Timeout
 
         retryable_exceptions = (
             RequestException,

@@ -12,24 +12,21 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-
 # Third-party imports for rate limiting
 from redis.asyncio import Redis
-from src.infrastructure.security.rate_limiter.service import get_rate_limiter
 
 from src.common.exceptions import (  # Moved to central exceptions module
     StartupValidationException,
 )
 
 # Local imports
-from src.infrastructure.config.core.production_check import (
-    enforce_production_safety,
-)
+from src.infrastructure.config.core.production_check import enforce_production_safety
 from src.infrastructure.di.container import container
 from src.infrastructure.di.di_components.wiring_config import FullWiringConfig
 from src.infrastructure.logging_config import configure_logging, get_logger
 from src.infrastructure.middleware import setup_middleware
 from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.security.rate_limiter.service import get_rate_limiter
 from src.presentation.api.openapi_config import configure_openapi
 from src.presentation.routing import setup_routing
 
@@ -40,7 +37,6 @@ logger = get_logger(__name__, component="application")
 
 
 async def lifespan(app: FastAPI):
-
     # Initialize Redis for rate limiting
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     try:
@@ -111,9 +107,7 @@ def _validate_system_startup() -> None:
             "System validation failed during app creation",
             exc_info=True,
         )
-        raise StartupValidationException(
-            "Application startup validation failed"
-        ) from e
+        raise StartupValidationException("Application startup validation failed") from e
 
 
 def _setup_app_middlewares_and_routes(fast_app: FastAPI) -> None:
@@ -154,9 +148,7 @@ def _mount_static_files(fast_app: FastAPI, project_root: Path) -> None:
                 "Invalid static files directory configuration: Path traversal "
                 "detected.",
             )
-        fast_app.mount(
-            "/static", StaticFiles(directory=static_dir), name="static"
-        )
+        fast_app.mount("/static", StaticFiles(directory=static_dir), name="static")
         logger.info(f"Static files mounted from: {static_dir}")
 
 
@@ -185,9 +177,7 @@ def create_app() -> FastAPI:
     _setup_app_middlewares_and_routes(fast_app)
 
     # Mount static files with security best practices
-    project_root = (
-        container.settings().PROJECT_ROOT
-    )  # Now directly a Path object
+    project_root = container.settings().PROJECT_ROOT  # Now directly a Path object
     _mount_static_files(fast_app, project_root)
 
     return fast_app
@@ -204,11 +194,7 @@ if __name__ == "__main__":
     server_settings = container.settings()
     is_development = container.settings().ENVIRONMENT == "development"
     host = server_settings.HOST if not is_development else "127.0.0.1"
-    port = (
-        server_settings.PORT
-        if not is_development
-        else server_settings.DEFAULT_PORT
-    )
+    port = server_settings.PORT if not is_development else server_settings.DEFAULT_PORT
 
     # Ensure SSL is configured for production or offloaded
     ssl_keyfile = os.getenv("SSL_KEYFILE")
@@ -220,28 +206,20 @@ if __name__ == "__main__":
     )
 
     uvicorn_ssl_args = {}
-    if (
-        not is_development
-        and not (ssl_keyfile and ssl_certfile)
-        and not ssl_offloaded
-    ):
+    if not is_development and not (ssl_keyfile and ssl_certfile) and not ssl_offloaded:
         logger.critical(
             "SECURITY ERROR: Production deployment requires SSL certificates "
             "or SSL offloading. Set SSL_KEYFILE and SSL_CERTFILE environment "
             "variables for Uvicorn SSL, or set SSL_OFFLOADED=true if an "
             "external proxy handles SSL.",
         )
-        raise RuntimeError(
-            "SSL configuration required for production deployment"
-        )
+        raise RuntimeError("SSL configuration required for production deployment")
     elif ssl_keyfile and ssl_certfile and not ssl_offloaded:
         uvicorn_ssl_args["ssl_keyfile"] = ssl_keyfile
         uvicorn_ssl_args["ssl_certfile"] = ssl_certfile
         logger.info("SSL configured for uvicorn.")
     elif ssl_offloaded:
-        logger.info(
-            "SSL is handled by an upstream proxy (SSL_OFFLOADED=true)."
-        )
+        logger.info("SSL is handled by an upstream proxy (SSL_OFFLOADED=true).")
     else:
         logger.info("SSL not configured for uvicorn (development mode).")
 

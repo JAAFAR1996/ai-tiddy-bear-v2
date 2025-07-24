@@ -8,16 +8,14 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from src.infrastructure.config.core.application_settings import ApplicationSettings
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.middleware.security.headers import SecurityHeadersMiddleware
 from src.presentation.api.middleware.error_handling import ErrorHandlingMiddleware
-from src.presentation.api.middleware.request_logging import RequestLoggingMiddleware
+
 # Re-enabled for production - rate limiting now properly imports from service.py
 from src.presentation.api.middleware.rate_limit_middleware import (
     RateLimitMiddleware as ChildSafetyMiddleware,
 )
-
-from src.infrastructure.middleware.security.headers import (
-    SecurityHeadersMiddleware
-)
+from src.presentation.api.middleware.request_logging import RequestLoggingMiddleware
 
 logger = get_logger(__name__, component="infrastructure")
 

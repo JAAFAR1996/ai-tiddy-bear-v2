@@ -1,8 +1,8 @@
-from unittest.mock import Mock
-from datetime import datetime
 import asyncio
 import sys
+from datetime import datetime
 from pathlib import Path
+from unittest.mock import Mock
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -29,44 +29,64 @@ except ImportError:
         class MockPytest:
 
         def fixture(self, *args, **kwargs):
+            pass
+
             def decorator(func):
                 return func
 
             return decorator
 
         def mark(self):
+            pass
+
             class MockMark:
                 def parametrize(self, *args, **kwargs):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
                 def asyncio(self, func):
+                    pass
+
                     return func
 
                 def slow(self, func):
+                    pass
+
                     return func
 
                 def skip(self, reason=""):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
             return MockMark()
 
         def raises(self, exception):
+            pass
+
             class MockRaises:
                 def __enter__(self):
+                    pass
+
                     return self
 
                 def __exit__(self, *args):
+                    pass
+
                     return False
 
             return MockRaises()
 
         def skip(self, reason=""):
+            pass
+
             def decorator(func):
                 return func
 
@@ -85,6 +105,8 @@ class TestPerformanceAndScaling:
         active_conversations = []
 
         async def start_conversation(child_id):
+            pass
+
             conv_id = f"conv_{child_id}_{len(active_conversations)}"
             active_conversations.append(conv_id)
             await asyncio.sleep(0.1)  # Simulate processing
@@ -112,6 +134,8 @@ class TestPerformanceAndScaling:
         processed_count = 0
 
         async def process_audio_chunk(chunk):
+            pass
+
             nonlocal processed_count
             processed_count += 1
             # Simulate processing time
@@ -147,6 +171,8 @@ class TestPerformanceAndScaling:
         cache = {}
 
         async def get_with_cache(key):
+            pass
+
             nonlocal cache_hits, cache_misses
 
             if key in cache:

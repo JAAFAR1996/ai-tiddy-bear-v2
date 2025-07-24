@@ -44,9 +44,7 @@ class TestSlidingWindowRateLimiter:
             result = await rate_limiter.is_allowed(user_id)
 
             assert result["allowed"] is True
-            assert (
-                result["remaining"] == 5 - (i + 1)
-            )  # remaining after this request
+            assert result["remaining"] == 5 - (i + 1)  # remaining after this request
             assert result["retry_after"] == 0
             assert result["limit"] == 5
             assert result["window_seconds"] == 10
@@ -335,7 +333,7 @@ class TestSlidingWindowRateLimiter:
 
         # Some requests should be allowed, some blocked (depending on timing)
         allowed_count = sum(1 for r in results if r["allowed"])
-        blocked_count = sum(1 for r in results if not r["allowed"])
+        sum(1 for r in results if not r["allowed"])
 
         # At least some should be allowed, and likely some blocked due to rate
         # limiting

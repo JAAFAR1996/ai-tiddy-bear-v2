@@ -25,44 +25,64 @@ except ImportError:
         class MockPytest:
 
         def fixture(self, *args, **kwargs):
+            pass
+
             def decorator(func):
                 return func
 
             return decorator
 
         def mark(self):
+            pass
+
             class MockMark:
                 def parametrize(self, *args, **kwargs):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
                 def asyncio(self, func):
+                    pass
+
                     return func
 
                 def slow(self, func):
+                    pass
+
                     return func
 
                 def skip(self, reason=""):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
             return MockMark()
 
         def raises(self, exception):
+            pass
+
             class MockRaises:
                 def __enter__(self):
+                    pass
+
                     return self
 
                 def __exit__(self, *args):
+                    pass
+
                     return False
 
             return MockRaises()
 
         def skip(self, reason=""):
+            pass
+
             def decorator(func):
                 return func
 
@@ -106,6 +126,8 @@ class TestESP32Integration:
         audio_chunks = []
 
         async def mock_stream(chunk):
+            pass
+
             audio_chunks.append(chunk)
             return {"received": True, "sequence": len(audio_chunks)}
 

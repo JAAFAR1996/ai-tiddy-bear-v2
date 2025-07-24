@@ -3,8 +3,8 @@ from uuid import UUID
 
 from src.application.dto.child_data import ChildData
 from src.domain.entities.child_profile import ChildProfile
-from src.infrastructure.persistence.child_repository import ChildRepository
 from src.infrastructure.messaging.kafka_event_bus import KafkaEventBus
+from src.infrastructure.persistence.child_repository import ChildRepository
 from src.infrastructure.read_models.child_profile_read_model import (
     ChildProfileReadModelStore,
 )

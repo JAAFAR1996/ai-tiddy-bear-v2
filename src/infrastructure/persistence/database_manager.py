@@ -1,14 +1,11 @@
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.exc import DatabaseError, DataError, IntegrityError
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
-from src.infrastructure.persistence.models.base import Base
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
+from src.infrastructure.persistence.models.base import Base
 from src.infrastructure.validators.data.database_validators import (
     DatabaseConnectionValidator,
 )
@@ -115,7 +112,9 @@ class Database:
 
             schema_valid = await validator.validate_schema_compatibility()
             if not schema_valid:
-                logger.warning("Schema validation failed - proceeding with table creation")
+                logger.warning(
+                    "Schema validation failed - proceeding with table creation"
+                )
 
             logger.info("Database validation completed successfully")
 

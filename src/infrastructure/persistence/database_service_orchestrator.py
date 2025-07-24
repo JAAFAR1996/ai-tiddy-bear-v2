@@ -6,21 +6,16 @@ from typing import Any
 from uuid import uuid4
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.database_manager import Database
-from src.infrastructure.persistence.child_repository import (
-    ChildRepository,
+from src.infrastructure.persistence.child_repository import ChildRepository
+from src.infrastructure.persistence.conversation_repository import (
+    AsyncSQLAlchemyConversationRepo as ConversationRepository,
 )
-from src.infrastructure.persistence.conversation_repository import AsyncSQLAlchemyConversationRepo as ConversationRepository
-
+from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.repositories.safety_repository import (
     SafetyRepository,
 )
-from src.infrastructure.persistence.repositories.usage_repository import (
-    UsageRepository,
-)
-from src.infrastructure.persistence.repositories.user_repository import (
-    UserRepository,
-)
+from src.infrastructure.persistence.repositories.usage_repository import UsageRepository
+from src.infrastructure.persistence.repositories.user_repository import UserRepository
 from src.infrastructure.security.validation.sql_injection_protection import (
     get_sql_injection_prevention,
 )
@@ -187,7 +182,9 @@ class DatabaseServiceOrchestrator:
     # إذا تم استدعاء أي منطق متعلق بتتبع المشاعر (emotion tracking) ولم يكن هناك تنفيذ إنتاجي، يجب رفع استثناء صريح
     async def track_emotion(self, *args, **kwargs):
         """Raise explicit error: Emotion tracking is not implemented in production."""
-        raise NotImplementedError("Emotion tracking is not implemented. Please provide a production implementation or remove this placeholder.")
+        raise NotImplementedError(
+            "Emotion tracking is not implemented. Please provide a production implementation or remove this placeholder."
+        )
 
     async def save_emotion_analysis(
         self,

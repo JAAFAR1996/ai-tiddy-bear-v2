@@ -8,10 +8,7 @@ from src.infrastructure.logging_config import get_logger
 try:
     from confluent_kafka import Consumer, KafkaException, Producer
     from confluent_kafka.schema_registry import SchemaRegistryClient
-    from confluent_kafka.schema_registry.avro import (
-        AvroDeserializer,
-        AvroSerializer,
-    )
+    from confluent_kafka.schema_registry.avro import AvroDeserializer, AvroSerializer
     from confluent_kafka.serialization import (
         MessageField,
         SerializationContext,

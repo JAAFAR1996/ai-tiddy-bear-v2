@@ -1,13 +1,13 @@
 import logging
+
 # Import container for service resolution - DI fixes complete
 from abc import ABC, abstractmethod
 from typing import Any
-
-# Restore proper interface imports
-from .infrastructure_services import IEventBus, IExternalAPIClient, ISettingsProvider
-
+from src.application.interfaces.infrastructure_services import IEventBus
 # Import container for service resolution
 from src.infrastructure.di.container import container
+
+# Restore proper interface imports
 
 """
 Read Model Interfaces for Application Layer
@@ -109,7 +109,9 @@ def get_read_model_store():  # -> IChildProfileReadModelStore:
         # Use container to get read model store
         logger.info("Getting read model store from container")
         # For now, return None until proper service is available
-        raise NotImplementedError("IChildProfileReadModelStore service not yet registered")
+        raise NotImplementedError(
+            "IChildProfileReadModelStore service not yet registered"
+        )
     except Exception as e:
         logger.error(f"Failed to get read model store: {e}")
         return None
@@ -133,7 +135,9 @@ def get_external_api_client(service_name: str):  # -> IExternalAPIClient:
         # Use container to get external API client
         logger.info(f"Getting external API client for service: {service_name}")
         # For now, return None until proper service is available
-        raise NotImplementedError(f"IExternalAPIClient service '{service_name}' not yet registered")
+        raise NotImplementedError(
+            f"IExternalAPIClient service '{service_name}' not yet registered"
+        )
     except Exception as e:
         logger.error(f"Failed to get external API client for {service_name}: {e}")
         return None

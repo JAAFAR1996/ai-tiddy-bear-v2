@@ -3,7 +3,6 @@
 Handles all safety-related database operations including events, alerts, and scores.
 """
 
-from uuid import uuid4
 from typing import Any
 from uuid import uuid4
 
@@ -68,7 +67,11 @@ class SafetyRepository:
             # In production, this would insert into safety_events table
             logger.warning(
                 "Safety Event %s: Child=%s, Type=%s, Severity=%s, Details=%s",
-                event_id, child_id, event_type, severity, details,
+                event_id,
+                child_id,
+                event_type,
+                severity,
+                details,
             )
         except SecurityError as err:
             logger.exception("Security error recording safety event")
@@ -117,9 +120,7 @@ class SafetyRepository:
             ValueError: If no score is found for the child.
         """
         try:
-            query = (
-                "SELECT score FROM safety_scores WHERE child_id = :child_id ORDER BY timestamp DESC LIMIT 1"
-            )
+            query = "SELECT score FROM safety_scores WHERE child_id = :child_id ORDER BY timestamp DESC LIMIT 1"
             params = {"child_id": child_id}
             result = await self.database.fetch_one(query, params)
             if result and "score" in result:

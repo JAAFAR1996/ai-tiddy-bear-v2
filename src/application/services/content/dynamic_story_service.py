@@ -45,8 +45,12 @@ class DynamicStoryService:
         Returns:
             The generated story content.
         """
-        if not hasattr(self.ai_provider, "generate_response") or not callable(self.ai_provider.generate_response):
-            raise NotImplementedError("AIProvider must implement a real generate_response method for story generation.")
+        if not hasattr(self.ai_provider, "generate_response") or not callable(
+            self.ai_provider.generate_response
+        ):
+            raise NotImplementedError(
+                "AIProvider must implement a real generate_response method for story generation."
+            )
         prompt = (
             f"Generate a {length} story for a {child_age}-year-old named {child_name}. "
             f"The story should be about {theme}. "
@@ -58,7 +62,9 @@ class DynamicStoryService:
         )
         story_content = await self.ai_provider.generate_response(
             child_id=child_id,
-            conversation_history=conversation_history if conversation_history is not None else [],
+            conversation_history=(
+                conversation_history if conversation_history is not None else []
+            ),
             current_input=prompt,
             child_preferences=child_preferences,
         )

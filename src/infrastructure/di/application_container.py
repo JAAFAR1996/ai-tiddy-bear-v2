@@ -1,21 +1,21 @@
 """Application Container - Professional DI Implementation
 Following SOLID principles and Clean Architecture patterns.
 """
-from typing import TypeVar, Type, Dict, Any, Optional, Protocol
-from abc import ABC, abstractmethod
+
 import threading
 from functools import lru_cache
+from typing import Any, Dict, Optional, Protocol, Type, TypeVar
 
-from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure import dependencies
-from src.infrastructure.validators.config.startup_validator import StartupValidator
-from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.caching.redis_cache import RedisCacheManager
+from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.validators.config.startup_validator import StartupValidator
 
 logger = get_logger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class IContainer(Protocol):
@@ -46,7 +46,9 @@ class ServiceRegistry:
         """Register a factory for an interface."""
         with self._lock:
             self._factories[interface] = factory
-            logger.debug(f"Registered factory for {interface if isinstance(interface, str) else interface.__name__}")
+            logger.debug(
+                f"Registered factory for {interface if isinstance(interface, str) else interface.__name__}"
+            )
 
     def register_singleton(self, interface: Type[T], instance: T) -> None:
         """Register a singleton instance."""
@@ -79,7 +81,7 @@ class ServiceRegistry:
 class ApplicationContainer(IContainer):
     """Main application container with professional DI implementation."""
 
-    _instance: Optional['ApplicationContainer'] = None
+    _instance: Optional["ApplicationContainer"] = None
     _lock = threading.Lock()
 
     def __new__(cls):
@@ -92,7 +94,7 @@ class ApplicationContainer(IContainer):
 
     def __init__(self):
         """Initialize container with service registry."""
-        if not hasattr(self, '_initialized'):
+        if not hasattr(self, "_initialized"):
             self._registry = ServiceRegistry()
             self._settings: Optional[Settings] = None
             self._wired_modules: set[str] = set()
@@ -102,27 +104,22 @@ class ApplicationContainer(IContainer):
     def _setup_core_services(self) -> None:
         """Register core application services."""
         # Settings
-        self._registry.register_factory(
-            Settings,
-            lambda: self.settings()
-        )
+        self._registry.register_factory(Settings, lambda: self.settings())
 
         # Startup Validator
         self._registry.register_factory(
-            StartupValidator,
-            self._create_startup_validator
+            StartupValidator, self._create_startup_validator
         )
 
         # Application Use Cases
         self._registry.register_factory(
             "manage_child_profile_use_case",
-            dependencies.get_manage_child_profile_use_case
+            dependencies.get_manage_child_profile_use_case,
         )
 
         # Child Search Service
         self._registry.register_factory(
-            "child_search_service",
-            self._create_child_search_service
+            "child_search_service", self._create_child_search_service
         )
         logger.info("Core services registered")
 
@@ -135,10 +132,14 @@ class ApplicationContainer(IContainer):
     def _create_child_search_service(self):
         """Factory method for creating ChildSearchService."""
         # Dynamic import to avoid circular dependency
-        from src.presentation.api.endpoints.children.operations import ChildSearchService
+        from src.presentation.api.endpoints.children.operations import (
+            ChildSearchService,
+        )
 
         # ChildSearchService expects ManageChildProfileUseCase via Depends
-        manage_child_profile_use_case = self._registry.resolve("manage_child_profile_use_case")
+        manage_child_profile_use_case = self._registry.resolve(
+            "manage_child_profile_use_case"
+        )
         return ChildSearchService(
             manage_child_profile_use_case=manage_child_profile_use_case
         )
@@ -158,14 +159,16 @@ class ApplicationContainer(IContainer):
         """Get database instance."""
         # Create database instance with settings from environment
         settings = self.settings()
-        database_url = getattr(settings, 'database_url', None) or "sqlite+aiosqlite:///./test.db"
+        database_url = (
+            getattr(settings, "database_url", None) or "sqlite+aiosqlite:///./test.db"
+        )
         return Database(database_url=database_url)
 
     def redis_cache(self) -> RedisCacheManager:
         """Get Redis cache manager instance."""
         # Create Redis cache manager with settings from environment
         settings = self.settings()
-        redis_url = getattr(settings, 'redis_url', None) or "redis://localhost:6379/0"
+        redis_url = getattr(settings, "redis_url", None) or "redis://localhost:6379/0"
         return RedisCacheManager(redis_url=redis_url)
 
     def child_search_service(self):

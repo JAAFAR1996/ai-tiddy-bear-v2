@@ -1,6 +1,7 @@
-from domain.entities.emotion import EmotionType
 import sys
 from pathlib import Path
+
+from domain.entities.emotion import EmotionType
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -18,32 +19,50 @@ except ImportError:
     # Mock numpy when not available
     class MockNumpy:
         def array(self, data):
+            pass
+
             return data
 
         def zeros(self, shape):
+            pass
+
             return [0] * (shape if isinstance(shape, int) else shape[0])
 
         def ones(self, shape):
+            pass
+
             return [1] * (shape if isinstance(shape, int) else shape[0])
 
         def mean(self, data):
+            pass
+
             return sum(data) / len(data) if data else 0
 
         def std(self, data):
+            pass
+
             return 1.0  # Mock standard deviation
 
         def random(self):
+            pass
+
             class MockRandom:
                 def rand(self, *args):
+                    pass
+
                     return 0.5
 
                 def randint(self, low, high, size=None):
+                    pass
+
                     return low
 
             return MockRandom()
 
         @property
         def pi(self):
+            pass
+
             return 3.14159265359
 
     np = MockNumpy()
@@ -64,44 +83,64 @@ except ImportError:
         class MockPytest:
 
         def fixture(self, *args, **kwargs):
+            pass
+
             def decorator(func):
                 return func
 
             return decorator
 
         def mark(self):
+            pass
+
             class MockMark:
                 def parametrize(self, *args, **kwargs):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
                 def asyncio(self, func):
+                    pass
+
                     return func
 
                 def slow(self, func):
+                    pass
+
                     return func
 
                 def skip(self, reason=""):
+                    pass
+
                     def decorator(func):
-                        return func
+                return func
 
                     return decorator
 
             return MockMark()
 
         def raises(self, exception):
+            pass
+
             class MockRaises:
                 def __enter__(self):
+                    pass
+
                     return self
 
                 def __exit__(self, *args):
+                    pass
+
                     return False
 
             return MockRaises()
 
         def skip(self, reason=""):
+            pass
+
             def decorator(func):
                 return func
 

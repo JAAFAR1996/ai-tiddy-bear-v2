@@ -1,9 +1,9 @@
 """JWT Token Service - REAL IMPLEMENTATION"""
 
-import jwt
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
-from fastapi import Depends
+from typing import Any, Dict, Optional
+
+import jwt
 
 from src.infrastructure.logging_config import get_logger
 
@@ -18,19 +18,21 @@ class TokenService:
         self.settings = settings or self._get_default_settings()
 
         # Extract security configuration
-        if hasattr(self.settings, 'security'):
+        if hasattr(self.settings, "security"):
             self.secret_key = self.settings.security.SECRET_KEY
-            self.algorithm = getattr(self.settings.security, 'JWT_ALGORITHM', 'HS256')
+            self.algorithm = getattr(self.settings.security, "JWT_ALGORITHM", "HS256")
             self.access_token_expire_minutes = getattr(
-                self.settings.security, 'ACCESS_TOKEN_EXPIRE_MINUTES', 15
+                self.settings.security, "ACCESS_TOKEN_EXPIRE_MINUTES", 15
             )
             self.refresh_token_expire_days = getattr(
-                self.settings.security, 'REFRESH_TOKEN_EXPIRE_DAYS', 7
+                self.settings.security, "REFRESH_TOKEN_EXPIRE_DAYS", 7
             )
         else:
             # Fallback configuration
-            self.secret_key = "fallback_secret_key_that_is_32_chars_long_for_security_purposes"
-            self.algorithm = 'HS256'
+            self.secret_key = (
+                "fallback_secret_key_that_is_32_chars_long_for_security_purposes"
+            )
+            self.algorithm = "HS256"
             self.access_token_expire_minutes = 15
             self.refresh_token_expire_days = 7
 
@@ -38,26 +40,31 @@ class TokenService:
         if len(self.secret_key) < 32:
             raise ValueError("SECRET_KEY must be at least 32 characters long")
 
-        logger.info(f"TokenService initialized with algorithm={self.algorithm}, "
-                    f"access_expire={self.access_token_expire_minutes}min")
+        logger.info(
+            f"TokenService initialized with algorithm={self.algorithm}, "
+            f"access_expire={self.access_token_expire_minutes}min"
+        )
 
     def _get_default_settings(self):
         """Get default settings if none provided."""
         try:
             from src.infrastructure.config.settings import get_settings
+
             return get_settings()
         except ImportError:
             # Fallback configuration
             class DefaultSettings:
                 class security:
                     SECRET_KEY = "fallback_secret_key_that_is_32_chars_long_for_security_purposes"
-                    JWT_ALGORITHM = 'HS256'
+                    JWT_ALGORITHM = "HS256"
                     ACCESS_TOKEN_EXPIRE_MINUTES = 15
                     REFRESH_TOKEN_EXPIRE_DAYS = 7
+
             return DefaultSettings()
 
-    def create_access_token(self, user_data: Dict[str, Any],
-                            expires_delta: Optional[timedelta] = None) -> str:
+    def create_access_token(
+        self, user_data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+    ) -> str:
         """Create a JWT access token for user authentication.
 
         Args:
@@ -73,7 +80,7 @@ class TokenService:
         if not isinstance(user_data, dict):
             raise ValueError("User data must be a dictionary")
 
-        if 'id' not in user_data:
+        if "id" not in user_data:
             raise ValueError("User data must contain 'id' field")
 
         try:
@@ -95,7 +102,7 @@ class TokenService:
 
             # Add additional user data to payload
             for key, value in user_data.items():
-                if key not in payload and key != 'id':  # Don't duplicate 'id' as 'sub'
+                if key not in payload and key != "id":  # Don't duplicate 'id' as 'sub'
                     payload[key] = value
 
             # Encode JWT token
@@ -108,8 +115,9 @@ class TokenService:
             logger.exception(f"Failed to create access token: {e}")
             raise ValueError(f"Token creation failed: {e}") from e
 
-    def create_refresh_token(self, user_data: Dict[str, Any],
-                             expires_delta: Optional[timedelta] = None) -> str:
+    def create_refresh_token(
+        self, user_data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+    ) -> str:
         """Create a JWT refresh token for token renewal.
 
         Args:
@@ -125,7 +133,7 @@ class TokenService:
         if not isinstance(user_data, dict):
             raise ValueError("User data must be a dictionary")
 
-        if 'id' not in user_data:
+        if "id" not in user_data:
             raise ValueError("User data must contain 'id' field")
 
         try:
@@ -146,10 +154,10 @@ class TokenService:
             }
 
             # Add essential user data to payload (minimal for refresh tokens)
-            if 'email' in user_data:
-                payload['email'] = user_data['email']
-            if 'role' in user_data:
-                payload['role'] = user_data['role']
+            if "email" in user_data:
+                payload["email"] = user_data["email"]
+            if "role" in user_data:
+                payload["role"] = user_data["role"]
 
             # Encode JWT token
             token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
@@ -190,13 +198,13 @@ class TokenService:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
 
             # Validate token structure
-            if 'sub' not in payload:
+            if "sub" not in payload:
                 raise ValueError("Token missing subject field")
 
-            if 'exp' not in payload:
+            if "exp" not in payload:
                 raise ValueError("Token missing expiration field")
 
-            if 'type' not in payload:
+            if "type" not in payload:
                 raise ValueError("Token missing type field")
 
             logger.debug(f"Token verified for user {payload['sub']}")
@@ -228,10 +236,10 @@ class TokenService:
             # Decode without verification (for debugging/logging only)
             unverified_payload = jwt.decode(token, options={"verify_signature": False})
 
-            if 'sub' not in unverified_payload:
+            if "sub" not in unverified_payload:
                 raise ValueError("Token missing user ID")
 
-            return unverified_payload['sub']
+            return unverified_payload["sub"]
 
         except Exception as e:
             logger.error(f"Failed to extract user ID from token: {e}")
@@ -251,18 +259,19 @@ class TokenService:
         """
         try:
             # Verify refresh token
-            payload = jwt.decode(refresh_token, self.secret_key,
-                                 algorithms=[self.algorithm])
+            payload = jwt.decode(
+                refresh_token, self.secret_key, algorithms=[self.algorithm]
+            )
 
             # Validate it's a refresh token
-            if payload.get('type') != 'refresh':
+            if payload.get("type") != "refresh":
                 raise ValueError("Invalid token type for refresh operation")
 
             # Extract user data for new access token
             user_data = {
-                'id': payload['sub'],
-                'email': payload.get('email'),
-                'role': payload.get('role')
+                "id": payload["sub"],
+                "email": payload.get("email"),
+                "role": payload.get("role"),
             }
 
             # Remove None values
@@ -289,14 +298,18 @@ def get_settings():
     """Fallback function for settings retrieval."""
     try:
         from src.infrastructure.config.settings import get_settings as _get_settings
+
         return _get_settings()
     except ImportError:
         logger.warning("Settings module not available, using defaults")
 
         class DefaultSettings:
             class security:
-                SECRET_KEY = "fallback_secret_key_that_is_32_chars_long_for_security_purposes"
-                JWT_ALGORITHM = 'HS256'
+                SECRET_KEY = (
+                    "fallback_secret_key_that_is_32_chars_long_for_security_purposes"
+                )
+                JWT_ALGORITHM = "HS256"
                 ACCESS_TOKEN_EXPIRE_MINUTES = 15
                 REFRESH_TOKEN_EXPIRE_DAYS = 7
+
         return DefaultSettings()

@@ -235,9 +235,7 @@ class SecurityValidationTest:
         try:
             from fastapi import UploadFile
 
-            from src.presentation.api.endpoints.audio import (
-                validate_audio_file,
-            )
+            from src.presentation.api.endpoints.audio import validate_audio_file
 
             # Create a mock dangerous file
             with tempfile.NamedTemporaryFile(suffix=".exe", delete=False) as temp_file:
@@ -304,9 +302,7 @@ class SecurityValidationTest:
             from src.infrastructure.security.database_input_validator import (
                 SafeDatabaseOperations,
             )
-            from src.infrastructure.security.error_handler import (
-                SecureErrorHandler,
-            )
+            from src.infrastructure.security.error_handler import SecureErrorHandler
 
             # Check that security functions have return type annotations
             critical_methods = [

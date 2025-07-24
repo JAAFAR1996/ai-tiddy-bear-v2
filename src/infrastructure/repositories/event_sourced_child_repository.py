@@ -16,7 +16,9 @@ class EventSourcedChildRepository:
         """
         self.logger = get_logger(__name__, component="persistence")
         self.event_store = event_store
-        self.logger.info("EventSourcedChildRepository initialized with real event store")
+        self.logger.info(
+            "EventSourcedChildRepository initialized with real event store"
+        )
 
     async def save(self, child_profile: ChildProfile) -> None:
         await self.event_store.save_events(

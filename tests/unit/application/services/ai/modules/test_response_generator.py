@@ -113,9 +113,9 @@ class TestResponseGenerator:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message = Mock()
-        mock_response.choices[0].message.content = (
-            "مرحبا! أنا دبدوب لطيف وأحب اللعب معك!"
-        )
+        mock_response.choices[
+            0
+        ].message.content = "مرحبا! أنا دبدوب لطيف وأحب اللعب معك!"
         mock_response.usage = Mock()
         mock_response.usage.total_tokens = 25
 
@@ -210,9 +210,9 @@ class TestResponseGenerator:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message = Mock()
-        mock_response.choices[0].message.content = (
-            "دعنا نتعلم عن الألوان! الأحمر والأزرق والأصفر."
-        )
+        mock_response.choices[
+            0
+        ].message.content = "دعنا نتعلم عن الألوان! الأحمر والأزرق والأصفر."
         mock_response.usage = Mock()
         mock_response.usage.total_tokens = 30
 
@@ -247,9 +247,9 @@ class TestResponseGenerator:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message = Mock()
-        mock_response.choices[0].message.content = (
-            "كان يا ما كان، أرنب صغير يحب الجزر..."
-        )
+        mock_response.choices[
+            0
+        ].message.content = "كان يا ما كان، أرنب صغير يحب الجزر..."
         mock_response.usage = Mock()
         mock_response.usage.total_tokens = 35
 

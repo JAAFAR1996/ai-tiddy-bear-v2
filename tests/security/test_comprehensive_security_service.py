@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
-from src.infrastructure.security.core.main_security_service import MainSecurityService
-
 from infrastructure.security.enhanced_security import SecurityConfig
 
 

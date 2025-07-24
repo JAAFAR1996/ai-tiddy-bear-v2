@@ -6,14 +6,13 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
-from src.infrastructure.logging_config import get_logger
-
 from src.domain.models.verification_models import (
     RelationshipRecord,
     RelationshipStatus,
     RelationshipType,
     VerificationRecord,
 )
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="services")
 
@@ -128,7 +127,6 @@ class RelationshipManager:
                 and relationship.child_id == child_id
                 and relationship.status == RelationshipStatus.VERIFIED
             ):
-
                 # Check expiration
                 if relationship.expires_at:
                     expiry = datetime.fromisoformat(relationship.expires_at)

@@ -30,18 +30,15 @@ class ProductionAuthService:
     def _hash_password(self, password: str) -> str:
         """Hash password using bcrypt."""
         salt = bcrypt.gensalt()
-        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-        return hashed.decode('utf-8')
+        hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+        return hashed.decode("utf-8")
 
     def _verify_password(self, password: str, hashed_password: str) -> bool:
         """Verify password against hash."""
-        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
     async def authenticate_user(
-        self,
-        email: str,
-        password: str,
-        ip_address: str | None = None
+        self, email: str, password: str, ip_address: str | None = None
     ) -> dict | None:
         """Authenticate user with real database verification."""
         try:
@@ -55,17 +52,23 @@ class ProductionAuthService:
             user = result.scalar_one_or_none()
 
             if not user:
-                logger.warning(f"Authentication failed: User not found for email {email}")
+                logger.warning(
+                    f"Authentication failed: User not found for email {email}"
+                )
                 return None
 
             # Verify password
             if not self._verify_password(password, user.password_hash):
-                logger.warning(f"Authentication failed: Invalid password for email {email}")
+                logger.warning(
+                    f"Authentication failed: Invalid password for email {email}"
+                )
                 return None
 
             # Check if user is active
             if not user.is_active:
-                logger.warning(f"Authentication failed: User account disabled for email {email}")
+                logger.warning(
+                    f"Authentication failed: User account disabled for email {email}"
+                )
                 return None
 
             # Update last login
@@ -82,7 +85,7 @@ class ProductionAuthService:
                 "role": user.role,
                 "is_active": user.is_active,
                 "created_at": user.created_at.isoformat(),
-                "last_login": user.last_login.isoformat() if user.last_login else None
+                "last_login": user.last_login.isoformat() if user.last_login else None,
             }
 
         except Exception as e:
@@ -92,7 +95,9 @@ class ProductionAuthService:
     def create_access_token(self, user_data: dict) -> str:
         """Create JWT access token."""
         try:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
+            expire = datetime.utcnow() + timedelta(
+                minutes=self.access_token_expire_minutes
+            )
 
             token_data = {
                 "user_id": user_data["user_id"],
@@ -100,7 +105,7 @@ class ProductionAuthService:
                 "role": user_data.get("role", "user"),
                 "exp": expire,
                 "iat": datetime.utcnow(),
-                "iss": "ai-teddy-auth"
+                "iss": "ai-teddy-auth",
             }
 
             token = jwt.encode(token_data, self.secret_key, algorithm=self.algorithm)
@@ -131,14 +136,16 @@ class ProductionAuthService:
                 user = result.scalar_one_or_none()
 
                 if not user or not user.is_active:
-                    logger.warning(f"Token verification failed: User {email} not found or inactive")
+                    logger.warning(
+                        f"Token verification failed: User {email} not found or inactive"
+                    )
                     return None
 
             return {
                 "user_id": user_id,
                 "email": email,
                 "role": payload.get("role", "user"),
-                "exp": payload.get("exp")
+                "exp": payload.get("exp"),
             }
 
         except jwt.ExpiredSignatureError:
@@ -152,11 +159,7 @@ class ProductionAuthService:
             return None
 
     async def create_user(
-        self,
-        email: str,
-        password: str,
-        name: str,
-        role: str = "user"
+        self, email: str, password: str, name: str, role: str = "user"
     ) -> dict | None:
         """Create new user with real database persistence."""
         try:
@@ -183,7 +186,7 @@ class ProductionAuthService:
                 name=name,
                 role=role,
                 is_active=True,
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
             )
 
             self.database_session.add(new_user)
@@ -198,7 +201,7 @@ class ProductionAuthService:
                 "name": new_user.name,
                 "role": new_user.role,
                 "is_active": new_user.is_active,
-                "created_at": new_user.created_at.isoformat()
+                "created_at": new_user.created_at.isoformat(),
             }
 
         except Exception as e:
@@ -207,10 +210,7 @@ class ProductionAuthService:
             return None
 
     async def change_password(
-        self,
-        user_id: str,
-        old_password: str,
-        new_password: str
+        self, user_id: str, old_password: str, new_password: str
     ) -> bool:
         """Change user password with verification."""
         try:
@@ -229,7 +229,9 @@ class ProductionAuthService:
 
             # Verify old password
             if not self._verify_password(old_password, user.password_hash):
-                logger.warning(f"Password change failed: Invalid old password for user {user_id}")
+                logger.warning(
+                    f"Password change failed: Invalid old password for user {user_id}"
+                )
                 return False
 
             # Update password
@@ -267,7 +269,7 @@ class ProductionAuthService:
                 "purpose": "password_reset",
                 "exp": expire,
                 "iat": datetime.utcnow(),
-                "iss": "ai-teddy-auth"
+                "iss": "ai-teddy-auth",
             }
 
             token = jwt.encode(token_data, self.secret_key, algorithm=self.algorithm)

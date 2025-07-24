@@ -1,5 +1,8 @@
-
+import smtplib
 from typing import Any
+
+import requests
+
 from src.domain.interfaces.notification_clients import (
     IEmailClient,
     IInAppNotifier,
@@ -7,8 +10,6 @@ from src.domain.interfaces.notification_clients import (
     ISMSClient,
 )
 from src.infrastructure.logging_config import get_logger
-import smtplib
-import requests
 
 logger = get_logger(__name__, component="notification_clients")
 
@@ -16,7 +17,9 @@ logger = get_logger(__name__, component="notification_clients")
 class EmailClient(IEmailClient):
     """Production implementation of IEmailClient using SMTP."""
 
-    def __init__(self, smtp_server: str, smtp_port: int, username: str, password: str) -> None:
+    def __init__(
+        self, smtp_server: str, smtp_port: int, username: str, password: str
+    ) -> None:
         self.logger = logger
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
@@ -80,12 +83,16 @@ class InAppNotifier(IInAppNotifier):
                 "message": message,
                 "metadata": metadata,
             }
-            response = requests.post(self.notification_service_url, json=payload, timeout=10)
+            response = requests.post(
+                self.notification_service_url, json=payload, timeout=10
+            )
             response.raise_for_status()
             self.logger.info(f"In-app notification sent to {recipient_user_id}")
             return True
         except Exception:
-            self.logger.exception(f"Failed to send in-app notification to {recipient_user_id}")
+            self.logger.exception(
+                f"Failed to send in-app notification to {recipient_user_id}"
+            )
             return False
 
 
@@ -117,5 +124,7 @@ class PushNotifier(IPushNotifier):
             self.logger.info(f"Push notification sent to device {device_token}")
             return True
         except Exception:
-            self.logger.exception(f"Failed to send push notification to device {device_token}")
+            self.logger.exception(
+                f"Failed to send push notification to device {device_token}"
+            )
             return False

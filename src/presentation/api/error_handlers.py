@@ -1,6 +1,7 @@
 """Minimal Error Handlers for API Endpoints - TEMPORARY IMPLEMENTATION"""
 
 from fastapi import HTTPException
+
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="api")
@@ -10,7 +11,9 @@ class AITeddyErrorHandler:
     """Temporary error handler class to fix import cascade issues."""
 
     @staticmethod
-    def handle_authentication_error(error=None, operation="", user_message="Authentication required"):
+    def handle_authentication_error(
+        error=None, operation="", user_message="Authentication required"
+    ):
         """Handle authentication errors."""
         logger.warning(f"Authentication error in {operation}: {error}")
         return HTTPException(status_code=401, detail=user_message)
@@ -34,7 +37,9 @@ class AITeddyErrorHandler:
         return HTTPException(status_code=404, detail=f"{resource} not found")
 
     @staticmethod
-    def handle_internal_error(error, operation="", user_message="Internal server error"):
+    def handle_internal_error(
+        error, operation="", user_message="Internal server error"
+    ):
         """Handle internal errors."""
         logger.error(f"Internal error in {operation}: {error}")
         return HTTPException(status_code=500, detail=user_message)

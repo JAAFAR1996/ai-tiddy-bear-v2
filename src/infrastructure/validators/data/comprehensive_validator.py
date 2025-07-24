@@ -7,11 +7,13 @@ delegation.
 
 from typing import Any
 
-from src.infrastructure.logging_config import get_logger
-
-from src.infrastructure.validators.security.child_safety_validator import get_child_safety_validator
-from .general_input_validator import get_general_input_validator
 from src.domain.schemas import ValidationResult
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.validators.security.child_safety_validator import (
+    get_child_safety_validator,
+)
+
+from .general_input_validator import get_general_input_validator
 
 logger = get_logger(__name__, component="validation")
 
@@ -54,7 +56,6 @@ class ComprehensiveValidator:
             ValidationResult with comprehensive validation results.
         """
         errors = []
-        warnings = []
         metadata = {}
         security_flags = []
 
@@ -122,7 +123,6 @@ class ComprehensiveValidator:
             ValidationResult with validation results.
         """
         errors = []
-        warnings = []
         metadata = {}
 
         # Extract message and child info

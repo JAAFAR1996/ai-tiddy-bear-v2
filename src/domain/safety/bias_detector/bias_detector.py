@@ -26,6 +26,7 @@ class AIBiasDetector:
         context: ConversationContext,
     ) -> SafetyAnalysisResult:
         import logging
+
         logger = logging.getLogger("ai_bias_detector")
         self.bias_statistics["total_analyses"] += 1
         has_bias = False
@@ -62,10 +63,7 @@ class AIBiasDetector:
                 suggestions.append("Be inclusive of diverse cultural backgrounds.")
                 self.bias_statistics["cultural_bias_detected"] += 1
             # Socioeconomic bias
-            if (
-                "expensive new toy" in text.lower()
-                or "rich families" in text.lower()
-            ):
+            if "expensive new toy" in text.lower() or "rich families" in text.lower():
                 found_bias = True
                 scores["socioeconomic"] = 0.5
                 categories.append("socioeconomic")
@@ -85,7 +83,13 @@ class AIBiasDetector:
                 contextual["gender_assumption"] = 0.3
             return found_bias, scores, categories, suggestions, contextual
 
-        has_bias, bias_scores, bias_categories, mitigation_suggestions, contextual_bias = rule_based_bias_detection(response_text, context)
+        (
+            has_bias,
+            bias_scores,
+            bias_categories,
+            mitigation_suggestions,
+            contextual_bias,
+        ) = rule_based_bias_detection(response_text, context)
 
         if has_bias:
             self.bias_statistics["biased_responses"] += 1
@@ -97,7 +101,9 @@ class AIBiasDetector:
             else:
                 risk_level = RiskLevel.LOW_RISK
 
-        logger.info(f"Bias analysis: text='{response_text[:50]}...' has_bias={has_bias}, categories={bias_categories}, scores={bias_scores}")
+        logger.info(
+            f"Bias analysis: text='{response_text[:50]}...' has_bias={has_bias}, categories={bias_categories}, scores={bias_scores}"
+        )
 
         return SafetyAnalysisResult(
             is_safe=not has_bias,

@@ -1,8 +1,8 @@
-
+import logging
 from dataclasses import dataclass
 from typing import Any
+
 from fastapi import HTTPException, status
-import logging
 
 
 @dataclass
@@ -59,8 +59,12 @@ class EnterpriseExceptionHandler:
         try:
             import pybreaker
         except ImportError:
-            self.logger.critical("pybreaker not installed. Circuit breaker unavailable.")
-            raise RuntimeError("pybreaker not installed. Please install pybreaker for circuit breaker support.")
+            self.logger.critical(
+                "pybreaker not installed. Circuit breaker unavailable."
+            )
+            raise RuntimeError(
+                "pybreaker not installed. Please install pybreaker for circuit breaker support."
+            )
         # Configure a production circuit breaker
         return pybreaker.CircuitBreaker(
             fail_max=self.config.error_threshold_per_minute or 5,

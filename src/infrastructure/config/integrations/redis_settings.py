@@ -7,7 +7,9 @@ across the application, supporting caching and session management.
 """
 
 from pydantic import Field
+
 from src.infrastructure.config.core.base_settings import BaseApplicationSettings
+
 
 class RedisSettings(BaseApplicationSettings):
     """Configuration settings for Redis."""

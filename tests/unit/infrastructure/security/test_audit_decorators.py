@@ -140,7 +140,7 @@ class TestAuditDecorators:
         user_data = {"email": "custom@example.com"}
         request_info = {"client_ip": "10.0.0.1"}
 
-        result = asyncio.run(change_password(user_data, "new_pass", request_info))
+        asyncio.run(change_password(user_data, "new_pass", request_info))
 
         # Verify custom extractors were used
         call_args = mock_audit_integration.log_authentication_event.call_args[1]
@@ -202,7 +202,7 @@ class TestAuditDecorators:
         async def delete_child_profile(some_param):
             return {"success": True}
 
-        result = asyncio.run(delete_child_profile("test"))
+        asyncio.run(delete_child_profile("test"))
 
         # Should not call audit logging when child_id and user_id are missing
         mock_audit_integration.log_child_data_operation.assert_not_called()
@@ -320,7 +320,7 @@ class TestAuditDecorators:
         async def user_login(email, password):
             return {"success": True, "user_id": "123"}
 
-        result = asyncio.run(user_login("test@example.com", "password"))
+        asyncio.run(user_login("test@example.com", "password"))
 
         # Verify audit logging was called with login event type
         call_args = mock_audit_integration.log_authentication_event.call_args[1]
@@ -336,7 +336,7 @@ class TestAuditDecorators:
         async def user_logout(email, session_id):
             return {"success": True}
 
-        result = asyncio.run(user_logout("test@example.com", "session_456"))
+        asyncio.run(user_logout("test@example.com", "session_456"))
 
         # Verify audit logging was called with logout event type
         call_args = mock_audit_integration.log_authentication_event.call_args[1]
@@ -388,7 +388,7 @@ class TestAuditDecorators:
         async def delete_child(user_id, child_id):
             return {"success": True, "deleted": True}
 
-        result = asyncio.run(delete_child("parent_789", "child_456"))
+        asyncio.run(delete_child("parent_789", "child_456"))
 
         # Verify audit logging was called with delete operation
         call_args = mock_audit_integration.log_child_data_operation.call_args[1]
@@ -473,7 +473,7 @@ class TestAuditDecorators:
             return {"success": True}
 
         user = MockUser("object@example.com")
-        result = asyncio.run(test_function(user, "password"))
+        asyncio.run(test_function(user, "password"))
 
         # Should extract email from user object
         call_args = mock_audit_integration.log_authentication_event.call_args[1]
@@ -494,7 +494,7 @@ class TestAuditDecorators:
             return {"data": "test"}
 
         context = MockContext("fallback_user_123")
-        result = asyncio.run(test_function(context, "child_456"))
+        asyncio.run(test_function(context, "child_456"))
 
         # Should extract from fallback methods
         call_args = mock_audit_integration.log_child_data_operation.call_args[1]
@@ -509,7 +509,7 @@ class TestAuditDecorators:
             await asyncio.sleep(0.1)  # 100ms delay
             return {"success": True}
 
-        result = asyncio.run(slow_function("timing@example.com"))
+        asyncio.run(slow_function("timing@example.com"))
 
         # Verify timing was measured
         call_args = mock_audit_integration.log_authentication_event.call_args[1]
@@ -528,7 +528,7 @@ class TestAuditDecorators:
         async def admin_function(email, action):
             return {"success": True, "action": action}
 
-        result = asyncio.run(admin_function("admin@example.com", "delete_user"))
+        asyncio.run(admin_function("admin@example.com", "delete_user"))
 
         # Both decorators should have been applied
         assert mock_audit_integration.log_authentication_event.call_count == 1

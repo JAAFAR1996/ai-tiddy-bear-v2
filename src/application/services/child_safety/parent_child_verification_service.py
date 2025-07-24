@@ -1,14 +1,13 @@
-
-from src.application.services.child_safety.verification_service import VerificationService
 from src.application.services.user.relationship_manager import RelationshipManager
+from src.application.services.user.verification_service import (
+    ParentChildVerificationService,
+)
 from src.domain.models.verification_models import (
     RelationshipRecord,
     RelationshipStatus,
     RelationshipType,
     VerificationRecord,
 )
-from src.application.services.user.verification_service import ParentChildVerificationService
-
 
 # Re-export for backward compatibility
 __all__ = [

@@ -1,10 +1,10 @@
-
 from functools import lru_cache
 from typing import Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from src.domain.entities.user import User
 from src.infrastructure.caching.redis_cache import RedisCacheManager
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.persistence.database_manager import Database
@@ -13,7 +13,6 @@ from src.infrastructure.security.core.main_security_service import (
     get_security_service,
 )
 from src.infrastructure.security.core.real_auth_service import ProductionAuthService
-from src.domain.entities.user import User
 
 """FastAPI Dependency Injection Utilities"""
 

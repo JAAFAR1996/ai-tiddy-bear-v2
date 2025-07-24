@@ -88,10 +88,7 @@ def test_backward_compatibility() -> Any:
             failed_imports.append(import_stmt)
     logger.info("\n⚙️ Testing Functionality:")
     try:
-        from modern_ui import (
-            check_feature_compatibility,
-            get_available_features,
-        )
+        from modern_ui import check_feature_compatibility, get_available_features
 
         features = get_available_features()
         logger.info(f"✅ get_available_features() returned {len(features)} features")

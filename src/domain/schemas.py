@@ -21,7 +21,7 @@ class COPPAViolationType(Enum):
 
 class ValidationResult:
     """Result of schema validation with COPPA compliance details."""
-    
+
     def __init__(
         self,
         is_valid: bool,
@@ -299,9 +299,9 @@ __all__ = [
 
 class ValidationSeverity(Enum):
     """Validation issue severity levels."""
-    
+
     INFO = "info"
-    WARNING = "warning"  
+    WARNING = "warning"
     ERROR = "error"
     CRITICAL = "critical"
 
@@ -317,7 +317,7 @@ VALIDATION_PATTERNS = {
 
 AGE_THRESHOLDS = {
     "min_age": 3,
-    "max_age": 17, 
+    "max_age": 17,
     "coppa_age": 13,
     "teen_age": 13,
 }

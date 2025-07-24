@@ -1,10 +1,10 @@
 """Database Service for AI Teddy Bear."""
 
-
-from src.infrastructure.persistence.database_manager import Database
-from sqlalchemy.future import select
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 from uuid import uuid4
+
+from sqlalchemy.future import select
+
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.models.child_models import ChildModel
 
@@ -28,7 +28,9 @@ class RealDatabaseService:
                 return row[0][-limit:]
             return []
 
-    async def record_safety_event(self, child_id: str, event_type: str, details: str, severity: str):
+    async def record_safety_event(
+        self, child_id: str, event_type: str, details: str, severity: str
+    ):
         async with get_async_session() as session:
             child = await session.get(ChildModel, child_id)
             if not child:
@@ -60,13 +62,18 @@ class RealDatabaseService:
             if not child:
                 return False
             child.safety_score = new_score
-            if not hasattr(child, "safety_score_history") or child.safety_score_history is None:
+            if (
+                not hasattr(child, "safety_score_history")
+                or child.safety_score_history is None
+            ):
                 child.safety_score_history = []
-            child.safety_score_history.append({
-                "score": new_score,
-                "reason": reason,
-                "timestamp": datetime.now().isoformat(),
-            })
+            child.safety_score_history.append(
+                {
+                    "score": new_score,
+                    "reason": reason,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
             await session.commit()
             return True
 
@@ -90,24 +97,36 @@ class RealDatabaseService:
     async def get_daily_usage(self, child_id: str):
         async with get_async_session() as session:
             child = await session.get(ChildModel, child_id)
-            if not child or not hasattr(child, "usage_records") or not child.usage_records:
+            if (
+                not child
+                or not hasattr(child, "usage_records")
+                or not child.usage_records
+            ):
                 return 0
             today = date.today().isoformat()
             return sum(
-                rec["duration"] for rec in child.usage_records if rec["timestamp"].startswith(today)
+                rec["duration"]
+                for rec in child.usage_records
+                if rec["timestamp"].startswith(today)
             )
 
     async def get_usage_statistics(self, child_id: str, days: int = 7):
         async with get_async_session() as session:
             child = await session.get(ChildModel, child_id)
-            if not child or not hasattr(child, "usage_records") or not child.usage_records:
+            if (
+                not child
+                or not hasattr(child, "usage_records")
+                or not child.usage_records
+            ):
                 return {}
             now = datetime.now()
             stats = {}
             for i in range(days):
                 day = (now - timedelta(days=i)).date().isoformat()
                 stats[day] = sum(
-                    rec["duration"] for rec in child.usage_records if rec["timestamp"].startswith(day)
+                    rec["duration"]
+                    for rec in child.usage_records
+                    if rec["timestamp"].startswith(day)
                 )
             return stats
 

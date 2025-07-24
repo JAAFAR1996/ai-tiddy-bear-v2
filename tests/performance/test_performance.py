@@ -193,9 +193,7 @@ class TestPerformance:
     @pytest.mark.performance
     async def test_database_performance(self):
         """اختبار أداء قاعدة البيانات"""
-        from infrastructure.persistence.real_database_service import (
-            database_service,
-        )
+        from infrastructure.persistence.real_database_service import database_service
 
         await database_service.init_db()
 

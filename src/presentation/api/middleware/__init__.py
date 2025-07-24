@@ -9,7 +9,7 @@ __all__ = [
     "ChildSafetyMiddleware",  # Re-enabled for production
     "ErrorHandlingMiddleware",
     "RateLimitMiddleware",  # Re-enabled for production (alias)
-    "RequestLoggingMiddleware"
+    "RequestLoggingMiddleware",
 ]
 
 # Export alias for backward compatibility

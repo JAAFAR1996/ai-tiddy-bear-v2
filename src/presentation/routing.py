@@ -31,9 +31,7 @@ try:
     from src.presentation.api.endpoints.chatgpt import router as chatgpt_router
     from src.presentation.api.esp32_endpoints import router as esp32_router
     from src.presentation.api.health_endpoints import router as health_router
-    from src.presentation.api.parental_dashboard import (
-        router as parental_router,
-    )
+    from src.presentation.api.parental_dashboard import router as parental_router
 except ImportError as e:
     logger.error(f"Failed to import API routers: {e}")
     # Set routers to None for graceful degradation

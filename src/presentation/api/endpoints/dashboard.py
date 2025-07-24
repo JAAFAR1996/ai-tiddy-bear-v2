@@ -2,7 +2,6 @@
 Added comprehensive error boundaries and authentication.
 """
 
-from src.domain.entities.user import User
 import secrets
 from datetime import datetime
 from typing import Any
@@ -10,12 +9,11 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestrationService,
-)
+from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
 from src.application.services.device.audio_processing_service import (
     AudioProcessingService,
 )
+from src.domain.entities.user import User
 from src.infrastructure.caching.redis_cache import RedisCacheManager as RedisCache
 from src.infrastructure.dependencies import (
     get_ai_orchestration_service,
@@ -105,7 +103,14 @@ async def get_child_stats(
     Returns comprehensive analytics for authorized parents/guardians only.
     """
     try:
-        validate_child_access({"user_id": current_user.id, "role": current_user.role, "child_ids": getattr(current_user, "child_ids", [])}, child_id)
+        validate_child_access(
+            {
+                "user_id": current_user.id,
+                "role": current_user.role,
+                "child_ids": getattr(current_user, "child_ids", []),
+            },
+            child_id,
+        )
 
         valid_periods = ["day", "week", "month", "year"]
         if period not in valid_periods:
@@ -384,16 +389,17 @@ async def get_system_health(
             memory_info = psutil.virtual_memory()
             memory_usage = memory_info.percent
         except ImportError:
-            logger.error("psutil not available for system metrics - cannot retrieve system metrics.")
+            logger.error(
+                "psutil not available for system metrics - cannot retrieve system metrics."
+            )
             raise HTTPException(
                 status_code=501,
-                detail="System metrics not available - psutil not installed."
+                detail="System metrics not available - psutil not installed.",
             )
         except Exception as e:
             logger.error(f"Failed to retrieve system metrics: {e}")
             raise HTTPException(
-                status_code=501,
-                detail=f"System metrics not available: {e}"
+                status_code=501, detail=f"System metrics not available: {e}"
             )
 
         metrics = {
@@ -438,7 +444,14 @@ async def get_child_analytics(
 ) -> dict[str, Any]:
     """Get detailed analytics for a specific child."""
     try:
-        validate_child_access({"user_id": current_user.id, "role": current_user.role, "child_ids": getattr(current_user, "child_ids", [])}, child_id)
+        validate_child_access(
+            {
+                "user_id": current_user.id,
+                "role": current_user.role,
+                "child_ids": getattr(current_user, "child_ids", []),
+            },
+            child_id,
+        )
 
         logger.info(
             f"Retrieving {metric_type} analytics",

@@ -1,14 +1,18 @@
 """Main input validation service implementation."""
 
-from src.infrastructure.security.audit.comprehensive_audit_integration import (
-    get_audit_integration,
-)
-from .security_validator import ThreatDetectors
 import json
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.validators.security.security_types import InputValidationResult, SecurityThreat
+from src.infrastructure.security.audit.comprehensive_audit_integration import (
+    get_audit_integration,
+)
+from src.infrastructure.validators.security.security_types import (
+    InputValidationResult,
+    SecurityThreat,
+)
+
+from .security_validator import ThreatDetectors
 
 logger = get_logger(__name__, component="security")
 
@@ -377,4 +381,6 @@ async def get_threat_summary(text: str) -> dict:
         "child_safety_violations": len(result.child_safety_violations),
         "is_valid": result.is_valid,
     }
+
+
 InputValidator = ComprehensiveInputValidator

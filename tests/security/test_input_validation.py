@@ -3,11 +3,11 @@
 import pytest
 from pydantic import ValidationError
 
+from src.infrastructure.security.core.security_middleware import SecurityMiddleware
 from src.presentation.api.endpoints.children.models import (
     ChildCreateRequest,
     ChildUpdateRequest,
 )
-from src.infrastructure.security.core.security_middleware import SecurityMiddleware
 
 
 class TestChildModelValidation:
@@ -204,7 +204,9 @@ class TestGeneralValidation:
         assert len(errors) > 0
 
         # Too many interests
-        errors = security_middleware.validate_child_data({"interests": [f"interest_{i}" for i in range(25)]})
+        errors = security_middleware.validate_child_data(
+            {"interests": [f"interest_{i}" for i in range(25)]}
+        )
         assert len(errors) > 0
 
         # Invalid language

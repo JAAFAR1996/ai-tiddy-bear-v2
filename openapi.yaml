@@ -3,14 +3,14 @@ info:
   title: AI Teddy Bear API
   description: |
     Production-ready API for AI Teddy Bear - A child-safe, COPPA-compliant AI companion.
-    
+
     ## Features
     - Child-safe AI interactions with content filtering
     - Full COPPA compliance with parental controls
     - Real-time voice interactions
     - Comprehensive safety monitoring
     - Educational content generation
-    
+
     ## Security
     - JWT authentication with refresh tokens
     - Rate limiting on all endpoints

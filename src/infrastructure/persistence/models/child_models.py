@@ -7,20 +7,14 @@ import uuid
 from datetime import UTC, datetime
 from typing import Optional
 
-from sqlalchemy import (
-    CheckConstraint,
-    DateTime,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-)
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # استيراد الـ Types الصحيحة
-from src.domain.value_objects.child_age import ChildAge, AgeCategory
+from src.domain.value_objects.child_age import AgeCategory, ChildAge
 from src.domain.value_objects.safety_level import SafetyLevel
+
 from .base import Base
 
 
@@ -53,7 +47,7 @@ class ChildModel(Base):
     age_category: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
-        comment="Age category: toddler, preschool, early_child, middle_child, preteen"
+        comment="Age category: toddler, preschool, early_child, middle_child, preteen",
     )
 
     # Preferences and interests
@@ -67,13 +61,15 @@ class ChildModel(Base):
         String(20),
         default=SafetyLevel.HIGH.value,
         nullable=False,
-        comment="Safety level: none, low, strict, moderate, relaxed, high, critical"
+        comment="Safety level: none, low, strict, moderate, relaxed, high, critical",
     )
     content_filters: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     # Usage tracking
     total_interactions: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    last_interaction: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    last_interaction: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     # Audit fields
     created_at: Mapped[datetime] = mapped_column(
@@ -106,11 +102,11 @@ class ChildModel(Base):
         CheckConstraint("age_months <= 11", name="check_months_max"),
         CheckConstraint(
             "age_category IN ('toddler', 'preschool', 'early_child', 'middle_child', 'preteen')",
-            name="check_valid_age_category"
+            name="check_valid_age_category",
         ),
         CheckConstraint(
             "safety_level IN ('none', 'low', 'strict', 'moderate', 'relaxed', 'high', 'critical')",
-            name="check_valid_safety_level"
+            name="check_valid_safety_level",
         ),
     )
 

@@ -7,13 +7,13 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import uuid4
 
-from sqlalchemy import and_, or_, select, update
+from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
-from src.infrastructure.persistence.models.consent_models_infra import ConsentModel
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.persistence.models.consent_models_infra import ConsentModel
 from src.infrastructure.validators.security.database_input_validator import (
     SecurityError,
     create_safe_database_session,
@@ -141,9 +141,7 @@ class ConsentRepository:
 
                 await session.commit()
 
-                logger.info(
-                    f"Granted consent {consent_id} via {verification_method}"
-                )
+                logger.info(f"Granted consent {consent_id} via {verification_method}")
                 return True
 
             except Exception as e:
@@ -185,10 +183,12 @@ class ConsentRepository:
                 consent.revoked_at = datetime.utcnow()
 
                 if revocation_reason:
-                    consent.verification_metadata.update({
-                        "revocation_reason": revocation_reason,
-                        "revoked_at": datetime.utcnow().isoformat(),
-                    })
+                    consent.verification_metadata.update(
+                        {
+                            "revocation_reason": revocation_reason,
+                            "revoked_at": datetime.utcnow().isoformat(),
+                        }
+                    )
 
                 await session.commit()
 
@@ -268,7 +268,7 @@ class ConsentRepository:
 
         Args:
             parent_id: Optional parent filter
-            child_id: Optional child filter  
+            child_id: Optional child filter
             consent_type: Optional consent type filter
 
         Returns:
@@ -306,23 +306,40 @@ class ConsentRepository:
                     # Check if consent is still valid
                     is_valid = (
                         consent.granted
-                        and (not consent.expires_at or consent.expires_at > datetime.utcnow())
+                        and (
+                            not consent.expires_at
+                            or consent.expires_at > datetime.utcnow()
+                        )
                         and not consent.revoked_at
                     )
 
-                    consent_statuses.append({
-                        "consent_id": consent.id,
-                        "parent_id": consent.parent_id,
-                        "child_id": metadata.get("child_id"),
-                        "consent_type": consent.consent_type,
-                        "granted": consent.granted,
-                        "valid": is_valid,
-                        "granted_at": consent.granted_at.isoformat() if consent.granted_at else None,
-                        "expires_at": consent.expires_at.isoformat() if consent.expires_at else None,
-                        "revoked_at": consent.revoked_at.isoformat() if consent.revoked_at else None,
-                        "verification_method": consent.verification_method,
-                        "data_types": metadata.get("data_types", []),
-                    })
+                    consent_statuses.append(
+                        {
+                            "consent_id": consent.id,
+                            "parent_id": consent.parent_id,
+                            "child_id": metadata.get("child_id"),
+                            "consent_type": consent.consent_type,
+                            "granted": consent.granted,
+                            "valid": is_valid,
+                            "granted_at": (
+                                consent.granted_at.isoformat()
+                                if consent.granted_at
+                                else None
+                            ),
+                            "expires_at": (
+                                consent.expires_at.isoformat()
+                                if consent.expires_at
+                                else None
+                            ),
+                            "revoked_at": (
+                                consent.revoked_at.isoformat()
+                                if consent.revoked_at
+                                else None
+                            ),
+                            "verification_method": consent.verification_method,
+                            "data_types": metadata.get("data_types", []),
+                        }
+                    )
 
                 logger.debug(f"Retrieved {len(consent_statuses)} consent records")
                 return consent_statuses
@@ -358,11 +375,13 @@ class ConsentRepository:
                 count = 0
                 for consent in expired_consents:
                     consent.revoked_at = datetime.utcnow()
-                    consent.verification_metadata.update({
-                        "auto_revoked": True,
-                        "auto_revoked_reason": "expired",
-                        "auto_revoked_at": datetime.utcnow().isoformat(),
-                    })
+                    consent.verification_metadata.update(
+                        {
+                            "auto_revoked": True,
+                            "auto_revoked_reason": "expired",
+                            "auto_revoked_at": datetime.utcnow().isoformat(),
+                        }
+                    )
                     count += 1
 
                 await session.commit()

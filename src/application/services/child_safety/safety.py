@@ -22,9 +22,7 @@ from src.domain.models.safety_models import (
     ToxicityResult,
 )
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.monitoring.performance_monitor import (
-    PerformanceMonitor,
-)
+from src.infrastructure.monitoring.performance_monitor import PerformanceMonitor
 
 logger = get_logger(__name__, component="services")
 

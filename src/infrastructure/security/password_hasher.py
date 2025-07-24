@@ -1,8 +1,8 @@
 """Production Password Hasher - REAL IMPLEMENTATION"""
 
-import bcrypt
 import secrets
-from typing import Optional
+
+import bcrypt
 
 from src.infrastructure.logging_config import get_logger
 
@@ -17,9 +17,13 @@ class PasswordHasher:
         self.settings = settings or self._get_default_settings()
 
         # Try to get settings from security config
-        if hasattr(self.settings, 'security'):
-            self.password_min_length = getattr(self.settings.security, 'PASSWORD_MIN_LENGTH', 8)
-            self.hash_rounds = getattr(self.settings.security, 'PASSWORD_HASH_ROUNDS', 12)
+        if hasattr(self.settings, "security"):
+            self.password_min_length = getattr(
+                self.settings.security, "PASSWORD_MIN_LENGTH", 8
+            )
+            self.hash_rounds = getattr(
+                self.settings.security, "PASSWORD_HASH_ROUNDS", 12
+            )
         else:
             # Fallback to defaults
             self.password_min_length = 8
@@ -35,12 +39,15 @@ class PasswordHasher:
         elif self.hash_rounds > 20:
             logger.warning(f"Hash rounds {self.hash_rounds} extremely high")
 
-        logger.info(f"PasswordHasher initialized with password_min_length={self.password_min_length}, rounds={self.hash_rounds}")
+        logger.info(
+            f"PasswordHasher initialized with password_min_length={self.password_min_length}, rounds={self.hash_rounds}"
+        )
 
     def _get_default_settings(self):
         """Get default settings if none provided."""
         try:
             from src.infrastructure.config.settings import get_settings
+
             return get_settings()
         except ImportError:
             # Fallback configuration
@@ -48,6 +55,7 @@ class PasswordHasher:
                 class security:
                     PASSWORD_MIN_LENGTH = 8
                     PASSWORD_HASH_ROUNDS = 12
+
             return DefaultSettings()
 
     def hash_password(self, password: str) -> str:
@@ -74,11 +82,11 @@ class PasswordHasher:
         try:
             # Generate salt and hash password
             salt = bcrypt.gensalt(rounds=self.hash_rounds)
-            password_bytes = password.encode('utf-8')
+            password_bytes = password.encode("utf-8")
             hashed = bcrypt.hashpw(password_bytes, salt)
 
             logger.debug("Password hashed successfully")
-            return hashed.decode('utf-8')
+            return hashed.decode("utf-8")
 
         except Exception as e:
             logger.exception(f"Failed to hash password: {e}")
@@ -107,8 +115,8 @@ class PasswordHasher:
             return False
 
         try:
-            password_bytes = password.encode('utf-8')
-            hash_bytes = hashed_password.encode('utf-8')
+            password_bytes = password.encode("utf-8")
+            hash_bytes = hashed_password.encode("utf-8")
 
             result = bcrypt.checkpw(password_bytes, hash_bytes)
 
@@ -138,10 +146,10 @@ class PasswordHasher:
             length = 8
 
         # Character sets for secure password generation
-        uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        lowercase = 'abcdefghijklmnopqrstuvwxyz'
-        digits = '0123456789'
-        special = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+        uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        lowercase = "abcdefghijklmnopqrstuvwxyz"
+        digits = "0123456789"
+        special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 
         all_chars = uppercase + lowercase + digits + special
 
@@ -150,7 +158,7 @@ class PasswordHasher:
             secrets.choice(uppercase),
             secrets.choice(lowercase),
             secrets.choice(digits),
-            secrets.choice(special)
+            secrets.choice(special),
         ]
 
         # Fill remaining length with random characters
@@ -160,7 +168,7 @@ class PasswordHasher:
         # Shuffle the password list
         secrets.SystemRandom().shuffle(password)
 
-        result = ''.join(password)
+        result = "".join(password)
         logger.debug(f"Generated secure password of length {length}")
         return result
 
@@ -169,6 +177,7 @@ def get_settings():
     """Fallback function for settings retrieval."""
     try:
         from src.infrastructure.config.settings import get_settings as _get_settings
+
         return _get_settings()
     except ImportError:
         logger.warning("Settings module not available, using defaults")
@@ -177,4 +186,5 @@ def get_settings():
             class security:
                 PASSWORD_MIN_LENGTH = 8
                 PASSWORD_HASH_ROUNDS = 12
+
         return DefaultSettings()

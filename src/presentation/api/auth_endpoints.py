@@ -2,13 +2,13 @@
 
 from typing import AsyncGenerator
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.di.fastapi_dependencies import get_database
-from src.infrastructure.security.auth.real_auth_service import RealAuthService
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.security.auth.real_auth_service import RealAuthService
 
 logger = get_logger(__name__, component="api")
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 async def get_db_session(
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
 ) -> AsyncGenerator[AsyncSession, None]:
     """Database session dependency for FastAPI endpoints."""
     async for session in database.get_session():
@@ -42,17 +42,13 @@ async def login_endpoint(
 
         if not email or not password:
             raise HTTPException(
-                status_code=400,
-                detail="Email and password are required"
+                status_code=400, detail="Email and password are required"
             )
 
         # Authenticate user
         user = await auth_service.authenticate(email, password, db)
         if not user:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid email or password"
-            )
+            raise HTTPException(status_code=401, detail="Invalid email or password")
 
         # Create JWT tokens
         user_data = {
@@ -73,7 +69,7 @@ async def login_endpoint(
                 "email": user.email,
                 "role": user.role,
                 "is_active": user.is_active,
-            }
+            },
         }
 
     except HTTPException:
@@ -81,8 +77,7 @@ async def login_endpoint(
     except Exception as e:
         logger.exception(f"Login error: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="Internal server error during login"
+            status_code=500, detail="Internal server error during login"
         ) from None
 
 
@@ -97,26 +92,19 @@ async def logout_endpoint(
         refresh_token = token_data.get("refresh_token")
 
         if not access_token:
-            raise HTTPException(
-                status_code=400,
-                detail="Access token is required"
-            )
+            raise HTTPException(status_code=400, detail="Access token is required")
 
         # Blacklist the tokens
         await auth_service.blacklist_token(access_token)
         if refresh_token:
             await auth_service.blacklist_token(refresh_token)
 
-        return {
-            "message": "Successfully logged out",
-            "status": "success"
-        }
+        return {"message": "Successfully logged out", "status": "success"}
 
     except HTTPException:
         raise
     except Exception as e:
         logger.exception(f"Logout error: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="Internal server error during logout"
+            status_code=500, detail="Internal server error during logout"
         ) from None

@@ -2,20 +2,15 @@
 from src.application.interfaces.infrastructure_services import IConsentManager
 Provides comprehensive consent management with FTC-approved verification methods.
 """
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from src.application.interfaces.infrastructure_services import IConsentManager
-from src.domain.models.consent_models_domain import (
-    VerificationMethod,
-    VerificationStatus,
-    ConsentType,
-    ConsentStatus,
-    ConsentRecord
-)
-from src.infrastructure.logging_config import get_logger
 from src.application.services.child_safety.consent_service import ConsentService
+from src.domain.models.consent_models_domain import ConsentRecord, ConsentStatus
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
@@ -36,16 +31,13 @@ class COPPAConsentManager(IConsentManager):
         self._consent_cache: Dict[str, ConsentRecord] = {}
 
     async def verify_parental_consent(
-        self,
-        parent_id: str,
-        child_id: str,
-        consent_type: str
+        self, parent_id: str, child_id: str, consent_type: str
     ) -> bool:
         """Verify if valid parental consent exists for specific action.
 
         Args:
             parent_id: Parent identifier
-            child_id: Child identifier  
+            child_id: Child identifier
             consent_type: Type of consent to verify
 
         Returns:
@@ -74,7 +66,7 @@ class COPPAConsentManager(IConsentManager):
         child_id: str,
         child_name: str,
         consent_types: List[str],
-        parent_email: Optional[str] = None
+        parent_email: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Request parental consent for child data collection.
 
@@ -96,7 +88,7 @@ class COPPAConsentManager(IConsentManager):
                     parent_id=parent_id,
                     child_id=child_id,
                     feature=consent_type,
-                    expiry_days=365
+                    expiry_days=365,
                 )
                 consent_requests.append(result)
 
@@ -105,15 +97,12 @@ class COPPAConsentManager(IConsentManager):
                 "consent_requests": consent_requests,
                 "verification_required": True,
                 "parent_email": parent_email,
-                "next_steps": "Parent must verify consent via email"
+                "next_steps": "Parent must verify consent via email",
             }
 
         except Exception as e:
             logger.error(f"Error requesting consent: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def get_child_consent_status(self, child_id: str) -> Dict[str, Any]:
         """Get comprehensive consent status for a child.
@@ -129,7 +118,7 @@ class COPPAConsentManager(IConsentManager):
                 "data_collection",
                 "voice_recording",
                 "interaction_logging",
-                "safety_monitoring"
+                "safety_monitoring",
             ]
 
             status = {}
@@ -138,27 +127,21 @@ class COPPAConsentManager(IConsentManager):
                 status[consent_type] = {
                     "granted": False,  # Would check real status
                     "expires_at": None,
-                    "verification_method": None
+                    "verification_method": None,
                 }
 
             return {
                 "child_id": child_id,
                 "consent_status": status,
-                "last_updated": datetime.utcnow().isoformat()
+                "last_updated": datetime.utcnow().isoformat(),
             }
 
         except Exception as e:
             logger.error(f"Error getting consent status: {str(e)}")
-            return {
-                "child_id": child_id,
-                "error": str(e)
-            }
+            return {"child_id": child_id, "error": str(e)}
 
     async def revoke_consent(
-        self,
-        parent_id: str,
-        child_id: str,
-        consent_type: Optional[str] = None
+        self, parent_id: str, child_id: str, consent_type: Optional[str] = None
     ) -> Dict[str, Any]:
         """Revoke parental consent.
 
@@ -176,11 +159,15 @@ class COPPAConsentManager(IConsentManager):
                 result = await self._consent_service.revoke_consent(consent_id)
                 return {
                     "success": result["status"] == "revoked",
-                    "revoked_types": [consent_type]
+                    "revoked_types": [consent_type],
                 }
             else:
                 # Revoke all consents
-                consent_types = ["data_collection", "voice_recording", "interaction_logging"]
+                consent_types = [
+                    "data_collection",
+                    "voice_recording",
+                    "interaction_logging",
+                ]
                 revoked = []
 
                 for ct in consent_types:
@@ -189,17 +176,11 @@ class COPPAConsentManager(IConsentManager):
                     if result["status"] == "revoked":
                         revoked.append(ct)
 
-                return {
-                    "success": True,
-                    "revoked_types": revoked
-                }
+                return {"success": True, "revoked_types": revoked}
 
         except Exception as e:
             logger.error(f"Error revoking consent: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def _is_consent_valid(self, record: ConsentRecord) -> bool:
         """Check if consent record is valid."""
@@ -211,10 +192,7 @@ class COPPAConsentManager(IConsentManager):
 
     # Compatibility method for ParentalConsentManager
     async def create_consent_record(
-        self,
-        child_id: str,
-        parent_id: str,
-        data_types: List[str]
+        self, child_id: str, parent_id: str, data_types: List[str]
     ) -> str:
         """Create consent record (compatibility method).
 
@@ -224,7 +202,7 @@ class COPPAConsentManager(IConsentManager):
             parent_id=parent_id,
             child_id=child_id,
             child_name="Child",  # Would get from database
-            consent_types=data_types
+            consent_types=data_types,
         )
 
         if result.get("success") and result.get("consent_requests"):

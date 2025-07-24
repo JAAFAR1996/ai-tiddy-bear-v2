@@ -2,9 +2,11 @@
 src/infrastructure/config/security_settings.py
 Secure SecuritySettings with environment variable validation
 """
-import os
-from pydantic import Field, SecretStr, model_validator, ValidationError
+
+from pydantic import Field, SecretStr, model_validator
+
 from src.infrastructure.config.core.base_settings import BaseApplicationSettings
+
 
 class SecuritySettings(BaseApplicationSettings):
     """Configuration settings for application security."""
@@ -17,15 +19,15 @@ class SecuritySettings(BaseApplicationSettings):
     # Security keys - MUST be provided via environment variables
     SECRET_KEY: str = Field(
         env="SECRET_KEY",
-        description="Main application secret key for security operations"
+        description="Main application secret key for security operations",
     )
     JWT_SECRET_KEY: str = Field(
         env="JWT_SECRET_KEY",
-        description="Secret key for JWT token signing and verification"
+        description="Secret key for JWT token signing and verification",
     )
     COPPA_ENCRYPTION_KEY: str = Field(
-        env="COPPA_ENCRYPTION_KEY", 
-        description="Encryption key for COPPA-compliant data protection"
+        env="COPPA_ENCRYPTION_KEY",
+        description="Encryption key for COPPA-compliant data protection",
     )
 
     # المتغيرات الإضافية مع قيم افتراضية
@@ -35,11 +37,13 @@ class SecuritySettings(BaseApplicationSettings):
     ENCRYPTION_KEY: str | None = Field(default=None, env="ENCRYPTION_KEY")
     DATA_ENCRYPTION_KEY: str | None = Field(default=None, env="DATA_ENCRYPTION_KEY")
     FIELD_ENCRYPTION_KEY: str | None = Field(default=None, env="FIELD_ENCRYPTION_KEY")
-    
-    RATE_LIMIT_REQUESTS_PER_MINUTE: int = Field(60, env="RATE_LIMIT_REQUESTS_PER_MINUTE")
+
+    RATE_LIMIT_REQUESTS_PER_MINUTE: int = Field(
+        60, env="RATE_LIMIT_REQUESTS_PER_MINUTE"
+    )
     RATE_LIMIT_BURST: int = Field(10, env="RATE_LIMIT_BURST")
     RATE_LIMIT_REQUESTS_PER_HOUR: int = Field(3600, env="RATE_LIMIT_REQUESTS_PER_HOUR")
-    
+
     MAX_LOGIN_ATTEMPTS: int = Field(5, env="MAX_LOGIN_ATTEMPTS")
     LOCKOUT_DURATION_SECONDS: int = Field(300, env="LOCKOUT_DURATION_SECONDS")
 
@@ -53,7 +57,7 @@ class SecuritySettings(BaseApplicationSettings):
     SESSION_SECURE: bool = Field(True, env="SESSION_SECURE")
     SESSION_HTTPONLY: bool = Field(True, env="SESSION_HTTPONLY")
     SESSION_SAMESITE: str = Field("strict", env="SESSION_SAMESITE")
-    
+
     CONTENT_FILTER_STRICT_MODE: bool = Field(True, env="CONTENT_FILTER_STRICT_MODE")
     SAFETY_THRESHOLD: float = Field(0.8, env="SAFETY_THRESHOLD")
 
@@ -92,41 +96,41 @@ class SecuritySettings(BaseApplicationSettings):
             raise ValueError(
                 "ACCESS_TOKEN_EXPIRE_MINUTES cannot exceed REFRESH_TOKEN_EXPIRE_DAYS"
             )
-        
+
         # Validate secret key lengths
         if len(self.SECRET_KEY) < self.MIN_SECRET_KEY_LENGTH:
             raise ValueError(
                 f"SECRET_KEY must be at least {self.MIN_SECRET_KEY_LENGTH} characters"
             )
-        
+
         if len(self.JWT_SECRET_KEY) < self.MIN_JWT_SECRET_KEY_LENGTH:
             raise ValueError(
                 f"JWT_SECRET_KEY must be at least {self.MIN_JWT_SECRET_KEY_LENGTH} characters"
             )
-        
+
         if len(self.COPPA_ENCRYPTION_KEY) < self.COPPA_ENCRYPTION_KEY_LENGTH:
             raise ValueError(
                 f"COPPA_ENCRYPTION_KEY must be at least {self.COPPA_ENCRYPTION_KEY_LENGTH} characters"
             )
-        
+
         # Validate no development keys in production
         dev_indicators = [
             "DEVELOPMENT",
             "DEV",
-            "TEST", 
+            "TEST",
             "CHANGE_IN_PRODUCTION",
-            "123456"
+            "123456",
         ]
-        
+
         for key_name, key_value in [
             ("SECRET_KEY", self.SECRET_KEY),
-            ("JWT_SECRET_KEY", self.JWT_SECRET_KEY), 
-            ("COPPA_ENCRYPTION_KEY", self.COPPA_ENCRYPTION_KEY)
+            ("JWT_SECRET_KEY", self.JWT_SECRET_KEY),
+            ("COPPA_ENCRYPTION_KEY", self.COPPA_ENCRYPTION_KEY),
         ]:
             if any(indicator in key_value.upper() for indicator in dev_indicators):
                 raise ValueError(
                     f"{key_name} appears to contain development placeholder values. "
                     f"Please set secure environment variables."
                 )
-        
+
         return self

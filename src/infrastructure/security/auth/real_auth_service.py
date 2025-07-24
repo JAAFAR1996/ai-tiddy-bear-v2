@@ -3,7 +3,6 @@
 ⚠️ CRITICAL SECURITY: Real password verification, JWT tokens, and user lookup.
 """
 
-import asyncio
 from typing import Any
 
 from sqlalchemy import select
@@ -44,13 +43,17 @@ class RealAuthService:
             user = result.scalar_one_or_none()
 
             if not user:
-                logger.warning("Authentication failed: User not found for email: %s", email)
+                logger.warning(
+                    "Authentication failed: User not found for email: %s", email
+                )
                 # Perform dummy hash to prevent timing attacks
                 self.password_hasher.hash_password("dummy_password_123")
                 return None
 
             if not user.is_active:
-                logger.warning("Authentication failed: User account inactive for: %s", email)
+                logger.warning(
+                    "Authentication failed: User account inactive for: %s", email
+                )
                 return None
 
             # Verify password using bcrypt

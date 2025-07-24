@@ -1,0 +1,611 @@
+[1msrc/application\dto\ai_response.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mE303[m too many blank lines (4)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m10[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m18[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m20[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m22[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m24[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m29[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m31[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m33[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m35[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\ai_provider.py[m[36m:[m42[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m26[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m35[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m44[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m53[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m62[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m79[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m90[36m:[m1[36m:[m [1m[31mE303[m too many blank lines (3)
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m92[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m97[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\interfaces\infrastructure_services.py[m[36m:[m108[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\interfaces\read_model_interfaces.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m '.infrastructure_services.IEventBus' imported but unused
+[1msrc/application\interfaces\read_model_interfaces.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m '.infrastructure_services.IExternalAPIClient' imported but unused
+[1msrc/application\interfaces\read_model_interfaces.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m '.infrastructure_services.ISettingsProvider' imported but unused
+[1msrc/application\interfaces\speech_processor.py[m[36m:[m5[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\interfaces\speech_processor.py[m[36m:[m7[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/application\services\ai\modules\response_generator.py[m[36m:[m31[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/application\services\child_safety\consent_service.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/application\services\child_safety\consent_service.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.consent_models_domain.ConsentRecord' imported but unused
+[1msrc/application\services\child_safety\consent_service.py[m[36m:[m185[36m:[m9[36m:[m [1m[31mF841[m local variable 'e' is assigned to but never used
+[1msrc/application\services\child_safety\coppa_compliance_service.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/application\services\child_safety\coppa_compliance_service.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.persistence.models.consent_models_infra.ConsentModel' imported but unused
+[1msrc/application\services\child_safety\coppa_compliance_service.py[m[36m:[m266[36m:[m17[36m:[m [1m[31mF841[m local variable 'record' is assigned to but never used
+[1msrc/application\services\child_safety\parent_child_verification_service.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'src.application.services.child_safety.verification_service.VerificationService' imported but unused
+[1msrc/application\services\data\advanced_progress_analyzer.py[m[36m:[m73[36m:[m9[36m:[m [1m[31mF841[m local variable 'skill_levels' is assigned to but never used
+[1msrc/application\services\data\data_export_service.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'json' imported but unused
+[1msrc/application\services\data\data_export_service.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mF401[m '.types.ExportFormat' imported but unused
+[1msrc/application\services\data\data_export_service.py[m[36m:[m44[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m57[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m60[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m66[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m68[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m75[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m80[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m94[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m108[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m111[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m118[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m121[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m135[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m138[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m148[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m152[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m158[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m164[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m170[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m172[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m179[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m182[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m188[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m191[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m210[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m215[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m218[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m223[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m227[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m229[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m231[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m298[36m:[m14[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m299[36m:[m23[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m300[36m:[m40[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m361[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m364[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m372[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m375[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m388[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m393[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m399[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m408[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/application\services\data\data_export_service.py[m[36m:[m411[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\__init__.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF403[m 'from .constants import *' used; unable to detect undefined names
+[1msrc/common\__init__.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m '.constants.*' imported but unused
+[1msrc/common\constants.py[m[36m:[m265[36m:[m11[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/common\deprecated_exceptions\__init__.py[m[36m:[m19[36m:[m25[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/common\deprecated_exceptions\__init__.py[m[36m:[m45[36m:[m28[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/common\deprecated_exceptions\application_exceptions.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/common\deprecated_exceptions\base_exceptions.py[m[36m:[m19[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\deprecated_exceptions\domain_exceptions.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/common\deprecated_exceptions\domain_exceptions.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/common\deprecated_exceptions\domain_exceptions.py[m[36m:[m85[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/common\deprecated_exceptions\infrastructure_exceptions.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/common\deprecated_exceptions\infrastructure_exceptions.py[m[36m:[m39[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m19[36m:[m25[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m45[36m:[m28[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m64[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'AITeddyBaseError' from line 6
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m64[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ErrorCategory' from line 6
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m64[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m65[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m68[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ApplicationException' from line 20
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m74[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ServiceUnavailableError' from line 20
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m84[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'InvalidInputError' from line 20
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m94[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'TimeoutError' from line 20
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m104[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ResourceNotFoundError' from line 20
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m115[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'StartupValidationException' from line 20
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m123[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 0
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m126[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Optional' from line 65
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m126[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m127[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m130[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ErrorCategory' from line 64
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m141[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m154[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 0
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m155[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m156[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m159[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'DomainException' from line 12
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m165[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ChildSafetyException' from line 12
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m175[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ConsentException' from line 12
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m185[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'AgeRestrictionException' from line 12
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m238[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m241[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 0
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m242[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m243[36m:[m1[36m:[m [1m[31mE402[m module level import not at top of file
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m246[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'InfrastructureException' from line 30
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m252[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'DatabaseConnectionError' from line 30
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m262[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ConfigurationError' from line 30
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m272[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ExternalServiceError' from line 30
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m279[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m288[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'SecurityError' from line 30
+[1msrc/common\exceptions_all_tmp.py[m[36m:[m298[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'RateLimitExceededError' from line 30
+[1msrc/common\validators\base.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'typing.Dict' imported but unused
+[1msrc/common\validators\base.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'typing.List' imported but unused
+[1msrc/common\validators\base.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/common\validators\base.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m21[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m26[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m31[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m37[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m50[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m54[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m56[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m62[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m66[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m75[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m78[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m84[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m87[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m92[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m100[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m106[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m111[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m117[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m119[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m124[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m126[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m132[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m136[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/common\validators\base.py[m[36m:[m140[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\__init__.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF403[m 'from .constants import *' used; unable to detect undefined names
+[1msrc/domain\__init__.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m '.constants.*' imported but unused
+[1msrc/domain\entities\encrypted_child.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'datetime.UTC' imported but unused
+[1msrc/domain\entities\user.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/domain\exceptions\__init__.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF403[m 'from src.common.exceptions import *' used; unable to detect undefined names
+[1msrc/domain\exceptions\__init__.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'src.common.exceptions.*' imported but unused
+[1msrc/domain\interfaces\notification_clients.py[m[36m:[m8[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\interfaces\notification_clients.py[m[36m:[m15[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\interfaces\notification_clients.py[m[36m:[m22[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\interfaces\notification_clients.py[m[36m:[m34[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\interfaces\repository_interfaces.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mE303[m too many blank lines (3)
+[1msrc/domain\interfaces\sanitization_service.py[m[36m:[m8[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\interfaces\sanitization_service.py[m[36m:[m11[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\models\children_models.py[m[36m:[m83[36m:[m16[36m:[m [1m[31mF821[m undefined name 'cls'
+[1msrc/domain\models\core_config_models.py[m[36m:[m25[36m:[m1[36m:[m [1m[31mW391[m blank line at end of file
+[1msrc/domain\models\models_infra.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.persistence.models.base.Base' imported but unused
+[1msrc/domain\models\safety_models_ext.py[m[36m:[m297[36m:[m35[36m:[m [1m[31mF821[m undefined name 'self'
+[1msrc/domain\models\safety_models_ext.py[m[36m:[m303[36m:[m25[36m:[m [1m[31mF821[m undefined name 'self'
+[1msrc/domain\models\safety_models_ext.py[m[36m:[m314[36m:[m22[36m:[m [1m[31mF821[m undefined name 'self'
+[1msrc/domain\models\security_core_models.py[m[36m:[m33[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\models\session_models.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.value_objects.session_status.SessionStatus' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'uuid' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'dataclasses.dataclass' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'dataclasses.field' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'enum.Enum' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/domain\models\session_models.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mW391[m blank line at end of file
+[1msrc/domain\models\session_models_infra.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'enum.Enum' imported but unused
+[1msrc/domain\models\validation_models.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.validator' imported but unused
+[1msrc/domain\models\validation_models.py[m[36m:[m148[36m:[m5[36m:[m [1m[31mE301[m expected 1 blank line, found 0
+[1msrc/domain\models\validation_models.py[m[36m:[m150[36m:[m5[36m:[m [1m[31mE304[m blank lines found after function decorator
+[1msrc/domain\models\validation_models.py[m[36m:[m161[36m:[m5[36m:[m [1m[31mE301[m expected 1 blank line, found 0
+[1msrc/domain\models\validation_models.py[m[36m:[m499[36m:[m1[36m:[m [1m[31mE303[m too many blank lines (3)
+[1msrc/domain\repositories\event_store.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\repositories\event_store.py[m[36m:[m21[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\repositories\event_store.py[m[36m:[m34[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\repositories\event_store.py[m[36m:[m38[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\repositories\event_store.py[m[36m:[m51[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\repositories\event_store.py[m[36m:[m62[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\repositories\event_store.py[m[36m:[m71[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\schemas.py[m[36m:[m24[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\schemas.py[m[36m:[m302[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\schemas.py[m[36m:[m304[36m:[m24[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/domain\schemas.py[m[36m:[m320[36m:[m19[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/domain\validators\safety_validator.py[m[36m:[m7[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\validators\safety_validator.py[m[36m:[m9[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mE303[m too many blank lines (4)
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m41[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m50[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m56[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m61[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m74[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m81[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\child_preferences.py[m[36m:[m92[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\notification.py[m[36m:[m29[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/domain\value_objects\safety_level.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/domain\value_objects\session_status.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\application_settings.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\application_settings.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\application_settings.py[m[36m:[m28[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\application_settings.py[m[36m:[m32[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\base_settings.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\base_settings.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\base_settings.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 1
+[1msrc/infrastructure\config\core\base_settings.py[m[36m:[m12[36m:[m39[36m:[m [1m[31mW292[m no newline at end of file
+[1msrc/infrastructure\config\core\infrastructure_settings.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Field' from line 1
+[1msrc/infrastructure\config\core\infrastructure_settings.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.validator' imported but unused
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'typing.Tuple' imported but unused
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m15[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m18[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m26[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m30[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m34[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m39[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m46[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m51[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m54[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m60[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m69[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\production_check.py[m[36m:[m72[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'pathlib.Path' imported but unused
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m19[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m26[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m33[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m38[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m45[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m52[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m59[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m67[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m76[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\production_settings.py[m[36m:[m80[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\core\server_settings.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\core\server_settings.py[m[36m:[m17[36m:[m72[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\config\core\server_settings.py[m[36m:[m21[36m:[m42[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\config\integrations\database_settings.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'field_validator' from line 1
+[1msrc/infrastructure\config\integrations\database_settings.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\integrations\database_settings.py[m[36m:[m18[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\integrations\database_settings.py[m[36m:[m24[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\integrations\kafka_settings.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\integrations\redis_settings.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\monitoring\prometheus_settings.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\monitoring\prometheus_settings.py[m[36m:[m8[36m:[m62[36m:[m [1m[31mW292[m no newline at end of file
+[1msrc/infrastructure\config\security\coppa_config.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.Depends' imported but unused
+[1msrc/infrastructure\config\security\coppa_config.py[m[36m:[m86[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\security\coppa_config.py[m[36m:[m94[36m:[m5[36m:[m [1m[31mE303[m too many blank lines (2)
+[1msrc/infrastructure\config\security\privacy_settings.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\security\privacy_settings.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\security\privacy_settings.py[m[36m:[m21[36m:[m71[36m:[m [1m[31mW292[m no newline at end of file
+[1msrc/infrastructure\config\security\secure_settings.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'field_validator' from line 1
+[1msrc/infrastructure\config\security\security_settings.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\security\security_settings.py[m[36m:[m22[36m:[m77[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\config\security\security_settings.py[m[36m:[m37[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\security\security_settings.py[m[36m:[m41[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\security\security_settings.py[m[36m:[m55[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\config\services\__init__.py[m[36m:[m10[36m:[m21[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\config\services\ai_settings.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\config\services\ai_settings.py[m[36m:[m13[36m:[m75[36m:[m [1m[31mW292[m no newline at end of file
+[1msrc/infrastructure\config\settings.py[m[36m:[m54[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\dependencies.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/infrastructure\dependencies.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.Depends' imported but unused
+[1msrc/infrastructure\dependencies.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.repositories.event_store.InMemoryEventStore' imported but unused
+[1msrc/infrastructure\di\application_container.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'abc.ABC' imported but unused
+[1msrc/infrastructure\di\application_container.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'abc.abstractmethod' imported but unused
+[1msrc/infrastructure\di\di_components\__init__.py[m[36m:[m6[36m:[m67[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\di\di_components\__init__.py[m[36m:[m7[36m:[m66[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\di\di_components\__init__.py[m[36m:[m17[36m:[m20[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ConfigurationError' from line 3
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'DatabaseConnectionError' from line 3
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'SecurityError' from line 3
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'RateLimitExceededError' from line 3
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m25[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'ExternalServiceError' from line 3
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m50[36m:[m31[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\error_handling\__init__.py[m[36m:[m80[36m:[m22[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\error_handling\error_types.py[m[36m:[m22[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\error_handling\error_types.py[m[36m:[m30[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\error_handling\error_types.py[m[36m:[m37[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\external_services\dummy_sanitization_service.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'logging' imported but unused
+[1msrc/infrastructure\monitoring\__init__.py[m[36m:[m17[36m:[m21[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\monitoring\comprehensive_monitoring.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\monitoring\comprehensive_monitoring.py[m[36m:[m65[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\monitoring\performance_monitor.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\monitoring\performance_monitor.py[m[36m:[m104[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 1
+[1msrc/infrastructure\persistence\conversation_repository.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'abc.abstractmethod' imported but unused
+[1msrc/infrastructure\persistence\event_store_db.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.events.domain_events.DomainEvent' imported but unused
+[1msrc/infrastructure\persistence\event_store_db.py[m[36m:[m56[36m:[m72[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\event_store_db.py[m[36m:[m57[36m:[m35[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\event_store_db.py[m[36m:[m171[36m:[m39[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\event_store_db.py[m[36m:[m215[36m:[m35[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\event_store_db.py[m[36m:[m284[36m:[m39[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\models\base.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\persistence\models\session_models_infra.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'enum.Enum' imported but unused
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.persistence.database_manager.Database' imported but unused
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m22[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m32[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m51[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m58[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m80[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m91[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\real_database_service.py[m[36m:[m101[36m:[m20[36m:[m [1m[31mF821[m undefined name 'get_async_session'
+[1msrc/infrastructure\persistence\redis_accessibility_profile_repository.py[m[36m:[m69[36m:[m9[36m:[m [1m[31mF841[m local variable 'err' is assigned to but never used
+[1msrc/infrastructure\persistence\redis_accessibility_profile_repository.py[m[36m:[m93[36m:[m9[36m:[m [1m[31mF841[m local variable 'err' is assigned to but never used
+[1msrc/infrastructure\persistence\redis_personality_profile_repository.py[m[36m:[m58[36m:[m9[36m:[m [1m[31mF841[m local variable 'err' is assigned to but never used
+[1msrc/infrastructure\persistence\redis_personality_profile_repository.py[m[36m:[m82[36m:[m9[36m:[m [1m[31mF841[m local variable 'err' is assigned to but never used
+[1msrc/infrastructure\persistence\repositories\consent_repository.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'sqlalchemy.update' imported but unused
+[1msrc/infrastructure\persistence\repositories\consent_repository.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'select' from line 10
+[1msrc/infrastructure\persistence\repositories\consent_repository.py[m[36m:[m229[36m:[m46[36m:[m [1m[31mE712[m comparison to True should be 'if cond is True:' or 'if cond:'
+[1msrc/infrastructure\persistence\repositories\consent_repository.py[m[36m:[m271[36m:[m44[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\repositories\safety_repository.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'uuid4' from line 6
+[1msrc/infrastructure\persistence\repositories\safety_repository.py[m[36m:[m76[36m:[m9[36m:[m [1m[31mF841[m local variable 'err' is assigned to but never used
+[1msrc/infrastructure\persistence\services\consent_service.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/infrastructure\persistence\services\consent_service.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mF401[m 'sqlalchemy.delete' imported but unused
+[1msrc/infrastructure\persistence\services\consent_service.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.consent_models_domain.ConsentStatus' imported but unused
+[1msrc/infrastructure\persistence\services\consent_service.py[m[36m:[m41[36m:[m41[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\persistence\services\consent_service.py[m[36m:[m119[36m:[m46[36m:[m [1m[31mE712[m comparison to True should be 'if cond is True:' or 'if cond:'
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m37[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m40[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m47[36m:[m47[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m54[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m59[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m68[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m77[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m86[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m97[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m240[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m269[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m300[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\audit\secure_logger.py[m[36m:[m423[36m:[m19[36m:[m [1m[31mW292[m no newline at end of file
+[1msrc/infrastructure\security\auth\real_auth_service.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'asyncio' imported but unused
+[1msrc/infrastructure\security\auth\token_service.py[m[36m:[m88[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\auth\token_service.py[m[36m:[m91[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\auth\token_service.py[m[36m:[m102[36m:[m56[36m:[m [1m[31mW292[m no newline at end of file
+[1msrc/infrastructure\security\child_safety\child_data_security_manager.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.validators.security.coppa_validator.COPPAValidator' imported but unused
+[1msrc/infrastructure\security\child_safety\child_data_security_manager.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.validators.security.coppa_validator.coppa_validator' imported but unused
+[1msrc/infrastructure\security\child_safety\child_data_security_manager.py[m[36m:[m20[36m:[m30[36m:[m [1m[31mF821[m undefined name 'COPPAValidatorService'
+[1msrc/infrastructure\security\child_safety\consent_manager.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/infrastructure\security\child_safety\consent_manager.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.consent_models_domain.VerificationMethod' imported but unused
+[1msrc/infrastructure\security\child_safety\consent_manager.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.consent_models_domain.VerificationStatus' imported but unused
+[1msrc/infrastructure\security\child_safety\consent_manager.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.consent_models_domain.ConsentType' imported but unused
+[1msrc/infrastructure\security\child_safety\consent_manager.py[m[36m:[m48[36m:[m39[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\security\child_safety\data_retention.py[m[36m:[m80[36m:[m24[36m:[m [1m[31mF821[m undefined name 'base_retention'
+[1msrc/infrastructure\security\child_safety\data_retention.py[m[36m:[m86[36m:[m24[36m:[m [1m[31mF821[m undefined name 'base_retention'
+[1msrc/infrastructure\security\child_safety\data_retention.py[m[36m:[m87[36m:[m16[36m:[m [1m[31mF821[m undefined name 'base_retention'
+[1msrc/infrastructure\security\child_safety\data_retention.py[m[36m:[m323[36m:[m13[36m:[m [1m[31mF841[m local variable 'audit_record' is assigned to but never used
+[1msrc/infrastructure\security\core\security_levels.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\core\security_levels.py[m[36m:[m10[36m:[m24[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\security\core\security_levels.py[m[36m:[m20[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF401[m 'enum.Enum' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m15[36m:[m1[36m:[m [1m[31mF401[m 'redis.asyncio as redis' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m32[36m:[m5[36m:[m [1m[31mF401[m 'starlette.types.Receive' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m32[36m:[m5[36m:[m [1m[31mF401[m 'starlette.types.Scope' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m32[36m:[m5[36m:[m [1m[31mF401[m 'starlette.types.Send' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m65[36m:[m13[36m:[m [1m[31mF401[m 'redis.asyncio as redis_async' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m101[36m:[m21[36m:[m [1m[31mF401[m 'redis.asyncio as redis_async' imported but unused
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m407[36m:[m9[36m:[m [1m[31mF841[m local variable 'result' is assigned to but never used
+[1msrc/infrastructure\security\core\security_middleware.py[m[36m:[m813[36m:[m32[36m:[m [1m[31mF541[m f-string is missing placeholders
+[1msrc/infrastructure\security\fallback_rate_limiter.py[m[36m:[m214[36m:[m51[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'typing.Dict' imported but unused
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m20[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m22[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m25[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m30[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\key_management\key_rotation_service.py[m[36m:[m36[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\password_hasher.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m24[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m37[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m44[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m52[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m56[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m60[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m70[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m81[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m83[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m88[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m94[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m99[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m102[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m109[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m117[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m127[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m129[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\rate_limiter\core.py[m[36m:[m140[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\rate_limiter\legacy\legacy_rate_limiter.py[m[36m:[m228[36m:[m6[36m:[m [1m[31mF821[m undefined name 'ChildSafetyRateLimiter'
+[1msrc/infrastructure\security\rate_limiter\legacy\legacy_rate_limiter.py[m[36m:[m234[36m:[m34[36m:[m [1m[31mF821[m undefined name 'ChildSafetyRateLimiter'
+[1msrc/infrastructure\security\token_service.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.Depends' imported but unused
+[1msrc/infrastructure\security\token_service.py[m[36m:[m206[36m:[m28[36m:[m [1m[31mF541[m f-string is missing placeholders
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m25[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m30[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m36[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m40[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\security\validation\sql_injection_protection.py[m[36m:[m42[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/infrastructure\security\web\csrf_protection.py[m[36m:[m318[36m:[m5[36m:[m [1m[31mF824[m `global _csrf_protection` is unused: name is never assigned in scope
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.security.core.security_levels.RequestSecurityLevel' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'base64' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'hashlib' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'hmac' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'json' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mF401[m 'secrets' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF401[m 'time' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mF401[m 'urllib.parse' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mF401[m 'dataclasses.dataclass' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m15[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m15[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/infrastructure\security\web\request_signing_service.py[m[36m:[m30[36m:[m1[36m:[m [1m[31mW391[m blank line at end of file
+[1msrc/infrastructure\security\web\security_headers_service.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/infrastructure\security\web\security_headers_service.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/infrastructure\security\web\security_headers_service.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/infrastructure\services\data_retention_service.py[m[36m:[m172[36m:[m9[36m:[m [1m[31mF841[m local variable 'email_content' is assigned to but never used
+[1msrc/infrastructure\services\data_retention_service.py[m[36m:[m234[36m:[m13[36m:[m [1m[31mF841[m local variable 'export_data' is assigned to but never used
+[1msrc/infrastructure\services\data_retention_service.py[m[36m:[m396[36m:[m9[36m:[m [1m[31mF841[m local variable 'email_content' is assigned to but never used
+[1msrc/infrastructure\validators\__init__.py[m[36m:[m12[36m:[m22[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\validators\data\comprehensive_validator.py[m[36m:[m57[36m:[m9[36m:[m [1m[31mF841[m local variable 'warnings' is assigned to but never used
+[1msrc/infrastructure\validators\data\comprehensive_validator.py[m[36m:[m125[36m:[m9[36m:[m [1m[31mF841[m local variable 'warnings' is assigned to but never used
+[1msrc/infrastructure\validators\security\__init__.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m '.input_validator.get_input_validator' imported but unused
+[1msrc/infrastructure\validators\security\coppa_validator.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/infrastructure\validators\security\database_input_validator.py[m[36m:[m439[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m36[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m37[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m38[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m39[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m40[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m41[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\detectors.py[m[36m:[m42[36m:[m5[36m:[m [1m[31mE704[m multiple statements on one line (def)
+[1msrc/infrastructure\validators\security\path_validator.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 're' imported but unused
+[1msrc/infrastructure\validators\security\path_validator.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mF401[m 'pathlib.Path' imported but unused
+[1msrc/infrastructure\validators\security\path_validator.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/infrastructure\validators\security\path_validator.py[m[36m:[m105[36m:[m9[36m:[m [1m[31mF841[m local variable 'normalized_lower' is assigned to but never used
+[1msrc/infrastructure\validators\security\query_validator.py[m[36m:[m242[36m:[m9[36m:[m [1m[31mF841[m local variable 'security_event' is assigned to but never used
+[1msrc/infrastructure\validators\security\query_validator.py[m[36m:[m361[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 0
+[1msrc/infrastructure\validators\security\query_validator.py[m[36m:[m362[36m:[m1[36m:[m [1m[31mW391[m blank line at end of file
+[1msrc/infrastructure\validators\security\security_patterns.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 're' imported but unused
+[1msrc/infrastructure\validators\security\security_patterns.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\validators\security\security_types.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\validators\security\security_types.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\validators\security\security_types.py[m[36m:[m27[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/infrastructure\validators\security\security_types.py[m[36m:[m66[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 1
+[1msrc/infrastructure\validators\security\security_validator.py[m[36m:[m27[36m:[m14[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\validators\security\security_validator.py[m[36m:[m28[36m:[m19[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\validators\security\security_validator.py[m[36m:[m29[36m:[m30[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/infrastructure\validators\security\security_validator.py[m[36m:[m73[36m:[m74[36m:[m [1m[31mW504[m line break after binary operator
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m11[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m15[36m:[m26[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m20[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m24[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m28[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\__init__.py[m[36m:[m32[36m:[m1[36m:[m [1m[31mE305[m expected 2 blank lines after class or function definition, found 1
+[1msrc/presentation\api\dependencies\base.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'functools.lru_cache' imported but unused
+[1msrc/presentation\api\dependencies\base.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\base.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/presentation\api\dependencies\base.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mE302[m expected 2 blank lines, found 1
+[1msrc/presentation\api\dependencies\base.py[m[36m:[m18[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/presentation\api\dependencies\base.py[m[36m:[m22[36m:[m1[36m:[m [1m[31mW293[m blank line contains whitespace
+[1msrc/presentation\api\dependencies\providers.py[m[36m:[m10[36m:[m5[36m:[m [1m[31mF401[m 'src.infrastructure.validators.security.coppa_validator.coppa_validator' imported but unused
+[1msrc/presentation\api\dependencies\providers.py[m[36m:[m22[36m:[m5[36m:[m [1m[31mF401[m 'src.infrastructure.validators.security.coppa_validator.coppa_validator' imported but unused
+[1msrc/presentation\api\dependencies\providers.py[m[36m:[m41[36m:[m5[36m:[m [1m[31mF401[m 'src.infrastructure.validators.security.coppa_validator.coppa_validator' imported but unused
+[1msrc/presentation\api\emergency_response\main.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'asyncio' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.validation_models.LoginRequest' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.Depends' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.HTTPException' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.status' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.security.HTTPAuthorizationCredentials' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.BaseModel' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.EmailStr' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.di.container.container' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m12[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.security.rate_limiter_service.RateLimiterService' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.security.auth.real_auth_service.ProductionAuthService' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mF401[m 'src.presentation.api.decorators.rate_limit.moderate_limit' imported but unused
+[1msrc/presentation\api\endpoints\auth.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mF401[m 'src.presentation.api.decorators.rate_limit.strict_limit' imported but unused
+[1msrc/presentation\api\endpoints\auth\__init__.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m '.routes.router' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.validation_models.LoginRequest' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.validation_models.LoginResponse' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'dependency_injector.wiring.Provide' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'dependency_injector.wiring.inject' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.Depends' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.HTTPException' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.status' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.security.HTTPAuthorizationCredentials' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.BaseModel' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.EmailStr' imported but unused
+[1msrc/presentation\api\endpoints\auth\routes_di.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.di.container.Container' imported but unused
+[1msrc/presentation\api\endpoints\children\__init__.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.HTTPException' imported but unused
+[1msrc/presentation\api\endpoints\children\__init__.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.status' imported but unused
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Optional' imported but unused
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.HTTPException' imported but unused
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.status' imported but unused
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.validators.security.coppa_validator.coppa_validator' imported but unused
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m129[36m:[m36[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m135[36m:[m17[36m:[m [1m[31mF841[m local variable 'result' is assigned to but never used
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m147[36m:[m63[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m180[36m:[m13[36m:[m [1m[31mF401[m 'src.infrastructure.persistence.models.child_models.ChildModel' imported but unused
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m187[36m:[m27[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m193[36m:[m34[36m:[m [1m[31mW291[m trailing whitespace
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m235[36m:[m53[36m:[m [1m[31mF821[m undefined name 'timedelta'
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m293[36m:[m9[36m:[m [1m[31mF841[m local variable 'e' is assigned to but never used
+[1msrc/presentation\api\endpoints\children\compliance.py[m[36m:[m562[36m:[m5[36m:[m [1m[31mF841[m local variable 'e' is assigned to but never used
+[1msrc/presentation\api\endpoints\children\route_handlers.py[m[36m:[m383[36m:[m24[36m:[m [1m[31mF821[m undefined name 'UsageMonitor'
+[1msrc/presentation\api\endpoints\children\route_handlers.py[m[36m:[m431[36m:[m35[36m:[m [1m[31mF821[m undefined name 'ParentalConsentManager'
+[1msrc/presentation\api\endpoints\children\routes.py[m[36m:[m21[36m:[m5[36m:[m [1m[31mF811[m redefinition of unused 'APIRouter' from line 4
+[1msrc/presentation\api\endpoints\children\routes.py[m[36m:[m21[36m:[m5[36m:[m [1m[31mF811[m redefinition of unused 'HTTPException' from line 4
+[1msrc/presentation\api\endpoints\children\routes.py[m[36m:[m21[36m:[m5[36m:[m [1m[31mF811[m redefinition of unused 'status' from line 4
+[1msrc/presentation\api\endpoints\children\routes_refactored.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'sqlalchemy.func' imported but unused
+[1msrc/presentation\api\endpoints\children\routes_refactored.py[m[36m:[m44[36m:[m9[36m:[m [1m[31mF821[m undefined name 'update_child_endpoint'
+[1msrc/presentation\api\endpoints\children\routes_refactored.py[m[36m:[m54[36m:[m9[36m:[m [1m[31mF821[m undefined name 'delete_child_endpoint'
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'uuid.uuid4' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m4[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.validation_models.ConversationRequest' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'dependency_injector.wiring.Provide' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'dependency_injector.wiring.inject' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.BaseModel' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.Field' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m8[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.field_validator' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m10[36m:[m1[36m:[m [1m[31mF401[m 'src.application.services.ai.ai_orchestration_service.AIOrchestrationService' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mF401[m 'src.application.services.core.conversation_service.ConversationService' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m14[36m:[m1[36m:[m [1m[31mF401[m 'src.application.use_cases.manage_child_profile.ManageChildProfileUseCase' imported but unused
+[1msrc/presentation\api\endpoints\conversations.py[m[36m:[m20[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.security.child_safety.safety_monitor_service.SafetyMonitorService' imported but unused
+[1msrc/presentation\api\endpoints\conversations_paginated.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/presentation\api\endpoints\conversations_paginated.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'datetime.timedelta' imported but unused
+[1msrc/presentation\api\endpoints\conversations_paginated.py[m[36m:[m52[36m:[m13[36m:[m [1m[31mF841[m local variable 'safe_pagination' is assigned to but never used
+[1msrc/presentation\api\endpoints\conversations_paginated.py[m[36m:[m136[36m:[m4[36m:[m [1m[31mF821[m undefined name 'FASTAPI_AVAILABLE'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m96[36m:[m9[36m:[m [1m[31mF821[m undefined name 'Provide'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m96[36m:[m17[36m:[m [1m[31mF821[m undefined name 'Container'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m98[36m:[m49[36m:[m [1m[31mF821[m undefined name 'Provide'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m98[36m:[m57[36m:[m [1m[31mF821[m undefined name 'Container'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m99[36m:[m59[36m:[m [1m[31mF821[m undefined name 'Provide'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m99[36m:[m67[36m:[m [1m[31mF821[m undefined name 'Container'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m100[36m:[m39[36m:[m [1m[31mF821[m undefined name 'Provide'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m100[36m:[m47[36m:[m [1m[31mF821[m undefined name 'Container'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m197[36m:[m49[36m:[m [1m[31mF821[m undefined name 'Provide'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m197[36m:[m57[36m:[m [1m[31mF821[m undefined name 'Container'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m237[36m:[m49[36m:[m [1m[31mF821[m undefined name 'Provide'
+[1msrc/presentation\api\esp32_endpoints.py[m[36m:[m237[36m:[m57[36m:[m [1m[31mF821[m undefined name 'Container'
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m1[36m:[m1[36m:[m [1m[31mF401[m 'src.domain.models.emergency_models.HealthResponse' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m2[36m:[m1[36m:[m [1m[31mF401[m 'datetime.datetime' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m3[36m:[m1[36m:[m [1m[31mF401[m 'typing.Any' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m5[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.status' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.responses.JSONResponse' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'fastapi.responses.PlainTextResponse' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'pydantic.BaseModel' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.health.HealthStatus' imported but unused
+[1msrc/presentation\api\health_endpoints.py[m[36m:[m9[36m:[m1[36m:[m [1m[31mF401[m 'src.infrastructure.health.get_health_manager' imported but unused
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m16[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'json' from line 7
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Awaitable' from line 8
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m17[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Callable' from line 8
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m18[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Any' from line 9
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m20[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'AuditLogEntry' from line 12
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m22[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'HTTPException' from line 10
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m22[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Request' from line 10
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m22[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'Response' from line 10
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m23[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'APIRoute' from line 11
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m25[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'get_logger' from line 13
+[1msrc/presentation\api\middleware\consent_verification.py[m[36m:[m26[36m:[m1[36m:[m [1m[31mF811[m redefinition of unused 'get_consent_manager' from line 14
+[1msrc/presentation\api\middleware\error_handling.py[m[36m:[m6[36m:[m1[36m:[m [1m[31mF401[m 'typing.Union' imported but unused
+[1msrc/presentation\api\middleware\error_handling.py[m[36m:[m7[36m:[m1[36m:[m [1m[31mF401[m 'logging' imported but unused
+[1msrc/presentation\api\middleware\error_handling.py[m[36m:[m13[36m:[m1[36m:[m [1m[31mF401[m 'traceback' imported but unused
+2     E301 expected 1 blank line, found 0
+59    E302 expected 2 blank lines, found 1
+6     E303 too many blank lines (4)
+1     E304 blank lines found after function decorator
+8     E305 expected 2 blank lines after class or function definition, found 0
+8     E402 module level import not at top of file
+27    E704 multiple statements on one line (def)
+2     E712 comparison to True should be 'if cond is True:' or 'if cond:'
+155   F401 '.infrastructure_services.IEventBus' imported but unused
+3     F403 'from .constants import *' used; unable to detect undefined names
+2     F541 f-string is missing placeholders
+44    F811 redefinition of unused 'AITeddyBaseError' from line 6
+35    F821 undefined name 'cls'
+1     F824 `global _csrf_protection` is unused: name is never assigned in scope
+21    F841 local variable 'e' is assigned to but never used
+40    W291 trailing whitespace
+6     W292 no newline at end of file
+166   W293 blank line contains whitespace
+4     W391 blank line at end of file
+1     W504 line break after binary operator

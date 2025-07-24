@@ -4,19 +4,13 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock
 
-from application.services.emotion_analyzer import (
-    EmotionAnalyzer,
-    EmotionResult,
-)
+from application.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 from application.services.response_generator import (
     ActivityType,
     ResponseContext,
     ResponseGenerator,
 )
-from application.services.session_manager import (
-    SessionData,
-    SessionManager,
-)
+from application.services.session_manager import SessionData, SessionManager
 from application.services.transcription_service import (
     TranscriptionResult,
     TranscriptionService,

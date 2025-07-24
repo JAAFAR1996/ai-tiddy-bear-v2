@@ -39,9 +39,7 @@ class TokenService:
                 "exp": datetime.utcnow()
                 + timedelta(minutes=self.access_token_expire_minutes),
             }
-            return jwt.encode(
-                to_encode, self.secret_key, algorithm=self.algorithm
-            )
+            return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         except (KeyError, TypeError) as e:
             logger.error(f"Invalid user data for token creation: {e}")
             raise ValueError("Failed to create access token")
@@ -60,9 +58,7 @@ class TokenService:
                 "exp": datetime.utcnow()
                 + timedelta(days=self.refresh_token_expire_days),
             }
-            return jwt.encode(
-                to_encode, self.secret_key, algorithm=self.algorithm
-            )
+            return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         except (KeyError, TypeError) as e:
             logger.error(f"Invalid user data for refresh token: {e}")
             raise ValueError("Failed to create refresh token")
@@ -73,9 +69,7 @@ class TokenService:
     def verify_token(self, token: str) -> dict[str, Any]:
         """Verify and decode JWT token."""
         try:
-            payload = jwt.decode(
-                token, self.secret_key, algorithms=[self.algorithm]
-            )
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             return payload
         except JWTError as e:
             logger.error(f"JWT verification error: {e}")
@@ -85,14 +79,14 @@ class TokenService:
         """Create new access token from refresh token."""
         try:
             payload = self.verify_token(refresh_token)
-            
+
             if payload.get("type") != "refresh":
                 raise ValueError("Invalid refresh token")
-            
+
             user_data = {
                 "id": payload["sub"],
                 "email": payload["email"],
-                "role": payload.get("role", "user")
+                "role": payload.get("role", "user"),
             }
             return self.create_access_token(user_data)
         except ValueError:

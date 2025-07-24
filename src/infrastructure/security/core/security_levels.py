@@ -5,9 +5,9 @@ from enum import Enum
 
 class SecurityLevel(Enum):
     """Unified security levels for all security components."""
-    
+
     DEVELOPMENT = "development"
-    STAGING = "staging" 
+    STAGING = "staging"
     PRODUCTION = "production"
     CHILD_STRICT = "child_strict"
     CHILD_SAFETY_ENHANCED = "child_safety_enhanced"
@@ -17,7 +17,7 @@ class SecurityLevel(Enum):
 
 class RequestSecurityLevel(Enum):
     """Security levels for request signing."""
-    
+
     CHILD_INTERACTION = "child_interaction"
     PARENT_ACCESS = "parent_access"
     ADMIN_ACCESS = "admin_access"

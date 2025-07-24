@@ -1,7 +1,7 @@
 """Child safety and protection services."""
 
-from .safety import SafetyService
 from .parent_child_verification_service import ParentChildVerificationService
+from .safety import SafetyService
 
 __all__ = [
     "SafetyService",

@@ -9,9 +9,7 @@ import pytest
 from freezegun import freeze_time
 
 from src.domain.models.data_retention_models import DataType, RetentionPolicy
-from src.infrastructure.services.data_retention_service import (
-    COPPADataRetentionService,
-)
+from src.infrastructure.services.data_retention_service import COPPADataRetentionService
 
 
 class TestCOPPADataRetentionService:
