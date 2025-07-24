@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.domain.models.consent_models_domain import ConsentType
-from src.domain.models.models_infra import Base
+from src.infrastructure.persistence.models.base import Base
 
 
 class SafetyEventType(enum.Enum):

@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 
 from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.conversation_models import (
+from src.infrastructure.persistence.models.conversation_models import (
     ConversationModel,
 )
 from src.infrastructure.persistence.conversation_repository import (

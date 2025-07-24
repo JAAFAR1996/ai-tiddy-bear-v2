@@ -178,12 +178,6 @@ async def search_children_endpoint(
     children = result.scalars().all()
     return list(children)
 
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
-
 
 async def get_children_summary_endpoint(
     db: AsyncSession = Depends(get_db_session)
@@ -193,12 +187,6 @@ async def get_children_summary_endpoint(
     children = result.scalars().all()
     count = len(children)
     return {"total": count, "active": count}
-
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
 
 
 async def get_child_safety_summary_endpoint(
@@ -213,11 +201,6 @@ async def get_child_safety_summary_endpoint(
             detail=f"Child with ID {child_id} not found"
         )
     return {"child_id": child_id, "safety_score": 95, "alerts": 0}
-
-try:
-    # Already implemented above
-    pass
-except ImportError:
     pass
 
 
@@ -234,12 +217,6 @@ async def get_child_interactions_endpoint(
             detail=f"Child with ID {child_id} not found"
         )
     return {"child_id": child_id, "total_interactions": 0}
-
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
 
 
 def setup_admin_children_routes(router: APIRouter) -> None:
@@ -277,17 +254,17 @@ def setup_admin_children_routes(router: APIRouter) -> None:
 
 async def get_all_children_admin_endpoint():
     """Get all children profiles across all parents (admin only)."""
-    pass
+    raise NotImplementedError("Admin endpoint not yet implemented")
 
 
 async def get_children_statistics_admin_endpoint():
     """Get system-wide children statistics (admin only)."""
-    pass
+    raise NotImplementedError("Admin statistics endpoint not yet implemented")
 
 
 async def bulk_update_children_admin_endpoint():
     """Perform bulk updates on children profiles (admin only)."""
-    pass
+    raise NotImplementedError("Bulk update endpoint not yet implemented")
 
 
 def create_complete_children_router() -> APIRouter:

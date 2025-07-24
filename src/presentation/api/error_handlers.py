@@ -41,9 +41,14 @@ class AITeddyErrorHandler:
 
 
 def validate_child_access(user_context, child_id):
-    """Temporary child access validation - PLACEHOLDER"""
-    # TODO: Implement real child access validation
+    """Child access validation with basic permission checks."""
+    if not user_context:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
     user_id = user_context.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid user context")
+
     child_ids = user_context.get("child_ids", [])
 
     if child_id not in child_ids:

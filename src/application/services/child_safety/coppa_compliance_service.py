@@ -14,7 +14,7 @@ from src.infrastructure.validators.security.coppa_validator import (
     COPPAValidator,
     COPPAValidationResult,
 )
-from src.domain.models.consent_models_infra import ConsentModel
+from src.infrastructure.persistence.models.consent_models_infra import ConsentModel
 from src.infrastructure.logging_config import get_logger
 from src.application.services.child_safety.consent_service import ConsentService
 from src.common.exceptions import ConsentError

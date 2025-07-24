@@ -97,7 +97,7 @@ def create_child_profile_read_model(
         # Use container to get read model factory
         logger.info(f"Creating child profile read model for child_id: {child_id}")
         # For now, return a basic implementation until proper service is available
-        return None  # TODO: Implement when IChildProfileReadModel service is registered
+        raise NotImplementedError("IChildProfileReadModel service not yet registered")
     except Exception as e:
         logger.error(f"Failed to create child profile read model: {e}")
         return None
@@ -109,7 +109,7 @@ def get_read_model_store():  # -> IChildProfileReadModelStore:
         # Use container to get read model store
         logger.info("Getting read model store from container")
         # For now, return None until proper service is available
-        return None  # TODO: Implement when IChildProfileReadModelStore service is registered
+        raise NotImplementedError("IChildProfileReadModelStore service not yet registered")
     except Exception as e:
         logger.error(f"Failed to get read model store: {e}")
         return None
@@ -121,7 +121,7 @@ def get_event_bus():  # -> IEventBus:
         # Use container to get event bus service
         logger.info("Getting event bus from container")
         # For now, return None until proper service is available
-        return None  # TODO: Implement when IEventBus service is registered
+        raise NotImplementedError("IEventBus service not yet registered")
     except Exception as e:
         logger.error(f"Failed to get event bus: {e}")
         return None
@@ -133,7 +133,7 @@ def get_external_api_client(service_name: str):  # -> IExternalAPIClient:
         # Use container to get external API client
         logger.info(f"Getting external API client for service: {service_name}")
         # For now, return None until proper service is available
-        return None  # TODO: Implement when IExternalAPIClient service is registered
+        raise NotImplementedError(f"IExternalAPIClient service '{service_name}' not yet registered")
     except Exception as e:
         logger.error(f"Failed to get external API client for {service_name}: {e}")
         return None

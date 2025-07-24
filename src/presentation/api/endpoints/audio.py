@@ -10,6 +10,7 @@ from src.presentation.api.dependencies import get_audio_processing_service
 
 router = APIRouter()
 
+
 @router.post(
     "/transcribe",
     response_class=StreamingResponse,
@@ -23,5 +24,4 @@ async def transcribe_audio(
     current_user: UserInfo = Depends(get_current_user),
 ) -> StreamingResponse:
     """Transcribes an uploaded audio file and processes it to generate a child-safe AI response."""
-    # Implementation here
-    pass
+    raise NotImplementedError("Audio transcription endpoint not yet implemented")

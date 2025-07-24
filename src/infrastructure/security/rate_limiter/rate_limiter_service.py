@@ -48,8 +48,8 @@ class RateLimiterService:
             del self.locked_accounts[email]
             self.login_attempts[email] = []
             logger.info(
-                f"Account unlocked after lockout period: {email}",
-            )  # TODO: Sanitize email
+                f"Account unlocked after lockout period: {email[:3]}***@{email.split('@')[1] if '@' in email else 'domain'}",
+            )
 
         # Clean old attempts (older than 1 hour)
         hour_ago = now - timedelta(hours=1)

@@ -12,7 +12,7 @@ from sqlalchemy import select, update, delete, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.domain.models.consent_models_infra import ConsentModel
+from src.infrastructure.persistence.models.consent_models_infra import ConsentModel
 from src.domain.models.consent_models_domain import ConsentType, ConsentStatus
 from src.infrastructure.persistence.models.child_models import ChildModel
 from src.infrastructure.persistence.models.parent_models import ParentModel

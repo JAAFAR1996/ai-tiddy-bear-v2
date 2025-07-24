@@ -11,7 +11,7 @@ from sqlalchemy import and_, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 
-from src.domain.models.consent_models_infra import ConsentModel
+from src.infrastructure.persistence.models.consent_models_infra import ConsentModel
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.validators.security.database_input_validator import (

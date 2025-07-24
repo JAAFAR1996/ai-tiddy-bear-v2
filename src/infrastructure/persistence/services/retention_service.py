@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.persistence.models.child_models import ChildModel
 from src.infrastructure.persistence.models.conversation_models import ConversationModel
-from src.domain.models.consent_models_infra import SafetyEventModel
+from src.infrastructure.persistence.models.consent_models_infra import SafetyEventModel
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)

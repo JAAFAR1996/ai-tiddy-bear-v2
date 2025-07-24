@@ -14,7 +14,7 @@ from sqlalchemy import text
 from src.infrastructure.config.settings import Settings
 from src.infrastructure.di.container import Container
 from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.models_infra import Base
+from src.infrastructure.persistence.models.base import Base
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
