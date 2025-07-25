@@ -28,6 +28,24 @@ class DefaultConfigurations:
                 block_duration_seconds=3600,  # 1 hour block
                 child_safe_mode=True,
             ),
+            # Registration rate limits (stricter than login)
+            "auth_register": RateLimitConfig(
+                limit_type=RateLimitType.AUTHENTICATION_ATTEMPTS,
+                strategy=RateLimitStrategy.FIXED_WINDOW,
+                max_requests=3,  # 3 registration attempts per hour
+                window_seconds=3600,
+                block_duration_seconds=7200,  # 2 hour block
+                child_safe_mode=True,
+            ),
+            # Token refresh rate limits
+            "auth_refresh": RateLimitConfig(
+                limit_type=RateLimitType.AUTHENTICATION_ATTEMPTS,
+                strategy=RateLimitStrategy.SLIDING_WINDOW,
+                max_requests=10,  # 10 refresh attempts per minute
+                window_seconds=60,
+                block_duration_seconds=600,  # 10 minute block
+                child_safe_mode=True,
+            ),
             # API endpoint limits
             "api_general": RateLimitConfig(
                 limit_type=RateLimitType.REQUESTS_PER_MINUTE,

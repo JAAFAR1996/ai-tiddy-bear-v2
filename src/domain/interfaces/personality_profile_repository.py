@@ -22,5 +22,16 @@ class IPersonalityProfileRepository(ABC):
         """Deletes a personality profile by child ID."""
 
     @abstractmethod
-    async def get_all_profiles(self) -> list[ChildPersonality]:
-        """Retrieves all personality profiles."""
+    async def get_all_profiles(
+        self, batch_size: int = 100, cursor: int = 0, max_profiles: int | None = None
+    ) -> list[ChildPersonality]:
+        """Retrieves all personality profiles with efficient pagination support.
+
+        Args:
+            batch_size: Number of keys to process per iteration (default: 100)
+            cursor: Starting cursor for pagination (default: 0)
+            max_profiles: Maximum number of profiles to return (default: None)
+
+        Returns:
+            List of ChildPersonality objects
+        """

@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
+from uuid import uuid4
 
 import jwt
 
@@ -97,6 +98,7 @@ class TokenService:
                 "sub": user_data["id"],  # Subject - user ID
                 "exp": expire,  # Expiration time
                 "iat": datetime.utcnow(),  # Issued at
+                "jti": str(uuid4()),  # JWT ID for blacklisting
                 "type": "access",  # Token type
             }
 
@@ -150,6 +152,7 @@ class TokenService:
                 "sub": user_data["id"],  # Subject - user ID
                 "exp": expire,  # Expiration time
                 "iat": datetime.utcnow(),  # Issued at
+                "jti": str(uuid4()),  # JWT ID for blacklisting
                 "type": "refresh",  # Token type
             }
 
@@ -203,6 +206,9 @@ class TokenService:
 
             if "exp" not in payload:
                 raise ValueError("Token missing expiration field")
+
+            if "jti" not in payload:
+                raise ValueError("Token missing JWT ID field")
 
             if "type" not in payload:
                 raise ValueError("Token missing type field")

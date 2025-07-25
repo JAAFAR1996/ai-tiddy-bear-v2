@@ -1,6 +1,6 @@
 """Children compliance endpoints with COPPA support."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import List
 
@@ -493,15 +493,46 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
 
         # Find parent by email and create consent request
         with SessionLocal() as session:
-            # For now, create a consent record with pending status
-            # In production, this would trigger email/SMS notification
-            consent_service = ConsentDatabaseService(session)
+            # Import required repository for parent lookup
+            from src.infrastructure.persistence.database_manager import Database
+            from src.infrastructure.persistence.repositories.user_repository import (
+                UserRepository,
+            )
 
-            # Create a pending consent record (parent_id would be looked up by email)
-            # For now, use email as parent identifier until parent lookup is implemented
+            # Initialize user repository for parent lookup
+            database = Database()
+            user_repository = UserRepository(database)
+
+            # Look up actual parent ID by email
+            parent_user = await user_repository.get_user_by_email(parent_email)
+            if not parent_user:
+                logger.warning(f"Parent not found for email: {parent_email}")
+                return {
+                    "status": "error",
+                    "child_id": child_id,
+                    "parent_email": parent_email,
+                    "error": f"No parent account found for email: {parent_email}",
+                    "next_steps": "Parent must create an account first",
+                }
+
+            # Verify parent account is active
+            if not parent_user.get("role") in ["parent", "guardian"]:
+                logger.warning(f"Invalid parent role for email: {parent_email}")
+                return {
+                    "status": "error",
+                    "child_id": child_id,
+                    "parent_email": parent_email,
+                    "error": "Account is not registered as a parent or guardian",
+                }
+
+            parent_id = parent_user["id"]
+            logger.info(f"Found parent ID {parent_id} for email {parent_email}")
+
+            # Create consent record with actual parent ID
+            consent_service = ConsentDatabaseService(session)
             consent_id = await consent_service.create_consent_record(
                 child_id=child_id,
-                parent_id=parent_email,  # TODO: Look up actual parent ID by email
+                parent_id=parent_id,  # Now using actual parent ID from database lookup
                 data_types=["voice_interactions", "preferences"],
                 consent_type=ConsentType.EXPLICIT,
             )

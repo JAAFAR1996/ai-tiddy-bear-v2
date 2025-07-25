@@ -76,7 +76,7 @@ class SafetyRepository:
         except SecurityError as err:
             logger.exception("Security error recording safety event")
             raise ValueError("Invalid data for safety event") from err
-        except Exception as err:
+        except Exception:
             logger.exception("Error recording safety event")
             raise
         else:

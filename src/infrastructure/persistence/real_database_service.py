@@ -8,6 +8,8 @@ from sqlalchemy.future import select
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.models.child_models import ChildModel
 
+from .session_manager import get_async_session
+
 logger = get_logger(__name__, component="persistence")
 
 

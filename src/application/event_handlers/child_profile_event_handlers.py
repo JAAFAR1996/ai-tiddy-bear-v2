@@ -1,10 +1,10 @@
 import asyncio
 import logging
+from uuid import UUID
 
 from src.application.interfaces.read_model_interfaces import (
     IChildProfileReadModel,
     IChildProfileReadModelStore,
-    create_child_profile_read_model,
 )
 from src.domain.events.child_profile_updated import ChildProfileUpdated
 from src.domain.events.child_registered import ChildRegistered
@@ -45,11 +45,16 @@ class ChildProfileEventHandlers:
 
         """
         try:
-            child_read_model = create_child_profile_read_model(
-                child_id=event.child_id,
-                name=event.name,
-                age=event.age,
-                preferences=event.preferences,
+            # Use concrete implementation from DI container
+            from src.infrastructure.read_models.child_profile_read_model import (
+                ChildProfileReadModel,
+            )
+
+            child_read_model = ChildProfileReadModel(
+                _id=UUID(event.child_id),
+                _name=event.name,
+                _age=event.age,
+                _preferences=event.preferences,
             )
             await self._async_save(child_read_model)
             logger.debug(

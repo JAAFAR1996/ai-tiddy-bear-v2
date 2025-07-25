@@ -35,7 +35,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.endpoint_configs = {
             "/api/auth/login": "auth_login",
             "/api/auth/logout": "api_general",
-            "/api/auth/register": "auth_login",
+            "/api/auth/register": "auth_register",
+            "/api/auth/refresh": "auth_refresh",
             "/api/children": "child_data_access",
             "/api/children/": "child_data_access",
             "/api/conversations": "child_interaction",
@@ -212,7 +213,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         child_id = self._get_child_id(request)
 
         # For authentication endpoints, use IP address
-        if config_name == "auth_login":
+        if config_name in ["auth_login", "auth_register", "auth_refresh"]:
             return f"ip:{client_ip}"
 
         # For child-related endpoints, use child ID if available

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from dependency_injector.wiring import Provide
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
@@ -8,6 +9,7 @@ from src.application.services.ai.ai_orchestration_service import AIOrchestration
 from src.application.services.audio.transcription_service import TranscriptionService
 from src.application.services.audio.tts_service import TTSService
 from src.domain.models.user import User
+from src.infrastructure.di.container import Container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.real_database_service import DatabaseService
 

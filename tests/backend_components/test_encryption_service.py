@@ -25,71 +25,51 @@ except ImportError:
 
     # Mock pytest when not available
     if pytest is None:
+
         class MockPytest:
-
-        def fixture(self, *args, **kwargs):
-            pass
-
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            pass
-
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    pass
-
-                    def decorator(func):
-                return func
-
-                    return decorator
-
-                def asyncio(self, func):
-                    pass
-
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    pass
+                return decorator
 
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
+                        return func
+
+                    def slow(self, func):
+                        return func
+
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                return MockMark()
+
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
+
+                    def __exit__(self, *args):
+                        return False
+
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
                     return func
 
-                def skip(self, reason=""):
-                    pass
-
-                    def decorator(func):
-                return func
-
-                    return decorator
-
-            return MockMark()
-
-        def raises(self, exception):
-            pass
-
-            class MockRaises:
-                def __enter__(self):
-                    pass
-
-                    return self
-
-                def __exit__(self, *args):
-                    pass
-
-                    return False
-
-            return MockRaises()
-
-        def skip(self, reason=""):
-            pass
-
-            def decorator(func):
-                return func
-
-            return decorator
+                return decorator
 
     pytest = MockPytest()
 
@@ -142,9 +122,7 @@ class TestUnifiedEncryptionService:
 
         for level, expiry_days in levels:
             # Encrypt
-            encrypted = await encryption_service.encrypt(
-                test_data, level=level
-            )
+            encrypted = await encryption_service.encrypt(test_data, level=level)
 
             # Assertions
             assert encrypted.encryption_level == level
@@ -153,16 +131,9 @@ class TestUnifiedEncryptionService:
 
             # Check expiry
             if encrypted.expires_at:
-                expected_expiry = datetime.utcnow() + timedelta(
-                    days=expiry_days
-                )
+                expected_expiry = datetime.utcnow() + timedelta(days=expiry_days)
                 assert (
-                    abs(
-                        (
-                            encrypted.expires_at - expected_expiry
-                        ).total_seconds()
-                    )
-                    < 60
+                    abs((encrypted.expires_at - expected_expiry).total_seconds()) < 60
                 )
 
             # Decrypt
@@ -187,9 +158,7 @@ class TestUnifiedEncryptionService:
         }
 
         # Encrypt child data
-        encrypted_child_data = await encryption_service.encrypt_child_data(
-            child_data
-        )
+        encrypted_child_data = await encryption_service.encrypt_child_data(child_data)
 
         # Assert sensitive fields are encrypted
         assert "encrypted_name" in encrypted_child_data
@@ -224,9 +193,7 @@ class TestUnifiedEncryptionService:
         child_id = "child456"
 
         # Encrypt audio
-        encrypted_audio = await encryption_service.encrypt_audio(
-            audio_data, child_id
-        )
+        encrypted_audio = await encryption_service.encrypt_audio(audio_data, child_id)
 
         # Assertions
         assert encrypted_audio.encryption_level == EncryptionLevel.CRITICAL
@@ -261,9 +228,7 @@ class TestUnifiedEncryptionService:
         # Add some keys to cache
         for i in range(5):
             key_id = f"key_{i}"
-            encryption_service._generate_data_key(
-                key_id, EncryptionLevel.STANDARD
-            )
+            encryption_service._generate_data_key(key_id, EncryptionLevel.STANDARD)
 
         # Check keys in cache
         assert len(encryption_service._key_cache) == 5

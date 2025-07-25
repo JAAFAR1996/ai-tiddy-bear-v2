@@ -268,7 +268,7 @@ class COPPAComplianceService:
             for consent_type in consent_types:
                 consent_id = f"consent_{uuid4().hex}"
 
-                record = ConsentRecord(
+                ConsentRecord(
                     consent_id=consent_id,
                     child_id=consent_data["child_id"],
                     parent_id=consent_data["parent_id"],

@@ -209,11 +209,15 @@ class EnvironmentSecurityValidator:
                             var_name
                         ] = "postgresql://dev:dev@localhost:5432/ai_teddy_dev"
                     elif var_name == "OPENAI_API_KEY":
+                        # OPENAI_API_KEY is required even in development
+                        # No fallbacks or placeholders allowed
                         logger.error(
-                            "No real development key available - environment key not configured."
+                            f"Missing required environment variable: {var_name}. "
+                            "OpenAI API key must be provided for the application to function properly."
                         )
-                        raise NotImplementedError(
-                            "No real development key available - environment key not configured."
+                        raise EnvironmentError(
+                            f"Required environment variable {var_name} is not set. "
+                            "Please set your OpenAI API key in the environment variables."
                         )
                     else:
                         config[var_name] = cls.generate_secure_secret()

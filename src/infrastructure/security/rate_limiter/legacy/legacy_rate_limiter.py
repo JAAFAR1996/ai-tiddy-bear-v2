@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.rate_limiter.core import ChildSafetyRateLimiter
 
 logger = get_logger(__name__, component="security")
 

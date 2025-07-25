@@ -5,14 +5,16 @@ class IEmailClient(ABC):
     """Abstract interface for sending emails."""
 
     @abstractmethod
-    async def send_email(self, recipient: str, subject: str, body: str) -> bool: ...
+    async def send_email(self, recipient: str, subject: str, body: str) -> bool:
+        ...
 
 
 class ISMSClient(ABC):
     """Abstract interface for sending SMS messages."""
 
     @abstractmethod
-    async def send_sms(self, recipient_phone_number: str, message: str) -> bool: ...
+    async def send_sms(self, recipient_phone_number: str, message: str) -> bool:
+        ...
 
 
 class IInAppNotifier(ABC):
@@ -24,7 +26,8 @@ class IInAppNotifier(ABC):
         recipient_user_id: str,
         message: str,
         metadata: dict,
-    ) -> bool: ...
+    ) -> bool:
+        ...
 
 
 class IPushNotifier(ABC):
@@ -37,4 +40,5 @@ class IPushNotifier(ABC):
         title: str,
         body: str,
         metadata: dict,
-    ) -> bool: ...
+    ) -> bool:
+        ...

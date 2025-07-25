@@ -23,7 +23,7 @@ class ChildAgeGroup(str, Enum):
     MIDDLE_SCHOOL = "middle_school"  # 12-13
 
 
-class LanguageCode(str, Enum):
+Code(str, Enum):
     """Supported language codes."""
 
     ENGLISH = "en"

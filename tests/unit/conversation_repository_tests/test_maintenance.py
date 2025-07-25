@@ -22,64 +22,50 @@ except ImportError:
     except ImportError:
         # Mock pytest when not available
 
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            pass
-
-            def decorator(func):
-                return func
-            return decorator
-
-        def mark(self):
-            pass
-
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    pass
-
-                    def decorator(func):
-                return func
-                    return decorator
-
-                def asyncio(self, func):
-                    pass
-
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    pass
+                return decorator
 
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
+                        return func
+
+                    def slow(self, func):
+                        return func
+
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                return MockMark()
+
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
+
+                    def __exit__(self, *args):
+                        return False
+
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
                     return func
 
-                def skip(self, reason=""):
-                    pass
-
-                    def decorator(func):
-                return func
-                    return decorator
-            return MockMark()
-
-        def raises(self, exception):
-            pass
-
-            class MockRaises:
-                def __enter__(self):
-                    pass
-
-                    return self
-
-                def __exit__(self, *args):
-                    pass
-
-                    return False
-            return MockRaises()
-
-        def skip(self, reason=""):
-            pass
-
-            def decorator(func):
-                return func
-            return decorator
+                return decorator
 
     pytest = MockPytest()
 
@@ -88,8 +74,7 @@ class TestConversationRepositoryMaintenance:
     """Test maintenance and optimization functionality"""
 
     @pytest.mark.asyncio
-    async def test_bulk_archive_old_conversations(
-            self, conversation_repository):
+    async def test_bulk_archive_old_conversations(self, conversation_repository):
         """Test archiving old conversations"""
         # Arrange
         old_conversations = []
@@ -130,8 +115,7 @@ class TestConversationRepositoryMaintenance:
         pytest.assume("top_interaction_types" in metrics)
 
     @pytest.mark.asyncio
-    async def test_optimize_conversation_performance(
-            self, conversation_repository):
+    async def test_optimize_conversation_performance(self, conversation_repository):
         """Test performance optimization analysis"""
         # Arrange - Create some conversations for analysis
         for i in range(5):
@@ -158,8 +142,7 @@ class TestConversationRepositoryMaintenance:
         pytest.assume("recommendations" in optimization)
 
     @pytest.mark.asyncio
-    async def test_find_conversations_requiring_review(
-            self, conversation_repository):
+    async def test_find_conversations_requiring_review(self, conversation_repository):
         """Test finding conversations that require review"""
         # Arrange
         flagged_conv = Conversation(

@@ -41,9 +41,9 @@ class DisorderAnalyzer:
                     analysis_result["disorders_detected"].append(
                         analysis["disorder_type"],
                     )
-                    analysis_result["confidence_scores"][analysis["disorder_type"]] = (
-                        analysis["confidence"]
-                    )
+                    analysis_result["confidence_scores"][
+                        analysis["disorder_type"]
+                    ] = analysis["confidence"]
                     analysis_result["recommendations"].extend(
                         analysis["recommendations"],
                     )

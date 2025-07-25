@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Any
+from uuid import uuid4
 
 from fastapi import Depends
 from jose import JWTError, jwt
@@ -35,6 +36,7 @@ class TokenService:
                 "email": user_data["email"],
                 "role": user_data["role"],
                 "type": "access",
+                "jti": str(uuid4()),
                 "iat": datetime.utcnow(),
                 "exp": datetime.utcnow()
                 + timedelta(minutes=self.access_token_expire_minutes),
@@ -54,6 +56,7 @@ class TokenService:
                 "sub": user_data["id"],
                 "email": user_data["email"],
                 "type": "refresh",
+                "jti": str(uuid4()),
                 "iat": datetime.utcnow(),
                 "exp": datetime.utcnow()
                 + timedelta(days=self.refresh_token_expire_days),
@@ -66,19 +69,24 @@ class TokenService:
             logger.error(f"JWT encoding error: {e}")
             raise ValueError("Failed to create refresh token")
 
-    def verify_token(self, token: str) -> dict[str, Any]:
+    async def verify_token(self, token: str) -> dict[str, Any]:
         """Verify and decode JWT token."""
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+
+            # Validate required fields
+            if "jti" not in payload:
+                raise ValueError("Token missing JWT ID field")
+
             return payload
         except JWTError as e:
             logger.error(f"JWT verification error: {e}")
             raise ValueError("Invalid token")
 
-    def refresh_access_token(self, refresh_token: str) -> str:
+    async def refresh_access_token(self, refresh_token: str) -> str:
         """Create new access token from refresh token."""
         try:
-            payload = self.verify_token(refresh_token)
+            payload = await self.verify_token(refresh_token)
 
             if payload.get("type") != "refresh":
                 raise ValueError("Invalid refresh token")

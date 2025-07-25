@@ -9,7 +9,6 @@ from uuid import uuid4
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import select
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
@@ -226,7 +225,7 @@ class ConsentRepository:
                     and_(
                         ConsentModel.parent_id == parent_id,
                         ConsentModel.consent_type == consent_type,
-                        ConsentModel.granted == True,
+                        ConsentModel.granted.is_(True),
                         or_(
                             ConsentModel.expires_at.is_(None),
                             ConsentModel.expires_at > datetime.utcnow(),

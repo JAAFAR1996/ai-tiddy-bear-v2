@@ -12,6 +12,7 @@ from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.models.user_model import UserModel
 from src.infrastructure.security.auth.token_service import TokenService
+from src.infrastructure.security.core.security_middleware import get_redis_client
 from src.infrastructure.security.password_hasher import PasswordHasher
 
 logger = get_logger(__name__, component="security")
@@ -76,17 +77,16 @@ class RealAuthService:
         """Validate JWT token and check Redis blacklist."""
         try:
             # Decode and validate token
-            payload = self.token_service.verify_token(token)
+            payload = await self.token_service.verify_token(token)
 
             # Check Redis blacklist
             jti = payload.get("jti")
             if jti:
                 # Check if token is blacklisted
-                # redis_client = get_redis_client()
-                # blacklisted = await redis_client.get(f"blacklist:{jti}")
-                # if blacklisted:
-                #     return None
-                pass
+                redis_client = get_redis_client()
+                blacklisted = await redis_client.get(f"blacklist:{jti}")
+                if blacklisted:
+                    return None
 
             return payload
 
@@ -98,7 +98,7 @@ class RealAuthService:
         """Add token to Redis blacklist with REAL implementation."""
         try:
             # Decode token to get jti
-            payload = self.token_service.verify_token(token)
+            payload = await self.token_service.verify_token(token)
             jti = payload.get("jti")
 
             if not jti:
@@ -106,8 +106,8 @@ class RealAuthService:
                 return False
 
             # REAL Redis blacklisting implementation
-            # redis_client = get_redis_client()
-            # await redis_client.setex(f"blacklist:{jti}", 86400, "1")
+            redis_client = get_redis_client()
+            await redis_client.setex(f"blacklist:{jti}", 86400, "1")
 
             logger.info("Token blacklisted successfully: %s", jti[:8])
             return True

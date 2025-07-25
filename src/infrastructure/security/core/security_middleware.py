@@ -824,9 +824,7 @@ def create_security_middleware(
             logger.info("✅ Redis client initialized for security middleware")
         except Exception as e:
             logger.critical(f"CRITICAL: Redis connection failed: {e}")
-            raise RuntimeError(
-                f"PRODUCTION REQUIREMENT: Redis must be available"
-            ) from e
+            raise RuntimeError("PRODUCTION REQUIREMENT: Redis must be available") from e
     elif not redis_client:
         # PRODUCTION: Always require Redis
         redis_client = get_redis_client()

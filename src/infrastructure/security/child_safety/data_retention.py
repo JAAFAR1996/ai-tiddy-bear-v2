@@ -73,6 +73,7 @@ class DataRetentionManager:
         COPPA CONDITIONAL: Uses COPPA config to determine retention period.
         """
         # COPPA CONDITIONAL: Use the centralized retention calculation
+        base_retention = 90  # Default base retention
 
         # Adjust based on consent types
         if (
@@ -323,7 +324,7 @@ class DataRetentionManager:
     async def _create_deletion_audit_record(self, child_id: str) -> bool:
         """Create audit record for data deletion."""
         try:
-            audit_record = {
+            {
                 "child_id": child_id,
                 "deletion_date": datetime.utcnow().isoformat(),
                 "deletion_reason": "COPPA retention period expired",

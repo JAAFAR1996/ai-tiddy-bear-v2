@@ -2,7 +2,11 @@
 All exceptions should be imported from this module.
 """
 
+from enum import Enum
+
 # Application exceptions
+from typing import Any, Dict, Optional
+
 from .application_exceptions import (
     ApplicationException,
     InvalidInputError,
@@ -57,10 +61,6 @@ __all__ = [
     "SecurityError",
     "RateLimitExceededError",
 ]
-"""Application-layer exceptions."""
-from typing import Any, Optional
-
-from .base_exceptions import AITeddyBaseError, ErrorCategory
 
 
 class ApplicationException(AITeddyBaseError):
@@ -115,8 +115,6 @@ class StartupValidationException(ApplicationException):
 """Base exceptions for AI Teddy Bear system.
 Central location for all base exception classes.
 """
-from enum import Enum
-from typing import Any, Dict, Optional
 
 
 class ErrorCategory(Enum):
@@ -147,9 +145,6 @@ class AITeddyBaseError(Exception):
 
 
 """Domain-specific exceptions."""
-from typing import Any, Optional
-
-from .base_exceptions import AITeddyBaseError, ErrorCategory
 
 
 class DomainException(AITeddyBaseError):
@@ -229,9 +224,6 @@ class ConsentError(DomainException):
 
 
 """Infrastructure-layer exceptions."""
-from typing import Any, Optional
-
-from .base_exceptions import AITeddyBaseError, ErrorCategory
 
 
 class InfrastructureException(AITeddyBaseError):

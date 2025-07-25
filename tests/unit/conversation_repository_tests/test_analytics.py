@@ -22,64 +22,50 @@ except ImportError:
     except ImportError:
         # Mock pytest when not available
 
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            pass
-
-            def decorator(func):
-                return func
-            return decorator
-
-        def mark(self):
-            pass
-
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    pass
-
-                    def decorator(func):
-                return func
-                    return decorator
-
-                def asyncio(self, func):
-                    pass
-
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    pass
+                return decorator
 
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
+                        return func
+
+                    def slow(self, func):
+                        return func
+
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                return MockMark()
+
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
+
+                    def __exit__(self, *args):
+                        return False
+
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
                     return func
 
-                def skip(self, reason=""):
-                    pass
-
-                    def decorator(func):
-                return func
-                    return decorator
-            return MockMark()
-
-        def raises(self, exception):
-            pass
-
-            class MockRaises:
-                def __enter__(self):
-                    pass
-
-                    return self
-
-                def __exit__(self, *args):
-                    pass
-
-                    return False
-            return MockRaises()
-
-        def skip(self, reason=""):
-            pass
-
-            def decorator(func):
-                return func
-            return decorator
+                return decorator
 
     pytest = MockPytest()
 

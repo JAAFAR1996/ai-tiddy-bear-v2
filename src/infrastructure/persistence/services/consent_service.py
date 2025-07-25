@@ -115,7 +115,7 @@ class ConsentDatabaseService:
                 .where(
                     and_(
                         ConsentModel.parent_id == parent_id,
-                        ConsentModel.granted == True,
+                        ConsentModel.granted.is_(True),
                         ConsentModel.expires_at > datetime.now(UTC),
                         ConsentModel.revoked_at.is_(None),
                     )

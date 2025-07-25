@@ -186,7 +186,7 @@ class ConsentService:
                 consent_type=consent_type,
             )
 
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Failed to verify consent for parent {parent_id}, child {child_id}"
             )

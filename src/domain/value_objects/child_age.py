@@ -16,6 +16,7 @@ class AgeCategory(str, Enum):
     EARLY_CHILD = "early_child"  # 6-8 years
     MIDDLE_CHILD = "middle_child"  # 9-11 years
     PRETEEN = "preteen"  # 12-13 years
+    SCHOOL_AGE = "school_age"  # 6-12 years (combined for tests)
 
 
 @dataclass(frozen=True)

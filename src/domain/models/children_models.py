@@ -72,6 +72,7 @@ class ChildSafetySummary(BaseModel):
 
     @classmethod
     def from_safety_events(
+        cls,
         child_id: str,
         safety_events: list[dict[str, Any]],
     ) -> "ChildSafetySummary":

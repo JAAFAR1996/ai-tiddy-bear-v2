@@ -14,7 +14,11 @@ from src.infrastructure.security.child_safety.safety_monitor_service import (
     SafetyMonitorService,
 )
 from src.infrastructure.security.core.real_auth_service import ProductionAuthService
-from src.presentation.api.endpoints.children.compliance import COPPAIntegration
+from src.presentation.api.endpoints.children.compliance import (
+    COPPAIntegration,
+    ParentalConsentManager,
+)
+from src.presentation.api.endpoints.children.safety import UsageMonitor
 
 from .models import (
     ChildCreateRequest,
