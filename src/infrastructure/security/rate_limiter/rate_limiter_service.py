@@ -1,3 +1,4 @@
+import hashlib
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any
@@ -6,8 +7,12 @@ from fastapi import Depends
 
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="security")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 class RateLimiterService:
@@ -60,7 +65,16 @@ class RateLimiterService:
         # Check attempts from this email
         if len(self.login_attempts[email]) >= self.max_login_attempts:
             self.locked_accounts[email] = now
-            logger.warning(f"Account locked due to too many failed attempts: {email}")
+            email_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="account_locked",
+                threat_level="high",
+                input_data="Account locked due to too many failed attempts",
+                context={
+                    "email_hash": email_hash,
+                    "attempts": len(self.login_attempts[email]),
+                },
+            )
             return {
                 "allowed": False,
                 "reason": "account_locked",
@@ -75,7 +89,7 @@ class RateLimiterService:
     ) -> None:
         """Record a failed login attempt."""
         self.login_attempts[email].append(datetime.utcnow())
-        logger.info(f"Failed login attempt recorded for: {email}")
+        logger.info("Failed login attempt recorded for user")
 
     async def reset_login_attempts(self, email: str) -> None:
         """Reset login attempts for a user."""
@@ -83,4 +97,4 @@ class RateLimiterService:
             del self.login_attempts[email]
         if email in self.locked_accounts:
             del self.locked_accounts[email]
-        logger.info(f"Login attempts reset for: {email}")
+        logger.info("Login attempts reset for user")

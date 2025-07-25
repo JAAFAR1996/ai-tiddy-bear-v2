@@ -106,6 +106,9 @@ class ApplicationContainer(IContainer):
         # Settings
         self._registry.register_factory(Settings, lambda: self.settings())
 
+        # Secrets Service
+        self._registry.register_factory("secrets_service", self._create_secrets_service)
+
         # Startup Validator
         self._registry.register_factory(
             StartupValidator, self._create_startup_validator
@@ -128,6 +131,12 @@ class ApplicationContainer(IContainer):
         # StartupValidator expects Settings via Depends in __init__
         # For manual instantiation, we pass it directly
         return StartupValidator(settings=self.settings())
+
+    def _create_secrets_service(self):
+        """Factory method for creating SecureSecretsService."""
+        from src.infrastructure.security.secrets_service import get_secrets_service
+
+        return get_secrets_service()
 
     def _create_child_search_service(self):
         """Factory method for creating ChildSearchService."""

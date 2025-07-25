@@ -7,8 +7,12 @@ from uuid import uuid4
 import jwt
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="security")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 class TokenService:
@@ -110,7 +114,14 @@ class TokenService:
             # Encode JWT token
             token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
-            logger.debug(f"Access token created for user {user_data['id']}")
+            # Log token creation WITHOUT logging user ID
+            user_id_hash = child_safe_audit._hash_identifier(str(user_data["id"]))
+            child_safe_audit.log_security_event(
+                event_type="access_token_created",
+                threat_level="info",
+                input_data="access_token_creation",
+                context={"user_id_hash": user_id_hash, "token_type": "access"},
+            )
             return token
 
         except Exception as e:
@@ -165,7 +176,14 @@ class TokenService:
             # Encode JWT token
             token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
-            logger.debug(f"Refresh token created for user {user_data['id']}")
+            # Log token creation WITHOUT logging user ID
+            user_id_hash = child_safe_audit._hash_identifier(str(user_data["id"]))
+            child_safe_audit.log_security_event(
+                event_type="refresh_token_created",
+                threat_level="info",
+                input_data="refresh_token_creation",
+                context={"user_id_hash": user_id_hash, "token_type": "refresh"},
+            )
             return token
 
         except Exception as e:
@@ -286,7 +304,14 @@ class TokenService:
             # Create new access token
             new_access_token = self.create_access_token(user_data)
 
-            logger.info(f"Access token refreshed for user {user_data['id']}")
+            # Log token refresh WITHOUT logging user ID
+            user_id_hash = child_safe_audit._hash_identifier(str(user_data["id"]))
+            child_safe_audit.log_security_event(
+                event_type="access_token_refreshed",
+                threat_level="info",
+                input_data="token_refresh_operation",
+                context={"user_id_hash": user_id_hash, "operation": "refresh"},
+            )
             return new_access_token
 
         except jwt.ExpiredSignatureError:

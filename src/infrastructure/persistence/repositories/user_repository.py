@@ -3,6 +3,7 @@
 Handles all user-related database operations.
 """
 
+import hashlib
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
@@ -14,6 +15,9 @@ from sqlalchemy.future import select
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database_manager import Database
 from src.infrastructure.persistence.models.user_model import UserModel
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 from src.infrastructure.validators.security.database_input_validator import (
     SecurityError,
     create_safe_database_session,
@@ -22,6 +26,7 @@ from src.infrastructure.validators.security.database_input_validator import (
 )
 
 logger = get_logger(__name__, component="persistence")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 class UserRepository:
@@ -93,7 +98,13 @@ class UserRepository:
                 logger.info(f"User created: {user_id}")
                 return user_id
         except IntegrityError:
-            logger.warning(f"Attempt to create duplicate user: {email}")
+            email_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="duplicate_user_creation",
+                threat_level="medium",
+                input_data="Attempt to create duplicate user",
+                context={"email_hash": email_hash},
+            )
             raise ValueError("User with this email already exists")
         except SecurityError as e:
             logger.error(f"Security error creating user: {e}")

@@ -6,8 +6,8 @@ from .child_name import ChildName
 from .child_preferences import ChildPreferences
 from .encrypted_field import EncryptedField
 from .language import Language
-from .notification import Notification
-from .personality import Personality
+from .notification import NotificationRecord, NotificationStatus
+from .personality import ChildPersonality, PersonalityType
 from .safety_level import SafetyLevel
 from .session_status import SessionStatus
 
@@ -19,8 +19,10 @@ __all__ = [
     "ChildPreferences",
     "EncryptedField",
     "Language",
-    "Notification",
-    "Personality",
+    "NotificationRecord",
+    "NotificationStatus",
+    "ChildPersonality",
+    "PersonalityType",
     "SafetyLevel",
     "SessionStatus",
 ]

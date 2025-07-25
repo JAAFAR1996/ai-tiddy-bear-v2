@@ -2,6 +2,7 @@ import os
 
 from src.infrastructure.validators.data.database_validators import (
     DatabaseConnectionValidator,
+    validate_production_database,
 )
 
 from .config import DatabaseConfig
@@ -30,7 +31,17 @@ async def initialize_production_database() -> bool:
     try:
         config = get_database_config()
 
-        # Validate connection
+        # CRITICAL: Run comprehensive production security validation first
+        if config.environment == "production":
+            logger.info("🔒 Running CRITICAL production database security validation...")
+            is_secure = await validate_production_database(config)
+            if not is_secure:
+                raise RuntimeError(
+                    "CRITICAL: Production database security validation FAILED. "
+                    "Application startup BLOCKED for security reasons."
+                )
+
+        # Validate basic connection
         validator = DatabaseConnectionValidator(config)
         if not await validator.validate_connection():
             raise RuntimeError("Database connection validation failed")

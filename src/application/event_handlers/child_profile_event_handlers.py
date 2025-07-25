@@ -8,6 +8,9 @@ from src.application.interfaces.read_model_interfaces import (
 )
 from src.domain.events.child_profile_updated import ChildProfileUpdated
 from src.domain.events.child_registered import ChildRegistered
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 """
 Child Profile Event Handlers for AI Teddy Bear
@@ -22,6 +25,7 @@ Performance Features:
 """
 
 logger = logging.getLogger(__name__)
+child_safe_audit = get_child_safe_audit_logger(__name__)
 
 
 class ChildProfileEventHandlers:

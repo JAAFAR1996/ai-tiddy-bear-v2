@@ -8,6 +8,7 @@ from src.infrastructure.persistence.database.config import DatabaseConfig
 from src.infrastructure.persistence.models.base import Base
 from src.infrastructure.validators.data.database_validators import (
     DatabaseConnectionValidator,
+    validate_production_database,
 )
 
 logger = get_logger(__name__, component="persistence")
@@ -104,7 +105,19 @@ class Database:
     async def init_db(self) -> None:
         """Initialize database tables with production-grade setup."""
         try:
-            # Database connection validation - re-enabled for Phase 1
+            # CRITICAL: Run comprehensive production security validation first
+            if self.config.environment == "production":
+                logger.info(
+                    "🔒 Running CRITICAL production database security validation..."
+                )
+                is_secure = await validate_production_database(self.config)
+                if not is_secure:
+                    raise RuntimeError(
+                        "CRITICAL: Production database security validation FAILED. "
+                        "Database initialization BLOCKED for security reasons."
+                    )
+
+            # Database connection validation - re-enabled and enforced
             validator = DatabaseConnectionValidator(self.config)
             is_valid = await validator.validate_connection()
             if not is_valid:

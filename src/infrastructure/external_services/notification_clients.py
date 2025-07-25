@@ -57,10 +57,10 @@ class SMSClient(ISMSClient):
             }
             response = requests.post(self.api_url, json=payload, timeout=10)
             response.raise_for_status()
-            self.logger.info(f"SMS sent to {recipient_phone_number}")
+            self.logger.info("SMS sent to recipient")
             return True
         except Exception:
-            self.logger.exception(f"Failed to send SMS to {recipient_phone_number}")
+            self.logger.exception("Failed to send SMS to recipient")
             return False
 
 

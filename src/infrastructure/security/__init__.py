@@ -15,6 +15,14 @@ Structure:
 # Re-export commonly used items for backward compatibility
 from .auth.real_auth_service import RealAuthService
 from .core.main_security_service import MainSecurityService, get_security_service
+
+# Import Vault client for convenience
+from .encryption.vault_client import (
+    VaultAuthenticationError,
+    VaultClient,
+    VaultConnectionError,
+    VaultSecretNotFoundError,
+)
 from .password_hasher import PasswordHasher
 from .rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
 from .token_service import TokenService
@@ -26,4 +34,8 @@ __all__ = [
     "PasswordHasher",
     "TokenService",
     "RealAuthService",
+    "VaultClient",
+    "VaultConnectionError",
+    "VaultAuthenticationError",
+    "VaultSecretNotFoundError",
 ]

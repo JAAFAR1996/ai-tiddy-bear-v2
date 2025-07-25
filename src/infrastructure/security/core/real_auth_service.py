@@ -1,5 +1,6 @@
 """Production Authentication Service - Real database-backed authentication."""
 
+import hashlib
 from datetime import datetime, timedelta
 
 import bcrypt
@@ -10,8 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.models.user import User
 from src.infrastructure.config import get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="auth")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 class ProductionAuthService:
@@ -43,7 +48,12 @@ class ProductionAuthService:
         """Authenticate user with real database verification."""
         try:
             if not self.database_session:
-                logger.error("Database session not available for authentication")
+                child_safe_audit.log_security_event(
+                    event_type="database_unavailable",
+                    threat_level="critical",
+                    input_data="Authentication attempted without database session",
+                    context={"operation": "authenticate"},
+                )
                 return None
 
             # Query user from database
@@ -52,22 +62,34 @@ class ProductionAuthService:
             user = result.scalar_one_or_none()
 
             if not user:
-                logger.warning(
-                    f"Authentication failed: User not found for email {email}"
+                email_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="authentication_failed",
+                    threat_level="medium",
+                    input_data="User not found in database",
+                    context={"email_hash": email_hash, "reason": "user_not_found"},
                 )
                 return None
 
             # Verify password
             if not self._verify_password(password, user.password_hash):
-                logger.warning(
-                    f"Authentication failed: Invalid password for email {email}"
+                email_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="authentication_failed",
+                    threat_level="medium",
+                    input_data="Invalid password provided",
+                    context={"email_hash": email_hash, "reason": "invalid_password"},
                 )
                 return None
 
             # Check if user is active
             if not user.is_active:
-                logger.warning(
-                    f"Authentication failed: User account disabled for email {email}"
+                email_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="authentication_failed",
+                    threat_level="medium",
+                    input_data="User account is disabled",
+                    context={"email_hash": email_hash, "reason": "account_disabled"},
                 )
                 return None
 
@@ -76,7 +98,14 @@ class ProductionAuthService:
             user.last_login_ip = ip_address
             await self.database_session.commit()
 
-            logger.info(f"User authenticated successfully: {email}")
+            # Log authentication success WITHOUT logging email
+            email_hash = child_safe_audit._hash_identifier(email)
+            child_safe_audit.log_security_event(
+                event_type="user_authentication_success",
+                threat_level="info",
+                input_data="authentication_attempt",
+                context={"email_hash": email_hash, "operation": "login"},
+            )
 
             return {
                 "user_id": str(user.id),
@@ -89,7 +118,14 @@ class ProductionAuthService:
             }
 
         except Exception as e:
-            logger.error(f"Authentication error for email {email}: {e}")
+            # Log error WITHOUT exposing email address
+            email_hash = child_safe_audit._hash_identifier(email)
+            child_safe_audit.log_security_event(
+                event_type="authentication_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"email_hash": email_hash, "operation": "authenticate_user"},
+            )
             return None
 
     def create_access_token(self, user_data: dict) -> str:
@@ -109,11 +145,24 @@ class ProductionAuthService:
             }
 
             token = jwt.encode(token_data, self.secret_key, algorithm=self.algorithm)
-            logger.debug(f"Access token created for user {user_data['email']}")
+
+            # Log token creation WITHOUT logging email
+            email_hash = child_safe_audit._hash_identifier(user_data["email"])
+            child_safe_audit.log_security_event(
+                event_type="access_token_created",
+                threat_level="info",
+                input_data="token_creation",
+                context={"email_hash": email_hash, "token_type": "access"},
+            )
             return token
 
         except Exception as e:
-            logger.error(f"Token creation error: {e}")
+            child_safe_audit.log_security_event(
+                event_type="token_creation_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"operation": "create_access_token"},
+            )
             raise
 
     async def verify_token(self, token: str) -> dict | None:
@@ -126,7 +175,12 @@ class ProductionAuthService:
             email = payload.get("email")
 
             if not user_id or not email:
-                logger.warning("Token verification failed: Missing user information")
+                child_safe_audit.log_security_event(
+                    event_type="token_verification_failed",
+                    threat_level="medium",
+                    input_data="Token missing required user information",
+                    context={"missing_fields": "user_id or email"},
+                )
                 return None
 
             # Optionally verify user still exists and is active
@@ -136,8 +190,15 @@ class ProductionAuthService:
                 user = result.scalar_one_or_none()
 
                 if not user or not user.is_active:
-                    logger.warning(
-                        f"Token verification failed: User {email} not found or inactive"
+                    email_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+                    child_safe_audit.log_security_event(
+                        event_type="token_verification_failed",
+                        threat_level="medium",
+                        input_data="User not found or inactive during token verification",
+                        context={
+                            "email_hash": email_hash,
+                            "user_found": user is not None,
+                        },
                     )
                     return None
 
@@ -149,13 +210,28 @@ class ProductionAuthService:
             }
 
         except jwt.ExpiredSignatureError:
-            logger.warning("Token verification failed: Token expired")
+            child_safe_audit.log_security_event(
+                event_type="token_expired",
+                threat_level="medium",
+                input_data="token_verification",
+                context={"error_type": "expired_signature"},
+            )
             return None
         except jwt.InvalidTokenError as e:
-            logger.warning(f"Token verification failed: Invalid token - {e}")
+            child_safe_audit.log_security_event(
+                event_type="invalid_token",
+                threat_level="high",
+                input_data=str(e),
+                context={"error_type": "invalid_token", "operation": "verify_token"},
+            )
             return None
         except Exception as e:
-            logger.error(f"Token verification error: {e}")
+            child_safe_audit.log_security_event(
+                event_type="token_verification_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"operation": "verify_token"},
+            )
             return None
 
     async def create_user(
@@ -164,7 +240,12 @@ class ProductionAuthService:
         """Create new user with real database persistence."""
         try:
             if not self.database_session:
-                logger.error("Database session not available for user creation")
+                child_safe_audit.log_security_event(
+                    event_type="database_unavailable",
+                    threat_level="critical",
+                    input_data="User creation attempted without database session",
+                    context={"operation": "create_user"},
+                )
                 return None
 
             # Check if user already exists
@@ -173,7 +254,13 @@ class ProductionAuthService:
             existing_user = result.scalar_one_or_none()
 
             if existing_user:
-                logger.warning(f"User creation failed: Email {email} already exists")
+                email_hash = child_safe_audit._hash_identifier(email)
+                child_safe_audit.log_security_event(
+                    event_type="user_creation_failed_duplicate",
+                    threat_level="medium",
+                    input_data="duplicate_email_registration",
+                    context={"email_hash": email_hash, "operation": "create_user"},
+                )
                 return None
 
             # Hash password
@@ -193,7 +280,18 @@ class ProductionAuthService:
             await self.database_session.commit()
             await self.database_session.refresh(new_user)
 
-            logger.info(f"User created successfully: {email}")
+            # Log user creation WITHOUT logging email
+            email_hash = child_safe_audit._hash_identifier(email)
+            child_safe_audit.log_security_event(
+                event_type="user_created_successfully",
+                threat_level="info",
+                input_data="user_registration",
+                context={
+                    "email_hash": email_hash,
+                    "role": role,
+                    "operation": "create_user",
+                },
+            )
 
             return {
                 "user_id": str(new_user.id),
@@ -205,7 +303,14 @@ class ProductionAuthService:
             }
 
         except Exception as e:
-            logger.error(f"User creation error for email {email}: {e}")
+            # Log error WITHOUT exposing email
+            email_hash = child_safe_audit._hash_identifier(email)
+            child_safe_audit.log_security_event(
+                event_type="user_creation_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"email_hash": email_hash, "operation": "create_user"},
+            )
             await self.database_session.rollback()
             return None
 
@@ -215,7 +320,12 @@ class ProductionAuthService:
         """Change user password with verification."""
         try:
             if not self.database_session:
-                logger.error("Database session not available for password change")
+                child_safe_audit.log_security_event(
+                    event_type="database_unavailable",
+                    threat_level="critical",
+                    input_data="Password change attempted without database session",
+                    context={"operation": "change_password"},
+                )
                 return False
 
             # Get user
@@ -224,13 +334,29 @@ class ProductionAuthService:
             user = result.scalar_one_or_none()
 
             if not user:
-                logger.warning(f"Password change failed: User {user_id} not found")
+                user_id_hash = child_safe_audit._hash_identifier(user_id)
+                child_safe_audit.log_security_event(
+                    event_type="password_change_failed_user_not_found",
+                    threat_level="medium",
+                    input_data="password_change_attempt",
+                    context={
+                        "user_id_hash": user_id_hash,
+                        "operation": "change_password",
+                    },
+                )
                 return False
 
             # Verify old password
             if not self._verify_password(old_password, user.password_hash):
-                logger.warning(
-                    f"Password change failed: Invalid old password for user {user_id}"
+                user_id_hash = child_safe_audit._hash_identifier(user_id)
+                child_safe_audit.log_security_event(
+                    event_type="password_change_failed_invalid_old_password",
+                    threat_level="high",
+                    input_data="password_change_attempt",
+                    context={
+                        "user_id_hash": user_id_hash,
+                        "operation": "change_password",
+                    },
                 )
                 return False
 
@@ -239,11 +365,23 @@ class ProductionAuthService:
             user.password_changed_at = datetime.utcnow()
             await self.database_session.commit()
 
-            logger.info(f"Password changed successfully for user {user_id}")
+            user_id_hash = child_safe_audit._hash_identifier(user_id)
+            child_safe_audit.log_security_event(
+                event_type="password_changed_successfully",
+                threat_level="info",
+                input_data="password_change_success",
+                context={"user_id_hash": user_id_hash, "operation": "change_password"},
+            )
             return True
 
         except Exception as e:
-            logger.error(f"Password change error for user {user_id}: {e}")
+            user_id_hash = child_safe_audit._hash_identifier(user_id)
+            child_safe_audit.log_security_event(
+                event_type="password_change_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"user_id_hash": user_id_hash, "operation": "change_password"},
+            )
             await self.database_session.rollback()
             return False
 
@@ -252,11 +390,29 @@ class ProductionAuthService:
         try:
             # In a full implementation, this would invalidate all tokens for the user
             # For now, we'll just log the action
-            logger.info(f"All sessions revoked for user {user_id}")
+            user_id_hash = child_safe_audit._hash_identifier(user_id)
+            child_safe_audit.log_security_event(
+                event_type="all_sessions_revoked",
+                threat_level="info",
+                input_data="session_revocation",
+                context={
+                    "user_id_hash": user_id_hash,
+                    "operation": "revoke_user_sessions",
+                },
+            )
             return True
 
         except Exception as e:
-            logger.error(f"Session revocation error for user {user_id}: {e}")
+            user_id_hash = child_safe_audit._hash_identifier(user_id)
+            child_safe_audit.log_security_event(
+                event_type="session_revocation_error",
+                threat_level="high",
+                input_data=str(e),
+                context={
+                    "user_id_hash": user_id_hash,
+                    "operation": "revoke_user_sessions",
+                },
+            )
             return False
 
     def generate_reset_token(self, email: str) -> str:
@@ -273,11 +429,23 @@ class ProductionAuthService:
             }
 
             token = jwt.encode(token_data, self.secret_key, algorithm=self.algorithm)
-            logger.debug(f"Password reset token generated for {email}")
+            # Log reset token generation WITHOUT logging email
+            email_hash = child_safe_audit._hash_identifier(email)
+            child_safe_audit.log_security_event(
+                event_type="password_reset_token_generated",
+                threat_level="info",
+                input_data="password_reset_request",
+                context={"email_hash": email_hash, "operation": "generate_reset_token"},
+            )
             return token
 
         except Exception as e:
-            logger.error(f"Reset token generation error: {e}")
+            child_safe_audit.log_security_event(
+                event_type="reset_token_generation_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"operation": "generate_reset_token"},
+            )
             raise
 
     async def verify_reset_token(self, token: str) -> str | None:
@@ -286,22 +454,59 @@ class ProductionAuthService:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
 
             if payload.get("purpose") != "password_reset":
-                logger.warning("Reset token verification failed: Invalid purpose")
+                child_safe_audit.log_security_event(
+                    event_type="reset_token_invalid_purpose",
+                    threat_level="high",
+                    input_data="reset_token_verification",
+                    context={
+                        "error_type": "invalid_purpose",
+                        "operation": "verify_reset_token",
+                    },
+                )
                 return None
 
             email = payload.get("email")
             if not email:
-                logger.warning("Reset token verification failed: Missing email")
+                child_safe_audit.log_security_event(
+                    event_type="reset_token_missing_email",
+                    threat_level="high",
+                    input_data="reset_token_verification",
+                    context={
+                        "error_type": "missing_email",
+                        "operation": "verify_reset_token",
+                    },
+                )
                 return None
 
             return email
 
         except jwt.ExpiredSignatureError:
-            logger.warning("Reset token verification failed: Token expired")
+            child_safe_audit.log_security_event(
+                event_type="reset_token_expired",
+                threat_level="medium",
+                input_data="reset_token_verification",
+                context={
+                    "error_type": "expired_signature",
+                    "operation": "verify_reset_token",
+                },
+            )
             return None
         except jwt.InvalidTokenError as e:
-            logger.warning(f"Reset token verification failed: Invalid token - {e}")
+            child_safe_audit.log_security_event(
+                event_type="reset_token_invalid",
+                threat_level="high",
+                input_data=str(e),
+                context={
+                    "error_type": "invalid_token",
+                    "operation": "verify_reset_token",
+                },
+            )
             return None
         except Exception as e:
-            logger.error(f"Reset token verification error: {e}")
+            child_safe_audit.log_security_event(
+                event_type="reset_token_verification_error",
+                threat_level="high",
+                input_data=str(e),
+                context={"operation": "verify_reset_token"},
+            )
             return None

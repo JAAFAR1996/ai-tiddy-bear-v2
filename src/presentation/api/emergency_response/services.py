@@ -343,7 +343,7 @@ class EmergencyNotificationService:
 
             await self.redis.lpush("sms_queue", json.dumps(sms_data))
 
-            logger.critical(f"Emergency SMS queued for {len(phone_numbers)} recipients")
+            logger.critical("Emergency SMS queued for multiple recipients")
             return True
         except Exception as e:
             logger.error(f"Failed to queue emergency SMS: {e}")

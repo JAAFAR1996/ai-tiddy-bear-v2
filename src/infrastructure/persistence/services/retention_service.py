@@ -1,7 +1,7 @@
-"""Real database-backed data retention service.
+"""🔒 Secure Database-backed Data Retention Service - Production Ready
 
-This service provides actual database operations for data retention
-management, replacing dummy implementations with production-ready logic.
+This service provides COPPA-compliant database operations for data retention
+management with enterprise-grade SQL injection protection and audit trails.
 """
 
 import uuid
@@ -15,39 +15,71 @@ from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.models.child_models import ChildModel
 from src.infrastructure.persistence.models.consent_models_infra import SafetyEventModel
 from src.infrastructure.persistence.models.conversation_models import ConversationModel
+from src.infrastructure.security.validation.enhanced_sql_protection import (
+    SecurityError,
+    get_enhanced_sql_protection,
+    get_secure_query_helper,
+)
 
-logger = get_logger(__name__)
+logger = get_logger(__name__, component="retention_service")
 
 
-class DataRetentionService:
-    """Real database service for data retention with COPPA compliance."""
+class SecureDataRetentionService:
+    """🔒 Secure database service for data retention with COPPA compliance.
+
+    Features:
+    - Enterprise-grade SQL injection protection
+    - Comprehensive audit logging for child safety compliance
+    - Parameterized queries with input validation
+    - COPPA-compliant data retention policies
+    """
 
     def __init__(self, db_session: AsyncSession):
         self.db = db_session
         self.default_retention_days = 90  # COPPA default
+        self.notification_days_before = 7  # Parent notification period
 
-    async def schedule_data_deletion(
+        # Initialize security components
+        self.sql_protection = get_enhanced_sql_protection()
+        self.query_helper = get_secure_query_helper()
+
+        logger.info("Secure data retention service initialized")
+
+    async def validate_and_schedule_deletion(
         self, child_id: str, deletion_date: datetime
-    ) -> bool:
-        """Schedule data deletion for a child profile.
+    ) -> dict[str, Any]:
+        """Securely schedule data deletion for a child profile with validation.
 
         Args:
-            child_id: Child identifier
+            child_id: Child identifier (validated for security)
             deletion_date: When to delete the data
 
         Returns:
-            True if scheduling successful, False otherwise
+            Dictionary with operation results and security status
         """
         try:
-            # Verify child exists
+            # Validate inputs against SQL injection
+            if not self.sql_protection.validate_input(child_id):
+                raise SecurityError(f"Invalid child_id format: {child_id}")
+
+            if not isinstance(deletion_date, datetime):
+                raise SecurityError("deletion_date must be a datetime object")
+
+            # Verify child exists using secure query
             child = await self.db.scalar(
                 select(ChildModel).where(ChildModel.id == child_id)
             )
             if not child:
-                logger.warning(f"Child {child_id} not found for deletion scheduling")
-                return False
+                logger.warning(
+                    f"Child {child_id[:8]}... not found for deletion scheduling"
+                )
+                return {
+                    "success": False,
+                    "error": "child_not_found",
+                    "child_id": child_id,
+                }
 
-            # Update child record with deletion schedule
+            # Secure update with parameterized query
             result = await self.db.execute(
                 update(ChildModel)
                 .where(ChildModel.id == child_id)
@@ -57,10 +89,16 @@ class DataRetentionService:
             )
 
             if result.rowcount == 0:
-                logger.error(f"Failed to update deletion schedule for child {child_id}")
-                return False
+                logger.error(
+                    f"Failed to update deletion schedule for child {child_id[:8]}..."
+                )
+                return {
+                    "success": False,
+                    "error": "update_failed",
+                    "child_id": child_id,
+                }
 
-            # Log the scheduling in safety events
+            # Create comprehensive audit log
             safety_event = SafetyEventModel(
                 id=str(uuid.uuid4()),
                 child_id=child_id,
@@ -70,7 +108,9 @@ class DataRetentionService:
                 metadata={
                     "scheduled_deletion": deletion_date.isoformat(),
                     "retention_policy": "COPPA_90_DAYS",
-                    "trigger": "manual_scheduling",
+                    "trigger": "secure_scheduling",
+                    "validation_passed": True,
+                    "security_level": "enhanced",
                 },
                 occurred_at=datetime.now(UTC),
             )
@@ -79,16 +119,36 @@ class DataRetentionService:
             await self.db.commit()
 
             logger.info(
-                f"Data deletion scheduled for child {child_id} on {deletion_date}"
+                f"Secure data deletion scheduled for child {child_id[:8]}... "
+                f"on {deletion_date}"
             )
-            return True
 
+            return {
+                "success": True,
+                "child_id": child_id,
+                "scheduled_deletion": deletion_date.isoformat(),
+                "retention_days": self.default_retention_days,
+                "security_validated": True,
+            }
+
+        except SecurityError as e:
+            await self.db.rollback()
+            logger.error(f"Security validation failed for child deletion: {e}")
+            return {
+                "success": False,
+                "error": "security_validation_failed",
+                "child_id": child_id,
+                "details": str(e),
+            }
         except Exception as e:
             await self.db.rollback()
-            logger.exception(
-                f"Failed to schedule data deletion for child {child_id}: {e}"
-            )
-            return False
+            logger.exception(f"Failed to schedule secure deletion for child {child_id}")
+            return {
+                "success": False,
+                "error": "operation_failed",
+                "child_id": child_id,
+                "details": str(e),
+            }
 
     async def check_retention_compliance(self, child_id: str) -> dict[str, Any]:
         """Check retention compliance for a child's data.

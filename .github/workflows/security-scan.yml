@@ -1,0 +1,282 @@
+name: 🔒 Security Scan & Dependency Audit
+
+on:
+  push:
+    branches: [ main, develop, 'security/*', 'feature/*' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  security-scan:
+    name: 🛡️ Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        tool:
+          - trivy
+          - pip-audit
+          - bandit
+          - semgrep
+          - safety
+
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: 🔥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-lock.txt
+          pip install pip-audit==2.7.3 bandit[toml]==1.7.10 safety==3.2.11 semgrep==1.95.0
+
+      - name: 🔍 Trivy - Vulnerability Scanner
+        if: matrix.tool == 'trivy'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '1'
+
+      - name: 📋 Trivy - Upload Results
+        if: matrix.tool == 'trivy' && always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: 🔍 pip-audit - Python Vulnerability Scanner
+        if: matrix.tool == 'pip-audit'
+        run: |
+          echo "::group::pip-audit scan"
+          pip-audit --desc --format=json --output=pip-audit-results.json --requirement=requirements-lock.txt
+          pip-audit --desc --format=cyclonedx-json --output=pip-audit-sbom.json --requirement=requirements-lock.txt
+          echo "::endgroup::"
+
+      - name: 🔍 Bandit - Security Issues Scanner
+        if: matrix.tool == 'bandit'
+        run: |
+          echo "::group::Bandit scan"
+          bandit -r src/ -f json -o bandit-results.json || exit_code=$?
+          bandit -r src/ -f txt
+          if [ ${exit_code:-0} -ne 0 ]; then
+            echo "::error::Bandit found security issues"
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      - name: 🔍 Safety - Known Security Vulnerabilities
+        if: matrix.tool == 'safety'
+        run: |
+          echo "::group::Safety scan"
+          safety check --requirement=requirements-lock.txt --json --output=safety-results.json || exit_code=$?
+          safety check --requirement=requirements-lock.txt
+          if [ ${exit_code:-0} -ne 0 ]; then
+            echo "::error::Safety found security vulnerabilities"
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      - name: 🔍 Semgrep - Static Analysis
+        if: matrix.tool == 'semgrep'
+        run: |
+          echo "::group::Semgrep scan"
+          semgrep --config=auto --json --output=semgrep-results.json src/ || exit_code=$?
+          semgrep --config=auto src/
+          if [ ${exit_code:-0} -ne 0 ]; then
+            echo "::error::Semgrep found security issues"
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      - name: 📤 Upload Security Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-${{ matrix.tool }}-${{ github.sha }}
+          path: |
+            *-results.json
+            *-results.sarif
+            *-sbom.json
+          retention-days: 30
+
+  dependency-validation:
+    name: 📋 Dependency Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 🔥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 📦 Install pip-tools and pip-licenses
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-tools==7.3.0 pip-licenses==5.0.0
+
+      - name: 🔒 Validate Requirements Lock File
+        run: |
+          echo "::group::Validating requirements-lock.txt"
+          # Check if lock file exists and is not empty
+          if [ ! -f requirements-lock.txt ] || [ ! -s requirements-lock.txt ]; then
+            echo "::error::requirements-lock.txt is missing or empty"
+            exit 1
+          fi
+
+          # Verify all dependencies have exact version pins
+          if grep -E "[~^>=<]|==.*\*" requirements-lock.txt; then
+            echo "::error::Found floating or imprecise version specifications in requirements-lock.txt"
+            exit 1
+          fi
+
+          # Check that all dependencies have hashes
+          deps_without_hashes=$(grep -E "^[a-zA-Z0-9_-]+==.*$" requirements-lock.txt | grep -v "^#" | wc -l)
+          total_deps=$(grep -E "^[a-zA-Z0-9_-]+==.*$" requirements-lock.txt | wc -l)
+
+          if [ $deps_without_hashes -gt 0 ]; then
+            echo "::warning::Found $deps_without_hashes dependencies without hashes out of $total_deps total"
+          fi
+
+          echo "✅ Requirements lock file validation passed"
+          echo "::endgroup::"
+
+      - name: 📄 License Compliance Check
+        run: |
+          echo "::group::License compliance check"
+          # Install from lock file to get exact versions
+          pip install -r requirements-lock.txt
+
+          # Generate license report
+          pip-licenses --format=json --output-file=licenses-report.json --with-urls --with-description
+          pip-licenses --format=plain-vertical --output-file=licenses-report.txt
+
+          # Check for forbidden licenses
+          FORBIDDEN_LICENSES=("AGPL" "GPL-2.0" "GPL-3.0" "LGPL-2.1" "LGPL-3.0" "SSPL" "MongoDB" "Redis")
+
+          for license in "${FORBIDDEN_LICENSES[@]}"; do
+            if pip-licenses | grep -i "$license"; then
+              echo "::error::Found forbidden license: $license"
+              exit 1
+            fi
+          done
+
+          echo "✅ License compliance check passed"
+          echo "::endgroup::"
+
+      - name: 🔍 Dependency Health Check
+        run: |
+          echo "::group::Dependency health check"
+          python scripts/security/dependency-check.py
+          echo "::endgroup::"
+
+      - name: 📤 Upload License Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report-${{ github.sha }}
+          path: |
+            licenses-report.json
+            licenses-report.txt
+          retention-days: 90
+
+  docker-security:
+    name: 🐳 Docker Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 🔥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔍 Trivy - Container Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: 'Dockerfile'
+          format: 'sarif'
+          output: 'docker-trivy-results.sarif'
+
+      - name: 📋 Upload Docker Scan Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'docker-trivy-results.sarif'
+
+  security-report:
+    name: 📊 Security Report Summary
+    runs-on: ubuntu-latest
+    needs: [security-scan, dependency-validation, docker-security]
+    if: always()
+
+    steps:
+      - name: 🔥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📥 Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: security-artifacts/
+
+      - name: 📊 Generate Security Summary
+        run: |
+          echo "# 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📅 Scan Date: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔍 Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Count artifacts
+          artifact_count=$(find security-artifacts/ -name "*.json" -o -name "*.sarif" | wc -l)
+          echo "## 📋 Security Artifacts Generated: $artifact_count" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## ✅ Security Scan Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependency Validation: ${{ needs.dependency-validation.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker Security: ${{ needs.docker-security.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.security-scan.result }}" = "success" ] && [ "${{ needs.dependency-validation.result }}" = "success" ] && [ "${{ needs.docker-security.result }}" = "success" ]; then
+            echo "🎉 **All security checks passed successfully!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Some security checks failed. Please review the results.**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 🚨 Fail on Security Issues
+        if: needs.security-scan.result == 'failure' || needs.dependency-validation.result == 'failure' || needs.docker-security.result == 'failure'
+        run: |
+          echo "::error::Security scan failed. Build cannot proceed."
+          exit 1

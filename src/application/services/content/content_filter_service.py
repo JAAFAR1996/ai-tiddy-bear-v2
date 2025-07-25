@@ -46,7 +46,7 @@ class ContentFilterService:
             The filtered text, or "[CONTENT BLOCKED]" if deemed unsafe.
 
         """
-        self.logger.info(f"Filtering content for age {age}: {text[:50]}...")
+        self.logger.info("Filtering content for age-appropriate content")
         safety_result = await self.safety_monitor.check_content_safety(
             text,
             child_age=age,
@@ -65,5 +65,5 @@ class ContentFilterService:
             )
             return "[CONTENT FLAGGED FOR REVIEW]"
 
-        self.logger.info(f"Content deemed SAFE for age {age}.")
+        self.logger.info("Content deemed SAFE for user's age group")
         return text

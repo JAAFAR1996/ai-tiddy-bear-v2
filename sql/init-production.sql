@@ -24,7 +24,9 @@ SET log_min_duration_statement = 1000;  -- Log queries taking >1s
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'ai_teddy_app') THEN
-        CREATE ROLE ai_teddy_app WITH LOGIN PASSWORD 'secure_app_password_change_me';
+        -- SECURITY: Password must be set via environment variable
+        -- DO NOT use default passwords in production
+        CREATE ROLE ai_teddy_app WITH LOGIN PASSWORD :'AI_TEDDY_DB_PASSWORD';
     END IF;
 END
 $$;
@@ -263,13 +265,14 @@ SELECT pg_reload_conf();
 -- Initial Data Setup
 -- ================================
 -- Create system user for automated operations
+-- SECURITY: System password must be set via environment variable
 INSERT INTO users (
     id, email, password_hash, role, is_active,
     email_verified, created_at
 ) VALUES (
     gen_random_uuid(),
     'system@aiteddy.internal',
-    crypt('system_password_change_me', gen_salt('bf', 14)),
+    crypt(:'SYSTEM_USER_PASSWORD', gen_salt('bf', 14)),
     'system',
     true,
     true,

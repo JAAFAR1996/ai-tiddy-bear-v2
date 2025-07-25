@@ -189,7 +189,20 @@ class LocalEncryptedSecretProvider(BaseSecretProvider):
 
     def _derive_key(self) -> bytes:
         """Derive encryption key from environment."""
-        key_material = os.getenv("LOCAL_ENCRYPTION_KEY", "dev-key-not-secure")
+        key_material = os.getenv("LOCAL_ENCRYPTION_KEY")
+        if not key_material or key_material.strip() in (
+            "",
+            "dev-key-not-secure",
+            "test-key",
+            "default-key",
+            "changeme",
+            "password",
+            "secret",
+            "key123",
+        ):
+            raise RuntimeError(
+                "CRITICAL: LOCAL_ENCRYPTION_KEY environment variable must be set to a strong, non-default value. No fallback allowed."
+            )
         return hashlib.sha256(key_material.encode()).digest()
 
     def _load_secrets(self) -> Dict[str, str]:
@@ -573,7 +586,14 @@ class VaultSecretProviderAdapter(BaseSecretProvider):
         """Get secret from Vault via VaultClient."""
         try:
             await self.vault_client.initialize()
-            value = await self.vault_client.get_secret(name)
+            secret_data = await self.vault_client.get_secret(name)
+
+            # Extract the actual secret value
+            if isinstance(secret_data, dict):
+                value = secret_data.get("value") or secret_data.get(name)
+            else:
+                value = secret_data
+
             self._audit_log(
                 SecretAuditEvent(
                     action="GET",
@@ -605,7 +625,19 @@ class VaultSecretProviderAdapter(BaseSecretProvider):
         """Set secret in Vault via VaultClient."""
         try:
             await self.vault_client.initialize()
-            success = await self.vault_client.store_secret(name, value)
+
+            # Prepare secret data with metadata
+            secret_data = {
+                "value": value,
+                "secret_type": secret_type.value,
+                "created_at": time.time(),
+                "rotation_interval_days": rotation_interval_days,
+                "tags": tags or {},
+            }
+
+            await self.vault_client.put_secret(name, secret_data)
+            success = True
+
             self._audit_log(
                 SecretAuditEvent(action="SET", secret_name=name, success=success)
             )
@@ -625,10 +657,9 @@ class VaultSecretProviderAdapter(BaseSecretProvider):
         """Delete secret from Vault via VaultClient."""
         try:
             await self.vault_client.initialize()
-            # Assuming VaultClient has a delete method
-            # success = await self.vault_client.delete_secret(name)
-            # For now, return False as it's not implemented in VaultClient
-            success = False
+            await self.vault_client.delete_secret(name)
+            success = True
+
             self._audit_log(
                 SecretAuditEvent(action="DELETE", secret_name=name, success=success)
             )

@@ -154,12 +154,19 @@ class RobustEncryptionService:
                     raise ValueError(f"Invalid master key in environment: {e}")
             else:
                 # Generate new master key for development/testing
+                if os.getenv("ENVIRONMENT") == "production":
+                    raise RuntimeError(
+                        "CRITICAL: AI_TEDDY_MASTER_KEY environment variable is required in production. No temporary keys allowed for child data protection."
+                    )
+
                 logger.warning(
-                    "No master key found in environment - generating temporary key"
+                    "No master key found in environment - generating temporary key for development only"
                 )
                 self._master_key = os.urandom(32)
-                master_key_b64 = base64.b64encode(self._master_key).decode()
-                logger.warning(f"Temporary master key: {master_key_b64}")
+                # NEVER log the actual key - security violation
+                logger.warning(
+                    "Temporary master key generated (not logged for security)"
+                )
                 logger.warning(
                     "Set AI_TEDDY_MASTER_KEY environment variable for production"
                 )

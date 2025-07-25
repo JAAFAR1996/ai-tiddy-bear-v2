@@ -159,7 +159,7 @@ class InteractionService:
             The sanitized message.
 
         """
-        self.logger.debug(f"Sanitizing message: {message[:50]}...")
+        self.logger.debug("Sanitizing message content")
         sanitized_message = await self.sanitization_service.sanitize_text(message)
         self.logger.info("Message sanitization complete.")
         return sanitized_message
@@ -174,7 +174,7 @@ class InteractionService:
             A SafetyAnalysisResult object.
 
         """
-        self.logger.debug(f"Checking content safety for message: {message[:50]}...")
+        self.logger.debug("Checking content safety for message")
         safety_result = await self.safety_monitor.analyze_content(message)
         self.logger.info(
             "Content safety check complete. Is safe: "

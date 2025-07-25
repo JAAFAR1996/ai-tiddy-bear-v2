@@ -1,5 +1,6 @@
 """Production-Ready Security Middleware with Configuration-Driven Service Layer"""
 
+import hashlib
 import json
 import os
 import re
@@ -9,30 +10,94 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# FastAPI imports
+try:
+    from fastapi import HTTPException, Request, Response
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.types import ASGIApp
+
+    FASTAPI_AVAILABLE = True
+except ImportError:
+    # Define placeholders for type hints
+    class Request:
+        pass
+
+    class Response:
+        pass
+
+    class ASGIApp:
+        pass
+
+    FASTAPI_AVAILABLE = False
+
 # PRODUCTION REDIS IMPORTS - NO MOCKS
 from redis import StrictRedis
 from redis.asyncio import Redis
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 # REAL Redis - NO MOCKS
 redis_client = StrictRedis(
     host=os.getenv("REDIS_HOST", "localhost"),
     port=int(os.getenv("REDIS_PORT", "6379")),
+    db=int(os.getenv("REDIS_DB", "0")),
+    password=os.getenv("REDIS_PASSWORD") or None,
     decode_responses=True,
 )
 
 
-logger = get_logger(__name__, component="security")
+def get_redis_client():
+    """Get Redis client instance."""
+    return redis_client
 
-try:
-    from fastapi import HTTPException, Request, Response
-    from starlette.middleware.base import BaseHTTPMiddleware
-    from starlette.types import ASGIApp
-except ImportError as e:
-    logger.error(f"CRITICAL ERROR: FastAPI is required for production use: {e}")
-    logger.error("Install required dependencies: pip install fastapi starlette")
-    raise ImportError(f"Missing middleware dependencies: {e}") from e
+
+class SecurityMiddleware:
+    """Production Security Middleware with comprehensive protection."""
+
+    def __init__(self):
+        """Initialize SecurityMiddleware with production settings."""
+        self.logger = get_logger(__name__, component="security")
+        self.enable_audit_logging = True
+        self.log_sensitive_data = False  # NEVER log sensitive data in production
+
+    async def _log_request(
+        self,
+        request: Request,
+        response: Response,
+        duration: float,
+        client_ip: str,
+    ) -> None:
+        """Log request with COPPA-compliant data sanitization"""
+        # Sanitize URL to remove any potential PII in query parameters
+        url_str = str(request.url)
+        safe_summary = child_safe_audit.pii_classifier.get_safe_summary(url_str)
+
+        log_data = {
+            "timestamp": datetime.now().isoformat(),
+            "client_ip_hash": hashlib.sha256(client_ip.encode()).hexdigest()[:16],
+            "method": request.method,
+            "url_length": len(url_str),
+            "url_hash": safe_summary["input_hash"]
+            if safe_summary["contains_pii"]
+            else url_str,
+            "contains_pii": safe_summary["contains_pii"],
+            "status_code": getattr(response, "status_code", 200),
+            "duration": round(duration, 3),
+            "user_agent_hash": hashlib.sha256(
+                request.headers.get("User-Agent", "Unknown").encode()
+            ).hexdigest()[:8],
+        }
+
+        child_safe_audit.log_input_analysis(
+            input_data=url_str, context="request_logging", severity="info"
+        )
+
+
+logger = get_logger(__name__, component="security")
+child_safe_audit = get_child_safe_audit_logger()
 
 # === CONFIGURATION-DRIVEN SERVICE LAYER ===
 
@@ -221,7 +286,16 @@ class RedisRateLimiter(RateLimiter):
                 int(timedelta(hours=self.config.block_duration_hours).total_seconds()),
                 "blocked",
             )
-            logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="ip_blocked",
+                threat_level="high",
+                input_data="IP blocked due to repeated suspicious activity",
+                context={
+                    "ip_hash": ip_hash,
+                    "block_duration_hours": self.config.block_duration_hours,
+                },
+            )
 
     async def is_ip_blocked(self, ip: str) -> bool:
         """Check if IP is blocked in Redis"""
@@ -297,7 +371,16 @@ class InMemoryRateLimiter(RateLimiter):
             self.blocked_ips[ip] = time.time() + (
                 3600 * self.config.block_duration_hours
             )
-            logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="ip_blocked_memory",
+                threat_level="high",
+                input_data="IP blocked due to repeated suspicious activity (memory)",
+                context={
+                    "ip_hash": ip_hash,
+                    "suspicious_count": len(self.timestamps[key]),
+                },
+            )
 
     async def is_ip_blocked(self, ip: str) -> bool:
         """Check if IP is blocked in memory"""
@@ -478,7 +561,13 @@ class LegacyRateLimiter:
             await redis_client.setex(
                 block_key, int(timedelta(hours=1).total_seconds()), "blocked"
             )
-            logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="ip_blocked_suspicious",
+                threat_level="high",
+                input_data="IP blocked due to repeated suspicious activity",
+                context={"ip_hash": ip_hash, "activity_count": activity_count},
+            )
 
     async def is_ip_blocked(self, ip: str) -> bool:
         """التحقق من حظر IP"""
@@ -590,7 +679,13 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         try:
             # فحص IP المحظور
             if await self.rate_limiter.is_ip_blocked(client_ip):
-                logger.warning(f"Blocked IP attempted access: {client_ip}")
+                ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="blocked_ip_access_attempt",
+                    threat_level="high",
+                    input_data="Blocked IP attempted access",
+                    context={"ip_hash": ip_hash},
+                )
                 raise HTTPException(
                     status_code=403,
                     detail="IP blocked due to suspicious activity",
@@ -601,7 +696,13 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 await self.rate_limiter.record_suspicious_activity(
                     client_ip, "Rate limit exceeded"
                 )
-                logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+                ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="rate_limit_exceeded",
+                    threat_level="medium",
+                    input_data="Rate limit exceeded",
+                    context={"ip_hash": ip_hash},
+                )
                 raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
             # فحص الأمان للطلب
@@ -722,11 +823,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         client_ip: str,
     ) -> None:
         """تسجيل الطلب"""
+        # Sanitize URL to remove potential PII from query parameters
+        url_parts = str(request.url).split("?")
+        safe_url = url_parts[0]  # Only log the path, not query parameters
+        url_hash = hashlib.sha256(str(request.url).encode()).hexdigest()[:16]
+
         log_data = {
             "timestamp": datetime.now().isoformat(),
             "client_ip": client_ip,
             "method": request.method,
-            "url": str(request.url),
+            "url_path": safe_url,
+            "url_hash": url_hash,
+            "has_query_params": len(url_parts) > 1,
             "status_code": getattr(response, "status_code", 200),
             "duration": round(duration, 3),
             "user_agent": request.headers.get("User-Agent", "Unknown"),
@@ -760,7 +868,13 @@ class ChildSafetySecurityMiddleware(SecurityMiddleware):
             # استخدام rate limiter مخصص للأطفال
             client_ip = self.get_client_ip(request)
             if not await self.child_rate_limiter.is_allowed(client_ip):
-                logger.warning(f"Child rate limit exceeded for IP: {client_ip}")
+                ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="child_rate_limit_exceeded",
+                    threat_level="medium",
+                    input_data="Child rate limit exceeded",
+                    context={"ip_hash": ip_hash},
+                )
                 raise HTTPException(
                     status_code=429, detail="تم تجاوز حد الطلبات المسموح للأطفال"
                 )

@@ -1,12 +1,17 @@
 """Unified Security Service - Centralized security management."""
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="unified_security")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 @dataclass
@@ -223,13 +228,19 @@ class UnifiedSecurityService:
             duration = timedelta(hours=1)
 
         self.blocked_ips[ip_address] = datetime.utcnow() + duration
-        logger.warning(f"IP {ip_address} manually blocked for {duration}")
+        ip_hash = hashlib.sha256(ip_address.encode()).hexdigest()[:16]
+        child_safe_audit.log_security_event(
+            event_type="ip_manually_blocked",
+            threat_level="high",
+            input_data="IP manually blocked by administrator",
+            context={"ip_hash": ip_hash, "duration": str(duration)},
+        )
 
     async def unblock_ip(self, ip_address: str) -> None:
         """Manually unblock an IP address."""
         if ip_address in self.blocked_ips:
             del self.blocked_ips[ip_address]
-            logger.info(f"IP {ip_address} manually unblocked")
+            logger.info("IP address manually unblocked")
 
     async def get_security_status(self) -> dict[str, Any]:
         """Get current security status."""

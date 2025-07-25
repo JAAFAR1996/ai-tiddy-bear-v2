@@ -219,7 +219,7 @@ class SecureUserRegistration:
                 "account_locked": False,
             }
 
-            logger.info(f"New parent user registered: {registration_data.email}")
+            logger.info("New parent user registered successfully")
 
             return {
                 "success": True,

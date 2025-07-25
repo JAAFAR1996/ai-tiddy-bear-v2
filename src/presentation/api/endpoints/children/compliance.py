@@ -1,5 +1,6 @@
 """Children compliance endpoints with COPPA support."""
 
+import hashlib
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List
@@ -16,6 +17,9 @@ from src.infrastructure.persistence.services.consent_service import (
 from src.infrastructure.persistence.services.retention_service import (
     DataRetentionService,
 )
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 from src.infrastructure.security.child_safety import (
     COPPAConsentManager,
     get_consent_manager,
@@ -23,6 +27,7 @@ from src.infrastructure.security.child_safety import (
 from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 
 logger = get_logger(__name__)
+child_safe_audit = get_child_safe_audit_logger()
 
 
 # Enums for compliance
@@ -506,7 +511,13 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
             # Look up actual parent ID by email
             parent_user = await user_repository.get_user_by_email(parent_email)
             if not parent_user:
-                logger.warning(f"Parent not found for email: {parent_email}")
+                email_hash = hashlib.sha256(parent_email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="parent_not_found",
+                    threat_level="medium",
+                    input_data="Parent lookup failed - not found",
+                    context={"email_hash": email_hash, "child_id": child_id},
+                )
                 return {
                     "status": "error",
                     "child_id": child_id,
@@ -517,7 +528,17 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
 
             # Verify parent account is active
             if not parent_user.get("role") in ["parent", "guardian"]:
-                logger.warning(f"Invalid parent role for email: {parent_email}")
+                email_hash = hashlib.sha256(parent_email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="invalid_parent_role",
+                    threat_level="medium",
+                    input_data="Parent account has invalid role",
+                    context={
+                        "email_hash": email_hash,
+                        "role": parent_user.get("role"),
+                        "child_id": child_id,
+                    },
+                )
                 return {
                     "status": "error",
                     "child_id": child_id,
@@ -526,7 +547,7 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
                 }
 
             parent_id = parent_user["id"]
-            logger.info(f"Found parent ID {parent_id} for email {parent_email}")
+            logger.info("Found parent ID for registered email address")
 
             # Create consent record with actual parent ID
             consent_service = ConsentDatabaseService(session)

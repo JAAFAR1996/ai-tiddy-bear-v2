@@ -82,7 +82,7 @@ async def _send_hallucination_prompt(
 
         return result
     except (TimeoutError, httpx.RequestError) as e:
-        logger.warning(f"Request failed for prompt '{prompt}': {e}")
+        logger.warning(f"Request failed for hallucination test: {e}")
         return {
             "test_id": index + 1,
             "prompt_type": " ".join(prompt.split()[:3]),

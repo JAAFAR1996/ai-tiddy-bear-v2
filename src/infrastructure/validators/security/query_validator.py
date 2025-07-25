@@ -8,8 +8,12 @@ from datetime import datetime
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="security")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 @dataclass
@@ -101,8 +105,11 @@ class SQLQueryValidator:
                         f"Critical SQL injection pattern in '{key}': {pattern}"
                     )
                     validation.threat_level = "critical"
-                    logger.error(
-                        f"Critical SQL injection attempt: {key}={str_value[:100]}"
+                    child_safe_audit.log_security_event(
+                        event_type="critical_sql_injection",
+                        threat_level="critical",
+                        input_data=str_value,
+                        context={"parameter_name": key, "pattern": pattern},
                     )
 
             # Check high-risk patterns
@@ -115,8 +122,11 @@ class SQLQueryValidator:
                     validation.threat_level = (
                         "high" if validation.threat_level != "critical" else "critical"
                     )
-                    logger.warning(
-                        f"High-risk SQL pattern detected: {key}={str_value[:100]}"
+                    child_safe_audit.log_security_event(
+                        event_type="high_risk_sql_pattern",
+                        threat_level="high",
+                        input_data=str_value,
+                        context={"parameter_name": key, "pattern": pattern},
                     )
 
             # Check NoSQL patterns
@@ -128,7 +138,12 @@ class SQLQueryValidator:
                     )
                     if validation.threat_level == "low":
                         validation.threat_level = "medium"
-                    logger.warning(f"NoSQL injection attempt: {key}={str_value[:100]}")
+                    child_safe_audit.log_security_event(
+                        event_type="nosql_injection_attempt",
+                        threat_level="medium",
+                        input_data=str_value,
+                        context={"parameter_name": key, "pattern": pattern},
+                    )
 
         return validation
 
@@ -136,12 +151,25 @@ class SQLQueryValidator:
         """Validate table name against whitelist"""
         # Must be alphanumeric with underscores
         if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", table_name):
-            logger.warning(f"Invalid table name format: {table_name}")
+            child_safe_audit.log_security_event(
+                event_type="invalid_table_name_format",
+                threat_level="medium",
+                input_data=table_name,
+                context={"validation_type": "table_name_format"},
+            )
             return False
 
         # Must be in whitelist
         if table_name not in self.safe_tables:
-            logger.warning(f"Table name not in safe whitelist: {table_name}")
+            child_safe_audit.log_security_event(
+                event_type="table_name_not_whitelisted",
+                threat_level="medium",
+                input_data=table_name,
+                context={
+                    "validation_type": "table_name_whitelist",
+                    "safe_tables": self.safe_tables,
+                },
+            )
             return False
 
         return True
@@ -149,7 +177,12 @@ class SQLQueryValidator:
     def validate_column_name(self, column_name: str) -> bool:
         """Validate column name format"""
         if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", column_name):
-            logger.warning(f"Invalid column name format: {column_name}")
+            child_safe_audit.log_security_event(
+                event_type="invalid_column_name",
+                threat_level="medium",
+                input_data=column_name,
+                context={"validation_type": "column_name_format"},
+            )
             return False
 
         # Check for SQL reserved words
@@ -170,7 +203,12 @@ class SQLQueryValidator:
             "CAST",
         ]
         if column_name.upper() in sql_reserved:
-            logger.warning(f"Column name is SQL reserved word: {column_name}")
+            child_safe_audit.log_security_event(
+                event_type="sql_reserved_word_detected",
+                threat_level="high",
+                input_data=column_name,
+                context={"validation_type": "sql_reserved_word"},
+            )
             return False
 
         return True
@@ -270,7 +308,12 @@ class SQLQueryValidator:
         # Remove multiple spaces
         query = re.sub(r"\s+", " ", query).strip()
 
-        logger.warning(f"Query sanitization performed: {query[:100]}...")
+        child_safe_audit.log_security_event(
+            event_type="query_sanitization",
+            threat_level="high",
+            input_data=query,
+            context={"operation": "query_sanitization"},
+        )
         return query
 
     def get_safe_limit_offset(

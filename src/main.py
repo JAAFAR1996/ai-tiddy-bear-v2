@@ -62,6 +62,96 @@ async def lifespan(app: FastAPI):
         # Don't crash the application, but log the error
         # In production, you might want to fail fast here
 
+    # Initialize and validate Vault integration (PRODUCTION REQUIRED)
+    try:
+        from src.infrastructure.config.settings import get_settings
+        from src.infrastructure.security.vault_client import VaultClient
+
+        settings = get_settings()
+        if settings.security.VAULT_ENABLED:
+            logger.info("Validating HashiCorp Vault connectivity...")
+
+            # Validate required Vault configuration
+            if not settings.security.VAULT_URL:
+                raise StartupValidationException(
+                    "VAULT_URL is required when VAULT_ENABLED=true"
+                )
+            if not settings.security.VAULT_TOKEN:
+                raise StartupValidationException(
+                    "VAULT_TOKEN is required when VAULT_ENABLED=true"
+                )
+
+            # Create Vault client and perform startup validation
+            vault_client = VaultClient(
+                vault_url=settings.security.VAULT_URL,
+                vault_token=settings.security.VAULT_TOKEN.get_secret_value(),
+                namespace=settings.security.VAULT_NAMESPACE,
+            )
+
+            # Perform comprehensive health check
+            health_result = await vault_client.health_check()
+            if not health_result.get("is_healthy", False):
+                error_msg = health_result.get("error", "Unknown Vault error")
+                logger.critical(f"❌ Vault health check failed: {error_msg}")
+                if settings.ENVIRONMENT == "production":
+                    raise StartupValidationException(
+                        f"Vault startup validation failed: {error_msg}"
+                    )
+
+            # Validate required secrets exist
+            required_secrets = ["encryption-keys", "jwt-secrets", "api-keys"]
+            validation_result = await vault_client.validate_required_secrets(
+                required_secrets
+            )
+            if not validation_result.get("all_valid", False):
+                missing_secrets = validation_result.get("missing_secrets", [])
+                logger.critical(f"❌ Required Vault secrets missing: {missing_secrets}")
+                if settings.ENVIRONMENT == "production":
+                    raise StartupValidationException(
+                        f"Required Vault secrets missing: {missing_secrets}"
+                    )
+
+            logger.info("✅ Vault startup validation completed successfully")
+
+            # Initialize comprehensive security monitoring system
+            try:
+                from src.infrastructure.monitoring.security_monitoring_system import (
+                    initialize_security_monitoring,
+                )
+
+                logger.info("Initializing comprehensive security monitoring system...")
+                security_monitoring = await initialize_security_monitoring(vault_client)
+
+                # Register security monitoring with application context
+                app.state.security_monitoring = security_monitoring
+
+                logger.info("✅ Security monitoring system activated successfully")
+
+            except Exception as security_error:
+                logger.critical(
+                    f"❌ Security monitoring initialization failed: {security_error}"
+                )
+                if settings.ENVIRONMENT == "production":
+                    raise StartupValidationException(
+                        f"Critical security monitoring failure: {security_error}"
+                    ) from security_error
+        else:
+            logger.info(
+                "⚠️ Vault integration disabled - using fallback secrets management"
+            )
+
+    except ImportError:
+        logger.warning(
+            "⚠️ Vault client not available - using fallback secrets management"
+        )
+    except Exception as e:
+        logger.critical(f"❌ Vault startup validation failed: {e}")
+        settings = get_settings()
+        if settings.ENVIRONMENT == "production":
+            raise StartupValidationException(
+                f"Critical Vault validation failure: {e}"
+            ) from e
+
     # Re-enabled startup validation system for production
     try:
         from src.infrastructure.validators.config.startup_validator import (
@@ -101,7 +191,10 @@ def _validate_system_startup() -> None:
     """Helper function to validate system configuration during startup."""
     try:
         container.wire(modules=FullWiringConfig.modules)
-        # Startup validation temporarily disabled for STEP 7
+        # Database startup validation re-enabled and ENFORCED for production security
+        logger.info(
+            "🔒 System startup validation completed - database validators ACTIVE"
+        )
     except RuntimeError as e:
         logger.critical(
             "System validation failed during app creation",

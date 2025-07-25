@@ -53,24 +53,35 @@ class StartupValidator:
         return len(self.errors) == 0
 
     def validate_environment(self) -> bool:
-        """Validate environment configuration."""
+        """Validate environment configuration with comprehensive JWT security."""
         logger.info("🔍 Validating environment configuration...")
-        # Access settings directly from the injected settings object
-        # This assumes that the settings object has already loaded values from environment variables
-        # and performed basic Pydantic validation.
-        # Check for critical settings presence
-        if not self.settings.security.SECRET_KEY:
-            self._add_error("❌ SECRET_KEY is required but not set")
-        elif len(self.settings.security.SECRET_KEY) < 32:
-            self._add_error("❌ SECRET_KEY must be at least 32 characters long")
-        else:
-            logger.debug("✅ SECRET_KEY configured")
+
+        # Import JWT validator from the authorized location
+        from src.infrastructure.security.auth.token_service import JWTSecurityValidator
+
+        # CRITICAL CHILD SAFETY: Comprehensive JWT secret validation
         if not self.settings.security.JWT_SECRET_KEY:
             self._add_error("❌ JWT_SECRET_KEY is required but not set")
-        elif len(self.settings.security.JWT_SECRET_KEY) < 32:
-            self._add_error("❌ JWT_SECRET_KEY must be at least 32 characters long")
         else:
-            logger.debug("✅ JWT_SECRET_KEY configured")
+            try:
+                jwt_validator = JWTSecurityValidator()
+                jwt_validator.validate_jwt_secret(self.settings.security.JWT_SECRET_KEY)
+                logger.info(
+                    "✅ JWT_SECRET_KEY passed comprehensive cryptographic validation"
+                )
+            except ValueError as e:
+                self._add_error(f"❌ JWT_SECRET_KEY validation failed: {e}")
+
+        # Enhanced SECRET_KEY validation (64 chars minimum)
+        if not self.settings.security.SECRET_KEY:
+            self._add_error("❌ SECRET_KEY is required but not set")
+        elif len(self.settings.security.SECRET_KEY) < 64:
+            self._add_error(
+                f"❌ SECRET_KEY must be at least 64 characters long (current: {len(self.settings.security.SECRET_KEY)})"
+            )
+        else:
+            logger.debug("✅ SECRET_KEY configured with enhanced length requirements")
+
         if not self.settings.ai.OPENAI_API_KEY:
             self._add_error("❌ OPENAI_API_KEY is required but not set")
         elif not self.settings.ai.OPENAI_API_KEY.startswith("sk-"):
