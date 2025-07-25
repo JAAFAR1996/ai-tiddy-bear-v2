@@ -9,10 +9,13 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Any
 
-from src.infrastructure.logging_config import get_logger
-
+from src.domain.models.child_safety_data_models import (
+    COPPAChildData,
+    DataDeletionRequest,
+    DataRetentionPolicy,
+)
 from src.infrastructure.config.security.coppa_config import is_coppa_enabled
-from src.domain.models.child_safety_data_models import COPPAChildData, DataDeletionRequest, DataRetentionPolicy
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="security")
 
@@ -70,6 +73,7 @@ class DataRetentionManager:
         COPPA CONDITIONAL: Uses COPPA config to determine retention period.
         """
         # COPPA CONDITIONAL: Use the centralized retention calculation
+        base_retention = 90  # Default base retention
 
         # Adjust based on consent types
         if (
@@ -320,7 +324,7 @@ class DataRetentionManager:
     async def _create_deletion_audit_record(self, child_id: str) -> bool:
         """Create audit record for data deletion."""
         try:
-            audit_record = {
+            {
                 "child_id": child_id,
                 "deletion_date": datetime.utcnow().isoformat(),
                 "deletion_reason": "COPPA retention period expired",

@@ -2,13 +2,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.monitoring import (
-    AlertStatus,
-    monitoring_service,
-)
-from src.infrastructure.pagination import (
-    PaginationService,
-)
+from src.infrastructure.monitoring import AlertStatus, monitoring_service
+from src.infrastructure.pagination import PaginationService
 
 logger = get_logger(__name__, component="api")
 
@@ -18,8 +13,12 @@ try:
 
     FASTAPI_AVAILABLE = True
 except ImportError:
-    logger.critical("FastAPI is required for the monitoring dashboard API. Please install fastapi.")
-    raise ImportError("FastAPI is not installed. The monitoring dashboard API cannot run without FastAPI.")
+    logger.critical(
+        "FastAPI is required for the monitoring dashboard API. Please install fastapi."
+    )
+    raise ImportError(
+        "FastAPI is not installed. The monitoring dashboard API cannot run without FastAPI."
+    )
 
 
 class MonitoringDashboardService:
@@ -388,7 +387,8 @@ if FASTAPI_AVAILABLE:
 
     @router.get("/alerts")
     async def get_active_alerts(
-        severity: str | None = Query(
+        severity: str
+        | None = Query(
             None,
             pattern="^(low|medium|high|critical|emergency)$",
             description="Filter by alert severity",

@@ -6,17 +6,17 @@ records, replacing dummy implementations with production-ready logic.
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Optional, Any
+from typing import Any
 
-from sqlalchemy import select, update, delete, and_
+from sqlalchemy import and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.domain.models.consent_models_infra import ConsentModel
-from src.domain.models.consent_models_domain import ConsentType, ConsentStatus
-from src.domain.models.child_models import ChildModel
-from src.domain.models.parent_models import ParentModel
+from src.domain.models.consent_models_domain import ConsentType
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.models.child_models import ChildModel
+from src.infrastructure.persistence.models.consent_models_infra import ConsentModel
+from src.infrastructure.persistence.models.parent_models import ParentModel
 
 logger = get_logger(__name__)
 
@@ -32,13 +32,13 @@ class ConsentDatabaseService:
         child_id: str,
         parent_id: str,
         data_types: list[str],
-        consent_type: ConsentType = ConsentType.EXPLICIT
+        consent_type: ConsentType = ConsentType.EXPLICIT,
     ) -> str:
         """Create a real consent record in the database.
 
         Args:
             child_id: Child identifier
-            parent_id: Parent identifier  
+            parent_id: Parent identifier
             data_types: Types of data requiring consent
             consent_type: Type of consent (explicit/implicit)
 
@@ -78,14 +78,16 @@ class ConsentDatabaseService:
                     "data_types": data_types,
                     "ip_address": "tracking_required",
                     "user_agent": "tracking_required",
-                    "timestamp": datetime.now(UTC).isoformat()
-                }
+                    "timestamp": datetime.now(UTC).isoformat(),
+                },
             )
 
             self.db.add(consent_record)
             await self.db.commit()
 
-            logger.info(f"Created consent record: {consent_id} for child {child_id}, parent {parent_id}")
+            logger.info(
+                f"Created consent record: {consent_id} for child {child_id}, parent {parent_id}"
+            )
             return consent_id
 
         except Exception as e:
@@ -94,10 +96,7 @@ class ConsentDatabaseService:
             raise RuntimeError(f"Database error creating consent: {e}")
 
     async def verify_parental_consent(
-        self,
-        parent_id: str,
-        child_id: str,
-        consent_type: str = "data_access"
+        self, parent_id: str, child_id: str, consent_type: str = "data_access"
     ) -> bool:
         """Verify valid parental consent exists for data access.
 
@@ -116,16 +115,18 @@ class ConsentDatabaseService:
                 .where(
                     and_(
                         ConsentModel.parent_id == parent_id,
-                        ConsentModel.granted == True,
+                        ConsentModel.granted.is_(True),
                         ConsentModel.expires_at > datetime.now(UTC),
-                        ConsentModel.revoked_at.is_(None)
+                        ConsentModel.revoked_at.is_(None),
                     )
                 )
                 .options(selectinload(ConsentModel.verification_metadata))
             )
 
             if not consent:
-                logger.warning(f"No valid consent found for parent {parent_id}, child {child_id}")
+                logger.warning(
+                    f"No valid consent found for parent {parent_id}, child {child_id}"
+                )
                 return False
 
             # Check if consent covers the requested child
@@ -134,14 +135,18 @@ class ConsentDatabaseService:
                 logger.warning(f"Consent does not cover child {child_id}")
                 return False
 
-            logger.info(f"Valid consent verified for parent {parent_id}, child {child_id}")
+            logger.info(
+                f"Valid consent verified for parent {parent_id}, child {child_id}"
+            )
             return True
 
         except Exception as e:
             logger.error(f"Error verifying consent: {e}")
             return False
 
-    async def revoke_consent(self, consent_id: str, reason: str = "parent_revocation") -> bool:
+    async def revoke_consent(
+        self, consent_id: str, reason: str = "parent_revocation"
+    ) -> bool:
         """Revoke parental consent record.
 
         Args:
@@ -158,9 +163,12 @@ class ConsentDatabaseService:
                 .values(
                     granted=False,
                     revoked_at=datetime.now(UTC),
-                    verification_metadata=ConsentModel.verification_metadata.op('||')(
-                        {"revocation_reason": reason, "revoked_at": datetime.now(UTC).isoformat()}
-                    )
+                    verification_metadata=ConsentModel.verification_metadata.op("||")(
+                        {
+                            "revocation_reason": reason,
+                            "revoked_at": datetime.now(UTC).isoformat(),
+                        }
+                    ),
                 )
             )
 
@@ -210,12 +218,18 @@ class ConsentDatabaseService:
                 "consent_id": consent_id,
                 "status": status,
                 "granted": consent.granted,
-                "granted_at": consent.granted_at.isoformat() if consent.granted_at else None,
-                "expires_at": consent.expires_at.isoformat() if consent.expires_at else None,
-                "revoked_at": consent.revoked_at.isoformat() if consent.revoked_at else None,
+                "granted_at": (
+                    consent.granted_at.isoformat() if consent.granted_at else None
+                ),
+                "expires_at": (
+                    consent.expires_at.isoformat() if consent.expires_at else None
+                ),
+                "revoked_at": (
+                    consent.revoked_at.isoformat() if consent.revoked_at else None
+                ),
                 "consent_type": consent.consent_type.value,
                 "verification_method": consent.verification_method,
-                "metadata": consent.verification_metadata
+                "metadata": consent.verification_metadata,
             }
 
         except Exception as e:
@@ -235,7 +249,8 @@ class ConsentDatabaseService:
             consents = await self.db.scalars(
                 select(ConsentModel)
                 .where(
-                    ConsentModel.verification_metadata.op('->')('child_id').astext == child_id
+                    ConsentModel.verification_metadata.op("->")("child_id").astext
+                    == child_id
                 )
                 .order_by(ConsentModel.granted_at.desc())
             )

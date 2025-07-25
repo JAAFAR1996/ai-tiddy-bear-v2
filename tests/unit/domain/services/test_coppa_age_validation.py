@@ -3,6 +3,7 @@ Testing centralized age validation for COPPA compliance.
 """
 
 from datetime import date
+
 from freezegun import freeze_time
 
 from src.domain.services.coppa_age_validation import (

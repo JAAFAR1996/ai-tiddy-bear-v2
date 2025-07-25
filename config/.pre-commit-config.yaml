@@ -200,4 +200,4 @@ ci:
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
   autoupdate_schedule: weekly
   skip: [pytest-unit, performance-check]
-  submodules: false 
+  submodules: false

@@ -33,9 +33,9 @@ class ComprehensiveRateLimiter:
 
     def __init__(self, redis_client=None):
         self.storage = RateLimitStorage(redis_client)
-        self.configs: dict[str, RateLimitConfig] = (
-            DefaultConfigurations.get_default_configs()
-        )
+        self.configs: dict[
+            str, RateLimitConfig
+        ] = DefaultConfigurations.get_default_configs()
         self.child_safety_handler = ChildSafetyHandler()
         self.audit_integration = get_audit_integration()
         # Start cleanup task

@@ -1,4 +1,5 @@
 from pydantic import Field, field_validator
+
 """Defines infrastructure-related configuration settings for the application.
 
 This module provides structured access to various infrastructure components
@@ -8,7 +9,7 @@ Grafana, Sentry, New Relic, Datadog). It ensures consistent and validated
 settings for deploying and operating the application.
 """
 
-from pydantic import Field, validator
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 

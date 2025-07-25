@@ -13,24 +13,16 @@ from typing import Any
 from uuid import uuid4
 
 from src.application.interfaces.safety_monitor import SafetyMonitor
-from src.common.exceptions import (
-    ServiceUnavailableError,
-)
+from src.common.exceptions import ServiceUnavailableError
 from src.domain.interfaces.notification_clients import (
     IEmailClient,
     IInAppNotifier,
     IPushNotifier,
     ISMSClient,
 )
-from src.domain.interfaces.notification_repository import (
-    INotificationRepository,
-)
+from src.domain.interfaces.notification_repository import INotificationRepository
+from src.domain.value_objects.notification import NotificationRecord, NotificationStatus
 from src.domain.value_objects.safety_level import SafetyLevel
-
-from src.domain.value_objects.notification import (
-    NotificationRecord,
-    NotificationStatus,
-)
 from src.infrastructure.config.services.notification_config import NotificationConfig
 from src.infrastructure.logging_config import get_logger
 

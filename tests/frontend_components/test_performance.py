@@ -1,6 +1,6 @@
-from datetime import datetime
 import asyncio
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Add src to path
@@ -25,51 +25,51 @@ except ImportError:
 
     # Mock pytest when not available
     if pytest is None:
+
         class MockPytest:
-
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
     pytest = MockPytest()
 
@@ -83,6 +83,8 @@ class TestPerformance:
         load_times = []
 
         async def mock_load_component(name):
+            pass
+
             start = datetime.utcnow()
             await asyncio.sleep(0.1)  # Simulate loading
             end = datetime.utcnow()
@@ -105,6 +107,8 @@ class TestPerformance:
         call_count = 0
 
         def expensive_computation(data):
+            pass
+
             nonlocal call_count
             call_count += 1
             return sum(data)
@@ -113,6 +117,8 @@ class TestPerformance:
         memo_cache = {}
 
         def memoized_computation(data):
+            pass
+
             key = str(data)
             if key not in memo_cache:
                 memo_cache[key] = expensive_computation(data)
@@ -134,6 +140,8 @@ class TestPerformance:
         search_calls = []
 
         async def search(query):
+            pass
+
             search_calls.append(query)
             await asyncio.sleep(0.05)
             return f"results for {query}"

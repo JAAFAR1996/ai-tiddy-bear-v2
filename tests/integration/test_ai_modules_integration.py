@@ -4,19 +4,13 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock
 
-from application.services.emotion_analyzer import (
-    EmotionAnalyzer,
-    EmotionResult,
-)
+from application.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 from application.services.response_generator import (
     ActivityType,
     ResponseContext,
     ResponseGenerator,
 )
-from application.services.session_manager import (
-    SessionData,
-    SessionManager,
-)
+from application.services.session_manager import SessionData, SessionManager
 from application.services.transcription_service import (
     TranscriptionResult,
     TranscriptionService,
@@ -46,51 +40,51 @@ except ImportError:
     except ImportError:
         pass
 
-    # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+        # Mock pytest when not available
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
     pytest = MockPytest()
 

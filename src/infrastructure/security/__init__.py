@@ -13,18 +13,29 @@ Structure:
 """
 
 # Re-export commonly used items for backward compatibility
-from .auth.real_auth_service import get_current_user, get_current_parent
+from .auth.real_auth_service import RealAuthService
 from .core.main_security_service import MainSecurityService, get_security_service
-from .rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
+
+# Import Vault client for convenience
+from .encryption.vault_client import (
+    VaultAuthenticationError,
+    VaultClient,
+    VaultConnectionError,
+    VaultSecretNotFoundError,
+)
 from .password_hasher import PasswordHasher
+from .rate_limiter.service import ComprehensiveRateLimiter as RateLimiter
 from .token_service import TokenService
 
 __all__ = [
-    "get_current_user",
-    "get_current_parent",
     "MainSecurityService",
     "get_security_service",
     "RateLimiter",
     "PasswordHasher",
     "TokenService",
+    "RealAuthService",
+    "VaultClient",
+    "VaultConnectionError",
+    "VaultAuthenticationError",
+    "VaultSecretNotFoundError",
 ]

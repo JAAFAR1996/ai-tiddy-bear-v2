@@ -1,14 +1,16 @@
 try:
-    from domain.value_objects.safety_level import SafetyLevel
-    from infrastructure.security.safety_monitor_service import SafetyMonitorService
-    from infrastructure.security.vault_client import VaultClient
-    from infrastructure.security.security_manager import SecurityManager
-    from infrastructure.security.rate_limiter import RateLimiter
-    from infrastructure.security.jwt_auth import JWTAuth, JWTTokenData
-    import jwt
     from datetime import datetime, timedelta
-    from unittest.mock import Mock, patch, AsyncMock
+    from unittest.mock import Mock, patch
+
+    import jwt
     from fastapi_users import BaseUserManager, FastAPIUsers
+
+    from domain.value_objects.safety_level import SafetyLevel
+    from infrastructure.security.jwt_auth import JWTAuth, JWTTokenData
+    from infrastructure.security.rate_limiter import RateLimiter
+    from infrastructure.security.safety_monitor_service import SafetyMonitorService
+    from infrastructure.security.security_manager import SecurityManager
+    from infrastructure.security.vault_client import VaultClient
 except ImportError:
     # Mock fastapi_users
     class BaseUserManager:
@@ -133,12 +135,7 @@ class TestJWTAuth:
 
     def test_verify_token_valid(self, jwt_auth):
         """Test verifying valid token."""
-        data = {
-            "sub": "parent123",
-            "role": "parent",
-            "permissions": [
-                "read",
-                "write"]}
+        data = {"sub": "parent123", "role": "parent", "permissions": ["read", "write"]}
         token = jwt_auth.create_access_token(data)
 
         token_data = jwt_auth.verify_token(token)
@@ -409,8 +406,7 @@ class TestSecurityManager:
         assert authorized is True
 
     @pytest.mark.asyncio
-    async def test_authorize_action_insufficient_permissions(
-            self, security_manager):
+    async def test_authorize_action_insufficient_permissions(self, security_manager):
         """Test authorization with insufficient permissions."""
         token_data = JWTTokenData(
             subject="parent123", role="parent", permissions=["read"]
@@ -433,8 +429,7 @@ class TestSecurityManager:
         encrypted = await security_manager.encrypt_sensitive_data(sensitive_data)
 
         assert encrypted == "encrypted_data"
-        security_manager.vault_client.encrypt.assert_called_once_with(
-            sensitive_data)
+        security_manager.vault_client.encrypt.assert_called_once_with(sensitive_data)
 
     @pytest.mark.asyncio
     async def test_decrypt_sensitive_data(self, security_manager):
@@ -446,8 +441,7 @@ class TestSecurityManager:
         decrypted = await security_manager.decrypt_sensitive_data(encrypted_data)
 
         assert decrypted == "decrypted_data"
-        security_manager.vault_client.decrypt.assert_called_once_with(
-            encrypted_data)
+        security_manager.vault_client.decrypt.assert_called_once_with(encrypted_data)
 
 
 class TestSafetyMonitorService:
@@ -488,8 +482,7 @@ class TestSafetyMonitorService:
             result = await safety_monitor.analyze_content(toxic_content)
 
             assert result.is_safe is False
-            assert result.safety_level in [
-                SafetyLevel.WARNING, SafetyLevel.CRITICAL]
+            assert result.safety_level in [SafetyLevel.WARNING, SafetyLevel.CRITICAL]
             assert result.toxicity_score > 0.7
 
     @pytest.mark.asyncio
@@ -647,8 +640,7 @@ class TestVaultClient:
     async def test_retrieve_secret(self, vault_client):
         """Test retrieving secrets from vault."""
         with patch.object(vault_client, "_make_vault_request") as mock_request:
-            mock_request.return_value = {
-                "data": {"data": {"value": "secret_value"}}}
+            mock_request.return_value = {"data": {"data": {"value": "secret_value"}}}
 
             result = await vault_client.retrieve_secret("api_key")
 
@@ -695,8 +687,7 @@ class TestVaultClient:
     async def test_vault_connection_error(self, vault_client):
         """Test handling vault connection errors."""
         with patch.object(vault_client, "_make_vault_request") as mock_request:
-            mock_request.side_effect = ConnectionError(
-                "Cannot connect to vault")
+            mock_request.side_effect = ConnectionError("Cannot connect to vault")
 
             with pytest.raises(ConnectionError):
                 await vault_client.retrieve_secret("api_key")

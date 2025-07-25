@@ -1,12 +1,13 @@
-from .models import ChildSafetySummary
-from src.infrastructure.logging_config import get_logger
-from typing import Any
 from datetime import datetime
+from typing import Any
+
+from src.infrastructure.logging_config import get_logger
+
+from .models import ChildSafetySummary
 
 
 class DatabaseNotAvailableError(Exception):
     """Raised when the database service is not available in production."""
-    pass
 
 
 """Security operations and safety summary for children."""
@@ -34,14 +35,14 @@ except ImportError:
 
 # Import services
 try:
-    from infrastructure.persistence.real_database_service import (
-        get_database_service,
-    )
+    from infrastructure.persistence.real_database_service import get_database_service
 
     DATABASE_AVAILABLE = True
 except ImportError:
     DATABASE_AVAILABLE = False
-    logger.critical("Database service is not available. This is a production-blocking error. All safety features require a real database connection.")
+    logger.critical(
+        "Database service is not available. This is a production-blocking error. All safety features require a real database connection."
+    )
 
 
 class SafetyEventTypes:
@@ -63,8 +64,12 @@ class ChildSafetyManager:
         """Get child safety summary."""
         try:
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot get child safety summary. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for get_safety_summary.")
+                logger.critical(
+                    "Database service is not available. Cannot get child safety summary. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for get_safety_summary."
+                )
 
             db_service = get_database_service()
             safety_events = await db_service.get_safety_events(child_id)
@@ -93,8 +98,12 @@ class ChildSafetyManager:
             }
 
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot record safety event. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for record_safety_event.")
+                logger.critical(
+                    "Database service is not available. Cannot record safety event. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for record_safety_event."
+                )
 
             # Log event in database
             db_service = get_database_service()
@@ -135,8 +144,12 @@ class ChildSafetyManager:
             deduction = score_deductions.get(event_type, 5)
 
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot update safety score. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for update_safety_score.")
+                logger.critical(
+                    "Database service is not available. Cannot update safety score. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for update_safety_score."
+                )
 
             # Get current safety score from database
             db_service = get_database_service()
@@ -144,7 +157,9 @@ class ChildSafetyManager:
                 # جلب score حقيقي من قاعدة البيانات
                 current_score = await db_service.get_safety_score(child_id=child_id)
                 if current_score is None:
-                    logger.critical(f"No safety score found for child {child_id}. Cannot update score.")
+                    logger.critical(
+                        f"No safety score found for child {child_id}. Cannot update score."
+                    )
                     raise RuntimeError("No safety score found in database.")
                 new_score = max(0, current_score - deduction)
 
@@ -192,8 +207,12 @@ class ChildSafetyManager:
             }
 
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot send safety alert. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for send_safety_alert.")
+                logger.critical(
+                    "Database service is not available. Cannot send safety alert. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for send_safety_alert."
+                )
 
             # Send alert (can be implemented via email, push notification, etc)
             db_service = get_database_service()
@@ -205,10 +224,13 @@ class ChildSafetyManager:
     async def get_safety_events(child_id: str, limit: int = 10) -> list[dict[str, Any]]:
         """Get safety events for child."""
         try:
-
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot get safety events. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for get_safety_events.")
+                logger.critical(
+                    "Database service is not available. Cannot get safety events. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for get_safety_events."
+                )
 
             db_service = get_database_service()
             return await db_service.get_safety_events(child_id, limit)
@@ -403,8 +425,12 @@ class UsageMonitor:
             }
 
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot track usage. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for track_usage.")
+                logger.critical(
+                    "Database service is not available. Cannot track usage. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for track_usage."
+                )
 
             # Record usage in database
             db_service = get_database_service()
@@ -428,10 +454,13 @@ class UsageMonitor:
     async def get_usage_statistics(child_id: str, days: int = 7) -> dict[str, Any]:
         """Get usage statistics."""
         try:
-
             if not DATABASE_AVAILABLE:
-                logger.critical("Database service is not available. Cannot get usage statistics. This is a production-blocking error.")
-                raise DatabaseNotAvailableError("Database connection not established for get_usage_statistics.")
+                logger.critical(
+                    "Database service is not available. Cannot get usage statistics. This is a production-blocking error."
+                )
+                raise DatabaseNotAvailableError(
+                    "Database connection not established for get_usage_statistics."
+                )
 
             db_service = get_database_service()
             usage_stats = await db_service.get_usage_statistics(child_id, days)

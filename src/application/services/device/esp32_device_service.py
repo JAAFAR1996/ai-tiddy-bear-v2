@@ -6,10 +6,8 @@ statuses, device statuses, and edge AI results. It integrates with an event
 bus to publish processed data for further system consumption.
 """
 
-from src.application.interfaces.read_model_interfaces import (
-    IEventBus,
-    get_event_bus,
-)
+from src.application.interfaces.read_model_interfaces import IEventBus, get_event_bus
+from src.domain.interfaces.device_authenticator import IDeviceAuthenticator
 from src.domain.models.esp32_models import (
     ESP32DeviceStatus,
     ESP32EdgeAIResult,
@@ -18,7 +16,6 @@ from src.domain.models.esp32_models import (
     ESP32SensorReading,
     ESP32VoiceCommand,
 )
-from src.domain.interfaces.device_authenticator import IDeviceAuthenticator
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="esp32_device_service")

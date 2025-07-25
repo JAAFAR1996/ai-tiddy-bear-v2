@@ -13,9 +13,7 @@ class TestProductionReadiness:
 
     def test_startup_validator_fails_without_dependencies(self):
         """Test that startup validation fails when dependencies are missing."""
-        from src.infrastructure.config.startup_validator import (
-            StartupValidator,
-        )
+        from src.infrastructure.config.startup_validator import StartupValidator
 
         validator = StartupValidator()
 
@@ -29,9 +27,7 @@ class TestProductionReadiness:
 
     def test_startup_validator_fails_without_environment(self):
         """Test that startup validation fails when environment vars are missing."""
-        from src.infrastructure.config.startup_validator import (
-            StartupValidator,
-        )
+        from src.infrastructure.config.startup_validator import StartupValidator
 
         validator = StartupValidator()
 
@@ -43,9 +39,7 @@ class TestProductionReadiness:
 
     def test_startup_validator_fails_with_insecure_secrets(self):
         """Test that startup validation fails with insecure secrets."""
-        from src.infrastructure.config.startup_validator import (
-            StartupValidator,
-        )
+        from src.infrastructure.config.startup_validator import StartupValidator
 
         validator = StartupValidator()
 
@@ -112,9 +106,7 @@ class TestProductionReadiness:
         import ast
         import inspect
 
-        from src.infrastructure.persistence.real_database_service import (
-            DatabaseService,
-        )
+        from src.infrastructure.persistence.real_database_service import DatabaseService
 
         # Get the source code of critical methods
         methods_to_check = [
@@ -154,13 +146,6 @@ class TestProductionReadiness:
     def test_coppa_service_uses_real_encryption(self):
         """Test that COPPA service uses real Fernet encryption."""
         from cryptography.fernet import Fernet
-
-        from src.infrastructure.security.coppa_validator import (
-            COPPAValidator,
-            coppa_validator,
-            is_coppa_subject,
-            requires_parental_consent
-        )
 
         # Test with proper encryption key
         encryption_key = Fernet.generate_key().decode()
@@ -211,7 +196,7 @@ class TestProductionReadiness:
                 from src.infrastructure.ai.real_ai_service import RealAIService
 
                 # Should fail or require valid configuration
-                service = RealAIService()
+                RealAIService()
                 # If it doesn't fail immediately, it should fail on first API
                 # call
             except (ValueError, ImportError, Exception) as e:
@@ -293,12 +278,6 @@ class TestSecurityCompliance:
 
     def test_coppa_age_validation(self):
         """Test COPPA age validation works correctly."""
-        from src.infrastructure.security.coppa_validator import (
-            COPPAValidator,
-            coppa_validator,
-            is_coppa_subject,
-            requires_parental_consent
-        )
 
         service = COPPAComplianceService()
 
@@ -340,9 +319,7 @@ class TestSecurityCompliance:
     def test_rate_limiting_configuration(self):
         """Test that rate limiting is properly configured."""
         try:
-            from src.infrastructure.security.rate_limiter import (
-                setup_rate_limiter,
-            )
+            from src.infrastructure.security.rate_limiter import setup_rate_limiter
 
             assert callable(setup_rate_limiter)
         except ImportError:

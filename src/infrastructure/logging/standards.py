@@ -1,15 +1,17 @@
-
 """🔍 Standardized Logging for AI Teddy Bear System
 Consistent logging levels and patterns across all services.
 """
-from src.domain.interfaces.logging_interface import LogLevel
+
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
+
+from src.domain.interfaces.logging_interface import LogLevel
 
 
 class LogCategory(Enum):
     """Standard log categories for the system."""
+
     SECURITY = "SECURITY"
     CHILD_SAFETY = "CHILD_SAFETY"
     PERFORMANCE = "PERFORMANCE"

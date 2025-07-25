@@ -18,7 +18,8 @@
       "Bash(true)",
       "Bash(-print)",
       "Bash(cp:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(pytest:*)"
     ],
     "deny": []
   }

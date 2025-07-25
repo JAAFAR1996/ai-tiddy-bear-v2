@@ -1,19 +1,22 @@
-
 from functools import lru_cache
 from typing import Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from src.domain.entities.user import User
 from src.infrastructure.caching.redis_cache import RedisCacheManager
 from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.persistence.session_manager import (
+    get_async_session,
+    get_session_manager,
+)
 from src.infrastructure.security.core.main_security_service import (
     MainSecurityService,
     get_security_service,
 )
-from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
-from src.domain.entities.user import User
+from src.infrastructure.security.core.real_auth_service import ProductionAuthService
 
 """FastAPI Dependency Injection Utilities"""
 
@@ -118,3 +121,34 @@ async def get_current_active_user(
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+# Database Session Dependencies
+
+
+async def get_db_session():
+    """Get a database session dependency for FastAPI routes.
+
+    This dependency provides an AsyncSession that can be used in FastAPI
+    route handlers. The session is automatically managed (commit/rollback/close).
+
+    Yields:
+        AsyncSession: A SQLAlchemy async session
+
+    Example:
+        @app.get("/users/")
+        async def get_users(session: AsyncSession = Depends(get_db_session)):
+            result = await session.execute(select(User))
+            return result.scalars().all()
+    """
+    async with get_async_session() as session:
+        yield session
+
+
+def get_session_manager_dependency():
+    """Get the session manager dependency for FastAPI routes.
+
+    Returns:
+        SessionManager: The global session manager instance
+    """
+    return get_session_manager()

@@ -1,12 +1,10 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status, Path, File
+from fastapi import APIRouter, Depends, File, HTTPException, Path, status
 from pydantic import BaseModel, Field
 
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestrationService,
-)
+from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
 from src.application.services.device.audio_processing_service import (
     AudioProcessingService,
 )
@@ -130,7 +128,9 @@ async def get_device_status(
 ) -> DeviceStatus:
     """Get device status"""
     # يجب الربط مع قاعدة بيانات أو خدمة إدارة الأجهزة هنا
-    logger.error(f"Device status requested for {device_id}, but device data source is not connected.")
+    logger.error(
+        f"Device status requested for {device_id}, but device data source is not connected."
+    )
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="Device data not available - database/service not connected",

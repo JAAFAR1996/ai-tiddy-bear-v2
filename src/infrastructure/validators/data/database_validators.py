@@ -97,3 +97,16 @@ class DatabaseConnectionValidator:
         except Exception as e:
             logger.error(f"Schema compatibility validation failed: {e}")
             return False
+
+
+# Import production validator for production environments
+from .production_database_validator import (
+    ProductionDatabaseValidator,
+    validate_production_database,
+)
+
+__all__ = [
+    "DatabaseConnectionValidator",
+    "ProductionDatabaseValidator",
+    "validate_production_database",
+]

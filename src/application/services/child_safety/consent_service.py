@@ -2,16 +2,15 @@
 File reduced from 557 lines to < 200 lines for better maintainability.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.persistence.repositories.consent_repository import ConsentRepository
 from src.infrastructure.persistence.database_manager import Database
-
-from src.domain.models.consent_models_domain import (
-    ConsentRecord,
+from src.infrastructure.persistence.repositories.consent_repository import (
+    ConsentRepository,
 )
+
 from .verification_service import VerificationService
 
 logger = get_logger(__name__, component="services")
@@ -92,11 +91,13 @@ class ConsentService:
                 verification_metadata={
                     "granted_at": datetime.utcnow().isoformat(),
                     "verification_method": verification_method,
-                }
+                },
             )
 
             if success:
-                logger.info(f"Consent granted via {verification_method} (ID: {consent_id})")
+                logger.info(
+                    f"Consent granted via {verification_method} (ID: {consent_id})"
+                )
                 return {"consent_id": consent_id, "status": "granted"}
             else:
                 logger.warning(f"Failed to grant consent: {consent_id}")
@@ -116,8 +117,7 @@ class ConsentService:
         try:
             # Revoke consent in database
             success = await self.consent_repository.revoke_consent(
-                consent_id=consent_id,
-                revocation_reason="Parent requested revocation"
+                consent_id=consent_id, revocation_reason="Parent requested revocation"
             )
 
             if success:
@@ -147,7 +147,11 @@ class ConsentService:
                 if status["consent_id"] == consent_id:
                     return {
                         "consent_id": consent_id,
-                        "status": "granted" if status["granted"] and status["valid"] else "pending",
+                        "status": (
+                            "granted"
+                            if status["granted"] and status["valid"]
+                            else "pending"
+                        ),
                         "granted": status["granted"],
                         "valid": status["valid"],
                         "granted_at": status["granted_at"],
@@ -182,8 +186,10 @@ class ConsentService:
                 consent_type=consent_type,
             )
 
-        except Exception as e:
-            logger.exception(f"Failed to verify consent for parent {parent_id}, child {child_id}")
+        except Exception:
+            logger.exception(
+                f"Failed to verify consent for parent {parent_id}, child {child_id}"
+            )
             return False
 
     async def get_consent_status_for_child(

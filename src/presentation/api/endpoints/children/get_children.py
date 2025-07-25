@@ -300,15 +300,17 @@ async def get_children_activity_summary(
             #   "activity_by_day": {"2025-07-20": 5, ...}
             #   "safety_incidents": int
             # }
-            children_activity.append({
-                "child_id": child.id,
-                "child_name": child.name,
-                "total_interactions": activity.get("total_interactions", 0),
-                "daily_average_minutes": activity.get("daily_average_minutes", 0),
-                "favorite_activities": activity.get("favorite_activities", []),
-                "safety_score": activity.get("safety_score", 1.0),
-                "last_active": activity.get("last_active", None),
-            })
+            children_activity.append(
+                {
+                    "child_id": child.id,
+                    "child_name": child.name,
+                    "total_interactions": activity.get("total_interactions", 0),
+                    "daily_average_minutes": activity.get("daily_average_minutes", 0),
+                    "favorite_activities": activity.get("favorite_activities", []),
+                    "safety_score": activity.get("safety_score", 1.0),
+                    "last_active": activity.get("last_active", None),
+                }
+            )
             total_interactions += activity.get("total_interactions", 0)
             total_minutes += activity.get("daily_average_minutes", 0)
             safety_incidents += activity.get("safety_incidents", 0)

@@ -6,17 +6,19 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 
-from src.application.use_cases.manage_child_profile import (
-    ManageChildProfileUseCase,
-)
+from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
 from src.domain.entities.user import User
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.auth.real_auth_service import ProductionAuthService
 from src.infrastructure.security.child_safety.safety_monitor_service import (
     SafetyMonitorService,
 )
-from src.presentation.api.endpoints.children.compliance import COPPAIntegration
+from src.infrastructure.security.core.real_auth_service import ProductionAuthService
+from src.presentation.api.endpoints.children.compliance import (
+    COPPAIntegration,
+    ParentalConsentManager,
+)
+from src.presentation.api.endpoints.children.safety import UsageMonitor
 
 from .models import (
     ChildCreateRequest,

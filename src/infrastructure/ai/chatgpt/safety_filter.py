@@ -3,12 +3,8 @@
 import re
 from typing import Any
 
-from src.domain.constants import (
-    MAX_NEGATIVE_INDICATORS as NEGATIVE_THRESHOLD,
-)
-from src.domain.constants import (
-    MAX_RESPONSE_LENGTH,
-)
+from src.domain.constants import MAX_NEGATIVE_INDICATORS as NEGATIVE_THRESHOLD
+from src.domain.constants import MAX_RESPONSE_LENGTH
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")

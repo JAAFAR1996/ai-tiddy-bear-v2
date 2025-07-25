@@ -18,44 +18,50 @@ except ImportError:
     except ImportError:
         # Mock pytest when not available
 
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-                    return decorator
-
-                def asyncio(self, func):
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
+                return decorator
+
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
+                        return func
+
+                    def slow(self, func):
+                        return func
+
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                return MockMark()
+
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
+
+                    def __exit__(self, *args):
+                        return False
+
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
                     return func
 
-                def skip(self, reason=""):
-                    def decorator(func):
-                        return func
-                    return decorator
-            return MockMark()
-
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    return False
-            return MockRaises()
-
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
-            return decorator
+                return decorator
 
     pytest = MockPytest()
 
@@ -74,8 +80,7 @@ class TestConversationRepositoryMessaging:
 
         # Act
         success = await conversation_repository.add_message_to_conversation(
-            created_conversation.id, "user", "This is a new message", {
-                "test": True}
+            created_conversation.id, "user", "This is a new message", {"test": True}
         )
 
         # Assert
@@ -85,12 +90,10 @@ class TestConversationRepositoryMessaging:
         updated_conversation = await conversation_repository.get_by_id(
             created_conversation.id
         )
-        pytest.assume(updated_conversation.total_messages ==
-                      initial_message_count + 1)
+        pytest.assume(updated_conversation.total_messages == initial_message_count + 1)
 
     @pytest.mark.asyncio
-    async def test_end_conversation(
-            self, conversation_repository, sample_conversation):
+    async def test_end_conversation(self, conversation_repository, sample_conversation):
         """Test ending a conversation"""
         # Arrange
         sample_conversation.end_time = None  # Make it an active conversation

@@ -294,9 +294,9 @@ class TestChildProfileEventHandlers:
             age=8,
             preferences={"favorite_color": "blue"},
         )
-        child_profile_event_handlers.read_model_store.models[str(child_id)] = (
-            existing_model
-        )
+        child_profile_event_handlers.read_model_store.models[
+            str(child_id)
+        ] = existing_model
 
         # Create event with same values
         event = ChildProfileUpdated(
@@ -329,9 +329,9 @@ class TestChildProfileEventHandlers:
             age=7,
             preferences={"favorite_color": "green", "favorite_food": "pizza"},
         )
-        child_profile_event_handlers.read_model_store.models[str(child_id)] = (
-            existing_model
-        )
+        child_profile_event_handlers.read_model_store.models[
+            str(child_id)
+        ] = existing_model
 
         # Create event with only name change
         event = ChildProfileUpdated(
@@ -362,9 +362,9 @@ class TestChildProfileEventHandlers:
             age=8,
             preferences={"favorite_color": "blue", "favorite_animal": "cat"},
         )
-        child_profile_event_handlers.read_model_store.models[str(child_id)] = (
-            existing_model
-        )
+        child_profile_event_handlers.read_model_store.models[
+            str(child_id)
+        ] = existing_model
 
         # Create event with preference changes
         event = ChildProfileUpdated(
@@ -398,9 +398,9 @@ class TestChildProfileEventHandlers:
             age=8,
             preferences={"favorite_color": "blue"},
         )
-        child_profile_event_handlers.read_model_store.models[str(child_id)] = (
-            existing_model
-        )
+        child_profile_event_handlers.read_model_store.models[
+            str(child_id)
+        ] = existing_model
 
         # Create event with preference changes
         event = ChildProfileUpdated(
@@ -640,9 +640,9 @@ class TestChildProfileEventHandlers:
             age=8,
             preferences={"favorite_color": "blue"},
         )
-        child_profile_event_handlers.read_model_store.models[str(child_id)] = (
-            existing_model
-        )
+        child_profile_event_handlers.read_model_store.models[
+            str(child_id)
+        ] = existing_model
 
         event = ChildProfileUpdated(
             child_id=child_id, name="Updated Name", age=None, preferences=None

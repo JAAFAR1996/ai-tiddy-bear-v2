@@ -45,11 +45,19 @@ class CleanupService:
         resolved_path = file_path.resolve()
         # مثال: السماح فقط بالحذف من مجلد /tmp أو مجلد بيانات محدد
         allowed_base_dirs = [Path("/tmp"), Path("/var/ai-teddy/data/cleanup")]
-        if not any(str(resolved_path).startswith(str(base)) for base in allowed_base_dirs):
-            self.logger.warning(f"Attempted cleanup outside allowed directories: {resolved_path}")
-            raise ValueError(f"Cleanup not allowed outside designated directories: {resolved_path}")
+        if not any(
+            str(resolved_path).startswith(str(base)) for base in allowed_base_dirs
+        ):
+            self.logger.warning(
+                f"Attempted cleanup outside allowed directories: {resolved_path}"
+            )
+            raise ValueError(
+                f"Cleanup not allowed outside designated directories: {resolved_path}"
+            )
         if ".." in str(file_path):
-            self.logger.warning(f"Attempted directory traversal detected in path: {file_path}")
+            self.logger.warning(
+                f"Attempted directory traversal detected in path: {file_path}"
+            )
             raise ValueError(f"Directory traversal detected in path: {file_path}")
         # يمكن إضافة المزيد من الشروط حسب سياسة النظام
         return True

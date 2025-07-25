@@ -11,10 +11,12 @@ from fastapi import HTTPException
 from src.application.dto.ai_response import AIResponse
 from src.application.dto.esp32_request import ESP32Request
 from src.application.services.ai.ai_orchestration_service import AIOrchestrationService
-from src.application.services.device.audio_processing_service import AudioProcessingService
 from src.application.services.core.conversation_service import ConversationService
-from src.infrastructure.persistence.child_repository import ChildRepository
+from src.application.services.device.audio_processing_service import (
+    AudioProcessingService,
+)
 from src.domain.value_objects.safety_level import SafetyLevel
+from src.infrastructure.persistence.child_repository import ChildRepository
 
 
 class ProcessESP32AudioUseCase:

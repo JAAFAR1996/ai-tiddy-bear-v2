@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from src.application.dto.ai_response import AIResponse
+
 from .utils import AIServiceUtils
 
 try:

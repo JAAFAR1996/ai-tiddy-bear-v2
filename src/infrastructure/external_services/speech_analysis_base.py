@@ -1,7 +1,8 @@
-import numpy as np
 import io
 from datetime import datetime
 from typing import Any
+
+import numpy as np
 
 """Base Speech Analysis Components
 Core classes and utilities for speech disorder detection"""
@@ -68,6 +69,7 @@ class AudioValidator:
                 raise RuntimeError("librosa not installed. Please install librosa.")
             audio_buffer = io.BytesIO(audio_data)
             import librosa
+
             y, sr = librosa.load(audio_buffer, sr=None, mono=True)
             duration = librosa.get_duration(y=y, sr=sr)
             if duration < self.config.min_audio_duration:
@@ -92,6 +94,7 @@ class AudioValidator:
 
 try:
     import librosa
+
     LIBROSA_AVAILABLE = True
 except ImportError:
     LIBROSA_AVAILABLE = False
@@ -115,7 +118,9 @@ class FeatureExtractor:
             duration = librosa.get_duration(y=y, sr=sr)
             mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=5)
             mfcc_mean = np.mean(mfcc, axis=1).tolist()
-            spectral_centroid = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr)))
+            spectral_centroid = float(
+                np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))
+            )
             zero_crossing_rate = float(np.mean(librosa.feature.zero_crossing_rate(y)))
             # Estimate silence ratio
             rms = librosa.feature.rms(y=y)[0]
@@ -124,9 +129,13 @@ class FeatureExtractor:
             speech_rate = zero_crossing_rate * sr
             # Prosodic features (basic)
             pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
-            fundamental_frequency = float(np.mean(pitches[pitches > 0])) if np.any(pitches > 0) else 0.0
+            fundamental_frequency = (
+                float(np.mean(pitches[pitches > 0])) if np.any(pitches > 0) else 0.0
+            )
             intensity = float(np.mean(librosa.feature.rms(y=y))) * 100
-            pitch_variation = float(np.std(pitches[pitches > 0])) if np.any(pitches > 0) else 0.0
+            pitch_variation = (
+                float(np.std(pitches[pitches > 0])) if np.any(pitches > 0) else 0.0
+            )
 
             features = {
                 "spectral_features": {

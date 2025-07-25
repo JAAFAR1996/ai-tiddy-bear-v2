@@ -124,9 +124,9 @@ class TestSpeechProcessor:
         languages = ["en-US", "es-ES", "fr-FR", "de-DE", "it-IT"]
 
         for language in languages:
-            processor.speech_to_text_results[(len(audio_data), language)] = (
-                f"Text in {language}"
-            )
+            processor.speech_to_text_results[
+                (len(audio_data), language)
+            ] = f"Text in {language}"
 
             result = await processor.speech_to_text(audio_data, language)
             assert result == f"Text in {language}"
@@ -145,9 +145,9 @@ class TestSpeechProcessor:
         ]
 
         for voice_id in voice_ids:
-            processor.text_to_speech_results[(text, voice_id)] = (
-                f"audio_for_{voice_id}".encode()
-            )
+            processor.text_to_speech_results[
+                (text, voice_id)
+            ] = f"audio_for_{voice_id}".encode()
 
             result = await processor.text_to_speech(text, voice_id)
             assert result == f"audio_for_{voice_id}".encode()
@@ -183,9 +183,9 @@ class TestSpeechProcessor:
         audio_data = b"x" * 1000000  # 1MB of audio data
         language = "en-US"
 
-        processor.speech_to_text_results[(len(audio_data), language)] = (
-            "Long transcription"
-        )
+        processor.speech_to_text_results[
+            (len(audio_data), language)
+        ] = "Long transcription"
 
         result = await processor.speech_to_text(audio_data, language)
         assert result == "Long transcription"
@@ -237,9 +237,9 @@ class TestSpeechProcessor:
         unicode_languages = ["zh-CN", "ja-JP", "ko-KR", "ar-SA", "he-IL"]
 
         for language in unicode_languages:
-            processor.speech_to_text_results[(len(audio_data), language)] = (
-                f"Unicode text in {language}"
-            )
+            processor.speech_to_text_results[
+                (len(audio_data), language)
+            ] = f"Unicode text in {language}"
 
             result = await processor.speech_to_text(audio_data, language)
             assert result == f"Unicode text in {language}"
@@ -411,9 +411,9 @@ class TestSpeechProcessor:
         ]
 
         for voice_id in child_safe_voices:
-            processor.text_to_speech_results[(text, voice_id)] = (
-                f"safe_audio_{voice_id}".encode()
-            )
+            processor.text_to_speech_results[
+                (text, voice_id)
+            ] = f"safe_audio_{voice_id}".encode()
 
             result = await processor.text_to_speech(text, voice_id)
             assert result == f"safe_audio_{voice_id}".encode()
@@ -439,9 +439,9 @@ class TestSpeechProcessor:
         ]
 
         for language in valid_languages:
-            processor.speech_to_text_results[(len(audio_data), language)] = (
-                f"Valid result for {language}"
-            )
+            processor.speech_to_text_results[
+                (len(audio_data), language)
+            ] = f"Valid result for {language}"
 
             result = await processor.speech_to_text(audio_data, language)
             assert result == f"Valid result for {language}"
@@ -461,9 +461,9 @@ class TestSpeechProcessor:
         ]
 
         for audio_data in audio_formats:
-            processor.speech_to_text_results[(len(audio_data), language)] = (
-                f"Processed {len(audio_data)} bytes"
-            )
+            processor.speech_to_text_results[
+                (len(audio_data), language)
+            ] = f"Processed {len(audio_data)} bytes"
 
             result = await processor.speech_to_text(audio_data, language)
             assert result == f"Processed {len(audio_data)} bytes"
@@ -484,9 +484,9 @@ class TestSpeechProcessor:
         ]
 
         for text in safe_texts:
-            processor.text_to_speech_results[(text, voice_id)] = (
-                f"safe_audio_for_{hash(text)}".encode()
-            )
+            processor.text_to_speech_results[
+                (text, voice_id)
+            ] = f"safe_audio_for_{hash(text)}".encode()
 
             result = await processor.text_to_speech(text, voice_id)
             assert isinstance(result, bytes)

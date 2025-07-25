@@ -3,9 +3,7 @@ Implements the domain encryption interface using infrastructure encryption servi
 maintaining Hexagonal Architecture separation of concerns.
 """
 
-from src.domain.interfaces.encryption_interface import (
-    EncryptionServiceInterface,
-)
+from src.domain.interfaces.encryption_interface import EncryptionServiceInterface
 
 
 class InfrastructureEncryptionAdapter(EncryptionServiceInterface):

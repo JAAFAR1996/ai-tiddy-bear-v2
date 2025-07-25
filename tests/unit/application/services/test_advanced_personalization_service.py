@@ -16,10 +16,7 @@ import pytest
 from src.application.services.advanced_personalization_service import (
     AdvancedPersonalizationService,
 )
-from src.domain.value_objects.personality import (
-    ChildPersonality,
-    PersonalityType,
-)
+from src.domain.value_objects.personality import ChildPersonality, PersonalityType
 
 
 class MockPersonalityProfileRepository:

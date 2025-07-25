@@ -1,6 +1,7 @@
-from domain.entities.emotion import EmotionType
 import sys
 from pathlib import Path
+
+from domain.entities.emotion import EmotionType
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -18,32 +19,50 @@ except ImportError:
     # Mock numpy when not available
     class MockNumpy:
         def array(self, data):
+            pass
+
             return data
 
         def zeros(self, shape):
+            pass
+
             return [0] * (shape if isinstance(shape, int) else shape[0])
 
         def ones(self, shape):
+            pass
+
             return [1] * (shape if isinstance(shape, int) else shape[0])
 
         def mean(self, data):
+            pass
+
             return sum(data) / len(data) if data else 0
 
         def std(self, data):
+            pass
+
             return 1.0  # Mock standard deviation
 
         def random(self):
+            pass
+
             class MockRandom:
                 def rand(self, *args):
+                    pass
+
                     return 0.5
 
                 def randint(self, low, high, size=None):
+                    pass
+
                     return low
 
             return MockRandom()
 
         @property
         def pi(self):
+            pass
+
             return 3.14159265359
 
     np = MockNumpy()
@@ -61,51 +80,51 @@ except ImportError:
 
     # Mock pytest when not available
     if pytest is None:
+
         class MockPytest:
-
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
         pytest = MockPytest()
 
@@ -117,9 +136,7 @@ class TestEmotionService:
     async def test_audio_emotion_analysis(self, emotion_service):
         """Test emotion analysis from audio"""
         # Mock audio data
-        audio_data = np.random.random(16000).astype(
-            np.float32
-        )  # 1 second at 16kHz
+        audio_data = np.random.random(16000).astype(np.float32)  # 1 second at 16kHz
 
         # Setup
         emotion_service.analyze_audio_emotion.return_value = {

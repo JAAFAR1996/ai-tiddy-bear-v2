@@ -415,7 +415,9 @@ class AuditLogger:
         }
 
         # In production, this would integrate with alerting systems
-        logger.critical(f"SECURITY_ALERT: {json.dumps(alert_message)}")
+        logger.critical(
+            f"SECURITY_ALERT: Event {alert_message['event_id']} - {alert_message['event_type']} at {alert_message['timestamp']}"
+        )
 
     async def _flush_audit_buffer(self) -> None:
         """Background task to flush audit buffer periodically."""

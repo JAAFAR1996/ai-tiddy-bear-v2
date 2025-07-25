@@ -62,9 +62,7 @@ class TestParentChildVerificationService:
 
     def test_all_exports_in_all(self):
         """Test that __all__ contains expected exports."""
-        from src.application.services.parent_child_verification_service import (
-            __all__,
-        )
+        from src.application.services.parent_child_verification_service import __all__
 
         expected_exports = [
             "ParentChildVerificationService",

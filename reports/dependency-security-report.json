@@ -1,0 +1,1102 @@
+{
+  "timestamp": "1753471226.729697",
+  "total_packages": 66,
+  "lock_file_packages": 45,
+  "security_issues": 95,
+  "critical_issues": 38,
+  "high_issues": 57,
+  "packages": {
+    "automat": {
+      "version": "22.10.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "babel": {
+      "version": "2.10.3",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "jinja2": {
+      "version": "3.1.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "markupsafe": {
+      "version": "2.1.5",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pygobject": {
+      "version": "3.48.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pyjwt": {
+      "version": "2.7.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "pyyaml": {
+      "version": "6.0.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "shredder": {
+      "version": "2.9.0.Odd.Olm",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "attrs": {
+      "version": "23.2.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "bcrypt": {
+      "version": "3.2.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "blinker": {
+      "version": "1.7.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "certifi": {
+      "version": "2023.11.17",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "chardet": {
+      "version": "5.2.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "LGPL"
+    },
+    "click": {
+      "version": "8.1.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "cloud-init": {
+      "version": "25.1.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "colorama": {
+      "version": "0.4.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "colorlog": {
+      "version": "6.8.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "command-not-found": {
+      "version": "0.3",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "configobj": {
+      "version": "5.0.8",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "BSD (2 clause)"
+    },
+    "constantly": {
+      "version": "23.10.4",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "cryptography": {
+      "version": "41.0.7",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "Apache-2.0 OR BSD-3-Clause"
+    },
+    "dbus-python": {
+      "version": "1.3.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "distro": {
+      "version": "1.9.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "Apache License, Version 2.0"
+    },
+    "distro-info": {
+      "version": "1.7+build1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "httplib2": {
+      "version": "0.20.4",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "hyperlink": {
+      "version": "21.0.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "idna": {
+      "version": "3.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "incremental": {
+      "version": "22.10.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "iotop": {
+      "version": "0.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "jsonpatch": {
+      "version": "1.32",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "jsonpointer": {
+      "version": "2.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "jsonschema": {
+      "version": "4.10.3",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "launchpadlib": {
+      "version": "1.11.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "lazr.restfulclient": {
+      "version": "0.14.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "lazr.uri": {
+      "version": "1.0.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "markdown-it-py": {
+      "version": "3.0.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "mdurl": {
+      "version": "0.1.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "netifaces": {
+      "version": "0.11.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "oauthlib": {
+      "version": "3.2.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pip": {
+      "version": "24.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "pyopenssl": {
+      "version": "23.2.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pyasn1": {
+      "version": "0.4.8",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pyasn1-modules": {
+      "version": "0.2.8",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pycairo": {
+      "version": "1.25.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pycurl": {
+      "version": "7.45.3",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pygments": {
+      "version": "2.17.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "BSD-2-Clause"
+    },
+    "pyhamcrest": {
+      "version": "2.1.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "BSD License"
+    },
+    "pyparsing": {
+      "version": "3.1.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pyrsistent": {
+      "version": "0.20.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pyserial": {
+      "version": "3.5",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "python-apt": {
+      "version": "2.7.7+ubuntu4",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "pytz": {
+      "version": "2024.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "requests": {
+      "version": "2.31.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "rich": {
+      "version": "13.7.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT"
+    },
+    "service-identity": {
+      "version": "24.1.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "setuptools": {
+      "version": "68.1.2",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "six": {
+      "version": "1.16.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "systemd-python": {
+      "version": "235",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "twisted": {
+      "version": "24.3.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": "MIT License"
+    },
+    "typing-extensions": {
+      "version": "4.10.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "ubuntu-pro-client": {
+      "version": "8001",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "unattended-upgrades": {
+      "version": "0.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "urllib3": {
+      "version": "2.0.7",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "wadllib": {
+      "version": "1.3.6",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "wheel": {
+      "version": "0.42.0",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    },
+    "zope.interface": {
+      "version": "6.1",
+      "location": "/usr/lib/python3/dist-packages",
+      "license": null
+    }
+  },
+  "issues": [
+    {
+      "severity": "HIGH",
+      "package": "automat",
+      "version": "22.10.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "babel",
+      "version": "2.10.3",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "markupsafe",
+      "version": "2.1.5",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pygobject",
+      "version": "3.48.2",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyjwt",
+      "version": "2.7.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyyaml",
+      "version": "6.0.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "shredder",
+      "version": "2.9.0.Odd.Olm",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "attrs",
+      "version": "23.2.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "blinker",
+      "version": "1.7.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "certifi",
+      "version": "2023.11.17",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "chardet",
+      "version": "5.2.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "click",
+      "version": "8.1.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "cloud-init",
+      "version": "25.1.2",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "colorama",
+      "version": "0.4.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "colorlog",
+      "version": "6.8.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "command-not-found",
+      "version": "0.3",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "configobj",
+      "version": "5.0.8",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "constantly",
+      "version": "23.10.4",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "dbus-python",
+      "version": "1.3.2",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "distro",
+      "version": "1.9.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "distro-info",
+      "version": "1.7+build1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "httplib2",
+      "version": "0.20.4",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "hyperlink",
+      "version": "21.0.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "idna",
+      "version": "3.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "incremental",
+      "version": "22.10.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "iotop",
+      "version": "0.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "jsonpatch",
+      "version": "1.32",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "jsonpointer",
+      "version": "2.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "jsonschema",
+      "version": "4.10.3",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "launchpadlib",
+      "version": "1.11.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "lazr.restfulclient",
+      "version": "0.14.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "lazr.uri",
+      "version": "1.0.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "markdown-it-py",
+      "version": "3.0.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "mdurl",
+      "version": "0.1.2",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "netifaces",
+      "version": "0.11.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "oauthlib",
+      "version": "3.2.2",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyopenssl",
+      "version": "23.2.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyasn1",
+      "version": "0.4.8",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyasn1-modules",
+      "version": "0.2.8",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pycairo",
+      "version": "1.25.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pycurl",
+      "version": "7.45.3",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pygments",
+      "version": "2.17.2",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyhamcrest",
+      "version": "2.1.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyparsing",
+      "version": "3.1.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyrsistent",
+      "version": "0.20.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pyserial",
+      "version": "3.5",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "python-apt",
+      "version": "2.7.7+ubuntu4",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "pytz",
+      "version": "2024.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "rich",
+      "version": "13.7.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "service-identity",
+      "version": "24.1.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "six",
+      "version": "1.16.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "systemd-python",
+      "version": "235",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "twisted",
+      "version": "24.3.0",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "ubuntu-pro-client",
+      "version": "8001",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "unattended-upgrades",
+      "version": "0.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "wadllib",
+      "version": "1.3.6",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "HIGH",
+      "package": "zope.interface",
+      "version": "6.1",
+      "issue": "Package installed but not in lock file",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "aiofiles",
+      "version": "24.1.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "aiohttp",
+      "version": "3.12.14",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "aiokafka",
+      "version": "0.12.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "aioredis",
+      "version": "2.0.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "aiosqlite",
+      "version": "0.20.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "alembic",
+      "version": "1.14.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "anthropic",
+      "version": "0.42.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "asyncpg",
+      "version": "0.30.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "browser-use",
+      "version": "0.1.45",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "dependency-injector",
+      "version": "4.42.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "elevenlabs",
+      "version": "2.8.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "fastapi",
+      "version": "0.116.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "hvac",
+      "version": "2.3.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "librosa",
+      "version": "0.10.2.post1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "mcp",
+      "version": "1.10.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "openai",
+      "version": "1.68.2",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "passlib",
+      "version": "1.7.4",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "presidio-analyzer",
+      "version": "2.2.359",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "presidio-anonymizer",
+      "version": "2.2.359",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "prometheus-client",
+      "version": "0.21.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "pybreaker",
+      "version": "1.0.2",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "pydantic-core",
+      "version": "2.27.2",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "pydantic-settings",
+      "version": "2.7.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "pydantic",
+      "version": "2.10.4",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "pydub",
+      "version": "0.25.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "python-dotenv",
+      "version": "1.0.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "python-jose",
+      "version": "3.4.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "python-multipart",
+      "version": "0.0.12",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "redis",
+      "version": "5.2.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "retrying",
+      "version": "1.3.4",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "sentry-sdk",
+      "version": "1.45.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "speechrecognition",
+      "version": "3.12.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "sqlalchemy",
+      "version": "2.0.36",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "starlette",
+      "version": "0.47.2",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "transformers",
+      "version": "4.52.1",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "uvicorn",
+      "version": "0.34.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "wave",
+      "version": "0.1.0",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    },
+    {
+      "severity": "CRITICAL",
+      "package": "whisper",
+      "version": "1.1.10",
+      "issue": "Package in lock file but not installed",
+      "cve_id": null,
+      "fixed_version": null
+    }
+  ]
+}

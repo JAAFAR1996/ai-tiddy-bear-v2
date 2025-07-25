@@ -24,9 +24,7 @@ except ImportError as e:
 # Local imports - optional infrastructure
 try:
     from infrastructure.config.settings import get_settings
-    from infrastructure.monitoring.performance_monitor import (
-        get_performance_monitor,
-    )
+    from infrastructure.monitoring.performance_monitor import get_performance_monitor
 
     INFRASTRUCTURE_AVAILABLE = True
 except ImportError as e:

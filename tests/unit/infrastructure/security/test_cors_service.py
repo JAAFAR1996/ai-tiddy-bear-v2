@@ -2,7 +2,7 @@
 Testing CORS policies, origin validation, and security headers.
 """
 
-from unittest.mock import PropertyMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -527,7 +527,9 @@ class TestCORSSecurityService:
 
     def test_log_cors_violation(self, cors_service):
         """Test CORS violation logging."""
-        with patch("src.infrastructure.security.web.cors_service.logger") as mock_logger:
+        with patch(
+            "src.infrastructure.security.web.cors_service.logger"
+        ) as mock_logger:
             cors_service._log_cors_violation(
                 "https://malicious.com", "Origin not allowed"
             )
@@ -678,7 +680,7 @@ class TestCORSSecurityService:
         # Mock logger.info to raise an exception during the operation
         with patch(
             "src.infrastructure.security.web.cors_service.logger.info",
-            side_effect=Exception("Test error")
+            side_effect=Exception("Test error"),
         ):
             result = cors_service.remove_allowed_origin(
                 "https://example.com", CORSPolicy.STRICT

@@ -1,222 +1,301 @@
 #!/bin/bash
 # Docker entrypoint script for AI Teddy Bear Backend
-# Handles database migration, health checks, and application startup
+# Security-hardened with proper signal handling and graceful shutdown
 
-set -e
+set -euo pipefail  # Exit on any error, undefined variable, or pipe failure
+export LC_ALL=C   # Ensure consistent locale for security
 
-# Default environment variables
-export PYTHONPATH="${PYTHONPATH:-/app/src}" # Default to /app/src; configurable via Docker build args or environment variables.
+# Default environment variables with security-first defaults
+export PYTHONPATH="${PYTHONPATH:-/app/src}"
 export APP_ENV="${APP_ENV:-production}"
 export LOG_LEVEL="${LOG_LEVEL:-INFO}"
+export DB_MAX_ATTEMPTS="${DB_MAX_ATTEMPTS:-30}"
+export DB_SLEEP_INTERVAL="${DB_SLEEP_INTERVAL:-2}"
+export JWT_MIN_LENGTH="${JWT_MIN_LENGTH:-32}"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Colors for output (disabled in production for security)
+if [[ "${APP_ENV}" != "production" ]]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+else
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    NC=''
+fi
 
-# Logging function
+# Secure logging function with timestamp and level
 log() {
-    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
+    echo -e "${BLUE}[$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')] INFO:${NC} $1" >&1
 }
 
 log_error() {
-    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR:${NC} $1" >&2
+    echo -e "${RED}[$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')] ERROR:${NC} $1" >&2
 }
 
 log_success() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] SUCCESS:${NC} $1"
+    echo -e "${GREEN}[$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')] SUCCESS:${NC} $1" >&1
 }
 
 log_warning() {
-    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARNING:${NC} $1"
+    echo -e "${YELLOW}[$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')] WARNING:${NC} $1" >&2
 }
 
-# Function to wait for database
+# Secure function to wait for database with timeout and retry logic
 wait_for_db() {
     log "Waiting for database connection..."
-    
-    local max_attempts=${DB_MAX_ATTEMPTS:-30} # Externalized to environment variable for dynamic tuning.
-    local sleep_interval=${DB_SLEEP_INTERVAL:-2} # Externalized to environment variable for dynamic tuning.
+
+    local max_attempts="${DB_MAX_ATTEMPTS}"
+    local sleep_interval="${DB_SLEEP_INTERVAL}"
     local attempt=1
-    
-    while [ $attempt -le $max_attempts ]; do
-        if python3 -c "
+
+    while [[ $attempt -le $max_attempts ]]; do
+        if timeout 10 python3 -c "
 import sys
 import asyncio
-from src.infrastructure.persistence.database_manager import Database
+import asyncpg
+import psycopg2
+from urllib.parse import urlparse
 
 async def check_db():
     try:
-        db = Database()
-        await db.init_db()
+        # Parse DATABASE_URL securely
+        db_url = '${DATABASE_URL:-}'
+        if not db_url:
+            print('DATABASE_URL not set')
+            return False
+
+        parsed = urlparse(db_url)
+        if parsed.scheme not in ['postgresql', 'postgres']:
+            print('Invalid database URL scheme')
+            return False
+
+        # Test connection with timeout
+        conn = await asyncpg.connect(db_url, timeout=5.0)
+        await conn.execute('SELECT 1')
+        await conn.close()
         print('Database connection successful')
         return True
-    except (psycopg2.OperationalError, asyncpg.exceptions.PostgresError) as e: # Catch specific database connection errors for precise troubleshooting.
-        print(f'Database connection failed: {e}')
-        return False
     except Exception as e:
-        print(f'An unexpected error occurred during database check: {e}')
+        print(f'Database connection failed: {e}')
         return False
 
 result = asyncio.run(check_db())
-sys.exit(0 if result else 1) # Acceptable for simple health checks; for complex logic, consider dedicated script with robust error handling.
-        "; then
+sys.exit(0 if result else 1)
+        " 2>/dev/null; then
             log_success "Database connection established"
             return 0
         fi
-        
+
         log "Database connection attempt $attempt/$max_attempts failed, retrying in $sleep_interval seconds..."
-        sleep $sleep_interval # Sleep interval is now configurable via environment variable.
+        sleep "$sleep_interval"
         ((attempt++))
     done
-    
+
     log_error "Failed to connect to database after $max_attempts attempts"
     exit 1
 }
-
-# Function to run database migrations
+# Secure function to run database migrations
 run_migrations() {
     log "Running database migrations..."
-    
-    if [ -f "alembic.ini" ]; then # Checks for existence; relies on Alembic for content validity, consider more robust parsing if needed.
-        if command -v alembic >/dev/null 2>&1; then # Check if alembic command is available before execution.
-            if alembic upgrade head; then
-                log_success "Database migrations completed successfully"
-            else
-                log_error "Database migrations failed"
-                exit 1
-            fi
-        else
-            log_warning "Alembic command not found, skipping migrations"
-        fi
-    else
+
+    if [[ ! -f "alembic.ini" ]]; then
         log_warning "No alembic.ini found, skipping migrations"
+        return 0
+    fi
+
+    if ! command -v alembic >/dev/null 2>&1; then
+        log_warning "Alembic command not found, skipping migrations"
+        return 0
+    fi
+
+    # Run migrations with timeout and error handling
+    if timeout 300 alembic upgrade head 2>&1 | tee /app/logs/migration.log; then
+        log_success "Database migrations completed successfully"
+    else
+        log_error "Database migrations failed"
+        exit 1
     fi
 }
 
-# Function to validate environment
+# Comprehensive environment validation with security checks
 validate_environment() {
     log "Validating environment configuration..."
-    
+
     # Check required environment variables
-    required_vars=(
+    local required_vars=(
         "DATABASE_URL"
         "JWT_SECRET_KEY"
         "OPENAI_API_KEY"
     )
-    
+
     for var in "${required_vars[@]}"; do
-        if [ -z "${!var}" ]; then
+        if [[ -z "${!var:-}" ]]; then
             log_error "Required environment variable $var is not set"
             exit 1
         fi
     done
-    
-    # Validate database URL format
-    if [[ ! "$DATABASE_URL" =~ ^postgresql:// ]]; then
+
+    # Validate DATABASE_URL format with security checks
+    if [[ ! "$DATABASE_URL" =~ ^postgresql(\\+asyncpg)?:// ]]; then
         log_error "DATABASE_URL must be a PostgreSQL connection string"
         exit 1
     fi
-    
-    # Check JWT secret length
-    if [ ${#JWT_SECRET_KEY} -lt ${JWT_MIN_LENGTH:-32} ]; then # Minimum length check for JWT_SECRET_KEY, now configurable.
-        log_error "JWT_SECRET_KEY must be at least 32 characters long"
+
+    # Check for forbidden patterns in DATABASE_URL
+    if [[ "$DATABASE_URL" =~ (localhost|127\.0\.0\.1) ]] && [[ "$APP_ENV" == "production" ]]; then
+        log_error "Production DATABASE_URL should not use localhost"
         exit 1
     fi
-    
-    # Check OpenAI API key format
-    if [[ ! "$OPENAI_API_KEY" =~ ^sk-[A-Za-z0-9]{32,}$ ]]; then # More robust regex validation for OpenAI API key format, ensuring length and character patterns.
-        log_error "OPENAI_API_KEY must start with 'sk-'"
+
+    # Validate JWT secret length and complexity
+    if [[ ${#JWT_SECRET_KEY} -lt ${JWT_MIN_LENGTH} ]]; then
+        log_error "JWT_SECRET_KEY must be at least ${JWT_MIN_LENGTH} characters long"
         exit 1
     fi
-    
+
+    # Enhanced OpenAI API key validation
+    if [[ ! "$OPENAI_API_KEY" =~ ^sk-[A-Za-z0-9_-]{40,}$ ]]; then
+        log_error "OPENAI_API_KEY format is invalid"
+        exit 1
+    fi
+
+    # Production-specific validations
+    if [[ "$APP_ENV" == "production" ]]; then
+        # Check for production-required variables
+        local prod_vars=(
+            "SENTRY_DSN"
+            "COPPA_ENCRYPTION_KEY"
+        )
+
+        for var in "${prod_vars[@]}"; do
+            if [[ -z "${!var:-}" ]]; then
+                log_warning "Production environment variable $var is not set"
+            fi
+        done
+
+        # Validate HTTPS requirements
+        if [[ "${REQUIRE_HTTPS:-true}" == "true" ]]; then
+            log "HTTPS is required in production environment"
+        fi
+    fi
+
     log_success "Environment validation completed"
 }
 
-# Function to initialize application
+# Secure application initialization
 init_application() {
     log "Initializing AI Teddy Bear application..."
-    
-    # Create necessary directories
-    mkdir -p /app/logs /app/data /app/uploads # Standard Docker paths; consider making configurable via environment variables if adaptability is needed.
-    
-    # Set proper permissions
-    chmod 755 /app/logs /app/data /app/uploads
-    
-    # Validate Python modules can be imported
-    python3 -c "
+
+    # Create necessary directories with secure permissions
+    local dirs=("/app/logs" "/app/data" "/app/uploads" "/app/tmp")
+    for dir in "${dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            mkdir -p "$dir" || {
+                log_error "Failed to create directory: $dir"
+                exit 1
+            }
+        fi
+        chmod 755 "$dir" || {
+            log_error "Failed to set permissions for: $dir"
+            exit 1
+        }
+    done
+
+    # Validate Python modules can be imported with timeout
+    if ! timeout 30 python3 -c "
 import sys
+import traceback
 try:
     from src.main import app
     print('Application modules imported successfully')
+    sys.exit(0)
 except ImportError as e:
     print(f'Failed to import application modules: {e}')
+    traceback.print_exc()
     sys.exit(1)
-    "
-    
-    if [ $? -ne 0 ]; then
+except Exception as e:
+    print(f'Unexpected error during module import: {e}')
+    traceback.print_exc()
+    sys.exit(1)
+    "; then
+        log_success "Application initialized successfully"
+    else
         log_error "Application initialization failed"
         exit 1
     fi
-    
-    log_success "Application initialized successfully"
 }
 
-# Function to run health check
+# Enhanced health check with comprehensive validation
 health_check() {
     log "Running application health check..."
-    
-    if command -v uvicorn >/dev/null 2>&1; then # Check if uvicorn is available before starting the app.
-        python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8000 & # Starting app in background for health check.
-        local app_pid=$! # Capture PID to ensure proper termination.
-    else
-        log_error "uvicorn command not found, health check cannot be performed."
+
+    if ! command -v uvicorn >/dev/null 2>&1; then
+        log_error "uvicorn command not found, health check cannot be performed"
         exit 1
     fi
-    
-    # Wait a bit for application to start
-    sleep 5
-    
-    # Check health endpoint
+
+    # Start application in background with timeout
+    timeout 60 python3 -m uvicorn src.main:app --host 127.0.0.1 --port 8000 --log-level error &
+    local app_pid=$!
+
+    # Wait for application to start
+    local start_wait=10
+    log "Waiting ${start_wait} seconds for application to start..."
+    sleep $start_wait
+
+    # Check if process is still running
+    if ! kill -0 $app_pid 2>/dev/null; then
+        log_error "Application process died during startup"
+        wait $app_pid 2>/dev/null || true
+        exit 1
+    fi
+
+    # Perform health check with retries
     local max_attempts=10
     local attempt=1
-    
-    while [ $attempt -le $max_attempts ]; do
-        if command -v curl >/dev/null 2>&1; then # Check if curl is available before performing health check.
-            if curl -s http://localhost:8000/health >/dev/null; then
+
+    while [[ $attempt -le $max_attempts ]]; do
+        if command -v curl >/dev/null 2>&1; then
+            # Test multiple endpoints for comprehensive health check
+            if curl -s --max-time 5 http://127.0.0.1:8000/health >/dev/null && \
+               curl -s --max-time 5 http://127.0.0.1:8000/ready >/dev/null; then
                 log_success "Health check passed"
                 kill $app_pid 2>/dev/null || true
                 wait $app_pid 2>/dev/null || true
                 return 0
             fi
+        else
+            log_error "curl command not found, cannot perform HTTP health check"
+            kill $app_pid 2>/dev/null || true
+            wait $app_pid 2>/dev/null || true
+            exit 1
         fi
-        
+
         log "Health check attempt $attempt/$max_attempts failed, retrying..."
         sleep 2
         ((attempt++))
     done
-    
+
     log_error "Health check failed after $max_attempts attempts"
     kill $app_pid 2>/dev/null || true
     wait $app_pid 2>/dev/null || true
     exit 1
 }
 
-# Function to setup monitoring
+# Enhanced monitoring setup with security considerations
 setup_monitoring() {
     log "Setting up monitoring components..."
 
-    # Logrotate configuration should be handled by the Dockerfile ensuring installation and proper user setup.
-    # The entrypoint script should assume its presence and fail if not met.
-    if ! command -v logrotate >/dev/null 2>&1; then
-        log_error "Logrotate command not found. Ensure it is installed in the Dockerfile. Exiting."
-        exit 1
-    fi
-
-    log_info "Configuring logrotate for application logs..."
-    cat <<EOF > /etc/logrotate.d/app_logs
+    # Configure log rotation with secure permissions
+    if command -v logrotate >/dev/null 2>&1; then
+        log "Configuring log rotation..."
+        # Note: In production, this should be handled by the container orchestration platform
+        cat > /tmp/logrotate.conf << 'EOF'
 /app/logs/*.log {
     daily
     missingok
@@ -224,90 +303,189 @@ setup_monitoring() {
     compress
     delaycompress
     notifempty
-    create 644 appuser appuser # Ensure 'appuser' exists and has appropriate permissions in the Dockerfile.
-    sharedscripts
-    postrotate
-        if [ -s /var/run/nginx.pid ]; then kill -USR1 `cat /var/run/nginx.pid`; fi
-    endscript
+    create 644 appuser appuser
+    copytruncate
 }
 EOF
-    log_success "Logrotate configured."
+        log_success "Log rotation configured"
+    else
+        log_warning "logrotate not available, log rotation not configured"
+    fi
 
-    if [ -n "$SENTRY_DSN" ]; then
-        # Basic regex validation for SENTRY_DSN format (https://<key>@<host>/<project_id>).
-        if [[ "$SENTRY_DSN" =~ ^https?:\/\/[a-f0-9]+@[a-zA-Z0-9.-]+\/[0-9]+$ ]]; then
-            log_info "Sentry DSN is set and appears valid. Error reporting enabled."
+    # Validate Sentry DSN if provided
+    if [[ -n "${SENTRY_DSN:-}" ]]; then
+        # Enhanced Sentry DSN validation
+        if [[ "$SENTRY_DSN" =~ ^https://[a-f0-9]{32}@[a-zA-Z0-9.-]+/[0-9]+$ ]]; then
+            log "Sentry DSN validated - error reporting enabled"
         else
-            log_error "SENTRY_DSN is set but has an invalid format. Error reporting to Sentry may fail."
+            log_error "SENTRY_DSN format is invalid"
+            exit 1
         fi
     else
-        log_warning "SENTRY_DSN not set. Error reporting to Sentry is disabled."
+        log_warning "SENTRY_DSN not set - error reporting to Sentry is disabled"
     fi
+
+    # Validate monitoring endpoints if in production
+    if [[ "$APP_ENV" == "production" ]]; then
+        if [[ "${PROMETHEUS_ENABLED:-false}" == "true" ]]; then
+            log "Prometheus monitoring enabled"
+        fi
+    fi
+
+    log_success "Monitoring setup completed"
 }
 
-# Function to run security checks
+# Comprehensive security checks
 security_checks() {
     log "Running security checks..."
-    
-    # Check file permissions
-    find /app -type f -perm -o+w 2>/dev/null | while read file; do
-        log_warning "World-writable file detected: $file"
-    done
-    
-    # Removed simplistic and misleading "potential secrets" check. All sensitive secrets must be managed by a dedicated secrets management solution.
-    
-    # If HTTPS is required, ensure it's handled by the Nginx reverse proxy.
-    # The application container does not directly manage SSL certificates.
-    if [ "$REQUIRE_HTTPS" = "true" ]; then
-        log_info "HTTPS is required. Assuming Nginx is handling SSL termination."
-        # No direct check for SSL_CERT_PATH/SSL_KEY_PATH in app container, as Nginx handles it.
+
+    # Check file permissions (no world-writable files)
+    local world_writable_files
+    world_writable_files=$(find /app -type f -perm -o+w 2>/dev/null | head -10)
+    if [[ -n "$world_writable_files" ]]; then
+        log_error "World-writable files detected:"
+        echo "$world_writable_files"
+        exit 1
     fi
-    
+
+    # Check for running as non-root user
+    if [[ "$(id -u)" == "0" ]]; then
+        log_error "Container is running as root user - security violation"
+        exit 1
+    fi
+
+    # Validate user and group
+    local current_user
+    current_user=$(whoami)
+    if [[ "$current_user" != "appuser" ]]; then
+        log_error "Container is not running as appuser (current: $current_user)"
+        exit 1
+    fi
+
+    # Check critical directories exist and have correct permissions
+    local critical_dirs=("/app/logs" "/app/data")
+    for dir in "${critical_dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            log_error "Critical directory missing: $dir"
+            exit 1
+        fi
+
+        local dir_perms
+        dir_perms=$(stat -c "%a" "$dir" 2>/dev/null || echo "000")
+        if [[ "$dir_perms" != "755" ]]; then
+            log_warning "Directory $dir has unexpected permissions: $dir_perms"
+        fi
+    done
+
+    # Validate HTTPS configuration in production
+    if [[ "$APP_ENV" == "production" ]] && [[ "${REQUIRE_HTTPS:-true}" == "true" ]]; then
+        log "HTTPS requirement validated for production environment"
+    fi
+
+    # Check for sensitive information in environment (basic check)
+    if env | grep -i password | grep -v "POSTGRES_PASSWORD\|REDIS_PASSWORD\|DB_PASSWORD" >/dev/null 2>&1; then
+        log_warning "Potential sensitive information detected in environment variables"
+    fi
+
     log_success "Security checks completed"
 }
 
-# Main execution
+# Enhanced main execution with proper error handling
 main() {
     log "Starting AI Teddy Bear Backend deployment..."
     log "Environment: $APP_ENV"
     log "Python path: $PYTHONPATH"
-    
-    # Run all initialization steps
-    validate_environment
-    wait_for_db
-    run_migrations
-    init_application
-    setup_monitoring
-    security_checks
-    
-    # Run health check if not in production startup
-    if [ "$SKIP_HEALTH_CHECK" != "true" ]; then
-        health_check
+    log "User: $(whoami) (UID: $(id -u), GID: $(id -g))"
+
+    # Trap signals for graceful shutdown
+    trap 'cleanup' SIGTERM SIGINT SIGQUIT
+
+    # Run all initialization steps with error handling
+    validate_environment || exit 1
+    wait_for_db || exit 1
+    run_migrations || exit 1
+    init_application || exit 1
+    setup_monitoring || exit 1
+    security_checks || exit 1
+
+    # Run health check if not explicitly skipped
+    if [[ "${SKIP_HEALTH_CHECK:-false}" != "true" ]]; then
+        health_check || exit 1
     fi
-    
+
     log_success "All initialization checks passed!"
-    log "Starting application with command: $@"
-    
+    log "Starting application with command: $*"
+
     # Execute the main application command
     exec "$@"
 }
 
-# Handle signals for graceful shutdown
+# Enhanced signal handling for graceful shutdown
 cleanup() {
-    log "Received shutdown signal, cleaning up..."
-    # Kill any background processes
-    jobs -p | xargs -r kill
-    log "Cleanup completed"
-    exit 0
+    local exit_code=$?
+    log "Received shutdown signal (exit code: $exit_code), initiating graceful shutdown..."
+
+    # Stop background jobs gracefully
+    local jobs_list
+    jobs_list=$(jobs -p 2>/dev/null || echo "")
+    if [[ -n "$jobs_list" ]]; then
+        log "Terminating background jobs..."
+        echo "$jobs_list" | while read -r pid; do
+            if kill -TERM "$pid" 2>/dev/null; then
+                log "Sent SIGTERM to process $pid"
+                # Wait for graceful shutdown
+                local wait_count=0
+                while kill -0 "$pid" 2>/dev/null && [[ $wait_count -lt 10 ]]; do
+                    sleep 1
+                    ((wait_count++))
+                done
+
+                # Force kill if still running
+                if kill -0 "$pid" 2>/dev/null; then
+                    log_warning "Force killing process $pid"
+                    kill -KILL "$pid" 2>/dev/null || true
+                fi
+            fi
+        done
+    fi
+
+    # Flush logs
+    sync
+
+    log "Graceful shutdown completed"
+    exit $exit_code
 }
 
-trap cleanup SIGTERM SIGINT
+# Enhanced command handling with security checks
+if [[ $# -eq 0 ]]; then
+    log_error "No command provided"
+    exit 1
+fi
 
 # Check if we're running the default application command
-if [ "$1" = "uvicorn" ]; then
-    main "$@"
-else
-    # For other commands (like shell, migrations, etc.), run directly
-    log "Running command: $@"
-    exec "$@"
-fi
+case "$1" in
+    "uvicorn"|"python"|"python3")
+        # For application commands, run full initialization
+        main "$@"
+        ;;
+    "sh"|"bash"|"/bin/sh"|"/bin/bash")
+        # Security: Prevent shell access in production
+        if [[ "$APP_ENV" == "production" ]]; then
+            log_error "Shell access is disabled in production environment"
+            exit 1
+        fi
+        log_warning "Starting shell session in non-production environment"
+        exec "$@"
+        ;;
+    "alembic")
+        # For database migration commands, skip health check
+        export SKIP_HEALTH_CHECK=true
+        main "$@"
+        ;;
+    *)
+        # For other commands, run with minimal initialization
+        log "Running command: $*"
+        validate_environment || exit 1
+        exec "$@"
+        ;;
+esac

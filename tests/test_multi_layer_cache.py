@@ -1,9 +1,8 @@
-from unittest.mock import AsyncMock, Mock
-from typing import Any, Callable, Dict, List, Optional, Tuple
-from enum import Enum
 import asyncio
 import sys
+from enum import Enum
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -85,6 +84,7 @@ except ImportError:
 
 class ContentType(Enum):
     """Mock ContentType enum for testing"""
+
     AI_RESPONSE = "ai_response"
     CONFIGURATION = "configuration"
     USER_DATA = "user_data"
@@ -129,7 +129,9 @@ class L1MemoryCache:
         self.metrics.misses += 1
         return None
 
-    async def set(self, key: str, value: Any, content_type: ContentType, ttl: int = 3600):
+    async def set(
+        self, key: str, value: Any, content_type: ContentType, ttl: int = 3600
+    ):
         self._cache[key] = value
 
     async def delete(self, key: str):
@@ -150,13 +152,17 @@ class MultiLayerCache:
     async def get(self, key: str) -> Optional[Any]:
         return await self.l1_cache.get(key)
 
-    async def set(self, key: str, value: Any, content_type: ContentType, ttl: int = 3600):
+    async def set(
+        self, key: str, value: Any, content_type: ContentType, ttl: int = 3600
+    ):
         await self.l1_cache.set(key, value, content_type, ttl)
 
     async def delete(self, key: str):
         await self.l1_cache.delete(key)
 
-    async def get_with_fallback(self, key: str, content_type: ContentType, compute_fn: Callable):
+    async def get_with_fallback(
+        self, key: str, content_type: ContentType, compute_fn: Callable
+    ):
         value = await self.get(key)
         if value is None:
             value = await compute_fn()

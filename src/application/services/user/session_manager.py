@@ -7,9 +7,13 @@ import contextlib
 from datetime import datetime
 from typing import Any
 
+from src.domain.models.session_models import (
+    AsyncSessionData,
+    SessionStats,
+    SessionStatus,
+)
 from src.infrastructure.logging_config import get_logger
 
-from src.domain.models.session_models import AsyncSessionData, SessionStats, SessionStatus
 from .session_storage import SessionStorage
 
 logger = get_logger(__name__, component="services")

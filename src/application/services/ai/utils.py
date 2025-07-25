@@ -50,6 +50,7 @@ class AIServiceUtils:
     def analyze_sentiment(content: str) -> str:
         """Analyze sentiment using TextBlob (production-ready)."""
         from textblob import TextBlob
+
         blob = TextBlob(content)
         polarity = blob.sentiment.polarity
         if polarity > 0.1:
@@ -63,10 +64,17 @@ class AIServiceUtils:
     def extract_topics(content: str) -> list[str]:
         """Extract main topics from content using spaCy noun chunks (production-ready)."""
         import spacy
+
         nlp = spacy.load("en_core_web_sm")
         doc = nlp(content)
         # Extract noun chunks as candidate topics
-        topics = list(set(chunk.text.strip().lower() for chunk in doc.noun_chunks if len(chunk.text.strip()) > 2))
+        topics = list(
+            set(
+                chunk.text.strip().lower()
+                for chunk in doc.noun_chunks
+                if len(chunk.text.strip()) > 2
+            )
+        )
         # Fallback: if no noun chunks found, use most frequent nouns
         if not topics:
             topics = [token.lemma_ for token in doc if token.pos_ == "NOUN"]

@@ -10,9 +10,7 @@ from src.application.services.consent.consent_models import (
     VerificationMethod,
     VerificationStatus,
 )
-from src.application.services.consent.verification_service import (
-    VerificationService,
-)
+from src.application.services.consent.verification_service import VerificationService
 
 
 class TestVerificationService:

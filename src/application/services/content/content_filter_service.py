@@ -9,7 +9,6 @@ import logging
 
 from src.application.interfaces.safety_monitor import SafetyMonitor
 from src.domain.value_objects.safety_level import SafetyLevel
-
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="content_filter_service")
@@ -47,7 +46,7 @@ class ContentFilterService:
             The filtered text, or "[CONTENT BLOCKED]" if deemed unsafe.
 
         """
-        self.logger.info(f"Filtering content for age {age}: {text[:50]}...")
+        self.logger.info("Filtering content for age-appropriate content")
         safety_result = await self.safety_monitor.check_content_safety(
             text,
             child_age=age,
@@ -66,5 +65,5 @@ class ContentFilterService:
             )
             return "[CONTENT FLAGGED FOR REVIEW]"
 
-        self.logger.info(f"Content deemed SAFE for age {age}.")
+        self.logger.info("Content deemed SAFE for user's age group")
         return text

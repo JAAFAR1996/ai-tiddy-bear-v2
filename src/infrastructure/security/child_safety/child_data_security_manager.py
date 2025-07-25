@@ -2,12 +2,11 @@ from datetime import datetime
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
-from src.infrastructure.security.encryption.robust_encryption_service import RobustEncryptionService as ChildDataEncryption
-from src.infrastructure.validators.security.coppa_validator import (
-    COPPAValidator,
-    coppa_validator,
+from src.infrastructure.security.child_safety.data_retention import DataRetentionManager
+from src.infrastructure.security.encryption.robust_encryption_service import (
+    RobustEncryptionService as ChildDataEncryption,
 )
-
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 
 logger = get_logger(__name__, component="security")
 
@@ -17,7 +16,8 @@ class ChildDataSecurityManager:
 
     def __init__(self, encryption_key: str | None = None) -> None:
         self.encryption = ChildDataEncryption(encryption_key)
-        self.coppa_service = COPPAValidatorService(self.encryption)
+        self.coppa_validator = COPPAValidator()
+        self.data_retention_manager = DataRetentionManager()
 
     def secure_child_profile(
         self,
@@ -81,18 +81,19 @@ class ChildDataSecurityManager:
             logger.error(f"Failed to get child data for interaction: {e}")
             raise
 
-    def schedule_data_cleanup(self) -> dict[str, Any]:
+    async def schedule_data_cleanup(self) -> dict[str, Any]:
         """Schedule cleanup of expired data."""
-        expired_records = self.coppa_service.check_data_retention_compliance()
+        # Use DataRetentionManager to find expired children
+        expired_children = await self.data_retention_manager._find_expired_children()
         cleanup_summary = {
-            "total_expired": len(expired_records),
-            "expired_records": expired_records,
+            "total_expired": len(expired_children),
+            "expired_records": expired_children,
             "cleanup_scheduled": datetime.utcnow().isoformat(),
         }
 
-        if expired_records:
+        if expired_children:
             logger.warning(
-                f"Found {len(expired_records)} child records requiring data deletion",
+                f"Found {len(expired_children)} child records requiring data deletion",
             )
 
         return cleanup_summary

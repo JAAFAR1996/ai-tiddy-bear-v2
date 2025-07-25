@@ -7,7 +7,7 @@ maintaining an audit trail for all access, offering robust privacy controls.
 """
 
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -52,7 +52,9 @@ class EncryptedChild:
     ) -> None:
         """Encrypts and sets emergency contacts."""
         import json
+
         from src.domain.value_objects.encrypted_field import NullEncryptionService
+
         service = encryption_service or NullEncryptionService()
         serialized = json.dumps(contacts)
         encrypted_data = service.encrypt(serialized)
@@ -73,6 +75,7 @@ class EncryptedChild:
     def set_medical_notes(self, notes: str, encryption_service=None) -> None:
         """Encrypts and sets medical notes."""
         from src.domain.value_objects.encrypted_field import NullEncryptionService
+
         service = encryption_service or NullEncryptionService()
         encrypted_data = service.encrypt(notes)
         self._encrypted_medical_notes = EncryptedField.from_encrypted_data(
@@ -92,7 +95,9 @@ class EncryptedChild:
         self.last_interaction = datetime.utcnow()
         self.updated_at = datetime.utcnow()
 
-    def is_interaction_time_exceeded(self, usage_log: list[dict[str, Any]] = None) -> bool:
+    def is_interaction_time_exceeded(
+        self, usage_log: list[dict[str, Any]] = None
+    ) -> bool:
         """Checks if the child has exceeded their daily interaction time limit (فعلي: حسب اليوم الحالي)."""
         if self.max_daily_interaction_time is None:
             return False

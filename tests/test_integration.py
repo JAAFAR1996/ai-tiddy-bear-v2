@@ -23,54 +23,46 @@ try:
     import pytest
 except ImportError:
     # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
+                    return func
+                return decorator
 
-            return decorator
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+                        return decorator
 
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
-
-                def asyncio(self, func):
-                    return func
-
-                def slow(self, func):
-                    return func
-
-                def skip(self, reason=""):
-                    def decorator(func):
+                    def slow(self, func):
                         return func
 
-                    return decorator
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+                        return decorator
 
-            return MockMark()
+                return MockMark()
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-                def __exit__(self, *args):
-                    return False
+                    def __exit__(self, *args):
+                        return False
 
-            return MockRaises()
+                return MockRaises()
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def main(self, args):
-            return 0
-
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+                return decorator
     pytest = MockPytest()
 
 
@@ -80,10 +72,7 @@ class TestIntegration:
     @pytest.mark.asyncio
     async def test_voice_interaction_flow(self):
         """Test full audio interaction flow"""
-        from application.services.ai_teddy_bear_service import (
-            AITeddyBearService,
-        )
-
+        from application.services.ai_teddy_bear_service import AITeddyBearService
         from config.settings import Config
 
         config = Config()
@@ -96,7 +85,6 @@ class TestIntegration:
 
     def test_database_integration(self):
         """اختبار تكامل قاعدة البيانات"""
-        pass
 
     def test_security_integration(self):
         """اختبار تكامل الأمان"""
@@ -149,7 +137,6 @@ class TestEndToEnd:
         # assert "dominant_emotion" in summary
         # assert "recommendations" in summary
         # assert len(summary["recommendations"]) > 0
-        pass
 
     def test_error_handling(self):
         """اختبار معالجة الأخطاء"""
@@ -161,7 +148,6 @@ class TestEndToEnd:
         # assert child is None
         # interactions = db.get_interactions("non_existent")
         # assert interactions == []
-        pass
 
     def test_data_consistency(self):
         """اختبار اتساق البيانات"""
@@ -180,7 +166,6 @@ class TestEndToEnd:
         # assert len(emotions) == 10
         # assert interactions[0]["input_text"] == "سؤال 9"
         # assert interactions[-1]["input_text"] == "سؤال 0"
-        pass
 
 
 def run_qa_checklist():

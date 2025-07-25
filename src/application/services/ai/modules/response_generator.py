@@ -4,7 +4,9 @@ import time
 from datetime import datetime
 from enum import Enum
 from typing import Any
+
 from src.domain.value_objects.safety_level import SafetyLevel
+
 """Production - grade AI response generator with comprehensive child safety"""
 
 logger = logging.getLogger(__name__)
@@ -27,6 +29,7 @@ class ResponseType(str, Enum):
     STORY = "story"
     GAME = "game"
     SAFETY_REDIRECT = "safety_redirect"
+
 
 class ResponseGenerator:
     """Production - ready AI response generator with comprehensive child safety features.

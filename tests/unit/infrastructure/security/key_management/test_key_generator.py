@@ -3,18 +3,17 @@
 Comprehensive unit tests for KeyGenerator with algorithm coverage and child data security.
 """
 
+from enum import Enum
 from unittest.mock import patch
 
 import pytest
 
-from src.infrastructure.security.key_management.key_generator import (
-    KeyGenerator,
-)
-from enum import Enum
+from src.infrastructure.security.key_management.key_generator import KeyGenerator
 
 
 class KeyType(Enum):
     """Mock KeyType for testing."""
+
     CHILD_DATA = "child_data"
     API_KEY = "api_key"
     SYSTEM = "system"

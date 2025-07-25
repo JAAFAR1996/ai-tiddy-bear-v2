@@ -7,9 +7,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 from src.application.interfaces.read_model_interfaces import IEventBus
-from src.application.services.federated_learning_service import (
-    FederatedLearningService,
-)
+from src.application.services.federated_learning_service import FederatedLearningService
 
 
 class TestFederatedLearningService:

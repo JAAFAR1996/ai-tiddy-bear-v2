@@ -34,7 +34,6 @@ class ConversationSQLiteRepository:
         self._init_database()
 
     def _get_or_create_encryption_key(self) -> bytes:
-
         secure_ops = get_secure_file_operations()
         key_filename = "conversation_key.key"
         try:

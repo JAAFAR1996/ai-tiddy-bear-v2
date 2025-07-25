@@ -8,14 +8,14 @@ import asyncio
 from datetime import datetime
 from typing import Any
 
-from src.infrastructure.health.checks.database_check import DatabaseHealthCheck
-from src.infrastructure.health.checks.redis_check import RedisHealthCheck
-from src.infrastructure.health.checks.system_check import SystemHealthCheck
 from src.domain.models.health_models import (
     HealthCheckResult,
     HealthStatus,
     SystemHealth,
 )
+from src.infrastructure.health.checks.database_check import DatabaseHealthCheck
+from src.infrastructure.health.checks.redis_check import RedisHealthCheck
+from src.infrastructure.health.checks.system_check import SystemHealthCheck
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="infrastructure")

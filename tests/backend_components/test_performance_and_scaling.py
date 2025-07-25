@@ -1,8 +1,8 @@
-from unittest.mock import Mock
-from datetime import datetime
 import asyncio
 import sys
+from datetime import datetime
 from pathlib import Path
+from unittest.mock import Mock
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -26,51 +26,51 @@ except ImportError:
 
     # Mock pytest when not available
     if pytest is None:
+
         class MockPytest:
-
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
     pytest = MockPytest()
 
@@ -85,6 +85,8 @@ class TestPerformanceAndScaling:
         active_conversations = []
 
         async def start_conversation(child_id):
+            pass
+
             conv_id = f"conv_{child_id}_{len(active_conversations)}"
             active_conversations.append(conv_id)
             await asyncio.sleep(0.1)  # Simulate processing
@@ -112,6 +114,8 @@ class TestPerformanceAndScaling:
         processed_count = 0
 
         async def process_audio_chunk(chunk):
+            pass
+
             nonlocal processed_count
             processed_count += 1
             # Simulate processing time
@@ -131,9 +135,7 @@ class TestPerformanceAndScaling:
         # Assert high throughput
         assert len(results) == 100
         assert processed_count == 100
-        assert (
-            processing_time < 2.0
-        )  # Should process 100 chunks in under 2 seconds
+        assert processing_time < 2.0  # Should process 100 chunks in under 2 seconds
 
         # Calculate throughput
         throughput = processed_count / processing_time
@@ -147,6 +149,8 @@ class TestPerformanceAndScaling:
         cache = {}
 
         async def get_with_cache(key):
+            pass
+
             nonlocal cache_hits, cache_misses
 
             if key in cache:

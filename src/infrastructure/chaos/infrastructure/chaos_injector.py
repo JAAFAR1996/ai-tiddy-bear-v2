@@ -8,11 +8,7 @@ import requests
 from src.infrastructure.logging_config import get_logger
 
 if TYPE_CHECKING:
-    from .chaos_orchestrator import (
-        ChaosOrchestrator,
-        ExperimentMetrics,
-        FailureType,
-    )
+    from .chaos_orchestrator import ChaosOrchestrator, ExperimentMetrics, FailureType
 
 logger = get_logger(__name__, component="chaos")
 
@@ -134,7 +130,7 @@ class ChaosInjector:
                         timeout=10,
                     )
                     if response.status_code == 200:
-                        logger.warning(f"⚠️ AI hallucination test: {prompt[:30]}...")
+                        logger.warning("⚠️ AI hallucination test executed")
                 except Exception as e:
                     logger.error(f"AI hallucination injection failed: {e}")
 

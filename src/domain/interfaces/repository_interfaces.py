@@ -6,9 +6,9 @@ creating dependencies on specific database implementations.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from ..entities.child import Child
 from src.domain.entities.user import User
 
+from ..entities.child import Child
 
 
 class IChildRepository(ABC):

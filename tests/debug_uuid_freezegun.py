@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Debug script to test UUID + freezegun interaction"""
 
-import uuid
 import sys
+import uuid
+
 print(f"Python version: {sys.version}")
 
 # Test 1: UUID before freezegun
@@ -15,6 +16,7 @@ print(f"UUID attributes: {[attr for attr in dir(uuid) if not attr.startswith('__
 print("\n=== IMPORTING FREEZEGUN ===")
 try:
     from freezegun import freeze_time
+
     print("Freezegun imported successfully")
 except Exception as e:
     print(f"Error importing freezegun: {e}")
@@ -27,6 +29,7 @@ print(f"UUID attributes: {[attr for attr in dir(uuid) if not attr.startswith('__
 # Test 4: Using freeze_time decorator
 print("\n=== TESTING FREEZE_TIME USAGE ===")
 try:
+
     @freeze_time("2023-01-01")
     def test_function():
         return "success"

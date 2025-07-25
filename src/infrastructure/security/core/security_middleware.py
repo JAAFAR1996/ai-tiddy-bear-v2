@@ -1,6 +1,6 @@
 """Production-Ready Security Middleware with Configuration-Driven Service Layer"""
 
-from src.infrastructure.logging_config import get_logger
+import hashlib
 import json
 import os
 import re
@@ -8,32 +8,96 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
-from enum import Enum
+from typing import Any, Dict, List, Optional
 
-# PRODUCTION REDIS IMPORTS - NO MOCKS
-import redis.asyncio as redis
-from redis.asyncio import Redis
-from redis import StrictRedis
-
-# REAL Redis - NO MOCKS
-redis_client = StrictRedis(
-    host=os.getenv('REDIS_HOST', 'localhost'),
-    port=int(os.getenv('REDIS_PORT', '6379')),
-    decode_responses=True
-)
-
-
-logger = get_logger(__name__, component="security")
-
+# FastAPI imports
 try:
     from fastapi import HTTPException, Request, Response
     from starlette.middleware.base import BaseHTTPMiddleware
-    from starlette.types import ASGIApp, Receive, Scope, Send
-except ImportError as e:
-    logger.error(f"CRITICAL ERROR: FastAPI is required for production use: {e}")
-    logger.error("Install required dependencies: pip install fastapi starlette")
-    raise ImportError(f"Missing middleware dependencies: {e}") from e
+    from starlette.types import ASGIApp
+
+    FASTAPI_AVAILABLE = True
+except ImportError:
+    # Define placeholders for type hints
+    class Request:
+        pass
+
+    class Response:
+        pass
+
+    class ASGIApp:
+        pass
+
+    FASTAPI_AVAILABLE = False
+
+# PRODUCTION REDIS IMPORTS - NO MOCKS
+from redis import StrictRedis
+from redis.asyncio import Redis
+
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
+
+# REAL Redis - NO MOCKS
+redis_client = StrictRedis(
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=int(os.getenv("REDIS_PORT", "6379")),
+    db=int(os.getenv("REDIS_DB", "0")),
+    password=os.getenv("REDIS_PASSWORD") or None,
+    decode_responses=True,
+)
+
+
+def get_redis_client():
+    """Get Redis client instance."""
+    return redis_client
+
+
+class SecurityMiddleware:
+    """Production Security Middleware with comprehensive protection."""
+
+    def __init__(self):
+        """Initialize SecurityMiddleware with production settings."""
+        self.logger = get_logger(__name__, component="security")
+        self.enable_audit_logging = True
+        self.log_sensitive_data = False  # NEVER log sensitive data in production
+
+    async def _log_request(
+        self,
+        request: Request,
+        response: Response,
+        duration: float,
+        client_ip: str,
+    ) -> None:
+        """Log request with COPPA-compliant data sanitization"""
+        # Sanitize URL to remove any potential PII in query parameters
+        url_str = str(request.url)
+        safe_summary = child_safe_audit.pii_classifier.get_safe_summary(url_str)
+
+        log_data = {
+            "timestamp": datetime.now().isoformat(),
+            "client_ip_hash": hashlib.sha256(client_ip.encode()).hexdigest()[:16],
+            "method": request.method,
+            "url_length": len(url_str),
+            "url_hash": safe_summary["input_hash"]
+            if safe_summary["contains_pii"]
+            else url_str,
+            "contains_pii": safe_summary["contains_pii"],
+            "status_code": getattr(response, "status_code", 200),
+            "duration": round(duration, 3),
+            "user_agent_hash": hashlib.sha256(
+                request.headers.get("User-Agent", "Unknown").encode()
+            ).hexdigest()[:8],
+        }
+
+        child_safe_audit.log_input_analysis(
+            input_data=url_str, context="request_logging", severity="info"
+        )
+
+
+logger = get_logger(__name__, component="security")
+child_safe_audit = get_child_safe_audit_logger()
 
 # === CONFIGURATION-DRIVEN SERVICE LAYER ===
 
@@ -41,6 +105,7 @@ except ImportError as e:
 @dataclass
 class SecurityConfig:
     """Production-ready security configuration with environment detection"""
+
     redis_url: Optional[str] = None
     rate_limit_enabled: bool = True
     child_safety_mode: bool = True
@@ -54,7 +119,9 @@ class SecurityConfig:
     def __post_init__(self):
         # Auto-detect from environment
         if not self.redis_url:
-            self.redis_url = os.getenv('REDIS_URL') or os.getenv('REDIS_CONNECTION_STRING')
+            self.redis_url = os.getenv("REDIS_URL") or os.getenv(
+                "REDIS_CONNECTION_STRING"
+            )
 
     @property
     def redis_available(self) -> bool:
@@ -62,10 +129,11 @@ class SecurityConfig:
         if not self.redis_url:
             return False
         try:
-            import redis.asyncio as redis_async
+            pass
+
             # Real connectivity test - this would need to be async in practice
             # For now, we'll do basic import and URL validation
-            if not self.redis_url.startswith(('redis://', 'rediss://')):
+            if not self.redis_url.startswith(("redis://", "rediss://")):
                 return False
             # In production, you'd do: await redis_async.from_url(self.redis_url).ping()
             return True
@@ -79,7 +147,9 @@ class SecurityConfig:
     @property
     def can_rate_limit(self) -> bool:
         """Determine if rate limiting is possible"""
-        return self.rate_limit_enabled and (self.redis_available or True)  # In-memory fallback available
+        return self.rate_limit_enabled and (
+            self.redis_available or True
+        )  # In-memory fallback available
 
 
 class EnvironmentDetector:
@@ -89,16 +159,17 @@ class EnvironmentDetector:
     def detect_redis() -> Optional[str]:
         """Detect Redis availability and connection string"""
         possible_urls = [
-            os.getenv('REDIS_URL'),
-            os.getenv('REDIS_CONNECTION_STRING'),
-            'redis://localhost:6379',
-            'redis://127.0.0.1:6379'
+            os.getenv("REDIS_URL"),
+            os.getenv("REDIS_CONNECTION_STRING"),
+            "redis://localhost:6379",
+            "redis://127.0.0.1:6379",
         ]
 
         for url in possible_urls:
             if url:
                 try:
-                    import redis.asyncio as redis_async
+                    pass
+
                     # In production, you'd test actual connectivity here
                     logger.info(f"Redis detected at: {url}")
                     return url
@@ -111,12 +182,13 @@ class EnvironmentDetector:
     @staticmethod
     def get_environment() -> str:
         """Detect current environment"""
-        env = os.getenv('ENVIRONMENT', 'development').lower()
-        if env in ['prod', 'production']:
-            return 'production'
-        elif env in ['test', 'testing']:
-            return 'testing'
-        return 'development'
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        if env in ["prod", "production"]:
+            return "production"
+        elif env in ["test", "testing"]:
+            return "testing"
+        return "development"
+
 
 # === RATE LIMITER INTERFACE & IMPLEMENTATIONS ===
 
@@ -127,27 +199,22 @@ class RateLimiter(ABC):
     @abstractmethod
     async def is_allowed(self, identifier: str) -> bool:
         """Check if request is allowed"""
-        pass
 
     @abstractmethod
     async def child_safe_limit(self, child_id: str) -> bool:
         """Special limits for children"""
-        pass
 
     @abstractmethod
     async def record_suspicious_activity(self, ip: str, activity: str) -> None:
         """Record suspicious activity"""
-        pass
 
     @abstractmethod
     async def is_ip_blocked(self, ip: str) -> bool:
         """Check if IP is blocked"""
-        pass
 
     @abstractmethod
     async def clear_failed_attempts(self, identifier: str) -> None:
         """Clear failed attempts"""
-        pass
 
 
 class RedisRateLimiter(RateLimiter):
@@ -217,9 +284,18 @@ class RedisRateLimiter(RateLimiter):
             await redis_client.setex(
                 block_key,
                 int(timedelta(hours=self.config.block_duration_hours).total_seconds()),
-                "blocked"
+                "blocked",
             )
-            logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="ip_blocked",
+                threat_level="high",
+                input_data="IP blocked due to repeated suspicious activity",
+                context={
+                    "ip_hash": ip_hash,
+                    "block_duration_hours": self.config.block_duration_hours,
+                },
+            )
 
     async def is_ip_blocked(self, ip: str) -> bool:
         """Check if IP is blocked in Redis"""
@@ -250,8 +326,7 @@ class InMemoryRateLimiter(RateLimiter):
         now = time.time()
         if key in self.timestamps:
             self.timestamps[key] = [
-                ts for ts in self.timestamps[key]
-                if now - ts < window
+                ts for ts in self.timestamps[key] if now - ts < window
             ]
 
     async def is_allowed(self, identifier: str) -> bool:
@@ -293,8 +368,19 @@ class InMemoryRateLimiter(RateLimiter):
         self.timestamps[key].append(time.time())
 
         if len(self.timestamps[key]) >= self.config.max_suspicious_activities:
-            self.blocked_ips[ip] = time.time() + (3600 * self.config.block_duration_hours)
-            logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
+            self.blocked_ips[ip] = time.time() + (
+                3600 * self.config.block_duration_hours
+            )
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="ip_blocked_memory",
+                threat_level="high",
+                input_data="IP blocked due to repeated suspicious activity (memory)",
+                context={
+                    "ip_hash": ip_hash,
+                    "suspicious_count": len(self.timestamps[key]),
+                },
+            )
 
     async def is_ip_blocked(self, ip: str) -> bool:
         """Check if IP is blocked in memory"""
@@ -312,6 +398,7 @@ class InMemoryRateLimiter(RateLimiter):
             self.timestamps.pop(key, None)
         self.blocked_ips.pop(identifier, None)
 
+
 # === SERVICE FACTORY ===
 
 
@@ -326,12 +413,20 @@ class SecurityServiceFactory:
                 # PRODUCTION: Use global Redis client
                 return RedisRateLimiter(get_redis_client(), config)
             except Exception as e:
-                logger.critical(f"CRITICAL: Redis rate limiter failed - NO FALLBACK IN PRODUCTION: {e}")
-                raise RuntimeError("PRODUCTION REQUIREMENT: Redis must be available for rate limiting") from e
+                logger.critical(
+                    f"CRITICAL: Redis rate limiter failed - NO FALLBACK IN PRODUCTION: {e}"
+                )
+                raise RuntimeError(
+                    "PRODUCTION REQUIREMENT: Redis must be available for rate limiting"
+                ) from e
         else:
             # PRODUCTION: Redis is mandatory
-            logger.critical("CRITICAL: Redis configuration missing - PRODUCTION REQUIRES REDIS")
-            raise RuntimeError("PRODUCTION REQUIREMENT: Redis configuration is mandatory")
+            logger.critical(
+                "CRITICAL: Redis configuration missing - PRODUCTION REQUIRES REDIS"
+            )
+            raise RuntimeError(
+                "PRODUCTION REQUIREMENT: Redis configuration is mandatory"
+            )
 
     @staticmethod
     def create_security_config() -> SecurityConfig:
@@ -341,21 +436,22 @@ class SecurityServiceFactory:
         config = SecurityConfig(
             redis_url=detector.detect_redis(),
             rate_limit_enabled=True,
-            child_safety_mode=True
+            child_safety_mode=True,
         )
 
         env = detector.get_environment()
-        if env == 'production':
+        if env == "production":
             # Stricter limits in production
             config.requests_per_minute = 100
             config.child_requests_per_minute = 20
-        elif env == 'testing':
+        elif env == "testing":
             # Relaxed limits for testing
             config.requests_per_minute = 1000
             config.child_requests_per_minute = 500
 
         logger.info(f"Security configuration created for {env} environment")
         return config
+
 
 # === PRODUCTION REDIS CONNECTION - NO MOCKS IN PRODUCTION ===
 
@@ -368,10 +464,10 @@ def initialize_redis() -> Redis:
     """Initialize Redis connection with environment configuration"""
     global redis_client
 
-    redis_host = os.getenv('REDIS_HOST', 'localhost')
-    redis_port = int(os.getenv('REDIS_PORT', 6379))
-    redis_db = int(os.getenv('REDIS_DB', 0))
-    redis_password = os.getenv('REDIS_PASSWORD')
+    redis_host = os.getenv("REDIS_HOST", "localhost")
+    redis_port = int(os.getenv("REDIS_PORT", 6379))
+    redis_db = int(os.getenv("REDIS_DB", 0))
+    redis_password = os.getenv("REDIS_PASSWORD")
 
     # Create Redis connection
     redis_client = Redis(
@@ -404,13 +500,14 @@ async def test_redis_connection() -> bool:
         # Test basic operations
         await client.ping()
         await client.set("health_check", "ok", ex=1)
-        result = await client.get("health_check")
+        await client.get("health_check")
         await client.delete("health_check")
         logger.info("✅ Redis connection test successful")
         return True
     except Exception as e:
         logger.error(f"❌ Redis connection test failed: {e}")
         raise RuntimeError(f"CRITICAL: Redis connection failed: {e}")
+
 
 REDIS_AVAILABLE = True
 
@@ -464,7 +561,13 @@ class LegacyRateLimiter:
             await redis_client.setex(
                 block_key, int(timedelta(hours=1).total_seconds()), "blocked"
             )
-            logger.warning(f"IP {ip} blocked due to repeated suspicious activity")
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="ip_blocked_suspicious",
+                threat_level="high",
+                input_data="IP blocked due to repeated suspicious activity",
+                context={"ip_hash": ip_hash, "activity_count": activity_count},
+            )
 
     async def is_ip_blocked(self, ip: str) -> bool:
         """التحقق من حظر IP"""
@@ -576,7 +679,13 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         try:
             # فحص IP المحظور
             if await self.rate_limiter.is_ip_blocked(client_ip):
-                logger.warning(f"Blocked IP attempted access: {client_ip}")
+                ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="blocked_ip_access_attempt",
+                    threat_level="high",
+                    input_data="Blocked IP attempted access",
+                    context={"ip_hash": ip_hash},
+                )
                 raise HTTPException(
                     status_code=403,
                     detail="IP blocked due to suspicious activity",
@@ -587,7 +696,13 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 await self.rate_limiter.record_suspicious_activity(
                     client_ip, "Rate limit exceeded"
                 )
-                logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+                ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="rate_limit_exceeded",
+                    threat_level="medium",
+                    input_data="Rate limit exceeded",
+                    context={"ip_hash": ip_hash},
+                )
                 raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
             # فحص الأمان للطلب
@@ -708,11 +823,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         client_ip: str,
     ) -> None:
         """تسجيل الطلب"""
+        # Sanitize URL to remove potential PII from query parameters
+        url_parts = str(request.url).split("?")
+        safe_url = url_parts[0]  # Only log the path, not query parameters
+        url_hash = hashlib.sha256(str(request.url).encode()).hexdigest()[:16]
+
         log_data = {
             "timestamp": datetime.now().isoformat(),
             "client_ip": client_ip,
             "method": request.method,
-            "url": str(request.url),
+            "url_path": safe_url,
+            "url_hash": url_hash,
+            "has_query_params": len(url_parts) > 1,
             "status_code": getattr(response, "status_code", 200),
             "duration": round(duration, 3),
             "user_agent": request.headers.get("User-Agent", "Unknown"),
@@ -746,7 +868,13 @@ class ChildSafetySecurityMiddleware(SecurityMiddleware):
             # استخدام rate limiter مخصص للأطفال
             client_ip = self.get_client_ip(request)
             if not await self.child_rate_limiter.is_allowed(client_ip):
-                logger.warning(f"Child rate limit exceeded for IP: {client_ip}")
+                ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="child_rate_limit_exceeded",
+                    threat_level="medium",
+                    input_data="Child rate limit exceeded",
+                    context={"ip_hash": ip_hash},
+                )
                 raise HTTPException(
                     status_code=429, detail="تم تجاوز حد الطلبات المسموح للأطفال"
                 )
@@ -810,12 +938,14 @@ def create_security_middleware(
             logger.info("✅ Redis client initialized for security middleware")
         except Exception as e:
             logger.critical(f"CRITICAL: Redis connection failed: {e}")
-            raise RuntimeError(f"PRODUCTION REQUIREMENT: Redis must be available") from e
+            raise RuntimeError("PRODUCTION REQUIREMENT: Redis must be available") from e
     elif not redis_client:
         # PRODUCTION: Always require Redis
         redis_client = get_redis_client()
 
-    rate_limiter = LegacyRateLimiter(redis_client, requests_per_minute=60, burst_limit=10)
+    rate_limiter = LegacyRateLimiter(
+        redis_client, requests_per_minute=60, burst_limit=10
+    )
     validator = SecurityValidator()
 
     if child_safety:

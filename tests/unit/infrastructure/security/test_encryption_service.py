@@ -15,15 +15,22 @@ from cryptography.fernet import Fernet
 try:
     from src.infrastructure.security.encryption.robust_encryption_service import (
         EncryptionKeyError,
+    )
+    from src.infrastructure.security.encryption.robust_encryption_service import (
         RobustEncryptionService as EncryptionService,
+    )
+    from src.infrastructure.security.encryption.robust_encryption_service import (
         get_encryption_service,
     )
 except ImportError:
+
     class EncryptionKeyError(Exception):
         pass
 
     from src.infrastructure.security.encryption.robust_encryption_service import (
         RobustEncryptionService as EncryptionService,
+    )
+    from src.infrastructure.security.encryption.robust_encryption_service import (
         get_encryption_service,
     )
 
@@ -992,7 +999,7 @@ class TestEncryptionServiceIntegration:
             # Test various operations trigger appropriate logs
             test_data = "logging_test"
             encrypted = service.encrypt(test_data)
-            decrypted = service.decrypt(encrypted)
+            service.decrypt(encrypted)
 
             # Verify some logging occurred during initialization
             assert mock_logger.info.called or mock_logger.warning.called

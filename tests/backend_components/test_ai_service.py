@@ -22,50 +22,51 @@ except ImportError:
 
     # Mock pytest when not available
     if pytest is None:
+
         class MockPytest:
             def fixture(self, *args, **kwargs):
                 def decorator(func):
                     return func
+
                 return decorator
 
             def mark(self):
                 class MockMark:
                     def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
 
-                    def decorator(func):
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
-
-                def asyncio(self, func):
-                    return func
-
-                def slow(self, func):
-                    return func
-
-                def skip(self, reason=""):
-                    def decorator(func):
+                    def slow(self, func):
                         return func
 
-                    return decorator
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-            return MockMark()
+                        return decorator
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                return MockMark()
 
-                def __exit__(self, *args):
-                    return False
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-            return MockRaises()
+                    def __exit__(self, *args):
+                        return False
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                return MockRaises()
 
-            return decorator
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
         pytest = MockPytest()
 

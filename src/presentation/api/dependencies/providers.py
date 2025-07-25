@@ -1,16 +1,14 @@
 """Service providers using factory pattern."""
+
 from .base import LazyServiceProvider
 
 # COPPA Services
 
 
 def _create_coppa_integration():
-    from src.presentation.api.endpoints.children.compliance import COPPAIntegration
     from src.infrastructure.config.settings import get_settings
-    from src.infrastructure.validators.security.coppa_validator import (
-        COPPAValidator,
-        coppa_validator
-    )
+    from src.infrastructure.validators.security.coppa_validator import COPPAValidator
+    from src.presentation.api.endpoints.children.compliance import COPPAIntegration
 
     settings = get_settings()
     coppa_service = COPPAValidator()
@@ -18,10 +16,9 @@ def _create_coppa_integration():
 
 
 def _create_parental_consent_manager():
-    from src.presentation.api.endpoints.children.compliance import ParentalConsentManager
-    from src.infrastructure.validators.security.coppa_validator import (
-        COPPAValidator,
-        coppa_validator
+    from src.infrastructure.validators.security.coppa_validator import COPPAValidator
+    from src.presentation.api.endpoints.children.compliance import (
+        ParentalConsentManager,
     )
 
     coppa_service = COPPAValidator()
@@ -29,26 +26,26 @@ def _create_parental_consent_manager():
 
 
 def _create_compliance_validator():
-    from src.presentation.api.endpoints.children.compliance import ComplianceValidator
     from src.infrastructure.config.settings import get_settings
+    from src.presentation.api.endpoints.children.compliance import ComplianceValidator
 
     settings = get_settings()
     return ComplianceValidator(settings)
 
 
 def _create_data_retention_manager():
+    from src.infrastructure.validators.security.coppa_validator import COPPAValidator
     from src.presentation.api.endpoints.children.compliance import LocalRetentionManager
-    from src.infrastructure.validators.security.coppa_validator import (
-        COPPAValidator,
-        coppa_validator
-    )
 
     coppa_service = COPPAValidator()
     return LocalRetentionManager(coppa_service)
 
 
 def _create_audio_processing_service():
-    from src.application.services.device.audio_processing_service import AudioProcessingService
+    from src.application.services.device.audio_processing_service import (
+        AudioProcessingService,
+    )
+
     return AudioProcessingService()
 
 

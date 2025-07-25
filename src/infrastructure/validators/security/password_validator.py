@@ -1,9 +1,7 @@
 import re
 from typing import Any
 
-from src.domain.models.registration_models import (
-    PasswordRequirements,
-)
+from src.domain.models.registration_models import PasswordRequirements
 
 
 def validate_password_strength(

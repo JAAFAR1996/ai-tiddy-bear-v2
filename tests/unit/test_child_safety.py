@@ -6,12 +6,10 @@ from uuid import uuid4
 
 import pytest
 
+from src.domain.models.child_safety_data_models import ParentConsent
 from src.domain.value_objects import ChildAge
 from src.infrastructure.ai.real_ai_service import ProductionAIService
 from src.infrastructure.security.child_safety.consent_manager import COPPAConsentManager
-from src.domain.models.child_safety_data_models import (
-    ParentConsent,
-)
 
 
 class TestCOPPACompliance:
@@ -152,9 +150,7 @@ class TestChildDataEncryption:
 
     def test_child_model_encryption(self):
         """Test that child PII is encrypted"""
-        from src.domain.models.child_models import (
-            ChildModel,
-        )
+        from src.infrastructure.persistence.models.child_models import ChildModel
 
         # Mock encryption key
         with patch.dict(
@@ -175,9 +171,7 @@ class TestChildDataEncryption:
 
     def test_encryption_key_required(self):
         """Test that encryption key is required"""
-        from src.domain.models.child_models import (
-            ChildModel,
-        )
+        from src.infrastructure.persistence.models.child_models import ChildModel
 
         with patch.dict("os.environ", {}, clear=True):
             child = ChildModel()
@@ -191,9 +185,7 @@ class TestInputValidation:
 
     def test_conversation_request_validation(self):
         """Test conversation request validation"""
-        from src.presentation.api.endpoints.conversations import (
-            ConversationRequest,
-        )
+        from src.presentation.api.endpoints.conversations import ConversationRequest
 
         # Valid request
         valid_request = ConversationRequest(
@@ -220,9 +212,7 @@ class TestInputValidation:
 
     def test_message_content_filtering(self):
         """Test message content filtering"""
-        from src.presentation.api.endpoints.conversations import (
-            ConversationRequest,
-        )
+        from src.presentation.api.endpoints.conversations import ConversationRequest
 
         # Message with forbidden content should be rejected
         with pytest.raises(ValueError, match="inappropriate content"):

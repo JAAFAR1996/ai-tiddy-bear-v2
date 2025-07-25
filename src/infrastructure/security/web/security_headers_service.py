@@ -5,9 +5,8 @@ Designed for child-safe applications with strict security requirements.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict
+from typing import Dict
 
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.security.core.security_levels import SecurityLevel
@@ -17,6 +16,7 @@ logger = get_logger(__name__, component="security")
 
 class SecurityHeaderType(Enum):
     """Types of security headers."""
+
     CSP = "content-security-policy"
     HSTS = "strict-transport-security"
     X_FRAME_OPTIONS = "x-frame-options"
@@ -29,6 +29,7 @@ class SecurityHeaderType(Enum):
 @dataclass
 class SecurityHeaderConfig:
     """Configuration for security headers."""
+
     header_type: SecurityHeaderType
     value: str
     enabled: bool = True
@@ -42,7 +43,9 @@ class SecurityHeadersService:
     Implements OWASP security best practices with additional child protection measures.
     """
 
-    def __init__(self, security_level: SecurityLevel = SecurityLevel.CHILD_SAFETY_ENHANCED):
+    def __init__(
+        self, security_level: SecurityLevel = SecurityLevel.CHILD_SAFETY_ENHANCED
+    ):
         """Initialize security headers service.
 
         Args:
@@ -52,7 +55,9 @@ class SecurityHeadersService:
         self.logger = logger
         self._headers_config = self._build_headers_config()
 
-        self.logger.info(f"SecurityHeadersService initialized with {security_level.value} security level")
+        self.logger.info(
+            f"SecurityHeadersService initialized with {security_level.value} security level"
+        )
 
     def _build_headers_config(self) -> Dict[SecurityHeaderType, SecurityHeaderConfig]:
         """Build security headers configuration based on security level."""
@@ -96,7 +101,10 @@ class SecurityHeadersService:
 
         # Referrer Policy - Strict for privacy
         config[SecurityHeaderType.REFERRER_POLICY] = SecurityHeaderConfig(
-            SecurityHeaderType.REFERRER_POLICY, "strict-origin-when-cross-origin", True, True
+            SecurityHeaderType.REFERRER_POLICY,
+            "strict-origin-when-cross-origin",
+            True,
+            True,
         )
 
         # Permissions Policy - Restrict dangerous features
@@ -134,7 +142,9 @@ class SecurityHeadersService:
         security_headers = self.get_security_headers()
         response_headers.update(security_headers)
 
-        self.logger.debug(f"Applied {len(security_headers)} security headers to response")
+        self.logger.debug(
+            f"Applied {len(security_headers)} security headers to response"
+        )
 
     def is_header_enabled(self, header_type: SecurityHeaderType) -> bool:
         """Check if a specific security header is enabled.
@@ -171,12 +181,14 @@ class SecurityHeadersService:
         critical_headers = [
             SecurityHeaderType.CSP,
             SecurityHeaderType.X_FRAME_OPTIONS,
-            SecurityHeaderType.X_CONTENT_TYPE_OPTIONS
+            SecurityHeaderType.X_CONTENT_TYPE_OPTIONS,
         ]
 
         for header_type in critical_headers:
             if not self.is_header_enabled(header_type):
-                self.logger.warning(f"Critical security header {header_type.value} is disabled")
+                self.logger.warning(
+                    f"Critical security header {header_type.value} is disabled"
+                )
                 return False
 
         self.logger.info("All critical security headers are properly configured")

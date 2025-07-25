@@ -1,8 +1,9 @@
-from domain.entities.conversation import Conversation
-from unittest.mock import AsyncMock
-from datetime import datetime, timedelta
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
+from unittest.mock import AsyncMock
+
+from domain.entities.conversation import Conversation
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -26,51 +27,51 @@ except ImportError:
 
     # Mock pytest when not available
     if pytest is None:
+
         class MockPytest:
-
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
         pytest = MockPytest()
 
@@ -94,9 +95,7 @@ class TestConversationService:
             )
         )
 
-        conversation = await conversation_service.start_conversation(
-            "child456"
-        )
+        conversation = await conversation_service.start_conversation("child456")
         assert conversation.id == "conv123"
         assert conversation.is_active() is True
 
@@ -118,9 +117,7 @@ class TestConversationService:
             "conv123", "محادثة ودية مع طلب قصة", "positive", 0.8
         )
         assert ended_conversation.is_active() is False
-        assert ended_conversation.duration_minutes() == pytest.approx(
-            600 / 60.0
-        )
+        assert ended_conversation.duration_minutes() == pytest.approx(600 / 60.0)
         assert ended_conversation.summary is not None
 
     @pytest.mark.asyncio

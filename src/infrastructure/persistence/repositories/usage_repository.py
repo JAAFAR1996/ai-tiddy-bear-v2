@@ -110,9 +110,9 @@ class UsageRepository:
                     "period_days": days,
                 }
             total_duration = sum(row["total_duration"] for row in result)
-            most_common_activity = max(
-                result, key=lambda r: r["total_duration"]
-            )["activity_type"]
+            most_common_activity = max(result, key=lambda r: r["total_duration"])[
+                "activity_type"
+            ]
         except (ValueError, TypeError):
             logger.exception("Error fetching usage summary")
             raise

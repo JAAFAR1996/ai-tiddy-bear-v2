@@ -5,12 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from src.domain.entities.child import Child
-from src.domain.safety.models import (
-    ContentCategory,
-    ContentModerator,
-    SafetyLevel,
-)
-from src.infrastructure.security.core.main_security_service import MainSecurityService
+from src.domain.safety.models import ContentCategory, ContentModerator, SafetyLevel
 
 
 class TestContentModerator:
@@ -448,7 +443,6 @@ def safe_content_samples():
 
 
 if __name__ == "__main__":
-
     pytest.main(
         [
             __file__,

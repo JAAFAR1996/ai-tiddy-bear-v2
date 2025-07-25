@@ -277,6 +277,7 @@ class SafetyConfig:
         return not scary_count > age_limits["max_scary"]
 
     def analyze_safety(
+        self,
         content: str,
         context: ContextAnalysis,
     ) -> SafetyAnalysisResult:

@@ -1,12 +1,15 @@
 # src/infrastructure/config/application_settings.py
 from pathlib import Path
+
 from pydantic import Field
+
 from src.common import constants
 from src.infrastructure.config.core.base_settings import BaseApplicationSettings
 
+
 class ApplicationSettings(BaseApplicationSettings):
-    '''General application configuration settings.'''
-    
+    """General application configuration settings."""
+
     # إزالة env من جميع الحقول لمنع القراءة المباشرة
     ENVIRONMENT: str = Field(default="development")
     DEBUG: bool = Field(default=False)
@@ -25,11 +28,11 @@ class ApplicationSettings(BaseApplicationSettings):
         default_factory=lambda: Path(__file__).parent.parent.parent.parent.resolve()
     )
     STATIC_FILES_DIR: str = Field(default="static")
-    
+
     # المتغيرات الإضافية
     ENABLE_AI_SERVICES: bool = Field(default=True)
     USE_MOCK_SERVICES: bool = Field(default=False)
-    
+
     # إعدادات السجلات
     LOG_LEVEL: str = Field(default="INFO")
     LOG_FORMAT: str = Field(default="json")

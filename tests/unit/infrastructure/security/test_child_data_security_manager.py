@@ -206,7 +206,7 @@ class TestChildDataSecurityManager:
             "ip_address": "192.168.1.102",
         }
 
-        result = security_manager.secure_child_profile(child_data, parent_consent)
+        security_manager.secure_child_profile(child_data, parent_consent)
 
         # Should handle gracefully with empty string for child_id
         security_manager.encryption.create_consent_record.assert_called_once_with(
@@ -227,7 +227,7 @@ class TestChildDataSecurityManager:
             # Missing method and ip_address
         }
 
-        result = security_manager.secure_child_profile(child_data, parent_consent)
+        security_manager.secure_child_profile(child_data, parent_consent)
 
         # Should handle missing fields with defaults
         security_manager.encryption.create_consent_record.assert_called_once_with(

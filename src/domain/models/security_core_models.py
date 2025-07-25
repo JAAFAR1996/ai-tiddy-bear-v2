@@ -30,7 +30,7 @@ class COPPAValidatorRecord:
 @dataclass
 class SecurityConfig:
     """Security configuration settings."""
-    
+
     enable_rate_limiting: bool = True
     enable_audit_logging: bool = True
     enable_encryption: bool = True

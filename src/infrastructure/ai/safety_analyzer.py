@@ -59,11 +59,19 @@ class SafetyAnalyzer:
         # Real AI moderation layer if openai_client is available
         if self.openai_client is not None:
             try:
-                moderation_response = await self.openai_client.moderations.create(input=text)
+                moderation_response = await self.openai_client.moderations.create(
+                    input=text
+                )
                 moderation_result = moderation_response.results[0]
-                ai_moderation_score = float(moderation_result.category_scores.get("sexual", 0.0))
+                ai_moderation_score = float(
+                    moderation_result.category_scores.get("sexual", 0.0)
+                )
                 # Collect all flagged categories
-                ai_flagged_categories = [cat for cat, flagged in moderation_result.categories.items() if flagged]
+                ai_flagged_categories = [
+                    cat
+                    for cat, flagged in moderation_result.categories.items()
+                    if flagged
+                ]
                 ai_details = "OpenAI moderation API used"
             except Exception as e:
                 logger.warning(f"AI moderation API failed: {e}")
@@ -71,11 +79,15 @@ class SafetyAnalyzer:
         else:
             ai_details = "AI moderation unavailable, fallback to keyword only"
 
-        is_safe = not bool(flagged_keywords or ai_flagged_categories) and ai_moderation_score < 0.7
+        is_safe = (
+            not bool(flagged_keywords or ai_flagged_categories)
+            and ai_moderation_score < 0.7
+        )
         all_flagged = list(set(flagged_keywords + ai_flagged_categories))
         return {
             "safe": is_safe,
-            "safety_score": 1.0 - max(ai_moderation_score, 0.9 if flagged_keywords else 0.0),
+            "safety_score": 1.0
+            - max(ai_moderation_score, 0.9 if flagged_keywords else 0.0),
             "flagged_categories": all_flagged,
             "analysis_details": f"Keyword + AI moderation. {ai_details}",
         }

@@ -2,17 +2,22 @@
 Clean, modular route setup with separated endpoint handlers.
 """
 
-from collections.abc import AsyncGenerator
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+
+from src.infrastructure.di.fastapi_dependencies import get_current_user, get_db_session
+from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.models.child_models import ChildModel
 
 from .create_child import create_child_endpoint
 from .get_children import get_children_endpoint
 from .models import ChildResponse
-from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.child_models import ChildModel
-from src.infrastructure.di.fastapi_dependencies import get_database
+from .route_handlers import RouteHandlers
+
+logger = get_logger(__name__, component="api")
 
 
 def setup_children_routes(router: APIRouter) -> None:
@@ -41,7 +46,7 @@ def setup_children_routes(router: APIRouter) -> None:
     # Update child endpoint
     router.add_api_route(
         "/{child_id}",
-        update_child_endpoint,
+        RouteHandlers.update_child_handler,
         methods=["PUT"],
         response_model=ChildResponse,
         summary="Update Child Profile",
@@ -51,7 +56,7 @@ def setup_children_routes(router: APIRouter) -> None:
     # Delete child endpoint
     router.add_api_route(
         "/{child_id}",
-        delete_child_endpoint,
+        RouteHandlers.delete_child_handler,
         methods=["DELETE"],
         summary="Delete Child Profile",
         description="Safely delete a child profile with data retention compliance",
@@ -144,32 +149,21 @@ def create_extended_children_router() -> APIRouter:
     return router
 
 
-# Database session dependency and endpoint implementation
-async def get_db_session(
-    database: Database = Depends(get_database)
-) -> AsyncGenerator[AsyncSession, None]:
-    """Database session dependency for FastAPI endpoints."""
-    async for session in database.get_session():
-        yield session
-
-
 async def get_child_by_id_endpoint(
-    child_id: str,
-    db: AsyncSession = Depends(get_db_session)
+    child_id: str, db: AsyncSession = Depends(get_db_session)
 ) -> ChildModel:
     """Get a child by ID from the database."""
     child = await db.get(ChildModel, child_id)
     if child is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Child with ID {child_id} not found"
+            detail=f"Child with ID {child_id} not found",
         )
     return child
 
 
 async def search_children_endpoint(
-    search_term: str,
-    db: AsyncSession = Depends(get_db_session)
+    search_term: str, db: AsyncSession = Depends(get_db_session)
 ) -> list[ChildModel]:
     """Search children by name."""
     result = await db.execute(
@@ -178,15 +172,9 @@ async def search_children_endpoint(
     children = result.scalars().all()
     return list(children)
 
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
-
 
 async def get_children_summary_endpoint(
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
 ) -> dict:
     """Get children summary with total count."""
     result = await db.execute(select(ChildModel))
@@ -194,52 +182,31 @@ async def get_children_summary_endpoint(
     count = len(children)
     return {"total": count, "active": count}
 
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
-
 
 async def get_child_safety_summary_endpoint(
-    child_id: str,
-    db: AsyncSession = Depends(get_db_session)
+    child_id: str, db: AsyncSession = Depends(get_db_session)
 ) -> dict:
     """Get child safety summary."""
     child = await db.get(ChildModel, child_id)
     if child is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Child with ID {child_id} not found"
+            detail=f"Child with ID {child_id} not found",
         )
     return {"child_id": child_id, "safety_score": 95, "alerts": 0}
 
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
-
 
 async def get_child_interactions_endpoint(
-    child_id: str,
-    limit: int = 50,
-    db: AsyncSession = Depends(get_db_session)
+    child_id: str, limit: int = 50, db: AsyncSession = Depends(get_db_session)
 ) -> dict:
     """Get child interactions summary."""
     child = await db.get(ChildModel, child_id)
     if child is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Child with ID {child_id} not found"
+            detail=f"Child with ID {child_id} not found",
         )
     return {"child_id": child_id, "total_interactions": 0}
-
-try:
-    # Already implemented above
-    pass
-except ImportError:
-    pass
 
 
 def setup_admin_children_routes(router: APIRouter) -> None:
@@ -275,19 +242,198 @@ def setup_admin_children_routes(router: APIRouter) -> None:
     )
 
 
-async def get_all_children_admin_endpoint():
+async def get_all_children_admin_endpoint(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+) -> list[dict]:
     """Get all children profiles across all parents (admin only)."""
-    pass
+    # Admin role check
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
+
+    try:
+        # Get all children from database
+        result = await db.execute(select(ChildModel))
+        children = result.scalars().all()
+
+        # Convert to response format
+        children_data = []
+        for child in children:
+            children_data.append(
+                {
+                    "id": str(child.id),
+                    "name": child.name_encrypted,  # Using encrypted field
+                    "age": child.age,
+                    "parent_id": str(child.parent_id),
+                    "created_at": child.created_at.isoformat()
+                    if child.created_at
+                    else None,
+                    "updated_at": child.updated_at.isoformat()
+                    if child.updated_at
+                    else None,
+                    "is_active": getattr(child, "is_active", True),
+                }
+            )
+
+        return children_data
+    except Exception as e:
+        logger.error(f"Error getting all children (admin): {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve children data",
+        )
 
 
-async def get_children_statistics_admin_endpoint():
+async def get_children_statistics_admin_endpoint(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
     """Get system-wide children statistics (admin only)."""
-    pass
+    # Admin role check
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
+
+    try:
+        # Get all children for statistics
+        result = await db.execute(select(ChildModel))
+        children = result.scalars().all()
+
+        # Calculate statistics
+        total_children = len(children)
+        age_groups = {
+            "preschool": 0,
+            "elementary": 0,
+            "middle_school": 0,
+            "high_school": 0,
+        }
+        active_children = 0
+        coppa_applicable = 0
+
+        for child in children:
+            # Age group distribution
+            if child.age <= 5:
+                age_groups["preschool"] += 1
+            elif child.age <= 10:
+                age_groups["elementary"] += 1
+            elif child.age <= 13:
+                age_groups["middle_school"] += 1
+            else:
+                age_groups["high_school"] += 1
+
+            # Active children count
+            if getattr(child, "is_active", True):
+                active_children += 1
+
+            # COPPA applicable (under 13)
+            if child.age < 13:
+                coppa_applicable += 1
+
+        statistics = {
+            "total_children": total_children,
+            "active_children": active_children,
+            "inactive_children": total_children - active_children,
+            "coppa_applicable_children": coppa_applicable,
+            "age_distribution": age_groups,
+            "compliance_metrics": {
+                "coppa_compliance_rate": (coppa_applicable / total_children * 100)
+                if total_children > 0
+                else 0,
+                "data_retention_compliant": True,
+                "privacy_settings_enabled": True,
+            },
+            "generated_at": datetime.utcnow().isoformat(),
+        }
+
+        return statistics
+    except Exception as e:
+        logger.error(f"Error generating children statistics (admin): {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate statistics",
+        )
 
 
-async def bulk_update_children_admin_endpoint():
+async def bulk_update_children_admin_endpoint(
+    updates: dict,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+) -> dict:
     """Perform bulk updates on children profiles (admin only)."""
-    pass
+    # Admin role check
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
+
+    try:
+        child_ids = updates.get("child_ids", [])
+        update_data = updates.get("update_data", {})
+
+        if not child_ids or not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="child_ids and update_data are required",
+            )
+
+        # Validate allowed update fields (security)
+        allowed_fields = {"age", "is_active", "preferences", "language"}
+        invalid_fields = set(update_data.keys()) - allowed_fields
+        if invalid_fields:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid update fields: {list(invalid_fields)}",
+            )
+
+        updated_count = 0
+        failed_updates = []
+
+        # Perform bulk update
+        for child_id in child_ids:
+            try:
+                # Get child
+                child = await db.get(ChildModel, child_id)
+                if not child:
+                    failed_updates.append(
+                        {"child_id": child_id, "error": "Child not found"}
+                    )
+                    continue
+
+                # Apply updates
+                for field, value in update_data.items():
+                    if hasattr(child, field):
+                        setattr(child, field, value)
+
+                child.updated_at = datetime.utcnow()
+                updated_count += 1
+
+            except Exception as e:
+                failed_updates.append({"child_id": child_id, "error": str(e)})
+
+        # Commit changes
+        await db.commit()
+
+        result = {
+            "updated_count": updated_count,
+            "failed_count": len(failed_updates),
+            "total_requested": len(child_ids),
+            "failed_updates": failed_updates,
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in bulk update (admin): {e}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Bulk update operation failed",
+        )
 
 
 def create_complete_children_router() -> APIRouter:

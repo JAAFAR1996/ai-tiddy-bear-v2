@@ -2,10 +2,7 @@ import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
-from application.services.modern_ai_service import (
-    AIServiceError,
-    ModernAIService,
-)
+from application.services.modern_ai_service import AIServiceError, ModernAIService
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -25,51 +22,51 @@ except ImportError:
     except ImportError:
         pass
 
-    # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
-                        return func
-
-                    return decorator
-
-                def asyncio(self, func):
+        # Mock pytest when not available
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
                     return func
 
-                def slow(self, func):
-                    return func
+                return decorator
 
-                def skip(self, reason=""):
-                    def decorator(func):
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+
+                        return decorator
+
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
+                    def slow(self, func):
+                        return func
 
-            return MockMark()
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+                        return decorator
 
-                def __exit__(self, *args):
-                    return False
+                return MockMark()
 
-            return MockRaises()
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
+                    def __exit__(self, *args):
+                        return False
 
-            return decorator
+                return MockRaises()
+
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+
+                return decorator
 
     pytest = MockPytest()
 
@@ -92,9 +89,9 @@ class TestAIServiceIntegration:
         # Mock OpenAI response
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = (
-            "The sun is a big star that gives us light and warmth!"
-        )
+        mock_response.choices[
+            0
+        ].message.content = "The sun is a big star that gives us light and warmth!"
 
         self.mock_client.chat.completions.create.return_value = mock_response
 
@@ -112,7 +109,9 @@ class TestAIServiceIntegration:
         """Test generating playful response"""
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = (
+        mock_response.choices[
+            0
+        ].message.content = (
             "Hey there! The sun is like a giant glowing ball in the sky! ☀️"
         )
 

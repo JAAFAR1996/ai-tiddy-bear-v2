@@ -100,9 +100,7 @@ class TestComprehensiveRateLimiterImports:
 
     def test_all_exports_available(self):
         """Test that all expected exports are available."""
-        from src.infrastructure.security.comprehensive_rate_limiter import (
-            __all__,
-        )
+        from src.infrastructure.security.comprehensive_rate_limiter import __all__
 
         expected_exports = [
             "RateLimitType",
@@ -395,9 +393,7 @@ class TestRateLimiterLogging:
 
     def test_rate_limiter_logging_setup(self):
         """Test that rate limiter has proper logging setup."""
-        from src.infrastructure.security.comprehensive_rate_limiter import (
-            logger,
-        )
+        from src.infrastructure.security.comprehensive_rate_limiter import logger
 
         assert logger is not None
         assert hasattr(logger, "info")
@@ -548,9 +544,7 @@ class TestRateLimiterDocumentation:
 
     def test_rate_limiter_exports_documentation(self):
         """Test rate limiter exports are properly documented."""
-        from src.infrastructure.security.comprehensive_rate_limiter import (
-            __all__,
-        )
+        from src.infrastructure.security.comprehensive_rate_limiter import __all__
 
         assert __all__ is not None
         assert isinstance(__all__, list)

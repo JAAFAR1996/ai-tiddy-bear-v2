@@ -12,9 +12,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from domain.entities.child import Child
-from infrastructure.persistence.child_sqlite_repository import (
-    ChildSQLiteRepository,
-)
+from infrastructure.persistence.child_sqlite_repository import ChildSQLiteRepository
 
 # Add src to path
 src_path = Path(__file__).parent
@@ -31,54 +29,46 @@ try:
     import pytest
 except ImportError:
     # Mock pytest when not available
-    class MockPytest:
-        def fixture(self, *args, **kwargs):
-            def decorator(func):
-                return func
+        class MockPytest:
+            def fixture(self, *args, **kwargs):
+                def decorator(func):
+                    return func
+                return decorator
 
-            return decorator
+            def mark(self):
+                class MockMark:
+                    def parametrize(self, *args, **kwargs):
+                        def decorator(func):
+                            return func
+                        return decorator
 
-        def mark(self):
-            class MockMark:
-                def parametrize(self, *args, **kwargs):
-                    def decorator(func):
+                    def asyncio(self, func):
                         return func
 
-                    return decorator
-
-                def asyncio(self, func):
-                    return func
-
-                def slow(self, func):
-                    return func
-
-                def skip(self, reason=""):
-                    def decorator(func):
+                    def slow(self, func):
                         return func
 
-                    return decorator
+                    def skip(self, reason=""):
+                        def decorator(func):
+                            return func
+                        return decorator
 
-            return MockMark()
+                return MockMark()
 
-        def raises(self, exception):
-            class MockRaises:
-                def __enter__(self):
-                    return self
+            def raises(self, exception):
+                class MockRaises:
+                    def __enter__(self):
+                        return self
 
-                def __exit__(self, *args):
-                    return False
+                    def __exit__(self, *args):
+                        return False
 
-            return MockRaises()
+                return MockRaises()
 
-        def skip(self, reason=""):
-            def decorator(func):
-                return func
-
-            return decorator
-
-        def main(self, args):
-            return 0
-
+            def skip(self, reason=""):
+                def decorator(func):
+                    return func
+                return decorator
     pytest = MockPytest()
 
 

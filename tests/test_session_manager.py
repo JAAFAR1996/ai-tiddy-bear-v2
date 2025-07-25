@@ -2,17 +2,11 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from infrastructure.session_manager.session_manager import SessionManager
-from infrastructure.session_manager.session_models import (
-    Session,
-    SessionStatus,
-)
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from infrastructure.session_manager.session_manager import SessionManager
+from infrastructure.session_manager.session_models import Session, SessionStatus
 
 # Add src to path
 src_path = Path(__file__).parent

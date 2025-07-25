@@ -8,9 +8,7 @@ from typing import Any
 
 import pytest
 
-from src.application.services.ai.ai_orchestration_service import (
-    AIOrchestratorService,
-)
+from src.application.services.ai.ai_orchestration_service import AIOrchestratorService
 from src.application.services.ai.interfaces import AIServiceInterface
 from src.domain.value_objects.safety_level import SafetyLevel
 

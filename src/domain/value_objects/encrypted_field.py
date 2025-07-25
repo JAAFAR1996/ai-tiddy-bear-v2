@@ -1,4 +1,3 @@
-
 from src.domain.interfaces.encryption_interface import (
     EncryptionServiceInterface,
     NullEncryptionService,
@@ -10,9 +9,7 @@ class EncryptedFieldError(Exception):
     """Exception raised for errors in EncryptedField operations."""
 
     def __init__(self, value_type: type):
-        super().__init__(
-            f"Unsupported value type for encryption: {value_type}"
-        )
+        super().__init__(f"Unsupported value type for encryption: {value_type}")
 
 
 class EncryptedField(SecureFieldInterface[str | int | float | bool | list | dict]):
@@ -35,7 +32,7 @@ class EncryptedField(SecureFieldInterface[str | int | float | bool | list | dict
     def __init__(
         self,
         value: str | int | float | bool | list | dict,
-        encryption_service: EncryptionServiceInterface = None
+        encryption_service: EncryptionServiceInterface = None,
     ) -> None:
         self._encryption_service = encryption_service or NullEncryptionService()
         self._original_value = value

@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from src.domain.entities.child_profile import (  # Assuming these exist
-    ChildProfile,
-)
+from src.domain.entities.child_profile import ChildProfile  # Assuming these exist
 
 
 class IChildProfileRepository(ABC):

@@ -6,6 +6,7 @@ including age validation, content filtering, and PII protection.
 
 import re
 from typing import Any
+
 from src.domain.schemas import ValidationResult
 from src.infrastructure.logging_config import get_logger
 
@@ -27,7 +28,9 @@ class ChildSafetyValidator:
         self.banned_words = {"badword1", "badword2"}
         # نمط ايميل/هاتف للكشف عن PII البسيطة
         self.email_pattern = re.compile(r"\b[\w\.-]+@[\w\.-]+\.\w+\b")
-        self.phone_pattern = re.compile(r"\b(\+?\d{1,3})?[-. (]*\d{3}[-. )]*\d{3,4}[-. ]*\d{4}\b")
+        self.phone_pattern = re.compile(
+            r"\b(\+?\d{1,3})?[-. (]*\d{3}[-. )]*\d{3,4}[-. ]*\d{4}\b"
+        )
 
     def validate_age(self, age: Any) -> ValidationResult:
         try:
@@ -37,7 +40,9 @@ class ChildSafetyValidator:
         if not (self.min_age <= age_int <= self.max_age):
             return ValidationResult(
                 False,
-                errors=[f"Age {age_int} is out of allowed range [{self.min_age}, {self.max_age}]"]
+                errors=[
+                    f"Age {age_int} is out of allowed range [{self.min_age}, {self.max_age}]"
+                ],
             )
         return ValidationResult(True)
 
@@ -45,8 +50,7 @@ class ChildSafetyValidator:
         found_banned = [w for w in self.banned_words if w in text.lower()]
         if found_banned:
             return ValidationResult(
-                False,
-                errors=[f"Inappropriate content: {', '.join(found_banned)}"]
+                False, errors=[f"Inappropriate content: {', '.join(found_banned)}"]
             )
         return ValidationResult(True)
 

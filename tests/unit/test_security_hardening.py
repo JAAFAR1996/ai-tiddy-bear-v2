@@ -7,6 +7,16 @@ from dataclasses import dataclass
 
 import pytest
 
+from src.infrastructure.middleware.security.headers import (
+    SecurityHeadersConfig,
+    SecurityHeadersMiddleware,
+)
+from src.infrastructure.security.rate_limiter.core import (
+    ChildSafetyRateLimiter,
+    RateLimitConfig,
+    RedisRateLimiter,
+)
+
 # Updated: hardening refactored to specialized modules
 from src.infrastructure.security.web.csrf_protection import (
     CSRFConfig,
@@ -16,18 +26,7 @@ from src.infrastructure.security.web.csrf_protection import (
 from src.infrastructure.validators.security.input_validator import (
     ComprehensiveInputValidator as InputSanitizer,
 )
-from src.infrastructure.security.rate_limiter.core import (
-    ChildSafetyRateLimiter,
-    RateLimitConfig,
-    RedisRateLimiter,
-)
-from src.infrastructure.middleware.security.headers import (
-    SecurityHeadersConfig,
-    SecurityHeadersMiddleware,
-)
-from src.infrastructure.validators.security.security_validator import (
-    SecurityValidator,
-)
+from src.infrastructure.validators.security.security_validator import SecurityValidator
 
 # Create a simple config class to match test expectations
 
@@ -37,6 +36,7 @@ class InputValidationConfig:
     max_string_length: int = 1000
     child_max_string_length: int = 500
     enable_profanity_filter: bool = True
+
 
 # Create a wrapper class to match expected interface
 
@@ -48,20 +48,11 @@ class InputSanitizer:
 
     def sanitize_string(self, text, is_child_input=False):
         # Mock the expected return format for tests
-        return {
-            "is_safe": True,
-            "sanitized": text,
-            "violations": [],
-            "warnings": []
-        }
+        return {"is_safe": True, "sanitized": text, "violations": [], "warnings": []}
 
     def sanitize_json(self, data, is_child_input=False):
         # Mock the expected return format for tests
-        return {
-            "is_safe": True,
-            "sanitized": data,
-            "violations": []
-        }
+        return {"is_safe": True, "sanitized": data, "violations": []}
 
 
 class TestRateLimiter:

@@ -117,6 +117,7 @@ class Child:
             True if the daily limit is exceeded, False otherwise.
         """
         from datetime import date as dt_date
+
         today = dt_date.today()
         today_seconds = self.daily_interaction_log.get(today, 0)
         if today_seconds > self.max_daily_interaction_time:

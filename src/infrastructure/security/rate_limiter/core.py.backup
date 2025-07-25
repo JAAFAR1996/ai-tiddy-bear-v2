@@ -190,7 +190,7 @@ class RedisRateLimiter:
 
 class ChildSafetyRateLimiter(RedisRateLimiter):
     """Child-specific rate limiter with enhanced safety features."""
-    
+
     def __init__(self, redis_client=None):
         # Configuration optimized for child safety
         child_config = RateLimitConfig(
@@ -201,7 +201,7 @@ class ChildSafetyRateLimiter(RedisRateLimiter):
             block_duration_seconds=300
         )
         super().__init__(child_config, redis_client)
-    
+
     async def is_allowed(self, identifier: str, **kwargs) -> RateLimitResult:
         """Check rate limit with child-specific safety checks."""
         result = await self.check_rate_limit(f"child_{identifier}", "child", **kwargs)
@@ -213,4 +213,3 @@ class ChildSafetyRateLimiter(RedisRateLimiter):
 def get_child_safety_limiter():
     """Get child safety rate limiter instance."""
     return ChildSafetyRateLimiter()
-

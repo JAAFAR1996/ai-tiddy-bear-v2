@@ -9,9 +9,7 @@ from typing import Any
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
 
-from src.application.use_cases.manage_child_profile import (
-    ManageChildProfileUseCase,
-)
+from src.application.use_cases.manage_child_profile import ManageChildProfileUseCase
 from src.infrastructure.di.container import container
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.pagination import (
@@ -19,15 +17,15 @@ from src.infrastructure.pagination import (
     PaginationRequest,
     PaginationService,
 )
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 
-from .models import (
-    ChildCreateRequest,
-    ChildResponse,
-    ChildUpdateRequest,
-)
+from .models import ChildCreateRequest, ChildResponse, ChildUpdateRequest
 
 logger = get_logger(__name__, component="api")
+child_safe_audit = get_child_safe_audit_logger(__name__)
 
 
 class ChildOperations:
@@ -215,7 +213,14 @@ class ChildValidationService:
             coppa_result = self.coppa_compliance_service.validate_age(request.age)
             if coppa_result.parental_consent_required:
                 # This check is now handled by the create_child method in ChildOperations
-                logger.info(f"Parental consent required for child age {request.age}")
+                child_safe_audit.log_security_event(
+                    event_type="coppa_parental_consent_required",
+                    threat_level="low",
+                    input_data="Parental consent required for child age validation",
+                    context={
+                        "age_category": "under_13" if request.age < 13 else "teen"
+                    },
+                )
         except Exception as e:
             logger.warning(f"COPPA validation error: {e}")
             # Continue with creation, let the use case handle COPPA compliance
@@ -345,7 +350,7 @@ class ChildSearchService:
                 if language and getattr(child, "language", "en") != language:
                     continue
 
-                filtered_children.append(child)
+                    logger.info("Parental consent required for child age group")
 
             # Convert to response objects
             return [

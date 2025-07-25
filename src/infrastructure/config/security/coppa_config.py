@@ -14,8 +14,6 @@ import logging
 import os
 from functools import lru_cache
 
-from fastapi import Depends
-
 # Removed circular import - use dependency injection instead
 
 
@@ -25,6 +23,7 @@ class COPPAConfig:
     def __init__(self, settings: "Settings" = None) -> None:
         if settings is None:
             from src.infrastructure.config import get_settings
+
             settings = get_settings()
         """Initializes the COPPA configuration.
 
@@ -83,12 +82,11 @@ def get_coppa_config() -> COPPAConfig:
 
 def is_coppa_enabled() -> bool:
     """Check if COPPA compliance is enabled.
-    
+
     Returns:
         True if COPPA is enabled, False otherwise.
     """
     config = get_coppa_config()
     return config.enabled
-
 
     return int(os.getenv("DATA_RETENTION_DAYS", "30"))

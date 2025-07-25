@@ -45,8 +45,10 @@ class ChaosMetricsCollector:
         experiment_id: str,
     ) -> SystemHealthSnapshot:
         """Collect system health snapshot (حقيقي: من الخدمات)."""
-        import aiohttp
         from datetime import datetime
+
+        import aiohttp
+
         services = {
             "auth_service": "http://localhost:8001/metrics",
             "user_service": "http://localhost:8002/metrics",
@@ -72,10 +74,14 @@ class ChaosMetricsCollector:
                             error_count += data.get("error_count", 0)
                             safety_violations += data.get("safety_violations", 0)
                         else:
-                            logger.error("Health check failed for %s: HTTP %s", name, resp.status)
+                            logger.error(
+                                "Health check failed for %s: HTTP %s", name, resp.status
+                            )
                 except Exception:
                     logger.exception("Exception during health check for %s", name)
-        avg_response_time = sum(response_times) / len(response_times) if response_times else 0.0
+        avg_response_time = (
+            sum(response_times) / len(response_times) if response_times else 0.0
+        )
         error_rate = error_count / total if total > 0 else 0.0
         return SystemHealthSnapshot(
             timestamp=datetime.now(),
@@ -90,8 +96,10 @@ class ChaosMetricsCollector:
 
     async def _collect_metrics(self, experiment_id: str) -> list[ChaosMetric]:
         """Collect individual service metrics (production)."""
-        import aiohttp
         from datetime import datetime
+
+        import aiohttp
+
         metrics = []
         services = {
             "auth_service": "http://localhost:8001/metrics",
@@ -116,7 +124,9 @@ class ChaosMetricsCollector:
                                 )
                             )
                         else:
-                            logger.error(f"Failed to fetch metrics from {service}: HTTP {resp.status}")
+                            logger.error(
+                                f"Failed to fetch metrics from {service}: HTTP {resp.status}"
+                            )
                             metrics.append(
                                 ChaosMetric(
                                     timestamp=datetime.now(),
@@ -124,7 +134,10 @@ class ChaosMetricsCollector:
                                     service_name=service,
                                     metric_name="cpu_usage",
                                     metric_value=None,
-                                    tags={"region": "us-east-1", "error": f"HTTP {resp.status}"},
+                                    tags={
+                                        "region": "us-east-1",
+                                        "error": f"HTTP {resp.status}",
+                                    },
                                 )
                             )
                 except Exception as e:

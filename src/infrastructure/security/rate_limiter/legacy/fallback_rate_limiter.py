@@ -9,7 +9,6 @@ logger = get_logger(__name__, component="security")
 
 
 class SlidingWindowRateLimiter:
-
     def __init__(self, default_limit: int = 100, window_seconds: int = 60) -> None:
         """Initialize rate limiter with default settings."""
         self.default_limit = default_limit

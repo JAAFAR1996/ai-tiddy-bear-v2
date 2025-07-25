@@ -1,17 +1,23 @@
 """Unified Security Service - Centralized security management."""
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="unified_security")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 @dataclass
 class SecurityConfig:
     """Configuration for unified security service."""
+
     max_login_attempts: int = 3
     lockout_duration: timedelta = timedelta(minutes=15)
     dangerous_patterns: list[str] | None = None
@@ -19,11 +25,21 @@ class SecurityConfig:
     def __post_init__(self):
         if self.dangerous_patterns is None:
             self.dangerous_patterns = [
-                "<script>", "drop table", r"exec\(",
-                "'; drop", "union select", "insert into",
-                "delete from", "update ", "exec sp_",
-                "xp_cmdshell", "javascript:", "vbscript:",
-                "<iframe", "<object", "<embed"
+                "<script>",
+                "drop table",
+                r"exec\(",
+                "'; drop",
+                "union select",
+                "insert into",
+                "delete from",
+                "update ",
+                "exec sp_",
+                "xp_cmdshell",
+                "javascript:",
+                "vbscript:",
+                "<iframe",
+                "<object",
+                "<embed",
             ]
 
 
@@ -57,7 +73,7 @@ class UnifiedSecurityService:
             "severity": "low",
             "action_taken": "none",
             "ip_address": ip_address,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
         # Check for dangerous patterns
@@ -75,12 +91,8 @@ class UnifiedSecurityService:
             critical_patterns = ["drop table", "'; drop", "union select", "exec("]
             high_patterns = ["<script>", "javascript:", "vbscript:"]
 
-            is_critical = any(
-                cp.lower() in content_lower for cp in critical_patterns
-            )
-            is_high = any(
-                hp.lower() in content_lower for hp in high_patterns
-            )
+            is_critical = any(cp.lower() in content_lower for cp in critical_patterns)
+            is_high = any(hp.lower() in content_lower for hp in high_patterns)
 
             if is_critical:
                 result["severity"] = "critical"
@@ -100,7 +112,7 @@ class UnifiedSecurityService:
             "union select",
             "insert into",
             "delete from",
-            "--"
+            "--",
         ]
 
         for pattern in sql_injection_patterns:
@@ -113,7 +125,9 @@ class UnifiedSecurityService:
                 self.blocked_ips[ip_address] = datetime.utcnow() + timedelta(hours=24)
                 break
 
-        logger.info(f"Threat analysis completed for IP {ip_address}: {result['severity']}")
+        logger.info(
+            f"Threat analysis completed for IP {ip_address}: {result['severity']}"
+        )
         return result
 
     async def validate_login_attempt(
@@ -132,7 +146,7 @@ class UnifiedSecurityService:
             "allowed": True,
             "reason": None,
             "remaining_attempts": None,
-            "block_until": None
+            "block_until": None,
         }
 
         # Check if IP is blocked
@@ -154,7 +168,8 @@ class UnifiedSecurityService:
         # Clean old attempts
         if username in self.failed_login_attempts:
             self.failed_login_attempts[username] = [
-                attempt for attempt in self.failed_login_attempts[username]
+                attempt
+                for attempt in self.failed_login_attempts[username]
                 if attempt > cutoff
             ]
 
@@ -184,7 +199,9 @@ class UnifiedSecurityService:
 
         # Auto-block after max attempts
         if len(self.failed_login_attempts[username]) >= self.config.max_login_attempts:
-            logger.warning(f"User {username} exceeded login attempts, blocking IP {ip_address}")
+            logger.warning(
+                f"User {username} exceeded login attempts, blocking IP {ip_address}"
+            )
 
     async def clear_login_failures(self, username: str) -> None:
         """Clear failed login attempts for successful login."""
@@ -211,23 +228,26 @@ class UnifiedSecurityService:
             duration = timedelta(hours=1)
 
         self.blocked_ips[ip_address] = datetime.utcnow() + duration
-        logger.warning(f"IP {ip_address} manually blocked for {duration}")
+        ip_hash = hashlib.sha256(ip_address.encode()).hexdigest()[:16]
+        child_safe_audit.log_security_event(
+            event_type="ip_manually_blocked",
+            threat_level="high",
+            input_data="IP manually blocked by administrator",
+            context={"ip_hash": ip_hash, "duration": str(duration)},
+        )
 
     async def unblock_ip(self, ip_address: str) -> None:
         """Manually unblock an IP address."""
         if ip_address in self.blocked_ips:
             del self.blocked_ips[ip_address]
-            logger.info(f"IP {ip_address} manually unblocked")
+            logger.info("IP address manually unblocked")
 
     async def get_security_status(self) -> dict[str, Any]:
         """Get current security status."""
         now = datetime.utcnow()
 
         # Clean expired blocks
-        expired_ips = [
-            ip for ip, until in self.blocked_ips.items()
-            if now >= until
-        ]
+        expired_ips = [ip for ip, until in self.blocked_ips.items() if now >= until]
         for ip in expired_ips:
             del self.blocked_ips[ip]
 
@@ -235,11 +255,13 @@ class UnifiedSecurityService:
             "blocked_ips": len(self.blocked_ips),
             "failed_login_users": len(self.failed_login_attempts),
             "total_patterns": len(self.config.dangerous_patterns),
-            "last_updated": now
+            "last_updated": now,
         }
 
 
 # Convenience function for dependency injection
-def get_unified_security_service(config: SecurityConfig = None) -> UnifiedSecurityService:
+def get_unified_security_service(
+    config: SecurityConfig = None,
+) -> UnifiedSecurityService:
     """Get unified security service instance."""
     return UnifiedSecurityService(config)

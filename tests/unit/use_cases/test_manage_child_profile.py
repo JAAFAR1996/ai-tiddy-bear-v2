@@ -4,13 +4,9 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 from application.dto.child_data import ChildData
-from application.use_cases.manage_child_profile import (
-    ManageChildProfileUseCase,
-)
+from application.use_cases.manage_child_profile import ManageChildProfileUseCase
 from domain.entities.child_profile import ChildProfile
-from infrastructure.read_models.child_profile_read_model import (
-    ChildProfileReadModel,
-)
+from infrastructure.read_models.child_profile_read_model import ChildProfileReadModel
 
 # Add src to path
 src_path = Path(__file__).parent

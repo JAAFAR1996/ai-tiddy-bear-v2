@@ -1,6 +1,7 @@
 """Convenience functions for common rate limiting scenarios."""
 
 from src.infrastructure.security.rate_limiter.core import RateLimitResult
+
 from .service import get_rate_limiter
 
 

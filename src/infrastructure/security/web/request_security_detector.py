@@ -1,6 +1,7 @@
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+
 # Re-enabled for Phase 2 - get_path_validator function now implemented
 from src.infrastructure.validators.security.path_validator import get_path_validator
 

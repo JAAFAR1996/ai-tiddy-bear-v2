@@ -4,8 +4,9 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
-from src.application.dto.ai_response import AIResponse
 from httpx import AsyncClient
+
+from src.application.dto.ai_response import AIResponse
 
 # Add src to path
 src_path = Path(__file__).parent

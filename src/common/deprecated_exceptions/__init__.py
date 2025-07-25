@@ -2,38 +2,35 @@
 All exceptions should be imported from this module.
 """
 
-# Base exceptions
-from .base_exceptions import (
-    AITeddyBaseError,
-    ErrorCategory,
+# Application exceptions
+from .application_exceptions import (
+    ApplicationException,
+    InvalidInputError,
+    ResourceNotFoundError,
+    ServiceUnavailableError,
+    StartupValidationException,
+    TimeoutError,
 )
+
+# Base exceptions
+from .base_exceptions import AITeddyBaseError, ErrorCategory
 
 # Domain exceptions
 from .domain_exceptions import (
-    DomainException,
+    AgeRestrictionException,
     ChildSafetyException,
     ConsentException,
-    AgeRestrictionException,
-)
-
-# Application exceptions  
-from .application_exceptions import (
-    ApplicationException,
-    ServiceUnavailableError,
-    InvalidInputError,
-    TimeoutError,
-    ResourceNotFoundError,
-    StartupValidationException,
+    DomainException,
 )
 
 # Infrastructure exceptions
 from .infrastructure_exceptions import (
-    InfrastructureException,
-    DatabaseConnectionError,
     ConfigurationError,
+    DatabaseConnectionError,
     ExternalServiceError,
-    SecurityError,
+    InfrastructureException,
     RateLimitExceededError,
+    SecurityError,
 )
 
 __all__ = [
@@ -42,7 +39,7 @@ __all__ = [
     "ErrorCategory",
     # Domain
     "DomainException",
-    "ChildSafetyException", 
+    "ChildSafetyException",
     "ConsentException",
     "AgeRestrictionException",
     # Application

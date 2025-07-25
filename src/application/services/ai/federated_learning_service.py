@@ -9,10 +9,7 @@ improvement of AI models in a distributed environment.
 import logging
 from typing import Any
 
-from src.application.interfaces.read_model_interfaces import (
-    IEventBus,
-    get_event_bus,
-)
+from src.application.interfaces.read_model_interfaces import IEventBus, get_event_bus
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="federated_learning_service")
@@ -52,8 +49,12 @@ class FederatedLearningService:
 
         # فحص القيم الشاذة (anomaly detection)
         weights = local_model_update.get("weights", [])
-        if not isinstance(weights, list) or not all(isinstance(w, (int, float)) for w in weights):
-            self.logger.warning("Weights must be a list of numbers. Privacy validation failed.")
+        if not isinstance(weights, list) or not all(
+            isinstance(w, (int, float)) for w in weights
+        ):
+            self.logger.warning(
+                "Weights must be a list of numbers. Privacy validation failed."
+            )
             return False
         if any(abs(w) > 10.0 for w in weights):
             self.logger.warning(
@@ -63,13 +64,17 @@ class FederatedLearningService:
 
         # Differential privacy budget check (مثال بسيط)
         if local_model_update.get("dp_budget", 1.0) < 0.1:
-            self.logger.warning("Differential privacy budget exhausted. Validation failed.")
+            self.logger.warning(
+                "Differential privacy budget exhausted. Validation failed."
+            )
             return False
 
         # تحقق من عدم وجود بيانات تعريفية أو حساسة
         for key in ["user_id", "raw_data", "email"]:
             if key in local_model_update:
-                self.logger.warning(f"Sensitive key '{key}' found in model update. Validation failed.")
+                self.logger.warning(
+                    f"Sensitive key '{key}' found in model update. Validation failed."
+                )
                 return False
 
         self.logger.debug("Model update passed all privacy validations.")
@@ -81,11 +86,16 @@ class FederatedLearningService:
         try:
             # مثال: تحميل نموذج فعلي من ملف أو قاعدة بيانات أو خدمة ML
             import joblib
+
             model = joblib.load("/models/global_federated_model.joblib")
-            self.logger.info("Loaded global model from /models/global_federated_model.joblib")
+            self.logger.info(
+                "Loaded global model from /models/global_federated_model.joblib"
+            )
             return model
         except Exception as e:
-            self.logger.warning(f"Could not load global model from file: {e}. Initializing default model.")
+            self.logger.warning(
+                f"Could not load global model from file: {e}. Initializing default model."
+            )
             # تهيئة نموذج افتراضي إنتاجي (مثال: أوزان صفرية)
             return {"weights": [0.0 for _ in range(10)], "bias": 0.0, "dp_budget": 1.0}
 

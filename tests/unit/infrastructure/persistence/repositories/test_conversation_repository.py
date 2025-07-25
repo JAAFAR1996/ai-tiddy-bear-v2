@@ -9,14 +9,14 @@ from uuid import uuid4
 
 import pytest
 
-from src.infrastructure.persistence.database_manager import Database
-from src.domain.models.conversation_models import (
-    ConversationModel,
-)
 from src.infrastructure.persistence.conversation_repository import (
     AsyncSQLAlchemyConversationRepo as ConversationRepository,
 )
-from src.infrastructure.validators.security.database_input_validator import SecurityError
+from src.infrastructure.persistence.database_manager import Database
+from src.infrastructure.persistence.models.conversation_models import ConversationModel
+from src.infrastructure.validators.security.database_input_validator import (
+    SecurityError,
+)
 
 
 @pytest.fixture

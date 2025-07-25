@@ -1,4 +1,5 @@
 from pydantic import field_validator
+
 """Defines secure configuration settings for the AI Teddy Bear project.
 
 This module provides critical security-related settings, including JWT

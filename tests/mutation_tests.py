@@ -357,9 +357,7 @@ class MutationTestingFramework:
             recommendations.append("🔴 معدل قتل الطفرات منخفض - تحتاج اختبارات إضافية")
 
         if overall_results["survived_mutations"] > 0:
-            recommendations.append(
-                "🟡 بعض الطفرات نجت - راجع الاختبارات للحالات الحدية"
-            )
+            recommendations.append("🟡 بعض الطفرات نجت - راجع الاختبارات للحالات الحدية")
 
         for file_path, suite in self.test_suites.items():
             if suite.mutation_score < 70:

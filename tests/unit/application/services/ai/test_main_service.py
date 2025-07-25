@@ -171,9 +171,9 @@ class TestAITeddyBearService:
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[0].category_scores = (
-            Mock()
-        )
+        service.client.moderations.create.return_value.results[
+            0
+        ].category_scores = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
@@ -224,9 +224,9 @@ class TestAITeddyBearService:
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[0].category_scores = (
-            Mock()
-        )
+        service.client.moderations.create.return_value.results[
+            0
+        ].category_scores = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
@@ -499,9 +499,9 @@ class TestAITeddyBearService:
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[0].category_scores = (
-            Mock()
-        )
+        service.client.moderations.create.return_value.results[
+            0
+        ].category_scores = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}
@@ -552,9 +552,9 @@ class TestAITeddyBearService:
         service.client.moderations.create.return_value.results[
             0
         ].categories.model_dump.return_value = {}
-        service.client.moderations.create.return_value.results[0].category_scores = (
-            Mock()
-        )
+        service.client.moderations.create.return_value.results[
+            0
+        ].category_scores = Mock()
         service.client.moderations.create.return_value.results[
             0
         ].category_scores.model_dump.return_value = {}

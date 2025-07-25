@@ -257,12 +257,19 @@ OPENAPI_BEARER_DESCRIPTION = (
 )
 
 # Missing constants
-SENSITIVE_LOG_INTERACTION_KEYS = ['password', 'token', 'secret', 'api_key', 'auth']
+SENSITIVE_LOG_INTERACTION_KEYS = ["password", "token", "secret", "api_key", "auth"]
 
 # Missing Constants
-SENSITIVE_LOG_INTERACTION_KEYS = ['password', 'token', 'secret', 'api_key', 'auth', 'ssn']
+SENSITIVE_LOG_INTERACTION_KEYS = [
+    "password",
+    "token",
+    "secret",
+    "api_key",
+    "auth",
+    "ssn",
+]
 
-# API Tags 
+# API Tags
 API_TAG_AUTH = "Authentication"
 API_TAG_CHATGPT = "ChatGPT"
 API_TAG_DASHBOARD = "Dashboard"
@@ -270,7 +277,7 @@ API_TAG_ESP32 = "ESP32"
 API_TAG_HEALTH = "Health"
 
 # Missing Constants
-SENSITIVE_LOG_INTERACTION_KEYS = ['password', 'token', 'secret', 'api_key', 'auth']
+SENSITIVE_LOG_INTERACTION_KEYS = ["password", "token", "secret", "api_key", "auth"]
 
 # API Tags
 API_TAG_AUTH = "Authentication"

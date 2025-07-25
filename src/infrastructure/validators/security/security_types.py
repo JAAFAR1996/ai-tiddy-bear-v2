@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
 
 class ThreatSeverity(str):
     CRITICAL = "critical"
@@ -8,6 +9,7 @@ class ThreatSeverity(str):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
+
 
 @dataclass
 class SecurityThreat:
@@ -23,6 +25,7 @@ class SecurityThreat:
             f"[{self.severity.upper()}] {self.threat_type} in {self.field_name} "
             f"value={self.value!r}: {self.description}"
         )
+
 
 @dataclass
 class InputValidationResult:
@@ -61,6 +64,7 @@ class InputValidationResult:
         if "low" in severities:
             return "low"
         return "none"
+
 
 # Shortcuts for backward compatibility if needed
 ValidationResult = InputValidationResult

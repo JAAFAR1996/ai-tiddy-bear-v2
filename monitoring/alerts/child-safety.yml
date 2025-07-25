@@ -274,5 +274,3 @@ groups:
           summary: "AI responses are too slow"
           description: "95th percentile AI response time is {{ $value }} seconds"
           action: "Check AI service performance and consider optimization"
-
- 

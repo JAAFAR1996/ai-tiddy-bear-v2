@@ -1,17 +1,14 @@
 import os
 import tempfile
-from datetime import datetime, timedelta
-from unittest.mock import Mock
-from enum import Enum
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, Optional
+from unittest.mock import Mock
 
 import pytest
 
-from src.domain.entities.conversation import (
-    Conversation,
-    InteractionType,
-)
+from src.domain.entities.conversation import Conversation, InteractionType
 from src.infrastructure.persistence.conversation_sqlite_repository import (
     ConversationSQLiteRepository,
 )
@@ -20,12 +17,14 @@ from src.infrastructure.persistence.conversation_sqlite_repository import (
 # Mock classes for testing (since they don't exist in actual conversation entity)
 class MessageRole(Enum):
     """Mock MessageRole enum for testing"""
+
     USER = "user"
     ASSISTANT = "assistant"
 
 
 class ContentType(Enum):
     """Mock ContentType enum for testing"""
+
     TEXT = "text"
     VOICE = "voice"
 
@@ -33,6 +32,7 @@ class ContentType(Enum):
 @dataclass
 class Message:
     """Mock Message class for testing"""
+
     id: str
     role: MessageRole
     content: str
@@ -47,6 +47,7 @@ class Message:
 @dataclass
 class EmotionalState:
     """Mock EmotionalState class for testing"""
+
     emotion: str
     confidence: float
     timestamp: datetime

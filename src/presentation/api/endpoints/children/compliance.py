@@ -1,28 +1,39 @@
 """Children compliance endpoints with COPPA support."""
-from datetime import datetime
-from typing import List, Optional
-from enum import Enum
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import hashlib
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import List
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
-from src.infrastructure.validators.security.coppa_validator import (
-    COPPAValidator,
-    coppa_validator,
-)
-from src.infrastructure.config.settings import Settings, get_settings
-from src.infrastructure.security.child_safety import COPPAConsentManager, get_consent_manager
-from src.infrastructure.persistence.services.consent_service import ConsentDatabaseService
-from src.infrastructure.persistence.services.retention_service import DataRetentionService
 from src.domain.models.consent_models_domain import ConsentType
+from src.infrastructure.config.settings import Settings, get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.persistence.services.consent_service import (
+    ConsentDatabaseService,
+)
+from src.infrastructure.persistence.services.retention_service import (
+    DataRetentionService,
+)
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
+from src.infrastructure.security.child_safety import (
+    COPPAConsentManager,
+    get_consent_manager,
+)
+from src.infrastructure.validators.security.coppa_validator import COPPAValidator
 
 logger = get_logger(__name__)
+child_safe_audit = get_child_safe_audit_logger()
 
 
 # Enums for compliance
 class ComplianceLevel(Enum):
     """COPPA compliance levels."""
+
     UNDER_13 = "under_13"
     OVER_13 = "over_13"
     TEEN = "teen"
@@ -40,6 +51,7 @@ class ComplianceLevel(Enum):
 
 class DataType(Enum):
     """Types of data that can be collected."""
+
     VOICE_INTERACTIONS = "voice_interactions"
     PREFERENCES = "preferences"
     LOCATION = "location"
@@ -50,6 +62,7 @@ class DataType(Enum):
 # Request/Response Models
 class ConsentRequest(BaseModel):
     """Parental consent request model."""
+
     child_id: str = Field(..., description="Child identifier")
     parent_id: str = Field(..., description="Parent identifier")
     data_types: List[str] = Field(..., description="Data types requiring consent")
@@ -57,6 +70,7 @@ class ConsentRequest(BaseModel):
 
 class ConsentResponse(BaseModel):
     """Consent response model."""
+
     consent_id: str
     status: str
     expires_at: datetime
@@ -74,7 +88,7 @@ class ComplianceValidator:
         return {
             "compliant": True,
             "requires_consent": age < 13,
-            "compliance_level": str(ComplianceLevel.from_age(age))
+            "compliance_level": str(ComplianceLevel.from_age(age)),
         }
 
     def validate_data_collection(self, data_types: List[str], child_age: int) -> dict:
@@ -86,14 +100,10 @@ class ComplianceValidator:
             return {
                 "compliant": len(disallowed) == 0,
                 "allowed_types": allowed,
-                "disallowed_types": disallowed
+                "disallowed_types": disallowed,
             }
 
-        return {
-            "compliant": True,
-            "allowed_types": data_types,
-            "disallowed_types": []
-        }
+        return {"compliant": True, "allowed_types": data_types, "disallowed_types": []}
 
 
 class LocalRetentionManager:
@@ -101,20 +111,26 @@ class LocalRetentionManager:
 
     def __init__(self, coppa_service: COPPAValidator):
         self.coppa = coppa_service
-        from src.infrastructure.persistence.database.initializer import get_database_config
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
+        from src.infrastructure.persistence.database.initializer import (
+            get_database_config,
+        )
 
         # Initialize database connection
         config = get_database_config()
         self.engine = create_engine(config.connection_string)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
-    async def schedule_data_deletion(self, child_id: str, deletion_date: datetime) -> bool:
+    async def schedule_data_deletion(
+        self, child_id: str, deletion_date: datetime
+    ) -> bool:
         """Schedule data deletion according to retention policy with real database integration."""
         try:
-            from src.domain.models.child_models import ChildModel
             from sqlalchemy import text
+
+            from src.infrastructure.persistence.models.child_models import ChildModel
 
             session = self.SessionLocal()
             try:
@@ -125,47 +141,53 @@ class LocalRetentionManager:
                     return False
 
                 # Schedule deletion by updating data_retention_expires field
-                update_query = text("""
-                    UPDATE children 
+                update_query = text(
+                    """
+                    UPDATE children
                     SET data_retention_expires = :deletion_date,
                         updated_at = NOW()
                     WHERE id = :child_id
-                """)
+                """
+                )
 
-                result = session.execute(update_query, {
-                    "deletion_date": deletion_date,
-                    "child_id": child_id
-                })
+                result = session.execute(
+                    update_query, {"deletion_date": deletion_date, "child_id": child_id}
+                )
 
                 session.commit()
 
                 # Log the scheduling for audit trail
-                audit_query = text("""
+                audit_query = text(
+                    """
                     INSERT INTO audit_logs (
                         table_name, operation, new_data, user_id, timestamp, child_id
                     ) VALUES (
-                        'children', 'DATA_DELETION_SCHEDULED', 
+                        'children', 'DATA_DELETION_SCHEDULED',
                         :audit_data, 'system', NOW(), :child_id
                     )
-                """)
+                """
+                )
 
                 audit_data = {
                     "scheduled_deletion_date": deletion_date.isoformat(),
-                    "reason": "data_retention_policy"
+                    "reason": "data_retention_policy",
                 }
 
-                session.execute(audit_query, {
-                    "audit_data": str(audit_data),
-                    "child_id": child_id
-                })
+                session.execute(
+                    audit_query, {"audit_data": str(audit_data), "child_id": child_id}
+                )
 
                 session.commit()
-                logger.info(f"Data deletion scheduled for child {child_id} on {deletion_date}")
+                logger.info(
+                    f"Data deletion scheduled for child {child_id} on {deletion_date}"
+                )
                 return True
 
             except Exception as e:
                 session.rollback()
-                logger.error(f"Failed to schedule data deletion for child {child_id}: {e}")
+                logger.error(
+                    f"Failed to schedule data deletion for child {child_id}: {e}"
+                )
                 return False
             finally:
                 session.close()
@@ -177,22 +199,23 @@ class LocalRetentionManager:
     async def check_retention_compliance(self, child_id: str) -> dict:
         """Check if data retention is compliant with real database validation."""
         try:
-            from src.domain.models.child_models import ChildModel
             from sqlalchemy import text
 
             session = self.SessionLocal()
             try:
                 # Get child with retention information
-                query = text("""
-                    SELECT 
+                query = text(
+                    """
+                    SELECT
                         id,
                         created_at,
                         data_retention_expires,
                         EXTRACT(days FROM (data_retention_expires - NOW())) as days_until_deletion,
                         EXTRACT(days FROM (NOW() - created_at)) as data_age_days
-                    FROM children 
+                    FROM children
                     WHERE id = :child_id
-                """)
+                """
+                )
 
                 result = session.execute(query, {"child_id": child_id}).first()
 
@@ -202,12 +225,14 @@ class LocalRetentionManager:
                         "compliant": False,
                         "error": "Child not found",
                         "retention_days": 0,
-                        "next_review": datetime.now()
+                        "next_review": datetime.now(),
                     }
 
                 # Check COPPA retention rules
                 data_age_days = int(result.data_age_days) if result.data_age_days else 0
-                days_until_deletion = int(result.days_until_deletion) if result.days_until_deletion else 0
+                days_until_deletion = (
+                    int(result.days_until_deletion) if result.days_until_deletion else 0
+                )
                 retention_expires = result.data_retention_expires
 
                 # COPPA compliance: data should not be kept longer than necessary
@@ -233,28 +258,32 @@ class LocalRetentionManager:
                     "days_until_deletion": days_until_deletion,
                     "retention_expires": retention_expires,
                     "next_review": datetime.now() + timedelta(days=7),
-                    "child_id": child_id
+                    "child_id": child_id,
                 }
 
             except Exception as e:
                 session.rollback()
-                logger.error(f"Failed to check retention compliance for child {child_id}: {e}")
+                logger.error(
+                    f"Failed to check retention compliance for child {child_id}: {e}"
+                )
                 return {
                     "compliant": False,
                     "error": str(e),
                     "retention_days": 0,
-                    "next_review": datetime.now()
+                    "next_review": datetime.now(),
                 }
             finally:
                 session.close()
 
         except Exception as e:
-            logger.error(f"Database connection error in check_retention_compliance: {e}")
+            logger.error(
+                f"Database connection error in check_retention_compliance: {e}"
+            )
             return {
                 "compliant": False,
                 "error": "Database connection failed",
                 "retention_days": 0,
-                "next_review": datetime.now()
+                "next_review": datetime.now(),
             }
 
 
@@ -264,13 +293,18 @@ class ParentalConsentManager:
     def __init__(self, coppa_service: COPPAValidator):
         self.coppa = coppa_service
 
-    async def create_consent_record(self, child_id: str, parent_id: str, data_types: list[str]) -> str:
+    async def create_consent_record(
+        self, child_id: str, parent_id: str, data_types: list[str]
+    ) -> str:
         """Create a real consent record in the database."""
         try:
             # Import database dependencies
-            from src.infrastructure.persistence.database.initializer import get_database_config
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
+
+            from src.infrastructure.persistence.database.initializer import (
+                get_database_config,
+            )
 
             # Get database connection
             config = get_database_config()
@@ -284,10 +318,12 @@ class ParentalConsentManager:
                     child_id=child_id,
                     parent_id=parent_id,
                     data_types=data_types,
-                    consent_type=ConsentType.EXPLICIT
+                    consent_type=ConsentType.EXPLICIT,
                 )
 
-                logger.info(f"Created consent record {consent_id} for child {child_id}, parent {parent_id}")
+                logger.info(
+                    f"Created consent record {consent_id} for child {child_id}, parent {parent_id}"
+                )
                 return consent_id
 
         except Exception as e:
@@ -300,7 +336,7 @@ class ParentalConsentManager:
 
 # Dependency injection
 def get_compliance_validator(
-    settings: Settings = Depends(get_settings)
+    settings: Settings = Depends(get_settings),
 ) -> ComplianceValidator:
     """Get compliance validator instance."""
     return ComplianceValidator(settings)
@@ -316,26 +352,21 @@ PrivacyProtectionRouter = APIRouter(prefix="/privacy", tags=["Privacy Protection
 @COPPAComplianceRouter.post("/consent", response_model=ConsentResponse)
 async def request_consent(
     request: ConsentRequest,
-    consent_manager: COPPAConsentManager = Depends(get_consent_manager)
+    consent_manager: COPPAConsentManager = Depends(get_consent_manager),
 ) -> ConsentResponse:
     """Request parental consent for data collection."""
     consent_id = await consent_manager.create_consent_record(
-        request.child_id,
-        request.parent_id,
-        request.data_types
+        request.child_id, request.parent_id, request.data_types
     )
 
     return ConsentResponse(
-        consent_id=consent_id,
-        status="pending",
-        expires_at=datetime.now()
+        consent_id=consent_id, status="pending", expires_at=datetime.now()
     )
 
 
 @COPPAComplianceRouter.get("/compliance/age/{age}")
 async def check_age_compliance(
-    age: int,
-    validator: ComplianceValidator = Depends(get_compliance_validator)
+    age: int, validator: ComplianceValidator = Depends(get_compliance_validator)
 ) -> dict:
     """Check compliance requirements for given age."""
     return validator.validate_age_compliance(age)
@@ -373,12 +404,14 @@ class COPPAIntegration:
             Validation result with compliance status and requirements
         """
         age_compliance = self.compliance_validator.validate_age_compliance(age)
-        data_compliance = self.compliance_validator.validate_data_collection(data_types, age)
+        data_compliance = self.compliance_validator.validate_data_collection(
+            data_types, age
+        )
 
         return {
             "age_compliance": age_compliance,
             "data_compliance": data_compliance,
-            "allowed_data_types": data_compliance.get("allowed_types", [])
+            "allowed_data_types": data_compliance.get("allowed_types", []),
         }
 
     def get_compliance_requirements(self, age: int) -> dict:
@@ -396,7 +429,7 @@ class COPPAIntegration:
             "compliance_level": validation_result.compliance_level.value,
             "parental_consent_required": validation_result.parental_consent_required,
             "data_retention_days": validation_result.data_retention_days,
-            "special_protections": validation_result.special_protections
+            "special_protections": validation_result.special_protections,
         }
 
 
@@ -405,9 +438,12 @@ async def handle_compliant_child_deletion(child_id: str, user_id: str) -> dict:
     """Handle COPPA-compliant child profile deletion with real database operations."""
     try:
         # Import database dependencies
-        from src.infrastructure.persistence.database.initializer import get_database_config
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
+        from src.infrastructure.persistence.database.initializer import (
+            get_database_config,
+        )
 
         # Get database connection
         config = get_database_config()
@@ -420,23 +456,27 @@ async def handle_compliant_child_deletion(child_id: str, user_id: str) -> dict:
             deletion_result = await retention_service.execute_data_deletion(child_id)
 
             if deletion_result.get("success", False):
-                logger.info(f"Successfully deleted child data: {child_id} by user {user_id}")
+                logger.info(
+                    f"Successfully deleted child data: {child_id} by user {user_id}"
+                )
                 return {
                     "status": "deleted",
                     "child_id": child_id,
                     "deleted_by": user_id,
-                    "deletion_summary": deletion_result
+                    "deletion_summary": deletion_result,
                 }
             else:
                 logger.error(f"Failed to delete child data: {child_id}")
                 return {
                     "status": "error",
                     "child_id": child_id,
-                    "error": deletion_result.get("error", "Unknown error")
+                    "error": deletion_result.get("error", "Unknown error"),
                 }
 
     except Exception as e:
-        logger.exception(f"Error in handle_compliant_child_deletion for child {child_id}")
+        logger.exception(
+            f"Error in handle_compliant_child_deletion for child {child_id}"
+        )
         return {"status": "error", "child_id": child_id, "error": str(e)}
 
 
@@ -444,9 +484,12 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
     """Request parental consent for child data collection with real email/notification."""
     try:
         # Import database dependencies
-        from src.infrastructure.persistence.database.initializer import get_database_config
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
+        from src.infrastructure.persistence.database.initializer import (
+            get_database_config,
+        )
 
         # Get database connection
         config = get_database_config()
@@ -455,26 +498,75 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
 
         # Find parent by email and create consent request
         with SessionLocal() as session:
-            # For now, create a consent record with pending status
-            # In production, this would trigger email/SMS notification
-            consent_service = ConsentDatabaseService(session)
-
-            # Create a pending consent record (parent_id would be looked up by email)
-            # For now, use email as parent identifier until parent lookup is implemented
-            consent_id = await consent_service.create_consent_record(
-                child_id=child_id,
-                parent_id=parent_email,  # TODO: Look up actual parent ID by email
-                data_types=["voice_interactions", "preferences"],
-                consent_type=ConsentType.EXPLICIT
+            # Import required repository for parent lookup
+            from src.infrastructure.persistence.database_manager import Database
+            from src.infrastructure.persistence.repositories.user_repository import (
+                UserRepository,
             )
 
-            logger.info(f"Created consent request {consent_id} for child {child_id}, parent {parent_email}")
+            # Initialize user repository for parent lookup
+            database = Database()
+            user_repository = UserRepository(database)
+
+            # Look up actual parent ID by email
+            parent_user = await user_repository.get_user_by_email(parent_email)
+            if not parent_user:
+                email_hash = hashlib.sha256(parent_email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="parent_not_found",
+                    threat_level="medium",
+                    input_data="Parent lookup failed - not found",
+                    context={"email_hash": email_hash, "child_id": child_id},
+                )
+                return {
+                    "status": "error",
+                    "child_id": child_id,
+                    "parent_email": parent_email,
+                    "error": f"No parent account found for email: {parent_email}",
+                    "next_steps": "Parent must create an account first",
+                }
+
+            # Verify parent account is active
+            if not parent_user.get("role") in ["parent", "guardian"]:
+                email_hash = hashlib.sha256(parent_email.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="invalid_parent_role",
+                    threat_level="medium",
+                    input_data="Parent account has invalid role",
+                    context={
+                        "email_hash": email_hash,
+                        "role": parent_user.get("role"),
+                        "child_id": child_id,
+                    },
+                )
+                return {
+                    "status": "error",
+                    "child_id": child_id,
+                    "parent_email": parent_email,
+                    "error": "Account is not registered as a parent or guardian",
+                }
+
+            parent_id = parent_user["id"]
+            logger.info("Found parent ID for registered email address")
+
+            # Create consent record with actual parent ID
+            consent_service = ConsentDatabaseService(session)
+            consent_id = await consent_service.create_consent_record(
+                child_id=child_id,
+                parent_id=parent_id,  # Now using actual parent ID from database lookup
+                data_types=["voice_interactions", "preferences"],
+                consent_type=ConsentType.EXPLICIT,
+            )
+
+            logger.info(
+                f"Created consent request {consent_id} for child {child_id}, parent {parent_email}"
+            )
             return {
                 "status": "consent_requested",
                 "child_id": child_id,
                 "parent_email": parent_email,
                 "consent_id": consent_id,
-                "next_steps": "Parent will receive notification to approve consent"
+                "next_steps": "Parent will receive notification to approve consent",
             }
 
     except Exception as e:
@@ -483,7 +575,7 @@ async def request_parental_consent(child_id: str, parent_email: str) -> dict:
             "status": "error",
             "child_id": child_id,
             "parent_email": parent_email,
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -492,6 +584,7 @@ async def validate_child_creation_compliance(age: int, data_types: list) -> dict
     try:
         # Use real compliance validator
         from src.infrastructure.config.settings import get_settings
+
         settings = get_settings()
         validator = ComplianceValidator(settings)
 
@@ -502,9 +595,8 @@ async def validate_child_creation_compliance(age: int, data_types: list) -> dict
         data_validation = validator.validate_data_collection(data_types, age)
 
         # Combine validations
-        is_compliant = (
-            age_validation.get("compliant", False)
-            and data_validation.get("compliant", False)
+        is_compliant = age_validation.get("compliant", False) and data_validation.get(
+            "compliant", False
         )
 
         result = {
@@ -514,10 +606,12 @@ async def validate_child_creation_compliance(age: int, data_types: list) -> dict
             "data_validation": data_validation,
             "requires_parental_consent": age < 13,
             "allowed_data_types": data_validation.get("allowed_types", []),
-            "disallowed_data_types": data_validation.get("disallowed_types", [])
+            "disallowed_data_types": data_validation.get("disallowed_types", []),
         }
 
-        logger.info(f"Child creation compliance validation: age={age}, compliant={is_compliant}")
+        logger.info(
+            f"Child creation compliance validation: age={age}, compliant={is_compliant}"
+        )
         return result
 
     except Exception as e:
@@ -526,7 +620,7 @@ async def validate_child_creation_compliance(age: int, data_types: list) -> dict
             "compliant": False,
             "age": age,
             "error": str(e),
-            "requires_parental_consent": True
+            "requires_parental_consent": True,
         }
 
 
@@ -534,9 +628,12 @@ async def validate_data_access_permission(child_id: str, requester_id: str) -> b
     """Validate data access permission using real consent database verification."""
     try:
         # Import database dependencies
-        from src.infrastructure.persistence.database.initializer import get_database_config
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
+        from src.infrastructure.persistence.database.initializer import (
+            get_database_config,
+        )
 
         # Get database connection
         config = get_database_config()
@@ -547,18 +644,22 @@ async def validate_data_access_permission(child_id: str, requester_id: str) -> b
         with SessionLocal() as session:
             consent_service = ConsentDatabaseService(session)
             has_consent = await consent_service.verify_parental_consent(
-                parent_id=requester_id,
-                child_id=child_id,
-                consent_type="data_access"
+                parent_id=requester_id, child_id=child_id, consent_type="data_access"
             )
 
             if not has_consent:
-                logger.warning(f"Unauthorized data access attempt: child_id={child_id}, requester_id={requester_id}")
+                logger.warning(
+                    f"Unauthorized data access attempt: child_id={child_id}, requester_id={requester_id}"
+                )
             else:
-                logger.info(f"Data access authorized: child_id={child_id}, requester_id={requester_id}")
+                logger.info(
+                    f"Data access authorized: child_id={child_id}, requester_id={requester_id}"
+                )
 
             return has_consent
 
     except Exception as e:
-        logger.exception(f"Error validating data access permission for child {child_id}")
+        logger.exception(
+            f"Error validating data access permission for child {child_id}"
+        )
         return False

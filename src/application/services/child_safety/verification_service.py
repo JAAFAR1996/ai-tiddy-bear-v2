@@ -8,13 +8,12 @@ import secrets
 from datetime import datetime
 from typing import Any
 
-from src.infrastructure.logging_config import get_logger
-
 from src.domain.models.consent_models_domain import (
     VerificationAttempt,
     VerificationMethod,
     VerificationStatus,
 )
+from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="services")
 
@@ -45,7 +44,7 @@ class VerificationService:
         masked_email = (
             email[:2] + "***@" + email.split("@")[1] if "@" in email else "***"
         )
-        logger.info(f"Email verification code sent to {masked_email}: [REDACTED]")
+        logger.info("Email verification code sent to masked email address: [REDACTED]")
         # Store verification attempt
         self.verification_attempts[attempt_id] = VerificationAttempt(
             attempt_id=attempt_id,
@@ -76,7 +75,7 @@ class VerificationService:
         verification_code = self._generate_verification_code()
         attempt_id = f"sms_{consent_id}_{secrets.token_urlsafe(8)}"
         masked_phone = phone[:3] + "***" + phone[-2:] if len(phone) > 5 else "***"
-        logger.info(f"SMS verification code sent to {masked_phone}: [REDACTED]")
+        logger.info("SMS verification code sent to masked phone number: [REDACTED]")
         self.verification_attempts[attempt_id] = VerificationAttempt(
             attempt_id=attempt_id,
             consent_id=consent_id,

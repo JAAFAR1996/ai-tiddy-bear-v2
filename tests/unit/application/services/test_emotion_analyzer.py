@@ -4,10 +4,7 @@ Testing emotion analysis from text and multimodal inputs.
 
 import pytest
 
-from src.application.services.emotion_analyzer import (
-    EmotionAnalyzer,
-    EmotionResult,
-)
+from src.application.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 
 
 class TestEmotionAnalyzer:

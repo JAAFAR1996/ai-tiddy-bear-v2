@@ -8,10 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.infrastructure.monitoring import (
-    AlertSeverity,
-    monitoring_service,
-)
+from src.infrastructure.monitoring import AlertSeverity, monitoring_service
 from src.infrastructure.pagination import (
     PaginationRequest,
     PaginationService,

@@ -24,7 +24,9 @@ SET log_min_duration_statement = 1000;  -- Log queries taking >1s
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'ai_teddy_app') THEN
-        CREATE ROLE ai_teddy_app WITH LOGIN PASSWORD 'secure_app_password_change_me';
+        -- SECURITY: Password must be set via environment variable
+        -- DO NOT use default passwords in production
+        CREATE ROLE ai_teddy_app WITH LOGIN PASSWORD :'AI_TEDDY_DB_PASSWORD';
     END IF;
 END
 $$;
@@ -41,23 +43,23 @@ RETURNS TRIGGER AS $$
 BEGIN
     -- Insert audit record for child data modifications
     INSERT INTO audit_logs (
-        table_name, 
-        operation, 
-        old_data, 
-        new_data, 
-        user_id, 
-        timestamp, 
+        table_name,
+        operation,
+        old_data,
+        new_data,
+        user_id,
+        timestamp,
         child_id,
         ip_address,
         user_agent
     ) VALUES (
-        TG_TABLE_NAME, 
-        TG_OP, 
+        TG_TABLE_NAME,
+        TG_OP,
         CASE WHEN TG_OP = 'DELETE' OR TG_OP = 'UPDATE' THEN row_to_json(OLD) ELSE NULL END,
         CASE WHEN TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN row_to_json(NEW) ELSE NULL END,
         COALESCE(current_setting('app.current_user_id', true), 'system'),
         NOW(),
-        CASE 
+        CASE
             WHEN TG_TABLE_NAME = 'children' THEN COALESCE(NEW.id, OLD.id)
             WHEN TG_TABLE_NAME = 'conversations' THEN COALESCE(NEW.child_id, OLD.child_id)
             ELSE NULL
@@ -65,7 +67,7 @@ BEGIN
         current_setting('app.client_ip', true),
         current_setting('app.user_agent', true)
     );
-    
+
     RETURN COALESCE(NEW, OLD);
 END;
 $$ LANGUAGE plpgsql;
@@ -80,24 +82,24 @@ BEGIN
     IF TG_TABLE_NAME = 'children' AND NEW.age > 13 THEN
         RAISE EXCEPTION 'Child age cannot exceed 13 years (COPPA compliance)';
     END IF;
-    
+
     -- Encrypt sensitive child data before storage
     IF TG_TABLE_NAME = 'children' AND TG_OP IN ('INSERT', 'UPDATE') THEN
         -- Encrypt sensitive fields
         IF NEW.medical_notes IS NOT NULL THEN
             NEW.medical_notes := pgp_sym_encrypt(NEW.medical_notes, current_setting('app.encryption_key', false));
         END IF;
-        
+
         IF NEW.emergency_contacts IS NOT NULL THEN
             NEW.emergency_contacts := pgp_sym_encrypt(NEW.emergency_contacts::text, current_setting('app.encryption_key', false));
         END IF;
     END IF;
-    
+
     -- Set data retention expiry (90 days from creation)
     IF TG_OP = 'INSERT' THEN
         NEW.data_retention_expires := NEW.created_at + INTERVAL '90 days';
     END IF;
-    
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -113,25 +115,25 @@ DECLARE
 BEGIN
     -- Log cleanup operation
     INSERT INTO audit_logs (
-        table_name, operation, user_id, timestamp, 
+        table_name, operation, user_id, timestamp,
         new_data
     ) VALUES (
         'system_cleanup', 'DATA_RETENTION_CLEANUP', 'system', NOW(),
         json_build_object('cleanup_started', NOW())
     );
-    
+
     -- Delete expired child records
-    FOR expired_record IN 
-        SELECT id FROM children 
+    FOR expired_record IN
+        SELECT id FROM children
         WHERE data_retention_expires < NOW()
     LOOP
         -- Secure deletion of child data
         DELETE FROM conversations WHERE child_id = expired_record.id;
         DELETE FROM safety_events WHERE child_id = expired_record.id;
         DELETE FROM children WHERE id = expired_record.id;
-        
+
         deleted_count := deleted_count + 1;
-        
+
         -- Log each deletion for COPPA compliance
         INSERT INTO audit_logs (
             table_name, operation, user_id, timestamp,
@@ -141,7 +143,7 @@ BEGIN
             json_build_object('child_id', expired_record.id, 'reason', 'data_retention_expired')
         );
     END LOOP;
-    
+
     -- Log completion
     INSERT INTO audit_logs (
         table_name, operation, user_id, timestamp,
@@ -150,7 +152,7 @@ BEGIN
         'system_cleanup', 'DATA_RETENTION_CLEANUP_COMPLETE', 'system', NOW(),
         json_build_object('records_deleted', deleted_count, 'cleanup_completed', NOW())
     );
-    
+
     RETURN deleted_count;
 END;
 $$ LANGUAGE plpgsql;
@@ -163,7 +165,7 @@ RETURNS BOOLEAN AS $$
 BEGIN
     -- Verify parent owns the child record
     RETURN EXISTS (
-        SELECT 1 FROM children 
+        SELECT 1 FROM children
         WHERE id = child_id AND parent_id = validate_child_access.parent_id
     );
 END;
@@ -215,7 +217,7 @@ $$ LANGUAGE plpgsql;
 -- CREATE POLICY conversation_access ON conversations
 --     FOR ALL TO ai_teddy_app
 --     USING (child_id IN (
---         SELECT id FROM children 
+--         SELECT id FROM children
 --         WHERE parent_id = current_setting('app.current_user_id')::uuid
 --     ));
 
@@ -263,13 +265,14 @@ SELECT pg_reload_conf();
 -- Initial Data Setup
 -- ================================
 -- Create system user for automated operations
+-- SECURITY: System password must be set via environment variable
 INSERT INTO users (
-    id, email, password_hash, role, is_active, 
+    id, email, password_hash, role, is_active,
     email_verified, created_at
 ) VALUES (
     gen_random_uuid(),
     'system@aiteddy.internal',
-    crypt('system_password_change_me', gen_salt('bf', 14)),
+    crypt(:'SYSTEM_USER_PASSWORD', gen_salt('bf', 14)),
     'system',
     true,
     true,

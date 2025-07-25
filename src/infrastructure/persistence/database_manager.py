@@ -1,17 +1,14 @@
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.exc import DatabaseError, DataError, IntegrityError
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
-from sqlalchemy.orm import declarative_base
-from src.domain.models.models_infra import Base
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from src.infrastructure.logging_config import get_logger
 from src.infrastructure.persistence.database.config import DatabaseConfig
+from src.infrastructure.persistence.models.base import Base
 from src.infrastructure.validators.data.database_validators import (
     DatabaseConnectionValidator,
+    validate_production_database,
 )
 
 logger = get_logger(__name__, component="persistence")
@@ -108,7 +105,19 @@ class Database:
     async def init_db(self) -> None:
         """Initialize database tables with production-grade setup."""
         try:
-            # Database connection validation - re-enabled for Phase 1
+            # CRITICAL: Run comprehensive production security validation first
+            if self.config.environment == "production":
+                logger.info(
+                    "🔒 Running CRITICAL production database security validation..."
+                )
+                is_secure = await validate_production_database(self.config)
+                if not is_secure:
+                    raise RuntimeError(
+                        "CRITICAL: Production database security validation FAILED. "
+                        "Database initialization BLOCKED for security reasons."
+                    )
+
+            # Database connection validation - re-enabled and enforced
             validator = DatabaseConnectionValidator(self.config)
             is_valid = await validator.validate_connection()
             if not is_valid:
@@ -116,13 +125,15 @@ class Database:
 
             schema_valid = await validator.validate_schema_compatibility()
             if not schema_valid:
-                logger.warning("Schema validation failed - proceeding with table creation")
+                logger.warning(
+                    "Schema validation failed - proceeding with table creation"
+                )
 
             logger.info("Database validation completed successfully")
 
             async with self.engine.begin() as conn:
                 # Register all models using the model registry
-                from src.domain.models.model_registry import (
+                from src.infrastructure.persistence.models.model_registry import (
                     get_model_registry,
                 )
 

@@ -8,7 +8,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-
 from src.domain.constants import COPPA_AGE_THRESHOLD, MINIMUM_CHILD_AGE
 
 

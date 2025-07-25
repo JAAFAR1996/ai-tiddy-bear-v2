@@ -1,12 +1,14 @@
+import sys
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
 from application.services.voice_service import (
     AudioFormat,
     AudioRequest,
     TranscriptionResult,
 )
-from unittest.mock import patch
-import sys
-from pathlib import Path
-import pytest
 
 # Add src to path
 src_path = Path(__file__).parent

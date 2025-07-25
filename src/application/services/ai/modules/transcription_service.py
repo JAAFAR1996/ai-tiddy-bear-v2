@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import logging
 import os
 import re
@@ -7,9 +8,14 @@ import time
 from datetime import datetime
 from typing import Any
 
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
+
 """Production - grade audio transcription service with child safety filtering"""
 
 logger = logging.getLogger(__name__)
+child_safe_audit = get_child_safe_audit_logger(__name__)
 
 # Production-only imports with proper error handling
 try:
@@ -142,14 +148,29 @@ class TranscriptionService:
             }
             # Log successful transcription for audit
             if child_id:
-                logger.info(
-                    f"Audio transcribed for child {child_id}: "
-                    f"{len(filtered_result['text'])} chars, "
-                    f"safe: {filtered_result['safe']}",
+                child_id_hash = hashlib.sha256(child_id.encode()).hexdigest()[:16]
+                child_safe_audit.log_security_event(
+                    event_type="audio_transcription_success",
+                    threat_level="low",
+                    input_data="Audio transcribed successfully",
+                    context={
+                        "child_id_hash": child_id_hash,
+                        "text_length": len(filtered_result["text"]),
+                        "content_safe": filtered_result["safe"],
+                    },
                 )
             return result
         except Exception as e:
-            logger.error(f"Transcription failed for child {child_id}: {e}")
+            child_id_hash = hashlib.sha256(child_id.encode()).hexdigest()[:16]
+            child_safe_audit.log_security_event(
+                event_type="transcription_error",
+                threat_level="medium",
+                input_data=str(e),
+                context={
+                    "child_id_hash": child_id_hash,
+                    "operation": "audio_transcription",
+                },
+            )
             raise RuntimeError(f"Audio transcription failed: {e}")
         finally:
             # Clean up temporary file
@@ -183,9 +204,9 @@ class TranscriptionService:
             # Check duration limit
             if result["duration"] > self.max_audio_duration:
                 result["valid"] = False
-                result["error"] = (
-                    f"Audio too long: {result['duration']:.1f}s (max: {self.max_audio_duration}s)"
-                )
+                result[
+                    "error"
+                ] = f"Audio too long: {result['duration']:.1f}s (max: {self.max_audio_duration}s)"
             return result
         except Exception as e:
             return {
@@ -256,7 +277,9 @@ class TranscriptionService:
             except Exception as e:
                 logger.warning(f"Google transcription failed: {e}")
         # Production: لا fallback وهمي، بل سجل خطأ وارفع استثناء
-        logger.error("All transcription engines failed: transcription service unavailable")
+        logger.error(
+            "All transcription engines failed: transcription service unavailable"
+        )
         raise RuntimeError("Transcription service unavailable: all engines failed")
 
     async def _apply_safety_filters(

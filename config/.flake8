@@ -6,7 +6,7 @@
 max-line-length = 88
 max-complexity = 10
 max-doc-length = 72
-exclude = 
+exclude =
     .git,
     __pycache__,
     .venv,
@@ -23,7 +23,7 @@ exclude =
     *.egg-info
 
 # ================== IGNORED ERRORS ==================
-ignore = 
+ignore =
     # Line too long (handled by black)
     E501,
     # Line break before binary operator (black compatibility)
@@ -32,7 +32,7 @@ ignore =
     W504
 
 # ================== ENFORCED RULES ==================
-select = 
+select =
     # Pyflakes errors
     F,
     # Pycodestyle errors
@@ -51,7 +51,7 @@ select =
 # F403: 'from module import *' used; unable to detect undefined names
 # F401: module imported but unused
 # F405: name may be undefined, or defined from star imports
-per-file-ignores = 
+per-file-ignores =
     # Test files can have some relaxed rules
     test_*.py:F401,F811
     tests/*.py:F401,F811
@@ -97,7 +97,7 @@ docstring-convention = google
 
 # If using flake8-isort plugin
 import-order-style = google
-application-import-names = 
+application-import-names =
     api,
     domain,
     infrastructure,
@@ -116,7 +116,7 @@ application-import-names =
 # ================== FILE-SPECIFIC OVERRIDES ==================
 
 # Allow long lines in specific cases
-max-line-length-ignore = 
+max-line-length-ignore =
     # URL lines can be longer
     E501:*urls.py,
     # Long string literals
@@ -128,7 +128,7 @@ max-line-length-ignore =
 
 # Check for TODO/FIXME comments
 # T000: Todo found
-# T001: TODO found  
+# T001: TODO found
 # T002: FIXME found
 # T003: XXX found
 
@@ -156,4 +156,4 @@ format = %(path)s:%(row)d:%(col)d: %(code)s %(text)s
 exit-zero = False
 
 # Output format for CI systems
-format = github 
+format = github

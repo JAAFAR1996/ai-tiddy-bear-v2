@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 
-from domain.value_objects.age_group import AgeGroup
-from domain.value_objects.child_preferences import ChildPreferences
-from domain.value_objects.language import Language
-from domain.value_objects.safety_level import SafetyLevel
+from src.domain.value_objects.age_group import AgeGroup
+from src.domain.value_objects.child_preferences import ChildPreferences
+from src.domain.value_objects.language import Language
+from src.domain.value_objects.safety_level import SafetyLevel
 
 # Add src to path
 src_path = Path(__file__).parent

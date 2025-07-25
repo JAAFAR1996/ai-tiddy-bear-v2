@@ -32,7 +32,7 @@ class APISecurityManager:
 
             # Check if IP is blocked
             if ip_address in self.blocked_ips:
-                logger.warning(f"Blocked IP attempted access: {ip_address}")
+                logger.warning("Blocked IP attempted access")
                 return False
 
             # Get or create request history for this IP
@@ -48,7 +48,7 @@ class APISecurityManager:
 
             # Check if within limit
             if len(request_times) >= self.rate_limit_max_requests:
-                logger.warning(f"Rate limit exceeded for IP: {ip_address}")
+                logger.warning("Rate limit exceeded for IP address")
                 return False
 
             # Add current request
@@ -60,19 +60,19 @@ class APISecurityManager:
 
             return True
         except Exception as e:
-            logger.error(f"Error checking rate limit for {ip_address}: {e}")
+            logger.error("Error checking rate limit for IP address")
             # Fail open - allow request if there's an error
             return True
 
     def block_ip(self, ip_address: str) -> None:
         """Block an IP address."""
         self.blocked_ips.add(ip_address)
-        logger.warning(f"IP address blocked: {ip_address}")
+        logger.warning("IP address blocked")
 
     def unblock_ip(self, ip_address: str) -> None:
         """Unblock an IP address."""
         self.blocked_ips.discard(ip_address)
-        logger.info(f"IP address unblocked: {ip_address}")
+        logger.info("IP address unblocked")
 
     def sanitize_input(self, input_string: str) -> str:
         """Sanitize user input for security.

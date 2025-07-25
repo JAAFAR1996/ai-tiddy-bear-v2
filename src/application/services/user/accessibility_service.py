@@ -13,10 +13,7 @@ from uuid import UUID
 from src.domain.interfaces.accessibility_profile_repository import (
     IAccessibilityProfileRepository,
 )
-from src.domain.value_objects.accessibility import (
-    AccessibilityProfile,
-    SpecialNeedType,
-)
+from src.domain.value_objects.accessibility import AccessibilityProfile, SpecialNeedType
 from src.infrastructure.config.services.accessibility_config import AccessibilityConfig
 from src.infrastructure.logging_config import get_logger
 

@@ -11,8 +11,12 @@ from enum import Enum
 from typing import Any
 
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.security.audit.child_safe_audit_logger import (
+    get_child_safe_audit_logger,
+)
 
 logger = get_logger(__name__, component="services")
+child_safe_audit = get_child_safe_audit_logger()
 
 
 class RetentionStatus(Enum):
@@ -192,7 +196,24 @@ Thank you for using AI Teddy Bear responsibly."""
 
         # In production, this would send actual email
         await asyncio.sleep(0.1)
-        logger.info(f"Email sent to {notification_data['parent_email']}")
+
+        # Log email notification WITHOUT logging the actual email address
+        parent_email_hash = hashlib.sha256(
+            notification_data["parent_email"].encode()
+        ).hexdigest()[:16]
+        child_safe_audit.log_child_interaction(
+            child_id=notification_data.get("child_id", "unknown"),
+            interaction_type="retention_notification_sent",
+            metadata={
+                "notification_type": notification_data.get(
+                    "notification_type", "unknown"
+                ),
+                "parent_email_hash": parent_email_hash,
+                "retention_status": notification_data.get(
+                    "retention_status", "unknown"
+                ),
+            },
+        )
 
     async def _process_scheduled_deletion(self, record: dict[str, Any]) -> None:
         """Process scheduled data deletion with export and audit."""

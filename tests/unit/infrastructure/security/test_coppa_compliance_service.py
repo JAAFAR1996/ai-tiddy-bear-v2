@@ -7,15 +7,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.infrastructure.security.child_data_encryption import (
-    ChildDataEncryption,
-)
-from src.infrastructure.security.coppa_validator import (
-    COPPAValidator,
-    coppa_validator,
-    is_coppa_subject,
-    requires_parental_consent
-)
+from src.infrastructure.security.child_data_encryption import ChildDataEncryption
 
 
 # Mock the COPPAComplianceRecord for testing

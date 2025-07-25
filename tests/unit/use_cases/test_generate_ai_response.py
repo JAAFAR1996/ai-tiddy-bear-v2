@@ -3,10 +3,8 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
+from application.use_cases.generate_ai_response import GenerateAIResponseUseCase
 from src.application.dto.ai_response import AIResponse
-from application.use_cases.generate_ai_response import (
-    GenerateAIResponseUseCase,
-)
 
 # Add src to path
 src_path = Path(__file__).parent

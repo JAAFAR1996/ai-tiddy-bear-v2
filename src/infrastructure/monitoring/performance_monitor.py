@@ -1,11 +1,12 @@
 # src/infrastructure/monitoring/performance_monitor.py
 
+import logging
 import threading
 import time
-import logging
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger("infrastructure.performance_monitor")
+
 
 class PerformanceMonitor:
     """
@@ -31,7 +32,7 @@ class PerformanceMonitor:
             "errors_total": 0,
             "latency_sum": 0.0,
             "latency_count": 0,
-            "custom": {}
+            "custom": {},
         }
         self.active_requests = 0
         self.start_time = time.time()
@@ -41,7 +42,9 @@ class PerformanceMonitor:
         self.active_requests += 1
         logger.debug(f"[PERF] Request started: {endpoint}")
 
-    def log_response(self, endpoint: str, latency: float, error: Optional[Exception] = None):
+    def log_response(
+        self, endpoint: str, latency: float, error: Optional[Exception] = None
+    ):
         self.metrics["latency_sum"] += latency
         self.metrics["latency_count"] += 1
         self.active_requests = max(0, self.active_requests - 1)
@@ -57,7 +60,8 @@ class PerformanceMonitor:
     def get_summary(self) -> Dict[str, Any]:
         avg_latency = (
             self.metrics["latency_sum"] / self.metrics["latency_count"]
-            if self.metrics["latency_count"] > 0 else 0.0
+            if self.metrics["latency_count"] > 0
+            else 0.0
         )
         uptime = time.time() - self.start_time
         summary = {
@@ -83,6 +87,7 @@ class PerformanceMonitor:
             @performance_monitor.monitor('/api/v1/ask')
             def my_func(...): ...
         """
+
         def decorator(func):
             def wrapper(*args, **kwargs):
                 self.log_request(endpoint)
@@ -97,8 +102,11 @@ class PerformanceMonitor:
                 finally:
                     latency = time.time() - start
                     self.log_response(endpoint, latency, error)
+
             return wrapper
+
         return decorator
+
 
 # For DI container compatibility:
 performance_monitor = PerformanceMonitor()

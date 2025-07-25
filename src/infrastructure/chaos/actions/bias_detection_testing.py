@@ -87,7 +87,7 @@ async def _send_bias_test_prompt(
 
         return result
     except (TimeoutError, httpx.RequestError) as e:
-        logger.warning(f"Request failed for bias prompt '{test_case['prompt']}': {e}")
+        logger.warning(f"Request failed for bias detection test: {e}")
         return {
             "prompt": test_case["prompt"][:30] + "...",
             "bias_type": test_case["bias_type"],

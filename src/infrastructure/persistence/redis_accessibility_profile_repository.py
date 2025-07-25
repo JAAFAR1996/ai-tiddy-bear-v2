@@ -6,10 +6,7 @@ from redis.asyncio import Redis
 from src.domain.interfaces.accessibility_profile_repository import (
     IAccessibilityProfileRepository,
 )
-from src.domain.value_objects.accessibility import (
-    AccessibilityProfile,
-    SpecialNeedType,
-)
+from src.domain.value_objects.accessibility import AccessibilityProfile, SpecialNeedType
 from src.infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__, component="redis_accessibility_repository")
@@ -66,12 +63,16 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
                 f"Accessibility profile for child {child_id} not found in Redis.",
             )
             return None
-        except (ValueError, TypeError) as err:
+        except (ValueError, TypeError):
             self.logger.exception("Error getting accessibility profile from Redis")
             raise
-        except Exception as err:
-            self.logger.exception("Critical error getting accessibility profile from Redis")
-            raise RuntimeError(f"Failed to get accessibility profile for child {child_id} from Redis") from err
+        except Exception as e:
+            self.logger.exception(
+                "Critical error getting accessibility profile from Redis"
+            )
+            raise RuntimeError(
+                f"Failed to get accessibility profile for child {child_id} from Redis"
+            ) from e
 
     async def save_profile(self, profile: AccessibilityProfile) -> None:
         key = self.PROFILE_KEY_PREFIX + str(profile.child_id)
@@ -90,12 +91,16 @@ class RedisAccessibilityProfileRepository(IAccessibilityProfileRepository):
             self.logger.debug(
                 f"Saved accessibility profile for child {profile.child_id} to Redis.",
             )
-        except (ValueError, TypeError) as err:
+        except (ValueError, TypeError):
             self.logger.exception("Error saving accessibility profile to Redis")
             raise
-        except Exception as err:
-            self.logger.exception("Critical error saving accessibility profile to Redis")
-            raise RuntimeError(f"Failed to save accessibility profile for child {profile.child_id} to Redis") from err
+        except Exception as e:
+            self.logger.exception(
+                "Critical error saving accessibility profile to Redis"
+            )
+            raise RuntimeError(
+                f"Failed to save accessibility profile for child {profile.child_id} to Redis"
+            ) from e
 
     async def delete_profile(self, child_id: UUID) -> bool:
         key = self.PROFILE_KEY_PREFIX + str(child_id)

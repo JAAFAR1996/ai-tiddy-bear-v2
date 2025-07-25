@@ -70,7 +70,7 @@ class AdvancedProgressAnalyzer:
             return None
 
         # Aggregate metrics
-        skill_levels = [m.skill_level for m in records]
+        [m.skill_level for m in records]
         improvement_rates = [m.improvement_rate for m in records]
         strengths = set()
         areas_for_improvement = set()
@@ -145,5 +145,9 @@ class AdvancedProgressAnalyzer:
             skill_level=skill_level,
             improvement_rate=improvement_rate,
             strengths=list(strengths) if strengths else ["listening"],
-            areas_for_improvement=list(areas_for_improvement) if areas_for_improvement else ["pronunciation"],
+            areas_for_improvement=(
+                list(areas_for_improvement)
+                if areas_for_improvement
+                else ["pronunciation"]
+            ),
         )

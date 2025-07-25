@@ -8,15 +8,16 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from src.infrastructure.config.core.application_settings import ApplicationSettings
 from src.infrastructure.config.settings import get_settings
 from src.infrastructure.logging_config import get_logger
+from src.infrastructure.middleware.security.headers import SecurityHeadersMiddleware
 from src.presentation.api.middleware.error_handling import ErrorHandlingMiddleware
-from src.presentation.api.middleware.request_logging import RequestLoggingMiddleware
+
 # Re-enabled for production - rate limiting now properly imports from service.py
 from src.presentation.api.middleware.rate_limit_middleware import (
     RateLimitMiddleware as ChildSafetyMiddleware,
 )
-
-from src.infrastructure.middleware.security.headers import (
-    SecurityHeadersMiddleware
+from src.presentation.api.middleware.request_logging import RequestLoggingMiddleware
+from src.presentation.api.middleware.security_monitoring_middleware import (
+    setup_security_monitoring_middleware,
 )
 
 logger = get_logger(__name__, component="infrastructure")
@@ -35,33 +36,37 @@ def setup_middleware(app: FastAPI) -> None:
     app.add_middleware(ErrorHandlingMiddleware)
     logger.info("✅ Error handling middleware configured")
 
-    # 2. Request Logging Middleware (second to last - logs everything)
+    # 2. Security Monitoring Middleware (comprehensive threat detection)
+    setup_security_monitoring_middleware(app, enable_blocking=is_production)
+    logger.info("✅ Security monitoring middleware configured")
+
+    # 3. Request Logging Middleware (logs everything after security processing)
     app.add_middleware(RequestLoggingMiddleware)
     logger.info("✅ Request logging middleware configured")
 
-    # 3. Security Headers Middleware (comprehensive security headers)
+    # 4. Security Headers Middleware (comprehensive security headers)
     app.add_middleware(SecurityHeadersMiddleware)
     logger.info("✅ Security headers middleware configured")
 
-    # 4. Child Safety Middleware (child-specific protection) - RE-ENABLED
+    # 5. Child Safety Middleware (child-specific protection) - RE-ENABLED
     app.add_middleware(ChildSafetyMiddleware)
     logger.info("✅ Child safety middleware configured")
 
-    # 5. Rate Limiting Middleware - RE-ENABLED (same as ChildSafetyMiddleware)
+    # 6. Rate Limiting Middleware - RE-ENABLED (same as ChildSafetyMiddleware)
     logger.info("✅ Rate limiting middleware configured")
 
-    # 6. Trusted Host Middleware (production security)
+    # 7. Trusted Host Middleware (production security)
     if is_production:
         trusted_hosts = _get_trusted_hosts(settings.application)
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=trusted_hosts)
         logger.info(f"✅ Trusted host middleware configured: {trusted_hosts}")
 
-    # 7. HTTPS Redirect Middleware (production only)
+    # 8. HTTPS Redirect Middleware (production only)
     if is_production and settings.ENABLE_HTTPS:
         app.add_middleware(HTTPSRedirectMiddleware)
         logger.info("✅ HTTPS redirect middleware enabled")
 
-    # 8. CORS Middleware (cross-origin requests) - Enhanced security
+    # 9. CORS Middleware (cross-origin requests) - Enhanced security
     cors_origins = _get_cors_origins(settings, is_production)
     _validate_cors_origins(cors_origins, is_production)
     app.add_middleware(
